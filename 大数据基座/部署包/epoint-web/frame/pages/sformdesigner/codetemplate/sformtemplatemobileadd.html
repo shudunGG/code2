@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>@title</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<script>
+	document.write("<script src='../../../../../frame/fmui/js/cssboot.js?"
+			+ Math.random() + "'></scr" + "ipt>");
+</script>
+<script>
+	SrcBoot
+			.output([ '../../../../../frame/fmui/showcase/comdto/css/common.new.css' ]);
+</script>
+
+</head>
+
+<body class="ejs-f9-content">
+	<div class="page-loading"></div>
+	<header class="mui-bar mui-bar-nav">
+		<!-- 		<button class="mui-btn mui-btn-blue mui-text-right mui-pull-right"
+			onclick="submit()">提交</button> -->
+		<div class="mui-btn mui-btn-danger mt10 ml10" onclick="submit()">提交</div>
+		<div class="mui-btn mui-btn-primary mt10 ml10" onclick="refresh()">刷新</div>
+		<div class="mui-btn mui-btn-danger mt10 ml10" onclick="reload()">reload</div>
+	</header>
+	<!-- 内容区域 -->
+	<div class="mui-content">
+		<ul class="editor-list">
+			@contentContainer @inputh
+		</ul>
+			
+		<!-- <input id="_common_hidden_viewdata" type="hidden" class="ep-mui-textbox" /> -->
+	</div>
+	<script type="text/template" id="tpl-subtable">
+    <div class="mui-table-view">
+      <div class="mui-table-view-cell">名字：{{displayName}}</div>
+    </div>
+  </script>
+
+	<script type="text/template" id="tpl-fileitem">
+    <li data-downloadurl="{{downloadUrl}}" data-filetype="{{filetype}}" data-attachfilename="{{attachFileName}}" data-attachguid="{{attachGuid}}" data-type="body">
+      {{attachFileName}} - 上传成功
+      <a href="javascript:void(0);" data-role="preview" class="r">查看</a>
+    </li>
+  </script>
+
+	<script>
+		document.write("<script src='../../../../../frame/fmui/js/jsboot.js?"
+				+ Math.random() + "'></scr" + "ipt>");
+	</script>
+
+	<script>
+		Util.loadJs('../../../../../frame/fmui/js/utils/util.string.js',
+				initPage);
+
+		function initPage() {
+			ejs.navigator.setTitle(document.title);
+			epointm
+					.initPage(
+							"sformdesigncommonaddaction?tableId=@tableId&versionguid=@versionguid&tableguid=@tableguid&hiddenname=@hidden",
+							null, null, null, {
+								method : "GET"
+							});
+		}
+
+		function submit() {
+			epointm.execute("saveForm", "", saveCallback);
+		}
+
+		function saveCallback(data) {
+			Util.ejs.alert(data.msg);
+		}
+
+		function refresh() {
+			epointm.refresh();
+		}
+		
+		var messageitemguid = Util.getExtraDataByKey('MessageItemGuid') || '';
+		ejs.navigator.hookSysBack({
+			success : function(result) {
+				ejs.page.close({
+					// 也支持传递字符串
+					resultData : {
+						messageitemguid : messageitemguid
+					}
+				});
+			},
+			error : function(error) {
+			}
+		});
+
+		ejs.navigator.hookBackBtn({
+			success : function(result) {
+				ejs.page.close({
+					// 也支持传递字符串
+					resultData : {
+						messageitemguid : messageitemguid
+					}
+				});
+			},
+			error : function(error) {
+			}
+		});
+	</script>
+
+</body>
+
+</html>

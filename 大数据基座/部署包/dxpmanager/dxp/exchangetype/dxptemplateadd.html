@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增策略</title>
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.id_connection_row .form-control {
+	width: 70%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog(0)">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="名称" starred="true" starred="true">
+						<input id="nodename" class="mini-textbox" bind="dataBean.name"
+							required="true" requiredErrorText="名称不能为空!"
+							vtype="maxLength:50" maxLengthErrorText="不能超过50字" />
+					</div>
+					<div role="control" label="策略" starred="true">
+						<input class="mini-combobox" action="getTemplates"
+							id="template" multiSelect="false" bind="dataBean.templatecode"
+							required="true" textField="text" valueField="id"
+							requiredErrorText="节点类型不能为空" />
+						<input id="templatename" class="mini-hidden" bind="dataBean.templatename"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="来源库类型" starred="true">
+						<input class="mini-combobox" action="dxpdatasourceaction.getDsTypes"
+							id="fromdstype" multiSelect="false" bind="dataBean.fromdstype"
+							required="true" textField="text" valueField="id"
+							requiredErrorText="来源数据源类型不能为空" />
+					</div>
+					<div role="control" label="目标库类型" starred="true">
+						<input class="mini-combobox" action="dxpdatasourceaction.getDsTypes"
+							id="targetdstype" multiSelect="false" bind="dataBean.targetdstype"
+							required="true" textField="text" valueField="id"
+							requiredErrorText="目标数据源类型不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="实现类路径" starred="true">
+						<input id="templateclass" class="mini-textbox"
+							bind="dataBean.templateclass" required="true"
+							requiredErrorText="类路径不能为空!" />
+					</div><div role="control"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="描述">
+						<textarea class="mini-textarea" bind="dataBean.templatedesc"
+							id="description" vtype="maxLength:500"
+							maxLengthErrorText="不能超过500字"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxptemplateaddaction');
+		
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功')!=-1) {
+				epoint.alertAndClose(data.msg,'','','success');
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+		var template=mini.get('template');
+		template.on('valuechanged',function(e){
+			mini.get('templatename').setValue(e.sender.text);
+		});
+		
+
+	</script>
+</body>
+</html>

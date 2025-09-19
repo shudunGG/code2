@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Change line condition setting</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" onclick="addTransition"
+				style="display: none;">sure add</a><a class="mini-button" id="save"
+				onclick="saveTransition" style="display: none;">save changes</a> <a
+				class="mini-button" id="delete" onclick="deleteTransition"
+				style="display: none;">Delete the conditions of</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="Conditional expression type">
+						<input class="mini-combobox" id="conditionExpressionType"
+							bind="workflowTransitionCondition.conditionExpressionType"
+							data="[{text:'Compound expressions',id:'20'},{text:'By calling the method',id:'30'}]" />
+					</div>
+				</div>
+				<div role="row" id="mulitiRow">
+					<div role="control" label="Compound expressions">
+						<input class="mini-textarea"
+							bind="workflowTransitionCondition.conditionExpression" />
+					</div>
+				</div>				
+				<div role="row" id="methodRow" style="display: none;">
+					<div role="control" label="Comparative method">
+						<input id="methodName"
+							bind="workflowTransitionCondition.methodGuid"
+							class="mini-buttonedit" onbuttonclick="selectMethod"
+							selectOnFocus="true" />
+					</div>
+				</div>				
+				<div role="row" id="DivExplain" style="display: none; ">
+					<div role="control">
+						<span class="text-danger">Description:Compound expressionsthecontentBy:[The serial number]、AND、OR、English()That case:[1] AND ([2] OR [3])。</span>
+					</div>
+				</div>
+				<div role="row" id="ComplexConditionList" style="display: none; ">
+					<div role="control" label="">
+						<!-- toolbar area -->
+						<div class="fui-toolbar">
+							<div class="btn-group mr10">
+								<a class="mini-button" iconCls="icon-addcircle"
+									onclick="openAdd();" id="btnAddRecord"> New conditions </a> <a
+									id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+									onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to deletetherecord!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}">
+									delete selected </a>
+							</div>
+						</div>
+						<div id="datagrid" class="mini-datagrid" idField="ConditionGuid"
+							action="getResultListModel" sortOrder="desc" showPager="true"
+							style="height: 300px;" allowResize="true" multiSelect="true"
+							allowCellEdit="true" allowCellSelect="true"
+							editNextOnEnterKey="true" editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="20"></div>
+								<div type="indexcolumn" width="20" headerAlign="center">order</div>
+								<div field="ConditionName" headerAlign="center">The name of the</div>
+								<div width="20" align="center" headerAlign="center"
+									renderer="onEditRenderer">edit</div>
+							</div>
+
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<input class="mini-hidden" id="transitionGuid" bind="transitionGuid" />
+	<input class="mini-hidden" id="processVersionGuid"
+		bind="processVersionGuid" />
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitytransitioncomplexconditionaction', null,
+				initCallBack);
+		var processVersionGuid;
+
+		//Initializes the callback event
+		function initCallBack(data) {
+			processVersionGuid = data.processVersionGuid;
+			if (data.conditionExpressionType) {
+				inputShow(data.conditionExpressionType);
+			}
+			if (data.methodName) {
+				mini.get("methodName").setText(data.methodName);
+			}
+			buttonShow(data.type);
+		}
+		mini.get("conditionExpressionType").on("valuechanged", function(e) {
+			inputShow(e.value);
+		});
+		//Complex expression、methodstheShow hidden
+		function inputShow(type) {
+			if (type == '20') {
+				show('', 'none');
+			} else if (type == '30') {
+				show('none', '');
+			}
+		}
+
+		//Complex expression、methodstheShow hidden
+		function show(mulitiRow, methodRow) {
+			document.getElementById("ComplexConditionList").style.display = mulitiRow;//andComplex expressionboxtheShow hiddenconsistent
+			document.getElementById("DivExplain").style.display = mulitiRow;//andComplex expressionboxtheShow hiddenconsistent
+			document.getElementById("mulitiRow").style.display = mulitiRow;
+			document.getElementById("methodRow").style.display = methodRow;
+		}
+
+		//controlShow hidden
+		function buttonShow(type) {
+			if (type == "add") {
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+				document.getElementById("delete").style.display = "none";
+			} else if (type == "edit") {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("save").style.display = "";
+				document.getElementById("delete").style.display = "";
+			}
+		}
+		//choosemethods
+		function selectMethod() {
+			epoint
+					.openDialog(
+							'chooseexternalmethods',
+							"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+									+ processVersionGuid, selectCallBack, {
+								width : 480,
+								height : 300
+							});
+		}
+		//chooseexternalmethodsafterCallBack
+		function selectCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("methodName").setValue(datas[1]);
+				mini.get("methodName").setText(datas[0]);
+			}
+		}
+
+		//new
+		function addTransition() {
+			epoint.execute('addTransition', 'fui-content', function(data) {
+				epoint.alert("newSuccess!", '', null, 'success');
+				buttonShow("edit");
+				
+			});
+		}
+
+		//save
+		function saveTransition() {
+			epoint.execute('saveTransition', 'fui-content', function(data) {
+				epoint.alert(data.message, '', null, 'info');
+			});
+		}
+
+		//delete
+		function deleteTransition() {
+			epoint.execute('delTransition', 'fui-content', function(data) {
+				epoint.alert(data.message, '', null, 'info');
+				inputShow(20);
+				buttonShow('add');
+				epoint.clear("fui-form");
+				mini.get("conditionExpressionType").setValue(20);
+				searchData();
+			});
+		}
+
+		// newA single expression
+		function openAdd() {
+			var transitionGuid = mini.get("transitionGuid").getValue();
+
+			epoint.openDialog('newA single expression',
+					"framemanager/workflow/design/activitytransitioncondition?transitionGuid="
+							+ transitionGuid + "&processVersionGuid="
+							+ processVersionGuid, searchData, {
+						'width' : 600,
+						'height' : 500
+					});
+		}
+		// drawA single expressionLine edit button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"editCondition", "ConditionGuid");
+		};
+		//editA single expression
+		function editCondition(conditionGuid) {
+			var transitionGuid = mini.get("transitionGuid").getValue();
+
+			epoint.openDialog('editA single expression',
+					"framemanager/workflow/design/activitytransitioncondition?ConditionGuid="
+							+ conditionGuid + "&transitionGuid="
+							+ transitionGuid + "&processVersionGuid="
+							+ processVersionGuid, searchData, {
+						'width' : 600,
+						'height' : 500
+					});
+		}
+		// formthesearch
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ],'',true);
+		}
+		// deleteA single expression
+		function deleteSelect() {
+			epoint.execute("delTCondition", '', searchData);
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>个性签名</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="addSignature">新增签名</a> <a
+			class="mini-button" onclick="saveSignature">保存签名</a> <a
+			class="mini-button" state="danger" onclick="deleteSignature">删除签名</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="sysGuid" multiSelect="true" allowCellValid="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true" allowCellWrap="true"
+			editNextRowCell="true">
+
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div name="subject" field="subject" width="300"
+					vtype="required;maxLength:50">
+					签名标题 <input property="editor" class="mini-textbox"
+						vtype="maxLength:50" required="true" requiredErrorText="标题不能为空" />
+				</div>
+				<div field="signContent" width="100%">签名</div>
+				<div field="orderNumber" width="150" vtype="int">
+					排序号 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" />
+				</div>
+				<div width="150" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("mysignaturelistaction");
+
+		//新增回调事件
+		function addCallBack(data) {
+			epoint.refresh("datagrid", '', true);
+		}
+
+		//新增签名
+		function addSignature() {
+			epoint.openDialog("新增签名",
+					'frame/pages/basic/personalsignature/mysignature',
+					addCallBack, {
+						'width' : 1100,
+						'height' : 500
+					});
+		}
+
+		//渲染修改按钮
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"editSignature", "sysGuid");
+		}
+
+		//修改
+		function editSignature(sysguid) {
+			epoint.openDialog("修改签名",
+					'frame/pages/basic/personalsignature/mysignature?sysGuid='
+							+ sysguid, addCallBack, {
+						'width' : 1100,
+						'height' : 500
+					});
+		}
+
+		//保存签名
+		function saveSignature() {
+			var grid = mini.get("datagrid");
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			var ids = grid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.execute("saveSignature", "datagrid", [ ids.join(',') ],
+						saveCallback);
+			}
+		}
+
+		//保存回调事件
+		function saveCallback(data) {
+			epoint.alert(data.msg, null, null, 'info');
+			epoint.refresh([ "datagrid" ], '', true);
+		}
+
+		//删除签名
+		function deleteSignature() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("deleteSignature", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, null, null, 'info');
+									epoint.refresh([ "datagrid" ], '', true);
+								}
+							});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", null, null, 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

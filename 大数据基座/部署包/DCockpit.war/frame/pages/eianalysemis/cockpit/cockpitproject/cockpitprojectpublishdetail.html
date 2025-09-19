@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>专题发布</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="uc-handlecontrols" id="handlecontrols"
+			action="handlecontrolsaction.handleCtrl" style="width: 100%"></div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="hidden">
+			<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+		</div>
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="专题名称">
+						<input bind="dataBean.projectname" class="mini-outputtext" id="projectName" />
+					</div>
+					<div role="control" ></div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门">
+						<input id="createou" bind="dataBean.createou" class="mini-outputtext"/>
+					</div>
+					<div role="control" label="创建人">
+						<input class="mini-outputtext" id="createusername" bind="dataBean.createuser">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="负责人">
+						<input id="liableperson" class="mini-outputtext" bind="dataBean.liableperson"/>
+					</div>
+					<div role="control" label="联系电话">
+						<input id="phone" class="mini-outputtext" bind="dataBean.phone"/>
+					</div>
+				</div>
+				<div role="row" id="model">
+					<div role="control" label="发布驾驶舱">
+						<input id="cockpitname" class="mini-outputtext"/>
+					</div>
+					<div role="control" label="发布专题分类">
+						<input id="projectcatename" class="mini-outputtext"/>
+					</div>
+				</div>
+				<div role="row" id="ztyl">
+					<div role="control" label="专题预览">
+						<a class="mini-button"  onclick="yl();">专题预览</a>
+					</div>
+					<div role="control">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../../../../../frame/pages/epointworkflow/js/workflowjsboot.js"></script>
+	<script>
+		var projectguid = Util.getUrlParams("projectguid");
+		var dpurl;
+		// 初始化页面
+		epoint.initPage('cockpitprojectpublishdetailaction', null, function(data) {
+			if(data.createusername){
+				mini.get("createusername").setValue(data.createusername);
+			}
+			if(data.createouname){
+				mini.get("createou").setValue(data.createouname);
+			}
+			if(data.cockpitname){
+				mini.get("cockpitname").setValue(data.cockpitname);
+			}
+			if(data.projectcatename){
+				mini.get("projectcatename").setValue(data.projectcatename);
+			}
+			if(data.type == 1){
+				if(data.dpurl){
+					dpurl = data.dpurl;
+				}
+			}
+			else{
+				$("#ztyl").hide();
+			}
+		});
+		
+		function submit() {
+			epoint.execute('submit', '', newCallback);
+		}
+		
+		function yl(){
+			window.open(dpurl);
+		}
+		
+		function newCallback(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				ShowTdOperate(true);
+			} else {
+				HeaderSubmit();
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output(
+			[ '../css/common.css', './css/common.css',
+					'./css/msmqintegration.css' ])
+</script>
+<style type="text/css">
+.mod-content {
+	width: 95%;
+	padding: 20px 0;
+	box-sizing: border-box;
+}
+</style>
+<title>新增消息集成</title>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- 头部 -->
+	<div class="top">
+		<a href="javascript:void(0);" onclick="back();" class="back l">返回</a>
+	</div>
+	<div id="main" class="main acc-box hide-scroll">
+		<div class="custom-accordions">
+			<div role="accordion">
+				<div role="head" title="基本信息">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">基本信息</li>
+					</ul>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="fui-form">
+							<div role="form">
+								<div role="row">
+									<div role="control" label="流程名称" starred="true">
+										<input id="flowname" class="mini-textbox main-input"
+											vtype="maxLength:100" required="true" bind="flowName"
+											requiredErrorText="流程名称不能为空" />
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="节点域" starred="true">
+										<input id="nodeguid" class="mini-combobox main-input"
+											action="getNodeList" showClose="true" bind="nodeGuid"
+											required="true" requiredErrorText="节点域不能为空" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="选择消息队列">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">数据来源</li>
+					</ul>
+					<i>
+						<div class="tip-btn fui-toolbar-helper"
+							style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>对于同一个topic来说，消费者组相同时，将实现kafka的单播消费模式，即消息只被消费者组中一个消费者消费。
+								当消费者组不同时，则使用的是广播消费模式，每个组的消费者都将消费该topic中一模一样的消息。</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<!-- 选择数据源 -->
+						<div class="fui-form" id="selectDataSource">
+							<div role="form">
+								<div role="row"></div>
+								<!-- <div role="row">
+									<div role="control" label="数据源" starred="true">
+										<input id="fromds" action="getFromDSList" required="true"
+											allowInput="true" bind="fromDs"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="数据源不能为空" />
+									</div>
+								</div> -->
+								<div role="row">
+									<div role="control" label="topic" starred="true">
+										<input id="topic" action="getTopicList" allowInput="true"
+											bind="topic" required="true" class="mini-combobox main-input"
+											showClose="true" requiredErrorText="topic不能为空" />
+									</div>
+								</div>
+								<div role="row" id="topicUser-row">
+									<div role="control" label="topic用户" starred="true" >
+										<input id="topicUser" action="getUserNameList"
+											allowInput="true" bind="user" required="true"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="topic用户不能为空" />
+									</div>
+									<input id="needPrincipal" bind="needPrincipal" class="mini-hidden"/>
+								</div>
+								<div role="row">
+									<div role="control" label="消费者组" starred="true">
+										<input id="groupId" action="getGroupNameList"
+											allowInput="true" bind="groupid" required="true"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="消费者组不能为空" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="选择数据源">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">数据去向</li>
+					</ul>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<!-- 选择数据源 -->
+						<div class="fui-form" id="selectDataSource1">
+							<div role="form">
+								<div role="row"></div>
+								<div role="row">
+									<div role="control" label="数据源" starred="true">
+										<input id="targetds" action="getTargetDSList" bind="targetDs"
+											required="true" class="mini-combobox main-input"
+											allowInput="true" showClose="true"
+											requiredErrorText="数据源不能为空" />
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="表" starred="true">
+										<input id="targetable" action="getTargetTableList"
+											allowInput="true" bind="targetTable" required="true"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="目标表不能为空" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="字段映射">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">映射关系</li>
+					</ul>
+					<i>
+						<div class="tip-btn fui-toolbar-helper"
+							style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+								<em>消息字段：</em>填写需要解析入库的字段，目前只支持返回值格式为json。其中jsonmap以'.'分隔，jsonarray以'..'分隔，缺省字段使用'$'代替。例如：返回值为[{"id":"1","name":"小黑"},{"id":"1","name":"小白"}]，填写字段应为$..id，$..name。
+							</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="mod-content">
+							<!-- 表格上方工具栏 -->
+							<div class="toolbar-box clearfix">
+								<div class="toolbar-r r">
+									<span>筛选</span> <input id="filter" class="mini-combobox"
+										style="width: 90px;" textField="text" valueField="id"
+										emptyText="请选择..." required="true" allowInput="true" />
+								</div>
+							</div>
+							<!-- 表格头部 -->
+							<div class="table-hd clearfix">
+								<!-- 左侧头部 -->
+								<div class="table-hd-l l clearfix">
+									<div class="table-item col-l-1 l">主键</div>
+									<div class="table-item col-l-2 l ver-inner-md relative">
+										<span class="ver-md">消息字段</span>
+									</div>
+									<div class="table-item col-l-3 l ver-inner-md relative">
+										<span class="ver-md">目标表字段</span> <span id="left-search"
+											class="search-icon ver-md"></span>
+										<div id="source-search" class="search hidden">
+											<input id="source-input" class="search-input" type="text">
+											<span class="action-icon icon-remove search-close"></span>
+										</div>
+									</div>
+									<div class="table-item col-l-4 l ver-inner-md relative">
+										<span class="ver-md">类型</span>
+									</div>
+									<div class="table-item col-l-5 l ver-inner-md relative">
+										<span class="ver-md">自定义消息值类型</span>
+									</div>
+									<div class="table-item col-l-6 l ver-inner-md relative">
+										<span class="ver-md">日期格式</span>
+									</div>
+								</div>
+							</div>
+							<!-- 表格主体 -->
+							<div class="table-main relative">
+								<!-- 显示字段 -->
+								<div id="table-bd" class="table-bd">
+									<div class="table-bd-container relative clearfix">
+										<!-- 左侧字段列表 -->
+										<div id="table-bd-l" class="table-bd-l l hide-scroll">
+											<div class="source-add table-row clearfix hidden"
+												id="source-add">
+												<div class="table-item col-l-1 l"></div>
+												<div class="table-item col-l-2 l">
+													<input id="source-add-apifield" style="width: 100%;" />
+												</div>
+												<div class="table-item col-l-3 l">
+													<input id="source-add-field" class="mini-textbox"
+														style="width: 100%;" />
+												</div>
+												<div class="table-item col-l-4 l">
+													<input id="source-add-dataType" class="mini-combobox"
+														style="width: 100%;" textField="name" valueField="name"
+														allowInput="true" />
+												</div>
+												<div class="table-item col-l-5 l">
+													<a class="table-btn source-save-btn">保存</a> <a
+														class="table-btn source-cancel-btn">取消</a>
+												</div>
+											</div>
+										</div>
+										<span id="delete-btn" class="delete-btn hidden">删除</span>
+									</div>
+								</div>
+								<!-- 移除字段 -->
+								<div id="table-bd-bottom" class="table-bd-bottom clearfix">
+									<!-- 左侧移除字段 -->
+									<div id="table-bd-bottom-l" class="table-bd-bottom-l l">
+										<!-- 										<div class="table-addbtn text-center">+&nbsp;新增字段</div>
+ -->
+										<div id="table-remove-hd-l"
+											class="table-remove-hd table-remove-hd-l text-center hidden">
+											<span class="ver-md"><span id="remove-l-num">0</span>个字段已移除</span>
+											<span class="ver-md row-remove"></span>
+										</div>
+										<div id="table-remove-bd-l"
+											class="table-remove-bd table-remove-bd-l hidden"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="流程属性">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">流程属性</li>
+					</ul>
+					<i>
+						<div class="tip-btn fui-toolbar-helper"
+							style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+								<em>消息偏移量：</em>指从topic中最早的地方开始消费还是从最新的消息开始消费，若不选择，则从之前同步的偏移量开始消费
+							</p>
+							<p>
+								<em>插入/更新/删除：</em>消息队列中的JSON中需要有操作类型字段，分别用 "I", "U", "D"指代插入、更新、删除,需要配置操作类型字段在json中的路径，规则参考字段映射中消息字段的路径规则。
+							</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="fui-form">
+							<div role="form">
+								<div role="row">
+									<div role="control" label="同步规则" starred="true" style="margin-right: 250px">
+										<input id="synrule" bind='synrule'
+											requiredErrorText="同步规则不能为空"
+											data="[{text:'全量',id:'full'},{text:'插入/更新',id:'insert_update'},{text:'插入/更新/删除',id:'insert_update_delete'}]"
+											required="true" class="mini-combobox" textField="text"
+											valueField="id" showClose="true" />
+									</div>
+									<div role="control" label="操作类型字段路径" starred="true" id="operatefieldpath">
+										<input id="operatefield" class="mini-textbox" required="true" bind="operatefield"/>
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="高级配置">
+										<input id="advancedsetting" class="mini-checkbox" text=""
+											width="13px" />
+									</div>
+									<div role="control"></div>
+								</div>
+								<div role="row" id="advancedsetting-01">
+									<div role="control" label="消息偏移量" style="margin-right: 250px">
+										<input id="offset" bind="offset" value="none"
+											class="mini-radiobuttonlist"
+											data="[{text:'最早',id:'最早'},{text:'最新',id:'最新'},{text:'当前',id:'当前'}]"
+											textField="text" valueField="id" />
+									</div>
+									<div role="control" label="运行内存大小(M)">
+										<input id="memory" class="mini-textbox" bind="memory"
+											vtype="int;range:1,2048" />
+									</div>
+								</div>
+								<div role="row" id="advancedsetting-02">
+									<div role="control" label="输出批量提交数" style="margin-right: 250px">
+										<input id="outputCommitSize" class="mini-textbox"
+											bind="outputCommitSize" vtype="int;range:1,100000" />
+									</div>
+									<div role="control" label="插入批量提交数">
+										<input id="insertCommitSize" class="mini-textbox"
+											bind="insertCommitSize" vtype="int;range:1,100000" />
+									</div>
+								</div>
+								<div role="row" id="advancedsetting-03">
+									<div role="control" label="结果集大小" style="margin-right: 250px">
+										<input id="rowset" class="mini-textbox"
+											requiredErrorText="结果集大小不能为空" bind="rowset"
+											vtype="int;range:1,100000" />
+									</div>
+									<div role="control" label=""></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="save-btn" class="save-btn btn">保&nbsp;存</div>
+		</div>
+
+
+		<script id="table-row-l-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix relative" id="source-{{field}}">
+            <div class="table-item col-l-1 l ver-inner-md font-0"><div class="checkbox {{extendClass}}"></div></div>
+            <div class="table-item col-l-2 l ver-inner-md"><input id="apifield-{{field}}" style="height: 22px" value="{{linkField}}"></input></div>
+            <div class="table-item col-l-3 l">{{field}}</div>
+            <div class="table-item col-l-4 l">{{dataType}}</div>
+            <div class="table-item col-l-5 l">
+				<input id="dataType-{{field}}" class="mini-combobox" showClose="true" value='{{diyType}}' style="width: 100%;vertical-align: middle;" textField="text" valueField="id" data="[{text:'常量',id:'1'},{text:'UUID',id:'2'},{text:'时间戳',id:'3'}]" allowInput="true" />
+			</div>
+            <div class="table-item col-l-6 l">
+				<input id="timeFormat-{{field}}" class="mini-combobox" value="{{timeFormat}}" showClose="true" style="width: 100%;vertical-align: middle;" textField="text" valueField="text" data="[{text:'yyyy/MM/dd HH:mm:ss.SSS',id:'1'},{text:'yyyy/MM/dd HH:mm:ss.SSS XXX',id:'2'},{text:'yyyy/MM/dd HH:mm:ss',id:'3'},{text:'yyyy/MM/dd HH:mm:ss XXX',id:'4'},{text:'yyyy/MM/dd',id:'6'},{text:'yyyy-MM-dd HH:mm:ss',id:'8'},{text:'yyyy-MM-dd HH:mm:ss XXX',id:'9'},{text:'yyyy-MM-dd',id:'10'},{text:'yyyyMMdd',id:'11'},{text:'MM/dd/yyyy',id:'12'},{text:'MM/dd/yyyy HH:mm:ss',id:'13'},{text:'MM-dd-yyyy',id:'14'},{text:'MM-dd-yyyy HH:mm:ss',id:'15'},{text:'MM/dd/yy',id:'16'},{text:'MM-dd-yy',id:'17'},{text:'dd/MM/yyyy',id:'18'},{text:'dd-MM-yyyy',id:'19'},{text:'yyyy-MM-dd HH:mm:ss.SSS',id:'20'},{text:'#',id:'21'},{text:'',id:'22'}]" allowInput="false"/>
+			</div>
+            <div class="table-item col-l-7 l">
+                {{^remove}}
+                <span class="eye-close"></span>
+                {{/remove}}
+                {{#remove}}
+                <span class="table-row-close"></span>
+                {{/remove}}
+                <span class="table-drag"></span>
+            </div>
+        </div>
+        {{/list}}
+    </script>
+
+		<script id="table-row-l-remove-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix" id="sourceremove-{{field}}">
+            <div class="table-item col-l-2 l ver-inner-md"><input id="apifield-{{field}}" style="height: 22px" value="{{linkField}}"></input></div>
+            <div class="table-item col-l-3 l">{{field}}</div>
+            <div class="table-item col-l-4 l">{{dataType}}</div>
+            <div class="table-item col-l-5 l"><span class="eye-open"></span><span class="table-drag"></span></div>
+        </div>
+        {{/list}}
+    </script>
+		<script src="../../rest/resource/jsboot"></script>
+
+		<script>
+			epoint.initPage('dxpmsmqinfoaddaction', '', function(data) {
+				//高级配置不展开
+				$('#advancedsetting-01').hide();
+				$('#advancedsetting-02').hide();
+				$('#advancedsetting-03').hide();
+				if (data.msg) {
+					epoint.alert(data.msg, '', function() {
+						back();
+					}, 'warning')
+				}
+				Util.form.hideField('#operatefieldpath');
+				//无需认证
+				var needPrincipal = mini.get('needPrincipal').getValue();
+				if(needPrincipal == false){
+					$('#topicUser-row').hide();
+				}
+			});
+
+			function back() {
+				window.history.back()
+			}
+		</script>
+		<!-- 模拟数据 -->
+		<script src="./js/msmqintegration.js"></script>
+</body>
+
+</html>

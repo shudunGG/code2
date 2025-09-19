@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Methods to modify</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">save and close</a>
+			<a class="mini-button"
+				onclick="epoint.closeDialog">Shut down</a>
+		</div>
+	</div>
+
+
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="methodname" starred="true">
+					    <div class="mini-combobox" textField="text" valueField="id" bind="dataBean.methodname" required="true" allowInput="true" onvalidation="onEnglishAndNumberValidation"
+								action="getAllmethodNameList" requiredErrorText="Please enter theMethod name"  ></div>
+					</div>
+				</div>
+				
+				<div role="row">
+					<div role="control" label="order no">
+						<input class="mini-textbox" 
+							bind="dataBean.ordernumber" vtype="int;maxLength:5"  />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage("servicemethodeditaction");
+
+		// Shut downOperation of the callback
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+		
+		/* Whether or not English+digital */
+        function isEnglishAndNumber(v) {
+            
+            var re = new RegExp("^[0-9a-zA-Z\_]+$");
+            if (re.test(v)) return true;
+            return false;
+        }
+		
+		function onEnglishAndNumberValidation(e) {
+            if (e.isValid) {
+                if (isEnglishAndNumber(e.value) == false) {
+                    e.errorText = "Can't input in addition to English、digitalOutside of the character";
+                    e.isValid = false;
+                }
+            }
+        }
+		
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+
+		//save and close
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form',
+						closeCallback);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

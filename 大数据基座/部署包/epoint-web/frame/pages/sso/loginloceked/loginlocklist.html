@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>统一认证</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要解锁的记录!',{state : 'info'});}else{unlockAll();}"
+			id="btnAddRecord"> 批量解锁</a>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="登录名">
+						<input id="loginname" class="mini-textbox" bind="loginname" />
+					</div>
+					<div role="control" label="锁定时间">
+						<table>
+							<tr>
+								<td><input id="starttime" class="mini-datepicker"
+									bind="starttime" format="yyyy-MM-dd H:mm:ss"
+									timeFormat="H:mm:ss" showTime="true" showOkButton="false"
+									showClearButton="true" style="width: 100%"/></td>
+								<td style="padding-left: 40px; padding-right: 40px;">至</td>
+								<td><input id="endtime" class="mini-datepicker"
+									bind="endtime" format="yyyy-MM-dd H:mm:ss" timeFormat="H:mm:ss"
+									showTime="true" showOkButton="false" showClearButton="true"
+									style="float: right; width: 100%" onValuechanged="endtimeval" /></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="50" align="left">序</div>
+				<div field="lockedloginid" width="150" >登录名</div>
+				<div field="platformname" width="100" >登录平台</div>
+				<div field="lockedtime" width="200"  allowSort="true"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" sortOrder="desc">锁定时间</div>
+				<div field="lockedvalue" width="100%" >锁定原因</div>
+				<div field="clearlockedtime" width="200"  allowSort="true" sortOrder="desc"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">自然解锁时间</div>
+				<div  width="100" renderer="onUnlock">手动解锁</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('loginlocklistaction');
+
+		function unlockAll() {
+			epoint.confirm('确认要解锁吗?', '', function() {
+				epoint.execute('unLock', null, function(data) {
+					if (data) {
+						epoint.showTips(data.msg, {state : 'info'});
+					}
+					searchData();
+				});
+			});
+		}
+
+		var onUnlock = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "openUnlock");
+		};
+
+		function openUnlock() {
+			epoint.confirm('确认要解锁吗?', '', function() {
+				epoint.execute('unLock', null, function(data) {
+					if (data) {
+						epoint.showTips(data.msg, {state : 'info'});
+					}
+					searchData();
+				});
+			});
+		}
+
+		//验证时间
+		function endtimeval(e) {
+			var starttime = mini.get("starttime").value;
+			if (starttime != "" && e.value != "") {
+				if (e.value != "" && e.value < starttime) {
+					epoint.showTips("日期填写有误，请重新选择！",{state : 'danger'});
+					mini.get("endtime").setValue("");
+				}
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], function() {
+			});
+		}
+	</script>
+</body>
+</html>

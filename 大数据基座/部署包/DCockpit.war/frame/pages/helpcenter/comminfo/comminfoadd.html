@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>信息发布</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btn">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addNew"
+				onclick="save();">发布</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="标题" starred="true">
+					<input id="cInfoName" class="mini-textbox"
+						bind="commComprehensiveInfoHandbook.cInfoName" required="true"
+						requiredErrorText="标题不能为空!" /> <input id="cInfoGuid"
+						class="mini-hidden" bind="commComprehensiveInfoHandbook.cInfoGuid" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="信息类型" starred="true">
+					<div class="mini-radiobuttonlist" action="appeartypeModel"
+						id="infoType" bind="commComprehensiveInfoHandbook.cInfoType"
+						onvaluechanged="controlHidden" required="true"
+						requiredErrorText="信息类型不能为空!" /></div>
+				</div>
+			</div>
+			<div role="row" id="attach">
+				<div role="control" label="上传附件">
+					<div id="uploader" class="mini-webuploader"
+						action="getFileUploadModel" fileNumLimit="1"
+						fileSingleSizeLimit="5120"
+						limitType="jpeg,jpg,gif,png,bmp,doc,docx,xls,xlsx,rar,zip,txt,log,txt"></div>
+				</div>
+			</div>
+			<div role="row" id="content">
+				<div role="control" label="信息内容" starred="true">
+					<textarea bind="commComprehensiveInfoHandbook.cInfoContent"
+						id="cInfoContent" class="mini-webeditor" required="true" readOnly="false"></textarea>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序码">
+					<input id="orderNumber" class="mini-textbox"
+						bind="commComprehensiveInfoHandbook.orderNum" vtype="int;range:0,99999999"/>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../epointworkflow/js/tableproperty.js"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('comminfoaddaction', '', initCallback);
+
+		function initCallback(data) {
+			if (data && data.type) {
+				if (data.type == 3) {
+					document.getElementById("attach").style.display = "none";
+					document.getElementById("content").style.display = "block";
+				} else {
+					document.getElementById("attach").style.display = "block";
+					document.getElementById("content").style.display = "none";
+				}
+			}
+		}
+
+		function save() {
+			if(document.getElementById("content").style.display == "block"){
+				var value = mini.get("cInfoContent").getValue();
+	        	if (value != null  && value !=""){
+				    if (epoint.validate()) {
+					    epoint.execute('save', 'fui-form', closeCallback);
+				    }
+	        	}else{
+	        		epoint.alert('信息内容不能为空！', null, null, 'info');
+	        	}
+			}else{
+				if (epoint.validate()) {
+				    epoint.execute('save', 'fui-form', closeCallback);
+			    }
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function controlHidden() {
+			var type = mini.get("infoType").getValue();
+			if (type == 3) {
+				document.getElementById("attach").style.display = "none";
+				document.getElementById("content").style.display = "block";
+			} else {
+				document.getElementById("attach").style.display = "block";
+				document.getElementById("content").style.display = "none";
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

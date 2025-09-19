@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'frame_user' and column_name = 'framemj'

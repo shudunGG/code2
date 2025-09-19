@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>高可用通道管理</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<a class="mini-button" state="primary" id="addClose"
+			onclick="saveAndClose">新增Target</a> <a class="mini-button"
+			state="danger" id="delClose" onclick="deleteClose">删除选中</a>
+	</div>
+	<div class="fui-content">
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="row_guid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData">
+				<div property="columns">
+					<div width="40" type="checkcolumn"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="target_host" width="30">Target</div>
+					<div field="weight" width="30">权重</div>
+					<div field="create_date" width="40"
+						data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">创建时间</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		var rowguid;
+		epoint.initPage('apichanneltargetlistaction', '', function(data) {
+			if (data && data.rowguid) {
+				rowguid = data.rowguid;
+			}
+		});
+
+		// 表格的搜索
+		function searchData() {
+
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		function saveAndClose() {
+			epoint.openDialog("新增Target",
+					"frame/pages/basic/gateway/api/apichannel/apichanneltargetadd?rowguid="
+							+ rowguid, function(param) {
+						if (param && param != "close") {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						searchData();
+					}, {
+						'width' : 600,
+						'height' : 300
+					});
+		}
+
+		function deleteClose() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.showTips('请选择要删除的记录!', {state : 'warning'});
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', closeCallback);
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				searchData();
+			}
+		}
+	</script>
+</body>
+</html>

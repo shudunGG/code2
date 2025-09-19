@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="./timeline.css">
+    <style>
+        .sidebar {
+            position: absolute;
+            width: 220px;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .side-menu {}
+
+        .menu-item {
+            font-weight: 600;
+            padding: 14px 20px 14px 25px;
+            line-height: 16px;
+            color: #676a6c;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            color: #000;
+        }
+
+        .menu-item.active {
+            border-left: 4px solid #19aa8d;
+            background: #f8f8f9;
+            color: #000;
+        }
+
+        .menu-icon {
+            margin-right: 6px;
+            vertical-align: top;
+        }
+
+        .menu-label {}
+
+        .content {
+            margin-left: 220px;
+            padding: 5px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+    <title></title>
+</head>
+
+<body>
+    <div class="sidebar">
+        <ul id="side-menu" class="side-menu">
+
+        </ul>
+    </div>
+    <div id="content" class="content">
+        <ul id="timeline" class="timeline">
+        </ul>
+    </div>
+    <script type="text/x-tpl" id="menu-item-tpl">
+        <li class="menu-item" data-guid="{{guid}}" data-url="{{url}}"><i class="menu-icon {{icon}}"></i> <span class="menu-label">{{name}}</span></li>
+    </script>
+
+    <script type="text/x-tpl" id="timeline-item-tpl">
+        <li class="timeline-item" data-guid={{rowguid}}>
+            <div class="timeline-date">
+                <i class="item-type {{type}} {{#enable}}active{{/enable}}"></i>
+                <p class="item-date">{{date}}</p>
+                <p class="item-time">{{time}}</p>
+            </div>
+            <div class="timeline-content">
+                <div class="content-wrapper">
+                    <div class="item-dropdown">
+                        <i class="dropdown-toggle"></i>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item" data-action="download">下载版本</li>
+                            <li class="dropdown-item" data-action="modify">修改版本</li>
+                            <li class="dropdown-item" data-action="delete">删除版本</li>
+                            <li class="dropdown-item" data-action="{{#enable}}disable{{/enable}}{{^enable}}enable{{/enable}}">{{#enable}}取消激活{{/enable}}{{^enable}}激活版本{{/enable}}</li>
+                        </ul>
+                    </div>
+                    <p class="item-version">{{version}}</p>
+                    <p class="item-content">{{message}}</p>
+                </div>
+            </div>
+        </li>
+    </script>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        var getUrl = './data.json';
+
+        var $sideMenu = $('#side-menu'),
+            $content = $('#content'),
+            menuItemTpl = $('#menu-item-tpl').html();
+
+        var getMenu = function () {
+            var defaultMenuGuid;
+            Util.ajax({
+                url: getUrl
+            }).done(function (data) {
+                var html = [];
+                for (var i = 0, l = data.length; i < l; i++) {
+                    if (data[i].defaultPage) {
+                        defaultMenuGuid = data[i].guid;
+                    }
+                    html.push(Mustache.render(menuItemTpl, data[i]));
+                }
+
+                $sideMenu.html(html.join(''));
+
+                if (defaultMenuGuid) {
+                    $sideMenu.find('[data-guid="' + defaultMenuGuid + '"]').trigger('click');
+                }
+            });
+        };
+
+        $sideMenu.on('click', '.menu-item', function () {
+            var $this = $(this),
+                url = $this.data('url');
+
+            if (!$this.hasClass('active')) {
+                $this.addClass('active')
+                    .siblings().removeClass('active');
+
+                console.log('打开url：' + url);
+
+            }
+        });
+
+        getMenu();
+    </script>
+
+    <!-- timeline 配置 -->
+    <script>
+        var timelineConfig = {
+            getUrl: './timeline.json',
+            onDownloadItem: function(guid) {
+                console.log('下载：', guid);
+            },
+            onModifyItem: function(guid) {
+                console.log("修改：", guid);
+                // 刷新时间轴
+                getTimeline();
+            },
+            onDeleteItem: function(guid) {
+                console.log("删除：", guid);
+                // 刷新时间轴
+                getTimeline();
+            },
+            onEnableItem: function(guid) {
+                console.log("激活：", guid);
+                // 刷新时间轴
+                getTimeline();
+            },
+            onDisableItem: function(guid) {
+                console.log("取消激活：", guid);
+                // 刷新时间轴
+                getTimeline();
+            }
+        };
+    </script>
+    <script src="./timeline.js"></script>
+</body>
+
+</html>

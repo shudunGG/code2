@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>界面样式</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <style type="text/css">
+    	.skin-item {
+    		float: left;
+    		width: 40px;
+    		height: 40px;
+    		margin-right: 5px;
+    		cursor: pointer;
+    		border: 2px solid transparent;
+    	}
+    	.skin-item.selected {
+    		border-color: #333;
+    	}
+    </style>
+</head>
+
+<body>
+    <!-- 等待提示框 -->
+    <div class="page-loading"></div>
+    <!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<div class="mini-button" onclick="save">保存修改</div>
+	</div>
+	<!-- 内容区域 -->
+    <div class="fui-content">
+        <div class="fui-accordions">
+           
+            <div role="accordion">
+                <div role="head" title="界面配置">
+                </div>
+                <div role="body">
+                    <div class="fui-form">
+                        <div role="form">
+                            <div role="row">
+                                <div role="control" label="选择皮肤">
+                                    <ul id="skinList" class="clearfix"></ul>
+                                </div>
+                            </div>
+                            <div role="row">
+							    <div role="control" label="注意">
+							        <span class="text-danger">更换皮肤保存后不会立马生效，必须要手动刷新整个界面才会生效！</span>
+							    </div>
+						    </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="accordion">
+                <div role="head" title="表格每页展示数目"></div>
+                <div role="body">
+                    <div class="fui-form">
+                        <div role="form">
+                            <div role="row">
+                                <div role="control" label="展示数目">
+                                    <input class="mini-combobox" bind="pageSize" action="pageSizeModel" id="pageSize"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+    //<![CDATA[  
+    //初始化页面
+    epoint.initPage("mypagesettingaction", '', initBack);
+
+    function initBack(data){
+    } 
+
+    //保存回调事件
+    function saveCallback(data) {
+    	if(data && data.msg){
+    		epoint.alert(data.msg,"",function(){
+    			var orginUrl = window.parent.parent.location.href;
+    			// 保存成功后判断是否需要跳转页面
+                if(data.framePageUrl && orginUrl.indexOf(data.framePageUrl) < 0){
+                	var newUrl = Util.getRootPath() + data.framePageUrl ;
+                	window.parent.parent.location.href = newUrl;
+                }
+    		}, 'info');
+    	}
+    }
+
+    //保存
+    function save() {
+        epoint.execute("save", "", "", saveCallback);
+        saveSkin();
+    }
+
+
+    var $skinList = $('#skinList'),
+    	theme = Util.readCookie('_theme_'),
+    	curSkin = Util.readCookie('_' + theme + '_skin_') || 'default',
+    	templ = '<li class="skin-item {{#selected}}selected{{/selected}}" data-name="{{name}}" style="background: {{color}}"></li>';
+
+    var M = Mustache;
+
+    M.parse(templ);
+
+    // 初始化皮肤选择列表
+    function initSkinList() {
+    	var url = 'frame/fui/pages/themes/' + theme + "/skins/skins.json";
+
+    	Util.ajax({
+    		url: url,
+    		success: function(data) {
+    			var i = 0,
+    				l,
+    				html = [];
+    			if(data && data.length) {
+    				for(l = data.length; i < l; i++) {
+    					if(curSkin === data[i].name) {
+    						data[i].selected = true;
+    					}
+    					html.push(M.render(templ, data[i]));
+    				}
+
+    				$skinList.html(html.join(''));
+
+    				bindSkinListEvent();
+    			} else {
+    				Util.accordion.hideItem(1);
+    			}
+    		},
+    		statusCode: {
+    			// 未找到则表示只有一个default皮肤，则不用显示界面配置项
+                404: function() {
+                    Util.accordion.hideItem(1);
+                }
+            }
+    	});
+    }
+
+    // 绑定皮肤选择列表的选择事件
+    function bindSkinListEvent() {
+    	$skinList.on('click', '.skin-item', function() {
+    		var $item = $(this);
+
+    		if(!$item.hasClass('selected')) {
+    			$item.addClass('selected')
+    				.siblings('.selected')
+    				.removeClass('selected');
+
+    			curSkin = $item.data('name');
+    		}
+    	});
+    }
+
+    // 保存皮肤选择
+    function saveSkin() {
+    	Util.writeCookie('_' + theme + '_skin_', curSkin, { expires: 365, path: '/' });
+    }
+
+    initSkinList();
+
+    // function openicon() {
+    // 	epoint.openDialog('选择背景图', "frame/sysconf/personalset/selectbg?path=f9/classic", openiconOperJS, {
+    // 		'width' : 1000,
+    // 		'height' : 420
+    // 	});
+    // }
+
+    // function openiconOperJS(rtnValue) {
+    // 	if (rtnValue && rtnValue != 'close') {
+    // 		mini.get("bigIconAddress").setText(rtnValue);
+    // 		mini.get("bigIconAddress").setValue(rtnValue);
+    // 	}
+    // }
+    //]]>
+    </script>
+</body>
+
+</html>

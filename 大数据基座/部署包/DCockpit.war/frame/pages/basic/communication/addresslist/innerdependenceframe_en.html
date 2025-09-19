@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Detailed address book</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../frame/fui/js/cssboot.js"></script>
+		<link rel="stylesheet" type="text/css" href="contactdetails.css"></link>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<div class="fui-left">
+			<div role="head" title="Choose department"></div>
+
+			<div role="body">
+				<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="getTreeData" resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right">
+			<div class="fui-condition">
+				<!-- The form layout -->
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<!-- 2column -->
+						<div role="row">
+							<div role="control" label="name">
+								<input bind="txtDisplayName" class="mini-textbox" />
+
+							</div>
+							<div role="control" label="contact number">
+								<input bind="txtLink" class="mini-textbox" />
+							</div>
+						</div>
+						<!-- Add a hidden field to the tree and the linkage of the table -->
+						<input bind="ouguid"
+						id="ouguid" class="mini-hidden" />
+					</div>
+				</div>
+				<!-- Search button -->
+				<a role="searcher" callback="searchData"></a>
+			</div>
+			<div class="fui-content">
+				<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="userguid" style="width: 100%; height: 100%;"  
+				action="getDataGridData" showPager="true">
+					<div property="columns">
+						<div type="indexcolumn" headerAlign="center" width="40">
+							order
+						</div>
+						<div headerAlign="center" width="100%" renderer="onDetailRenderer">
+							details
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+		
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("innerdependenceframeaction");
+
+			//The treejsobject
+			var tree = mini.get("tree");
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				var id = e.node.id == 'f9root' ? '' : e.node.id;
+				// To the leftThe treeClick on the nodeidIn a hidden field
+				// At the second request, the form is sent automatically bring conditions the contents of the area
+				mini.get('ouguid').setValue(id);
+				//Refresh the table
+				searchData_treeExp();
+			});
+
+			function onDetailRenderer(e) {
+				var displayname = e.record.displayname;
+				var midKey = new Array("department:", "NTX Ext:", "home phone:", "QQ:", "address:",
+						"license plate:", "email:");
+				var midValue = new Array(e.record.ouname, e.record.ntx_extnumber,
+						e.record.telephonehome, e.record.qqnumber,
+						e.record.postaladdress, e.record.carnum,
+						"<a class=\"action-icon icon-mail\" href=\"javascript:sendMail('"
+								+ e.record.userguid + "')\"></a>");
+
+				var rightKey = new Array("position:", "Office phone:", "mobile phone:", "cornet:", "zip code:",
+						"email:", "message:");
+				var rightValue = new Array(e.record.title,
+						e.record.telephoneoffice, e.record.usermobile,
+						e.record.shortmobile, e.record.postalcode, e.record.email,
+						"<a class=\"action-icon icon-chat\" href=\"javascript:chat('" + e.record.userguid + "')\"></a>");
+				var cellHtml = '';
+				//　Picture zone
+				cellHtml += "<div class=\"detail-contact\"><div class=\"profile\">";
+				cellHtml += "<img src=\"readpictureaction.action?cmd=getMyPicture&cliengGuid="+ e.record.userguid + "\" />";
+				cellHtml += "<p class=\"user-name\">" + displayname + "</p></div>";
+	
+				// The middle section
+				cellHtml += "<div class=\"mid-col-info\">";
+				for (var i = 0; i < midKey.length; i++) {
+					var text = midValue[i] == undefined ? '' : midValue[i];
+					var title = text;
+					if (i == 0 || i == 4) {
+						text = formatShow(text, 10);
+					}
+					cellHtml += "<div class=\"clearfix\">";
+					cellHtml += "<div class=\"user-info-key\">";
+					cellHtml += midKey[i];
+					cellHtml += "</div>";
+					//cellHtml += "<div class=\"user-info-val text-special\">";
+					//cellHtml += midValue[i] == undefined ? '' : midValue[i];
+					if ((i + 1) != midKey.length) {
+						cellHtml += "<div class=\"user-info-val text-special\" title=\""+title+"\">";
+					} else {
+						cellHtml += "<div class=\"user-info-val text-special\">";
+					}
+					cellHtml += text == undefined ? '' : text;
+
+					cellHtml += "</div>";
+					cellHtml += "</div>";
+				}
+				cellHtml += "</div>";
+
+				// The right side of
+				cellHtml += "<div class=\"right-col-info\">";
+				for (var i = 0; i < rightKey.length; i++) {
+					var text = rightValue[i] == undefined ? '' : rightValue[i];
+					var title = text;
+					if (i == 0) {
+						text = formatShow(text, 10);
+					}
+					cellHtml += "<div class=\"clearfix\">";
+					cellHtml += "<div class=\"user-info-key\">";
+					cellHtml += rightKey[i];
+					cellHtml += "</div>";
+					//cellHtml += "<div class=\"user-info-val text-special\">";
+					//cellHtml += rightValue[i] == undefined ? '' : rightValue[i];
+
+					if ((i + 1) != rightKey.length) {
+						cellHtml += "<div class=\"user-info-val text-special\" title=\""+title+"\">";
+					} else {
+						cellHtml += "<div class=\"user-info-val text-special\">";
+					}
+					cellHtml += text == undefined ? '' : text;
+
+					cellHtml += "</div>";
+					cellHtml += "</div>";
+				}
+				cellHtml += "</div>";
+				return cellHtml;
+			}
+
+			function formatShow(content, length) {
+				if (content == undefined) {
+					return '';
+				}
+				if (content.length > length) {
+					return content.substring(0, length) + "...";
+				}
+				return content;
+			}
+
+			function onSendMailRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-mail", "sendMail");
+			}
+
+			function onChatRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-chat", "chat");
+			}
+
+			// Form,The treeThe search of
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			// formThe search of
+			function searchData_treeExp() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+			
+			function chat(e) {
+				top.OpenEMsg(e);
+			}
+			
+			//Send E-mail 
+			// note:Send E-mailFunction inoaThe framework will start
+// 			function sendMail(e) {
+// 				if (SendMailAddress) {
+// 					if (OpenType == "div") {
+// 						epoint.openDialog("Send E-mail", SendMailAddress + e);
+// 					} else if (OpenType == "tab") {
+// 						top.TabsNav.addTab({
+// 							'url' : SendMailAddress + e,
+// 							'name' : "Send E-mail",
+// 							'id' : Math.round(Math.random() * 1000),
+// 							'maxIcon' : true,
+// 							'closeIcon' : true
+// 						});
+// 					}
+
+// 				}
+// 			}
+			
+			//]]>
+		</script>
+	</body>
+
+</html>

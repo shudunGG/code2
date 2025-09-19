@@ -1,0 +1,114 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>控件示例</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <script>document.write("<script src='../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");</script>
+
+  <script>
+    SrcBoot.output([
+      './css/common.css',
+      './css/template_list.css'
+    ]);
+  </script>
+</head>
+
+<body class="ejs-f9-content">
+  <div class="page-loading"></div>
+  <header class="mui-bar mui-bar-nav">
+    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+    <h1 class="mui-title">列表模版页</h1>
+  </header>
+  <!-- 内容区域 -->
+  <div class="mui-content">
+    <!-- 搜索框控件 -->
+    <div class="em-srhbar">
+      <span class="btn-search mui-icon mui-icon-search em-srhbar-icon"></span>
+      <input id="search" type="text" class="em-srhbar-input ep-mui-searchbar" onSearch="onSearchCallback"
+        placeholder="请输入搜索关键字">
+    </div>
+    <!--数据列表-->
+    <div class="mui-scroll-wrapper" style="top: 90px">
+      <ul id="datagrid" class="ep-mui-list mui-table-view mui-table-view-chevron" tplId="tpl-pullrefresh"
+        idField="userGuid" extraId="search" url="data/userlist.json" pageSize="5" listGuid="xxxx-xxx" defaultPage="1"
+        fields="displayName,ouname" requestType="GET" onitemclick="listItemClick">
+      </ul>
+    </div>
+  </div>
+
+  <div class="em-editor" onclick="openPage('./template_detail.html', {a: 1, b: '33'})">
+    <img src="./images/img_editor1.png" alt="" />
+  </div>
+
+  <script type="text/template" id="tpl-pullrefresh">
+    <li class="list-item" id="{{recordguid}}" extras="{{extras}}">
+        <div class="list-item-title clearfix">
+          <span class="l">{{username}}</span>
+          <span class="r">{{email}}</span>
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-sub">
+            <span class="list-sub-title">年龄</span>
+            <span class="list-sub-content">{{age}}</span>
+          </div>
+          <div class="list-item-sub">
+            <span class="list-sub-title">生日：</span>
+            <span class="list-sub-content">{{birthday}}</span>
+          </div>
+        </div>
+      </li>
+  </script>
+
+  <script>document.write("<script src='../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");</script>
+  <script>
+    Util.loadJs(initPage);
+
+    function initPage() {
+      epointm.initPage('data/userlist.json', null, null, null, {
+        method: 'GET'
+      });
+
+      if (document.body.classList.contains('ejs-f9-content') && ejs.os.ejs) {
+        var scrollWrapper = document.querySelector('.mui-scroll-wrapper');
+
+        if (document.querySelector('.ep-mui-searchbar')) {
+          scrollWrapper.style.top = '44px';
+        } else {
+          scrollWrapper.style.top = 0;
+        }
+      }
+    }
+
+    window.listItemClick = function (e, id, extras) {
+      console.log(extras);
+
+      ejs.page.open('./template_detail.html', {
+        guid: id
+      });
+    };
+
+    // 搜索回调函数
+    window.onSearchCallback = function () {
+      // 触发下拉刷新
+      epm.get('datagrid').refresh();
+    };
+
+    /**
+     * 跳转页面
+     * @param {String} url 跳转地址
+     * @param {Object} extras url 拼接的参数
+     */
+    window.openPage = function (url, extras) {
+
+      if (extras && typeof extras === 'string') {
+        extras = epm.parseJSON(extras);
+      }
+
+      ejs.page.open(url, extras);
+    };
+  </script>
+</body>
+
+</html>

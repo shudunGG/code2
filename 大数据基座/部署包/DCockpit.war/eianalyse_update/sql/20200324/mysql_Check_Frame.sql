@@ -1,0 +1,1 @@
+SELECT count(*) FROM information_schema. COLUMNS WHERE table_schema = DATABASE () AND table_name = 'eia_modulestep' AND COLUMN_NAME='isDelete' AND COLUMN_TYPE='varchar(10)'

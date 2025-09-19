@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息中心用户列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新增记录 </a> 
+			<a class="mini-button" iconCls="icon-save" onclick="saveAll()">保存修改</a>
+				<a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+			
+		</div>
+
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="用户ID">
+						<input class="mini-textbox" bind="userid" />
+					</div>
+					<div role="control" label="用户名称">
+						<input class="mini-textbox" bind="username" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="userid" headerAlign="center" align="center" width="100%">用户id</div>
+				<div field="username" headerAlign="center" align="left" width="140">
+					用户姓名</div>
+				<div field="channelname" headerAlign="center" align="center" width="100">渠道名称</div>
+				<div field="userchanneldata" headerAlign="center" align="left" width="240">
+					渠道发送必要信息<input property="editor" class="mini-textbox" align="left"
+						style="width: 100%;" maxLength="50" />
+				</div>
+				<div field="adddatetime" headerAlign="center" width="180"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">入库时间</div>
+				<div field="lastupdatetime" headerAlign="center" width="180"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">最后更新时间</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesuserlistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"framemanager/messages/user/messagesuseradd", searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"framemanager/messages/user/messagesuseredit?guid=" + id,
+					searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		var grid = mini.get('datagrid');
+
+		// 保存
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+	</script>
+</body>
+</html>

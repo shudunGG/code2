@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Cache-Control" content="no-store">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型中心-我的模型</title>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+    <script>
+	SrcBoot
+			.output([ '../style/publicmodel.css', '../style/globalresource.css' ]);
+
+    </script>
+    <style>
+.edit {
+	diplay: none;
+}
+
+.editshow {
+	width: 60%;
+}
+
+.savemine {
+	diplay: none;
+}
+
+.savemineshow {
+	width: 60%;
+}
+
+    </style>
+</head>
+
+<body>
+
+<div class="fui-left" id="fui-tree">
+    <div role="head" title="模型分类列表">
+    </div>
+    <div role="body">
+        <ul id="tree" class="mini-filtertree" style="height: 100%" textField="text" idField="id" parentField="pid"
+            action="dxpflowgroupaction.getTreeModel" resultAsTree="false" filterMode="server"></ul>
+    </div>
+</div>
+<div class="fui-right">
+
+    <div class="fui-toolbar my-model fui-condition" id="condition">
+        <div class="l"
+             style="color: #dfe2e3; font-size: 15px; font-weight: 200;">模型类型:
+        </div>
+        <span class="mini-combobox" style="margin-left: 10px;"
+              textField="text" id="moduleType" valueField="id" bind="dataBean.flowtype"
+              data="[{text:'所有',id:'9'},{text:'图形建模',id:'1'},{text:'向导式建模',id:'2'}]"
+              onvaluechanged="searchData"></span>
+
+        <div class="r">
+            <div class="diy-button-group l">
+                <span class="diy-button btn-card active"></span><span
+                    class="diy-button btn-list"></span>
+            </div>
+            <span class="mini-buttonedit fui-primary-search r"
+                  bind="dataBean.flowname" onbuttonclick="searchData"></span>
+             <input bind="groupGuid" class="mini-hidden" id="modelCategoryCode"/>
+        </div>
+    </div>
+    <div class="page-toolbar clearfix"
+         style="padding-left: 30px; padding-top: 5px; margin-bottom: -30px; position: absolute;">
+        <span class="toolbar-button" onclick="exportModel()">导出模型</span>
+    </div>
+    <div class="fui-content my-model">
+        <div id="grid-wrap" style="height: 100%;"></div>
+    </div>
+</div>
+<script type="x/html" id="card-view-tpl">
+        <div class="mini-datagrid card-grid"  id="datagrid"  style="height: 100%;" idField="rowguid" action="getPublicDataGridData"   pagerType="pagination" viewType="cardview" itemRenderer="cardItemRenderer" showColumns="false" pagesize="30">
+            <div property="columns"></div>
+        </div>
+
+</script>
+<script type="x/html" id="list-view-tpl">
+        <div class="mini-datagrid" id="datagrid" style="height: 100%;" idField="rowguid" action="getPublicDataGridData"  pagerType="pagination" pagesize="20"  multiSelect="true" idField="rowguid">
+            <div property="columns">			                
+				<div type="checkcolumn" width="30"></div>
+                <div type="indexcolumn"></div>
+                <div field="flowname"  headeralign="center" width="200">模型名称</div>
+                <div field="generatedate" align="center"  headeralign="center" width="100" allowsort="true" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" dateFormat="yyyy-MM-dd HH:mm:ss">创建时间</div>
+                <div field="createusername" align="center"  headeralign="center" width="90">创建用户</div>
+                <div field="publishstatusname" align="center"  headeralign="center" width="60">模型状态</div>
+                <div field="groupname" align="center"  headeralign="center" width="80">所在分组</div>
+                <div field="dscribeinfo" align="left"  headeralign="center" width="100">模型描述</div>
+                <div field="executecount" align="center"  headeralign="center" width="60">执行次数</div>
+                <div field="nodeguid" visible="false"></div>
+                <div field="flowtype" visible="false"></div>
+				<div align="center"  headeralign="center"  width="90"  renderer="saveRender">保存为我的模型</div>
+                <div align="center"  headeralign="center" width="60"  renderer="editRender">编辑</div>
+                <div align="center"  headeralign="center" width="60"  renderer="viewRender">预览</div>
+            </div>
+        </div>
+
+</script>
+<script type="x/html" id="card-item-tpl">
+        <div class="card-item-wrap">
+            <div class="card-item" data-id="{{flowname}}">
+                <div class="card-item-state {{stateCls}}">{{publishstatusname}}</div>
+                <p class="card-item-name">{{flowname}}</p>
+                <p class="card-item-info">
+                    <span class="card-item-user-name">{{createusername}}</span><span class="card-item-time">{{generatedate}}</span>
+                </p>
+                <p class="card-item-info">
+                   <span style="margin-right: 40px;">执行次数: {{executecount}}</span>
+                </p>
+                <div class="card-item-footer clearfix {{isEdit}}">
+                    <span class="card-item-button" style="width:40%" onclick="onEditClick('{{rowguid}}','{{nodeguid}}','{{flowtype}}')"><span class="card-button-icon diy-grid-icon icon-edit" ></span>编辑</span>
+                    <span class="card-item-button" style="width:60%" onclick="onSearchClick1('{{rowguid}}','{{flowtype}}')"><span class="card-button-icon diy-grid-icon icon-view" ></span>预览模型</span>
+                </div>
+                <div class="card-item-footer clearfix {{isSave}}">
+                    <span class="card-item-button" onclick="saveAsMine('{{rowguid}}')"><span class="card-button-icon diy-grid-icon icon-save" ></span>保存为我的模型</span>
+                    <span class="card-item-button"  onclick="onSearchClick1('{{rowguid}}','{{flowtype}}')"><span class="card-button-icon diy-grid-icon icon-view" ></span>预览模型</span>
+                </div>
+            </div>
+        </div>
+
+</script>
+<script>
+		var CARD_ITEM_TPL = document.querySelector('#card-item-tpl').innerHTML;
+		function cardItemRenderer(record, rowIndex, meta) {
+			meta.rowCls = 'card-item-row';
+			record.stateCls = "green";
+			if (record.isMine) {
+				record.isSave = "hidden";
+			} else {
+				record.isEdit = "hidden";
+			}
+			return Mustache.render(CARD_ITEM_TPL, record);
+		}
+
+</script>
+<script src="../../rest/resource/jsboot"></script>
+<script>
+		// 默认为卡片视图
+		$($('#card-view-tpl').html()).appendTo($('#grid-wrap').empty());
+		mini.parse();
+		DtoUtils.bindBeforeLoad();
+		epoint.initPage("dxpmodeldatadeveloplistaction");
+		$('.page-toolbar').hide();
+		function editRender(e) {
+			if (e.row.isMine) {
+				return epoint.renderCell(e, "diy-grid-icon icon-edit",
+						"onEditClick1", "rowguid,flowtype");
+			}
+		}
+		var tree = mini.get("tree");
+        tree.on('nodeselect', function(e) {
+			if (e.node.id == 'f9root') {
+				mini.get('modelCategoryCode').setValue('');
+			} else {
+				mini.get('modelCategoryCode').setValue(e.node.id);
+			}
+			epoint.refresh([ 'datagrid', 'condition']);
+		});
+
+		function saveRender(e) {
+			if (e.row.publishstatusname == '已发布' && !e.row.isMine) {
+				return epoint.renderCell(e, "diy-grid-icon icon-save",
+						"saveAsMine", "rowguid");
+			}
+		}
+
+		$('body').on(
+				'click',
+				'.fui-toolbar.my-model .diy-button',
+				function(e) {
+					var $this = $(this);
+					if ($this.hasClass('active'))
+						return;
+
+					$this.addClass('active').siblings().removeClass('active');
+
+					if ($this.hasClass('btn-card')) {
+						$($('#card-view-tpl').html()).appendTo(
+								$('#grid-wrap').empty());
+						mini.parse();
+						DtoUtils.bindBeforeLoad();
+						searchData();
+						$(".page-toolbar").hide();
+						// todo 重新加载数据
+						// mini.get('datagrid').reload();
+					} else if ($this.hasClass('btn-list')) {
+						$($('#list-view-tpl').html()).appendTo(
+								$('#grid-wrap').empty());
+						mini.parse();
+						DtoUtils.bindBeforeLoad();
+						searchData();
+						$(".page-toolbar").show();
+						// todo 重新加载数据
+						//mini.get('datagrid').reload();
+					}
+				});
+
+		function onEditClick(rowguid, nodeguid, flowtype) {
+			if (flowtype == '2') {
+				window.open(Util
+						.getRightUrl("modelga/guidemodel/choose?rowguid="
+								+ rowguid));
+			} else {
+				window.open(Util
+						.getRightUrl("modelga/modeldesign/index?flowGuid="
+								+ rowguid + "&nodeGuid=" + nodeguid
+								+ "&flowtype=" + flowtype));
+			}
+		}
+		function onEditClick1(e) {
+			if (e.flowtype == '2') {
+				window.open(Util
+						.getRightUrl("modelga/guidemodel/choose?rowguid="
+								+ e.rowguid));
+			} else {
+				window.open(Util
+						.getRightUrl("modelga/modeldesign/index?flowGuid="
+								+ e.rowguid + "&nodeGuid=" + e.nodeguid
+								+ "&flowtype=" + e.flowtype));
+			}
+		}
+
+		function saveAsMine(id) {
+			epoint.execute('saveAsMine', '', id, function(data) {
+				if (data.msg) {
+					epoint.alertAndRefresh(data.msg, '', '', 'error');
+				} else if (data.suc) {
+					epoint.alertAndRefresh(data.suc, '', '', 'success');
+				} else {
+					epoint.alertAndRefresh(data.error, '', '', 'error');
+				}
+			});
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'condition' ]);
+		}
+
+		function exportModel() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				 var rows=datagrid.getSelecteds();
+			   for(var i=0;i<rows.length;i++){
+			        if(rows[i].flowtype=='2'){
+                        epoint.alert('['+rows[i].flowname+']是向导式建模，向导式建模不支持导出操作！请重新选择模型导出！');
+                        return;
+			        }
+			   }
+				var data = {
+					allmodelguid : ids.join(',')
+				};
+				var downloadurl = "dxpmodeldatadeveloplistaction.action?cmd=exportModel";
+				var form = document.getElementById("download_form");
+				DownLoadFile({
+					url : downloadurl,
+					data : data
+				});
+				searchData();
+			} else {
+				epoint.alert("请选择要导出的模型!");
+			}
+
+		}
+
+		var DownLoadFile = function(options) {
+			var config = $.extend(true, {
+				method : 'post'
+			}, options);
+			var $iframe = $('<iframe id="down-file-iframe" />');
+			var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+			$form.attr('action', config.url);
+			for ( var key in config.data) {
+				$form
+						.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+			}
+			$iframe.append($form);
+			$(document.body).append($form);
+			$form[0].submit();
+			$form.remove();
+		}
+
+		function viewRender(e) {
+			return epoint.renderCell(e, "diy-grid-icon icon-view",
+					"onSearchClick", "rowguid,flowtype");
+		}
+
+		function onSearchClick(data) {
+			if (data.flowtype == '2') {
+				epoint.alert('向导式建模不能预览');
+			} else {
+				epoint.openDialog("预览", 'modelga/modeldesign/preview?rowguid=' + data.rowguid,
+						null);
+			}
+		}
+
+		function onSearchClick1(rowguid, flowtype) {
+			if (flowtype == '2') {
+				epoint.alert('向导式建模不能预览');
+			} else {
+				epoint.openDialog("预览", 'modelga/modeldesign/preview?rowguid=' + rowguid, null);
+			}
+		}
+
+</script>
+</body>
+
+</html>

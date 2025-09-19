@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'exun_message' and column_name = 'CONTENT' and DATA_TYPE='ntext'

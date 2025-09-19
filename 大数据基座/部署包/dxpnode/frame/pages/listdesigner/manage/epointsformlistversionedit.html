@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>版本信息修改</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="列表模版">
+						<div class="mini-combobox" id="templateguid"
+							bind="dataBean.templateguid" textField="text" valueField="id"
+							value="0" action="gettableid" allowInput="true" enabled="false"></div>
+					</div>
+					<!-- <div role="control" label="移动端列表模版" starred="true">
+						<div class="mini-combobox" repeatItems="2"
+							id="mobiletemplateguid" bind="dataBean.mobiletemplateguid"
+							textField="text" valueField="id" value="2"
+							action="getmobiletableid" enabled="false"></div>
+					</div> -->
+				</div>
+				<div role="row">
+					<div role="control" label="关联表单">
+						<input id="selectsform" bind="selectSformValue" enabled="false"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row" id="form1">
+					<div role="control" label="分页方式" starred="true">
+						<div class="mini-radiobuttonlist" id="pagetype"
+							bind="dataBean.pagetype" textField="text" valueField="id"
+							allowInput="true" value="0" action="getpageTypeModel"
+							onvaluechanged="changpage" required="true"></div>
+					</div>
+				</div>
+				<div role="row" id="form2">
+					<div role="control" label="分页数量" starred="true" id="pagenum">
+						<input class="mini-textbox" bind="dataBean.pagevolume"
+							id="pagevolume" required="true" vtype="int;range:1,100" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999999" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('epointsformlistversioneditaction', '', function(data) {
+			changpage();
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alertAndClose(msg, '', null, null, 'info');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function changpage() {
+			var pagetype = mini.get("pagetype").getValue();
+			if (pagetype == "2") {
+				$("#form2").show();
+			} else {
+				epoint.clear('pagevolume');
+				$("#form2").hide();
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'Frame_UserRole_Snapshot ' and column_name = 'ouguid'

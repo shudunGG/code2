@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>通用配置调整</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div class="mini-checkbox" id="workflow_batch_base"
+						readOnly="false" text="基本信息"></div>
+					<div repeatDirection="horizontal"
+						bind="dataBean.workflow_batch_base" id="workflow_batch_base_value"
+						data="[{text:'附件操作权限',id:'attach'},{text:'流程处理页面',id:'handleurl'},{text:'短信通知内容',id:'sms'},{text:'通过率',id:'pass'},{text:'多人处理是否锁定',id:'lock'},{text:'多人处理方式',id:'multiTransactorMode'},{text:'共用同一活动实例',id:'singleInstance'}]"
+						textField="text" valueField="id" class="mini-checkboxlist"
+						style="width: 100%"></div>
+				</div>
+
+				<div role="row">
+					<div class="mini-checkbox" id="workflow_batch_operation"
+						readOnly="false" text="操作按钮"></div>
+					<div repeatDirection="horizontal"
+						bind="dataBean.workflow_batch_operation"
+						id="workflow_batch_operation_value"
+						data="[{text:'是否显示操作处理页面',id:'operationcommonpageurl'},{text:'是否显示意见模板',id:'showopiniontemplete'},{text:'检查必须材料',id:'checkmaterialsubmit'},{text:'是否显示后继活动',id:'shownextactivity'},{text:'必须输入意见',id:'opionneeded'},{text:'显示场合',id:'occasion'}]"
+						textField="text" valueField="id" class="mini-checkboxlist"
+						style="width: 100%"></div>
+				</div>
+				<div role="row">
+					<div class="mini-checkbox" id="workflow_batch_mobile"
+						readOnly="false" text="移动端配置"></div>
+					<div repeatDirection="horizontal"
+						bind="dataBean.workflow_batch_mobile"
+						id="workflow_batch_mobile_value"
+						data="[{text:'移动端处理方式',id:'mobilemethod'},{text:'移动端流程处理页',id:'mobilepageurl'}]"
+						textField="text" valueField="id" class="mini-checkboxlist"
+						style="width: 100%"></div>
+				</div>
+				<div role="row">
+					<div class="mini-checkbox" id="workflow_batch_material"
+						readOnly="false" text="材料"></div>
+					<div repeatDirection="horizontal"
+						bind="dataBean.workflow_batch_material"
+						id="workflow_batch_material_value"
+						data="[{text:'选择材料',id:'material'}]" textField="text"
+						valueField="id" class="mini-checkboxlist" style="width: 100%"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar-bottom">
+		<a class="mini-button" state="primary" onclick="save">确认</a> <a
+			class="mini-button" state=""
+			onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('batchsettingaction', null, function(data) {
+			$.each($('.mini-checkboxlist'), function(i, checkbox) {
+				// 如果有值的话，要处理一下相关控件的状态
+				var ctr = mini.get(checkbox.id);
+				if (ctr.getValue() && ctr.getValue() != '') {
+					var id = checkbox.id;
+					var ids = id.split("_");
+					ids.pop();
+					id = ids.join("_");
+					
+					var optControl = mini.get(id);
+					var values = ctr.getValue().split(",");
+					if (values.length > 0
+							&& ctr.data.length == values.length) {
+						optControl.setValue("true");
+					}
+				}
+			});
+			$.each(mini.getChildControls($('#fui-form')[0]), function(i, ctr) {
+				ctr.on('valueChanged', function(ev) {
+					var saveId = ev.sender.id;
+					var saveValue = ev.sender.value;
+					
+					if (ev.sender.id.indexOf("workflow_batch_") == 0) {
+						// 然后以_拆分
+						var strs = ev.sender.id.split("_");
+						// 如果大于3的话说明就是复选按钮组
+						if (strs.length > 3) {
+							strs.pop();
+							saveId = strs.join("_");
+							// 与复选框做联动，判断是否都选中
+							var values = saveValue.split(",");
+							var data = mini.get(ev.sender.id).data;
+							if (values.length == 0) {
+								mini.get(saveId).setValue('false');
+							} else if (values.length < data.length) {
+								mini.get(saveId).setValue('false');
+							} else if (values.length == data.length) {
+								mini.get(saveId).setValue('true');
+							}
+						} else {
+							// 其他情况即为复选按钮，需要联动将下面的复选按钮组全部选中
+							var checkBoxList = mini
+									.get(ev.sender.id + "_value");
+							if (ev.sender.value && ev.sender.value == 'true') {
+								var data = checkBoxList.data;
+								var value = "";
+								for (var i = 0; i < data.length; i++) {
+									value += data[i].id;
+									if (i < data.length - 1) {
+										value += ",";
+									}
+								}
+								checkBoxList.setValue(value);
+							} else {
+								checkBoxList.setValue('');
+							}
+						}
+					}
+				});
+			});
+		});
+
+		function save() {
+			epoint.execute('save', 'fui-form', '', function(data) {
+				epoint.closeDialog();
+			});
+		}
+
+		function onValueChanged() {
+
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

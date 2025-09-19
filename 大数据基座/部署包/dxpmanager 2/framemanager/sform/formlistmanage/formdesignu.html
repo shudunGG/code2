@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>表单设计</title>
+<meta http-equiv="X-UA-Compatible" content="IE=10" />
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ 'framemanager/sform/formlistmanage/css/designer.css',
+			'framemanager/sform/formlistmanage/css/icons.css' ]);
+</script>
+</head>
+
+<body>
+	<!--<div class="page-loading"></div>-->
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="top-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" data-role="save" onclick="save();">保存</a> <a
+				class="mini-button" data-role="save-new" onclick="saveNew();">另存为新版本</a>
+			<a class="mini-button" data-role="search" onclick="preview();">预览</a>
+			<a class="mini-button" data-role="close" onclick="closeBefore();">关闭</a>
+			<!-- a class="mini-button" data-role="close" onclick="openFormDesign();">表单配置</a-->
+		</div>
+		<div style="float: right;">
+			<div id="designTitle"
+				style="font-size: 20px; line-height: 30px; font-weight: bold; text-align: center;"
+				bind="formdesignaction.designTitle" class="mini-output"></div>
+		</div>
+	</div>
+
+	<div class="main-container" id="abc">
+		<div class="fui-left">
+			<div class="widget-container" id="widget-container">
+				<!-- 控件列表 -->
+				<div class="widget-group">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>表单控件</b>
+					</h3>
+					<div class="widget-group-content">
+						<!-- 控件列表 -->
+						<ul class="widget-group-items-list control-list">
+							<li data-cmd="text"><span>单行输入框</span></li>
+							<li data-cmd="textarea"><span>多行输入框</span></li>
+							<li data-cmd="datetextbox"><span>日期选择框</span></li>
+							<li data-cmd="select"><span>下拉控件</span></li>
+							<!-- 							<li data-cmd="radio"><span>单选框</span></li> -->
+							<li data-cmd="radios"><span>单选框组</span></li>
+							<!-- 							<li data-cmd="checkbox"><span>复选框</span></li> -->
+							<li data-cmd="checkboxs"><span>复选框组</span></li>
+							<li data-cmd="fileupload"><span>多文件上传</span></li>
+							<li data-cmd="macros"><span>宏控件</span></li>
+							<!-- 							<li data-cmd="progressbar"><span>进度条</span></li> -->
+							<!-- 							<li data-cmd="qrcode"><span>二维码</span></li> -->
+							<li data-cmd="datagrid"><span>datagrid控件</span></li>
+						</ul>
+					</div>
+				</div>
+				<!-- 可扩展控件列表 -->
+				<div class="widget-group" id="extra-panel">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>自然人</b>
+					</h3>
+					<div class="widget-group-content">
+						<!-- 可扩展控件列表 -->
+						<ul class="widget-group-items-list extendcontrol-list"
+							id="ex-control-list">
+
+						</ul>
+					</div>
+				</div>
+				<!-- 不常用可扩展控件列表 -->
+				<div class="widget-group">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>法人</b>
+					</h3>
+					<div class="widget-group-content">
+						<ul class="widget-group-items-list extendcontrol-list"
+							id="ex-control-list2">
+							<!--<li><i style="background-image: url(../formlistmanage/images/controls/displayname.png);"></i>
+                                <span>企业名称</span></li>
+                            <li><i style="background-image: url(../formlistmanage/images/controls/displayname.png);"></i>
+                                <span>企业社会信用代码</span></li>
+                            <li><i style="background-image: url(../formlistmanage/images/controls/displayname.png);"></i>
+                                <span>组织机构代码</span></li>
+                            <li><i style="background-image: url(../formlistmanage/images/controls/displayname.png);"></i>
+                                <span>单位地址</span></li>
+                            <li><i style="background-image: url(../formlistmanage/images/controls/displayname.png);"></i>
+                                <span>单位联系电话</span></li>-->
+						</ul>
+					</div>
+				</div>
+				<!-- 表字段列表
+				<div class="widget-group hidden" id="table-panel">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>数据表</b>
+					</h3>
+					<div class="widget-group-content">
+						字段列表
+						<div class="field-list">
+							<div class="field-item" id="fielditem">
+								<div class="field-hd">
+									<i class="epicon-plus"></i>
+									表名
+									<span class="table-name" title="主表"></span>
+								</div>
+								<div class="field-content hidden">
+									字段列表
+									<div class="field-list second-level"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>-->
+			</div>
+		</div>
+		<div class="fui-right">
+			<div class="diagram-container">
+				<div id="flow-editor-wrapper" style="height: 100%">
+					<!-- 					<input class="mini-textarea" bind="epointFormVersion.content" -->
+					<!-- 						id="editor1" name="editor1" cols="80" rows="10" />  -->
+					<!-- 					<input class="mini-textarea" bind="epointFormVersion.content" -->
+					<!-- 						style="width: 100px; henght: 200px" id="editor1" name="editor1" -->
+					<!-- 						cols="80" rows="10" /> -->
+					<textarea id="ueditor-container" name="ueditor-content"
+						type="text/plain" style="overflow: hidden">
+
+					</textarea>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 自动布局菜单
+	<div id="arrange-menu" class="arrange-menu hidden">
+		<a href="#" data-role="2">生成2列布局</a> <a href="#" data-role="4">生成4列布局</a>
+		<a href="#" data-role="6">生成6列布局</a> <a href="#" data-role="cancel">取消</a>
+	</div> -->
+
+	<input class="mini-hidden" id="content" name="content"
+		bind="epointFormVersion.content" />
+	<input class="mini-hidden" id="isadd" name="isadd" bind="isadd" />
+	<input class="mini-hidden" id="tableId" name="tableId" bind="tableId" />
+	<input class="mini-hidden" id="versionId" name="versionId"
+		bind="versionId" />
+	<input class="mini-hidden" id="extraCtrlMeta" name="extraCtrlMeta" />
+	<div class="hidden">
+		<a class="mini-button" iconCls="icon-save" id="saveBtn"
+			onclick="add();">保存</a> <a class="mini-button" iconCls="icon-save"
+			id="saveNewBtn" onclick="saveNewClick();">另存为</a> <a
+			class="mini-button" iconCls="icon-save" id="previewBtn"
+			onclick="previewClick();">预览</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+	SrcBoot.output([ 'framemanager/sform/formlistmanage/js/jquery.nicescroll.min.js',
+			'frame/fui/js/widgets/ueditor/ueditor.config.js' ]);
+    </script>
+
+	<script>
+		// 重写插
+		// xss 过滤是否开启,inserthtml等操作
+		UEDITOR_CONFIG.xssFilterRules = false;
+		//input xss过滤
+		UEDITOR_CONFIG.inputXssFilter = false;
+		//output xss过滤
+		UEDITOR_CONFIG.outputXssFilter = false;
+	</script>
+	<script>
+	SrcBoot.output([ 'frame/fui/js/widgets/ueditor/ueditor.all.js',
+			'framemanager/sform/formlistmanage/ueditordesign/formdesign.js',
+			'framemanager/sform/formlistmanage/js/main-new.js']);
+    </script>
+	<script type="text/x-tpl" id="extend-tpl">
+        <li data-cmd="{{cmd}}">{{name}}</li>
+    </script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+
+		epoint.initPage("formdesignaction", "", initCallBack);
+
+		function initCallBack(data) {
+			if (data != null) {
+				mini.get("extraCtrlMeta").setValue(data.extData);
+				console.log(data.extData);
+				var extraObject = JSON.parse(data.extData);
+				for (extra in extraObject) {
+					if (extraObject[extra]) {
+						for (var m = 0; m < extraObject[extra].length; m++) {
+							var cClass = extraObject[extra][m].controlclass;
+							var exCtrlName = extraObject[extra][m].sign;
+							window.Formdesign.addExControlCmd(cClass,
+									exCtrlName, extraObject[extra][m].name);
+							if (extra == 'extrapanel') {
+								$(Mustache.render(exControlTpl, {
+									cmd : exCtrlName,
+									name : extraObject[extra][m].name
+								})).appendTo($exControlList);
+							} else {
+								$(Mustache.render(exControlTpl, {
+									cmd : exCtrlName,
+									name : extraObject[extra][m].name
+								})).appendTo($exControlList2);
+							}
+						}
+					}
+				}
+			}
+			// 加载初始值
+			window.Formdesign.setData(mini.get('content').getValue().replace(
+					/<input/g, '<img'));
+			if (data.numId) {
+				controlId = data.numId;
+			} else {
+				controlId = 0;
+			}
+			console.log("controlId=" + controlId);
+		}
+
+		var mini_editor_model = "uebeditor";
+		// 初始化编辑器
+		window.Formdesign.init({
+			// 编辑器内部编辑器区域加载的css Ueditor 中只支持加载一个 如果要加载多个 请将多个css文件合并到一个css文件中
+			iframeCssUrl : './css/formdesign.css',
+			initialFrameWidth : '100%',
+			// toolbars中全部按钮的配置 原配置可见fui/js/lib/ueditor/ueditor.config.js 将不需要的删除即可
+			toolbars : [ [ 'inserttablewidthstyle-btn', 'fullscreen', 'source',
+					'|', 'undo', 'redo', '|', 'bold', 'italic', 'underline',
+					'fontborder', 'strikethrough', 'superscript', 'subscript',
+					'removeformat', 'formatmatch', 'autotypeset', 'blockquote',
+					'pasteplain', '|', 'forecolor', 'backcolor',
+					'insertorderedlist', 'insertunorderedlist', 'selectall',
+					'cleardoc', '|', 'rowspacingtop', 'rowspacingbottom',
+					'lineheight', '|', 'customstyle', 'paragraph',
+					'fontfamily', 'fontsize', '|', 'directionalityltr',
+					'directionalityrtl', 'indent', '|', 'justifyleft',
+					'justifycenter', 'justifyright', 'justifyjustify', '|',
+					'touppercase', 'tolowercase', '|', 'link', 'unlink',
+					'anchor', '|', 'imagenone', 'imageleft', 'imageright',
+					'imagecenter', '|', 'simpleupload', 'insertimage',
+					'emotion', 'scrawl', 'insertvideo', 'music', 'attachment',
+					'map', 'gmap', 'insertframe', 'insertcode', 'template',
+					'background', '|', 'horizontal', 'date', 'time',
+					'spechars', 'snapscreen', 'wordimage', '|', 'inserttable',
+					'deletetable', 'insertparagraphbeforetable', 'insertrow',
+					'deleterow', 'insertcol', 'deletecol', 'mergecells',
+					'mergeright', 'mergedown', 'splittocells', 'splittorows',
+					'splittocols', 'charts', '|', 'print', 'preview',
+					'searchreplace', 'drafts', 'help' ] ]
+		});
+
+		// 注册扩展控件的命令
+		// 模拟一个一组数据 如下所示的一组数据中 cmd、dialogTitle、controlType 这几个属性是新增一个命令所必须的
+		// 		var exControlData = [ {
+		// 			// 命令名称
+		// 			cmd : 'ex_test1',
+		// 			// 控件名称 也是弹出Dialog的标题
+		// 			name : '扩展控件1',
+		// 			// dialog 页面地址后的参数值  由于扩展统一使用一个页面 不同的需要以参数区分
+		// 			controlType : 'exControl_1',
+		// 			// 打开Dialog的大小，字符串形式 如 "width:800px;height:400px;" 可省略
+		// 			dialogSize : 'width:800px;height:400px;'
+		// 		}, {
+		// 			cmd : 'ex_test2',
+		// 			name : '扩展控件2',
+		// 			dialogParams : 'exControl_2',
+		// 			dialogSize : 'width:800px;height:400px;'
+		// 		}, {
+		// 			cmd : 'ex_test3',
+		// 			name : '扩展控件3',
+		// 			dialogParams : 'exControl_3',
+		// 			dialogSize : 'width:800px;height:400px;'
+		// 		}, {
+		// 			cmd : 'ex_test4',
+		// 			name : '扩展控件4',
+		// 			dialogParams : 'exControl_4',
+		// 			dialogSize : 'width:800px;height:400px;'
+		// 		} ];
+
+		// 根据扩展控件数据 注册命令 和 生成结构 
+		var $exControlList = $('#ex-control-list'), exControlTpl = $.trim($(
+				'#extend-tpl').html());
+
+		var $exControlList2 = $('#ex-control-list2'), exControlTpl = $.trim($(
+				'#extend-tpl').html());
+		// 		if (extraCtrlMeta) {
+		// 			var extraObject = JSON.parse(extraCtrlMeta);
+		// 			for (extra in extraObject) {
+		// 				if (extraObject[extra]) {
+		// 					for (var m = 0; m < extraObject[extra].length; m++) {
+		// 						var cClass = extraObject[extra][m].controlclass;
+		// 						var exCtrlName = extraObject[extra][m].sign;
+		// 						Formdesign.addExControlCmd(cClass, exCtrlName,
+		// 								extraObject[extra][m].name);
+		// 						$(Mustache.render(exControlTpl, {
+		// 							cmd : exCtrlName,
+		// 							name : extraObject[extra][m].name
+		// 						})).appendTo($exControlList);
+		// 					}
+		// 				}
+		// 			}
+		// 		}
+
+		// 		$.each(exControlData, function(i, item) {
+		// 			// 调用注册命令的方法 后 就可以直接调用编辑器的execCommand(cmdName)方法了
+		// 			Formdesign.addExControlCmd(item);
+		// 			$(Mustache.render(exControlTpl, {
+		// 				cmd : item.cmd,
+		// 				name : item.name
+		// 			})).appendTo($exControlList);
+		// 		});
+
+		// 点击事件
+		$('#widget-container').find('.control-list').on('click', 'li',
+				function() {
+					Formdesign.ueditor.execCommand($(this).data('cmd'));
+				});
+		$exControlList.on('click', 'li', function() {
+			Formdesign.ueditor.execCommand($(this).data('cmd'));
+		});
+		$exControlList2.on('click', 'li', function() {
+			Formdesign.ueditor.execCommand($(this).data('cmd'));
+		});
+		// 侧边手风琴效果
+		$('#widget-container').on(
+				'click',
+				'.widget-group-title',
+				function(event) {
+					var $el = $(this), $content = $el.next();
+
+					if ($content.hasClass('hidden')) {
+						$content.removeClass('hidden');
+
+						$el.find('>span').removeClass('icon-chevron-right')
+								.addClass('icon-chevron-down');
+					} else {
+						$content.addClass('hidden');
+
+						$el.find('>span').removeClass('icon-chevron-down')
+								.addClass('icon-chevron-right');
+					}
+				});
+
+		// 保存
+		setTimeout(function() {
+			$('<span class="mini-button" >本地保存</span>').on(
+					'click',
+					function() {
+
+						localStorage.setItem('_formdesignData_',
+								window.Formdesign.getData());
+					}).appendTo('#top-toolbar');
+		}, 1000);
+		// end
+
+		function save() {
+			var isadd = mini.get("isadd").getValue();
+			if (isadd == "1") {
+				exec_cmd('new_version')
+			} else {
+				saveVersion();
+			}
+		}
+
+		//另存为新版本
+		function saveNew() {
+			saveNewClick();
+		}
+
+		function saveNewClick() {
+			if (!mini.get("content").getValue()) {
+				epoint.alert("设计稿内容为空，请重新设计！", '', null, 'warning');
+				return;
+			}
+			epoint.execute('addNewVersion', '', [ controlId ], closeCallback);
+		}
+
+		function add() {
+			if (epoint.validate()) {
+				if (!mini.get("content").getValue()) {
+					epoint.alert("设计稿内容为空，请重新设计！", '', null, 'warning');
+					return;
+				}
+				epoint.execute('add', '', [ controlId ], closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+			epoint.refresh();
+		}
+
+		// 预览
+		function preview(data) {
+			previewPage();
+		}
+
+		function previewClick(data) {
+			epoint.execute('addBeforePreview', '', [ controlId ], showUrl);//保存前预览preview页面
+			//epoint.execute('getPreviewUrl', '', [ controlId ], showUrl);//保存后预览add页面
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl);
+			} else {
+				epoint.alert("当前表单没有预览页面！", '', null, 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

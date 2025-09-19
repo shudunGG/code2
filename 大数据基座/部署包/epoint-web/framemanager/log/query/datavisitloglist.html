@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>框架日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="cache" content="no-cache" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="日志记录时间">
+						<input name="dateFrom" id="beginDate" bind="beginDate"
+							class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" format="yyyy-MM-dd HH:mm:ss"
+							data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}" required="true"
+							requiredErrorText="日志记录开始时间不能为空" showTime="true"
+							showClearButton="true" /> <span
+							style="width: 12%; text-align: center">至</span> <input
+							name="endDate" id="endDate" class="mini-datepicker"
+							onValuechanged="validateDate(this)" style="width: 44%;"
+							format="yyyy-MM-dd HH:mm:ss" bind="endDate" required="true"
+							requiredErrorText="日志记录结束时间不能为空"
+							data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}" showTime="true"
+							showClearButton="true" ondrawdate="onDrawDate" />
+					</div>
+					<div role="control" label="人员">
+						<input bind="operateuserdisplayname" id="operateUserDisplayName"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据表名">
+						<input bind="tablename" id="tablename" class="mini-textbox"
+							emptyText="" />
+					</div>
+					<div role="control" label="IP">
+						<input bind="fromIp" id="fromIp" class="mini-textbox" emptyText="" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模块名称">
+						<input bind="modulename" id="modulename" class="mini-textbox" />
+					</div>
+					<div role="control" label="应用名称">
+						<input bind="appname" id="appname" class="mini-textbox" emptyText="" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getLogListData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="tablename" width="100%">数据表名</div>
+				<div field="modulename" width="200">模块名称</div>
+				<div field="appname" width="100%">应用名称</div>
+				<div field="userdisplayname" width="150">操作人员</div>
+				<div field="fromip" width="200">访问IP</div>
+				<div field="recorddate"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}" width="180">访问时间</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('datavisitloglistaction');
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			if (epoint.validate()) {
+				epoint.refresh('');
+			}
+		}
+
+		//　日期控件的验证
+		var start = mini.get("beginDate");
+		var end = mini.get("endDate");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'beginDate') {
+						epoint.alert("开始时间不能比结束时间晚!", '', null, 'warning');
+						end.setValue(null);
+					} else {
+						epoint.alert("结束时间不能比开始时间早!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+
+				if (start.getValue().getMonth() != end.getValue().getMonth()) {
+					epoint.alert("开始时间和结束时间必须是在同一个月内!", '', null, 'warning');
+					end.setValue(null);
+				}
+			}
+		}
+
+		function onDrawDate(e) {
+			var date = e.date;
+			var d = start;
+			if (date.getMonth() != start.getValue().getMonth()) {
+				e.allowSelect = false;
+			}
+		}
+	</script>
+</body>
+</html>

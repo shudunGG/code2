@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>信息发布</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%"/>
+			<div role="row">
+				<div role="control" label="标题" starred="true">
+					<input id="infoTitle" class="mini-textbox"
+						bind="commMessageRemindInfo.infoTitle" required="true"
+						requiredErrorText="标题不能为空!" vtype="maxLength:300" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="提醒时间">
+					<input id="remindTime" class="mini-datepicker"
+						format="yyyy-MM-dd HH:mm:ss" timeFormat="HH:mm:ss" showtime="true"
+						data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}"
+						bind="commMessageRemindInfo.remindTime" />
+				</div>
+			</div>
+			<div role="row" id="content">
+				<div role="control" label="信息内容" starred="true">
+					<textarea bind="commMessageRemindInfo.infoContent" id="infoContent"
+						class="mini-textarea" required="true"
+						requiredErrorText="问题内容不能为空!"></textarea>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="所属人员" starred="true">
+					<input id="targetUserName" class="mini-buttonedit"
+						selectOnFocus="true" bind="commMessageRemindInfo.targetUserName"
+						onbuttonclick="selectPerson" allowInput="false" required="true"
+						showClose="true" requiredErrorText="所属人员不能为空!" oncloseclick="onCloseClick"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNumber" class="mini-textbox"
+						bind="commMessageRemindInfo.orderNum" vtype="int;range:0,99999999" />
+				</div>
+			</div>
+			<input bind="commMessageRemindInfo.targetUserGuid"
+				id="targetUserGuid" class="mini-hidden" /> <input
+				bind="commMessageRemindInfo.infoGuid" id="infoGuid"
+				class="mini-hidden" />
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">发布消息</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('messageremindinfoaddaction', null, initCallBack);
+
+		function initCallBack(data) {
+			if (data && data.targetUserName) {
+				mini.get("targetUserName").setText(data.targetUserName);
+			}
+		}
+
+		function save() {
+			if (document.getElementById("content").style.display == "block") {
+				var value = mini.get("infoContent").getValue();
+				if (value != null && value != "") {
+					if (epoint.validate()) {
+						epoint.execute('save', 'fui-form', closeCallback);
+					}
+				} else {
+					epoint.showTips('信息内容不能为空！',  {state : 'warning'});
+				}
+			} else {
+				if (epoint.validate()) {
+					epoint.execute('save', 'fui-form', closeCallback);
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		function selectPerson() {
+			epoint.openDialog('选择对应通知的人员',
+					"framemanager/orga/orga/user/selectuser?userGuid=" + mini.get('targetUserGuid').getValue(), openiconOperJS, {
+						width : 1000,
+						height : 900
+					});
+
+		}
+
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split("_SPLIT_");
+				mini.get("targetUserGuid").setValue(s[0]);
+				mini.get("targetUserName").setValue(s[1]);
+				mini.get("targetUserName").setText(s[1]);
+				mini.get("targetUserName").validate(s[1]);
+			}
+		}
+		
+		function onCloseClick() {
+			mini.get('targetUserName').setValue('');
+			mini.get('targetUserName').setText('');
+			mini.get('targetUserGuid').setValue('');
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

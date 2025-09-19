@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The candidate points unified authentication login page</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../fui/js/cssboot.js"></script>
+</head>
+
+<body style="text-align: center">
+	<h3>The candidate points unified authentication login page</h3>
+	<hr />
+	<ul>
+		<li><input id="username" style="width: 200px" /></li>
+		<li><input id="password" style="width: 200px" /></li>
+		<li><a style="cursor: pointer;" onclick="login()">The login</a></li>
+	</ul>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<!-- Configuration Variables -->
+	<script>
+		function login() {
+			$.ajax({
+				type : 'POST',
+				url : Util.getRightUrl("rest/oauth2/login"),
+				data : {
+					"username" : $("#username").val(),
+					"password" : $("#password").val()
+				},
+				success : function(data) {
+					var dataJson = eval('(' + data + ')');
+					// The returneddataFormat:{'url':'The loginAfter a successful jump address','error':'The loginThe failure information'}
+					if (dataJson.error) {
+						alert(dataJson.error);
+					} else {
+						window.location.href = dataJson.url;
+					}
+				},
+				error : function(e) {
+					alert(e.status);
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

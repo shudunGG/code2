@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>系统消息</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-danger" onclick="deleteSelect">删除选中</a>
+			<a class="mini-button mini-btn-danger" onclick="deleteAll">删除所有</a> <input
+				id="noread" class="mini-checkbox" text="仅显示未读消息" bind="noread"
+				trueValue="true" falseValue="false"></input>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="messageguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="showsysalertmessageaction.getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="content" headerAlign="center" width="450"
+					validateLevel="1">提醒内容</div>
+				<div field="fromUserDisplayName" headerAlign="center" width="100"
+					align="center">消息来源</div>
+				<div field="sendtime" headerAlign="center"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center" width="120"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">发送时间</div>
+				<div name="ckmk" headerAlign="center" renderer="onIgnoreMessage"
+					align="center" width="70">忽略提醒</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("showsysalertmessageaction");
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('@all');
+		}
+
+		//点击树节点刷新表格
+		mini.get("noread").on("checkedchanged", function(e) {
+			searchData();
+		});
+
+		//删除回调事件
+		function callback(data) {
+			epoint.alert(data.msg, null, null, 'info');
+		}
+
+		//删除选中行
+		function deleteSelect() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("showsysalertmessageaction.delete", '@all',
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, null, null, 'info');
+									epoint.refresh('@all', '', true);
+								}
+							});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", null, null, 'warning');
+			}
+		}
+
+		//删除所有
+		function deleteAll() {
+			epoint.confirm("确定删除所有记录？", "", function(action) {
+				epoint.execute("showsysalertmessageaction.deleteAll", '',
+						function(data) {
+							if (data.msg) {
+								epoint.alert(data.msg, null, null, 'info');
+								searchData();
+							}
+						});
+			});
+		}
+
+		//忽略提醒按钮渲染
+		function onIgnoreMessage(e) {
+			return "<a style=\"cursor:pointer;\"  onclick=\"ignoreMessage('"
+					+ e.record.messageguid
+					+ "')\" class=\"action-icon icon-chat\"></a>";
+		}
+
+		//忽略提醒
+		function ignoreMessage(messageguid) {
+			epoint.execute("showsysalertmessageaction.ignoreMessage", '',
+					[ messageguid ], function(data) {
+						searchData();
+					})
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

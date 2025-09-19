@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>数据脱敏</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+
+<body>
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="sure-btn"
+				onclick="saveModify">保存并关闭</a><a
+				class="mini-button mini-btn-primary" id="closebtn"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="padding-top: 1px">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" required="true"
+							emptyText="请输入步骤名称"  vtype="maxLength:20" requiredErrorText="步骤名称不能为空"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择数据库" starred="true">
+						<input id="dataSource" name="dataSource" class="mini-combobox" bind="dataSource" 
+						allowInput="true" showClose="true" requiredErrorText="选择数据库不能为空"
+						style="width: 100%" textField="text"
+							valueField="id" action="getDataSourceList" required="true"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择数据表">
+						<input id="tableName" name="tableName" class="mini-textbox" bind="tableName" vtype="maxLength:100"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script type="text/javascript">
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var dataSource = mini.get('dataSource');
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+            //从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('datadesensitizationaction', '', initCallBack);
+        }
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			epoint.execute("getFrontTableList", '', '', function(data) {
+				var nodeName = nodeData.stepName;
+				if(!nodeName){
+					stepNameForm.setValue(nodeInfo.name);
+				}
+			});
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function saveModify() {
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '',[nodeInfo,nodeForm],function(msg){
+					if(msg == 'success'){
+						epoint.closeDialog(nodeForm);
+					}else{
+						epoint.alert(msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+		
+	</script>
+</body>
+
+</html>

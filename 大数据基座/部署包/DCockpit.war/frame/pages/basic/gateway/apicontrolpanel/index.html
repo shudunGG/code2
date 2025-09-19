@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>首页</title>
+    <script src="../../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([ './css/desktop.css', './css/index.css' ]);
+</script>
+</head>
+
+<body>
+    <!-- <div class="page-loading"></div> -->
+    <div class="fui-content">
+        <div class="count-module mod01">
+            <div class="clearfix">
+                <h3 class="page-title">API市场监控大盘</h3>
+                <ul class="count-list clearfix">
+                    <li class="count-item count01">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">服务总数</p>
+                                <p id="service-total" class="count-value"></p>
+                            </p>
+                        </div>
+                    </li>
+                    <li class="count-item count02">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">应用总数</p>
+                                <p id="app-total" class="count-value"></p>
+                            </p>
+                        </div>
+                    </li>
+                    <li class="count-item count03">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">访问IP总数</p>
+                                <p id="ip-total" class="count-value"></p>
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="selections clearfix">
+                <div class="selection-item">
+                    <span class="combobox-label">分组</span>
+                    <!-- 				<input id="combo1" -->
+                    <!-- 					class="mini-combobox" style="width: 200px;" textField="text" -->
+                    <!-- 					valueField="id" value="api" action="getGourpValue" -->
+                    <!-- 					onvaluechanged="changedGroup" /> -->
+                    <input id="combo1" class="mini-treeselect" style="width: 200px;" onValuechanged="changedGroup" action="getTreeData" onbeforenodeselect="beaforenodeselect" style="width: 90%" />
+                </div>
+                <div class="selection-item">
+                    <span class="combobox-label">监控</span>
+                    <!-- <a class="monitor-item all">全部</a> -->
+                    <div class="selected-objects clearfix">
+	                    <ul class="monitor-list clearfix">
+	                    	<li class="monitor-item">OA个性化接口</li>
+	                    	<li class="monitor-item">统一消息</li>
+	                    	<li class="monitor-item">登录方式申请</li>
+	                    	<li class="monitor-item">OA个性化接口</li>
+	                    </ul>
+	                    <a class="clear-btn" href="javascript:;">清空</a>
+                    </div>
+                </div>
+                <div class="selection-item duration clearfix">
+	                <div class="mini-selectduration">
+	                    <ul class="mini-selectduration-btns">
+	                        <li class="mini-selectduration-btn active" data-day="0" data-hour="1">1时</li>
+	                        <li class="mini-selectduration-btn" data-day="0" data-hour="2">2时</li>
+	                        <li class="mini-selectduration-btn" data-day="0" data-hour="3">3时</li>
+	                        <li class="mini-selectduration-btn" data-day="0" data-hour="4">4时</li>
+	                        <li class="mini-selectduration-btn" data-day="1" data-hour="0">1天</li>
+	                        <li class="mini-selectduration-btn" data-day="7" data-hour="0">1周</li>
+	                        <li class="mini-selectduration-btn" data-day="31" data-hour="0">1月</li>
+	                    </ul>
+	                    <div class="mini-selectduration-custom">
+	                    	<a class="mini-selectduration-custom-input" href="javascript:;"></a>
+	                        <div class="mini-selectduration-custom-container hidden">
+	                            <div class="selectduration-item">
+	                                <span class="">开始时间：</span>
+	                                <input id="start-date" class="mini-datepicker" style="width: 114px; margin-right: 10px;">
+	                                <input id="start-hour" class="mini-spinner" style="width: 58px;">
+	                                <span>:</span>
+	                                <input id="start-minute" class="mini-spinner" style="width: 58px;">
+	                            </div>
+	                            <div class="selectduration-item">
+	                                <span class="">结束时间：</span>
+	                                <input id="end-date" class="mini-datepicker" style="width: 114px; margin-right: 10px;">
+	                                <input id="end-hour" class="mini-spinner" style="width: 58px;">
+	                                <span>:</span>
+	                                <input id="end-minute" class="mini-spinner" style="width: 58px;">
+	                            </div>
+	                            <div>
+	                                <p class="selectduration-tip">31天内的查询提供分钟粒度的数据，最多连续查询7天数据</p>
+	                                <a id="selectduration-query" class="mini-button confirm" href="javascript:;">查询</a>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div class="count-tip">
+	                	<span>统计截止：<span id="count-time">2019-03-11 15:15:15</span></span>
+	                	<a class="refresh-btn" href="javascript:;"></a>
+	                </div>
+                </div>
+            </div>
+        </div>
+        <div class="count-module mod02">
+        	<div id="detail-tab" class="tabview">
+	            <div class="tab-head">
+	                <a class="tab-title" href="javascript:;">监控总览</a>
+	                <a class="tab-title" href="javascript:;">监控详情</a>
+	                <div class="tab-datetime">
+		                <div class="mini-selectduration">
+		                    <div class="mini-selectduration-custom">
+		                    	<a class="mini-selectduration-custom-input" href="javascript:;"></a>
+		                        <div class="mini-selectduration-custom-container hidden">
+		                            <div class="selectduration-item">
+		                                <span class="">开始时间：</span>
+		                                <input id="tab-start-date" class="mini-datepicker" style="width: 114px; margin-right: 10px;">
+		                                <input id="tab-start-hour" class="mini-spinner" style="width: 58px;">
+		                                <span>:</span>
+		                                <input id="tab-start-minute" class="mini-spinner" style="width: 58px;">
+		                            </div>
+		                            <div class="selectduration-item">
+		                                <span class="">结束时间：</span>
+		                                <input id="tab-end-date" class="mini-datepicker" style="width: 114px; margin-right: 10px;">
+		                                <input id="tab-end-hour" class="mini-spinner" style="width: 58px;">
+		                                <span>:</span>
+		                                <input id="tab-end-minute" class="mini-spinner" style="width: 58px;">
+		                            </div>
+		                            <div>
+		                                <p class="selectduration-tip">31天内的查询提供分钟粒度的数据，最多连续查询7天数据</p>
+		                                <a id="tab-selectduration-query" class="mini-button confirm" href="javascript:;">查询</a>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+	                    <a id="tab-refresh" class="refresh-btn" href="javascript:;"></a>
+	                </div>
+	            </div>
+	            <div class="tab-body">
+	            	<div class="tab-content">
+		                <div class="overview-count">
+		                    <ul class="count-list clearfix">
+		                        <li class="count-item count04">
+		                            <p class="count-title">调用次数</p>
+		                            <div id="rank-call" class="count-content"></div>
+		                        </li>
+		                        <li class="count-item count05">
+		                            <p class="count-title">平均响应时间</p>
+		                            <div id="rank-response" class="count-content"></div>
+		                        </li>
+		                        <li class="count-item count06">
+		                            <p class="count-title">异常率</p>
+		                            <div id="rank-error" class="count-content"></div>
+		                        </li>
+		                    </ul>
+		                </div>
+		                <div class="chart-mod">
+		                    <h3 class="module-title clearfix">
+								<span>调用情况</span> <a class="detail-btn" id="visitCount"
+									onclick="openVisitDetail();" href="javascript:void(0);"></a>
+							</h3>
+		                    <div class="chart-overview clearfix">
+		                        <div class="overview-item">
+		                            <span class="count-name">调用情况</span> <span class="count-value"><span
+										id="call-count"></span>次</span>
+		                        </div>
+		                        <div class="overview-item">
+		                            <span class="count-name">报错率</span> <span class="count-value"><span
+										id="error-rate"></span>%</span>
+		                        </div>
+		                    </div>
+		                    <div id="visit-count" class="chart-container"></div>
+		                </div>
+		                <div class="chart-mod">
+		                    <h3 class="module-title clearfix">
+								<span>数据流量</span> <a class="detail-btn" id="flowCount"
+									onclick="openFlowDetail();" href="javascript:void(0);"></a>
+							</h3>
+		                    <div class="chart-overview clearfix">
+		                        <div class="overview-item">
+		                            <span class="count-name">输入流量</span> <span class="count-value"><span
+										id="flow-max">0</span>Byte</span>
+		                        </div>
+		                        <div class="overview-item">
+		                            <span class="count-name">输出流量</span> <span class="count-value"><span
+										id="flow-min">0</span>Byte</span>
+		                        </div>
+		                    </div>
+		                    <div id="flow-count" class="chart-container"></div>
+		                </div>
+		                <div class="chart-mod">
+		                    <h3 class="module-title clearfix">
+								<span>响应时间</span> <a class="detail-btn" id="responseTime"
+									onclick="openResponseTime();" href="javascript:void(0);"></a>
+							</h3>
+		                    <div class="chart-overview clearfix">
+		                        <div class="overview-item">
+		                            <span class="count-name">最小值</span> <span class="count-value"><span
+										id="response-min"></span>s</span>
+		                        </div>
+		                        <div class="overview-item">
+		                            <span class="count-name">最大值</span> <span class="count-value"><span
+										id="response-max"></span>s</span>
+		                        </div>
+		                    </div>
+		                    <div id="response-count" class="chart-container"></div>
+		                </div>
+	                </div>
+	                <div class="tab-content">
+	                	<div class="charts-toolbar clearfix">
+	                		<ul id="charts-legend" class="charts-legend clearfix">
+	                			<li class="chart-legend">OA个性化接口</li>
+	                			<li class="chart-legend">统一消息</li>
+	                		</ul>
+	                		<ul class="charts-view">
+	                			<li class="charts-column plural active"></li>
+	                			<li class="charts-column signal"></li>
+	                		</ul>
+	                	</div>
+	                	<div id="chart-list" class="charts-list clearfix">
+	                		<!-- <div class="chart-item" data-index="code2XX">
+	                			<div class="chart-info">
+	                				<span class="chart-name">code2XX <span>(个)</span></span>
+	                				<span class="chart-duration">周期：60s</span>
+	                				<span class="chart-method">聚合方式：<span>Value</span></span>
+	                			</div>
+	                			<div class="result-container">
+	                				<div class="chart"></div>
+	                				<div class="no-result hidden">
+										<p>未能获取监控数据</p>
+									</div>
+	                			</div>
+	                		</div>
+	                		<div class="chart-item" data-index="code3XX">
+	                			<div class="chart-info">
+	                				<span class="chart-name">code4XX <span>(个)</span></span>
+	                				<span class="chart-duration">周期：60s</span>
+	                				<span class="chart-method">聚合方式：<span>Value</span></span>
+	                			</div>
+	                			<div class="result-container">
+	                				<div class="chart"></div>
+	                				<div class="no-result hidden">
+										<p>未能获取监控数据</p>
+									</div>
+	                			</div>
+	                		</div>
+	                		<div class="chart-item" data-index="code4XX">
+	                			<div class="chart-info">
+	                				<span class="chart-name">code5XX <span>(个)</span></span>
+	                				<span class="chart-duration">周期：60s</span>
+	                				<span class="chart-method">聚合方式：<span>Value</span></span>
+	                			</div>
+	                			<div class="result-container">
+	                				<div class="chart"></div>
+	                				<div class="no-result hidden">
+										<p>未能获取监控数据</p>
+									</div>
+	                			</div>
+	                		</div>
+	                		<div class="chart-item" data-index="flowin">
+	                			<div class="chart-info">
+	                				<span class="chart-name">流入宽带 <span>(个)</span></span>
+	                				<span class="chart-duration">周期：60s</span>
+	                				<span class="chart-method">聚合方式：<span>Value</span></span>
+	                			</div>
+	                			<div class="result-container">
+	                				<div class="chart"></div>
+	                				<div class="no-result hidden">
+										<p>未能获取监控数据</p>
+									</div>
+	                			</div>
+	                		</div>
+	                		<div class="chart-item" data-index="flowout">
+	                			<div class="chart-info">
+	                				<span class="chart-name">流出宽带 <span>(个)</span></span>
+	                				<span class="chart-duration">周期：60s</span>
+	                				<span class="chart-method">聚合方式：<span>Value</span></span>
+	                			</div>
+	                			<div class="result-container">
+	                				<div class="chart"></div>
+	                				<div class="no-result hidden">
+										<p>未能获取监控数据</p>
+									</div>
+	                			</div>
+	                		</div>
+	                		<div class="chart-item" data-index="responsetime">
+	                			<div class="chart-info">
+	                				<span class="chart-name">响应时间 <span>(个)</span></span>
+	                				<span class="chart-duration">周期：60s</span>
+	                				<span class="chart-method">聚合方式：<span>Value</span></span>
+	                			</div>
+	                			<div class="result-container">
+	                				<div class="chart"></div>
+	                				<div class="no-result hidden">
+										<p>未能获取监控数据</p>
+									</div>
+	                			</div>
+	                		</div> -->
+	                	</div>
+	                </div>
+	            </div>
+            </div>
+        </div>
+    </div>
+    <!-- 调用次数 -->
+    <script type="text/x-tpl" id="rank-call-tpl">
+        {{#list}}
+		<p class="count-point">
+			<span class="count-name">{{name}}</span>
+			<span class="count-value"><span>{{value}}</span>次</span>
+		</p>
+		{{/list}}
+	</script>
+    <!-- 平均响应时间 -->
+    <script type="text/x-tpl" id="rank-response-tpl">
+        {{#list}}
+		<p class="count-point">
+			<span class="count-name">{{name}}</span>
+			<span class="count-value"><span>{{value}}</span>s</span>
+		</p>
+		{{/list}}
+	</script>
+    <!-- 异常率 -->
+    <script type="text/x-tpl" id="rank-error-tpl">
+        {{#list}}
+		<p class="count-point">
+			<span class="count-name">{{name}}</span>
+			<span class="count-value"><span>{{value}}</span>%</span>
+		</p>
+		{{/list}}
+	</script>
+
+	<script type="text/x-tpl" id="chart-tpl">
+		{{#monitorIndexs}}
+		<div class="chart-item" data-index="{{index}}">
+			<div class="chart-info">
+				<span class="chart-name">{{text}} <span>({{unit}})</span></span>
+				<span class="chart-duration">周期：{{duration}}</span>
+				<span class="chart-method">聚合方式：{{^methods}}<span>{{method}}</span>{{/methods}}{{#methods}}<input id="method-{{index}}" class="mini-combobox" style="width:150px;" textField="text" valueField="id"
+					data="{{methods}}"  required="true" value="{{method}}"/>{{/methods}}</span>
+			</div>
+			<div class="result-container">
+				<div class="chart"></div>
+				<div class="no-result hidden">
+					<p>未能获取监控数据</p>
+				</div>
+			</div>
+		</div>
+		{{/monitorIndexs}}
+	</script>
+    <script>
+    var getDefaultTime = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getIndexDefaultTime?isCommondto=true',
+        getVisitCount = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getIndexVisitCount?isCommondto=true';
+        getMonitorObjects = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getMonitorObjects?isCommondto=true';
+        getMonitorChart = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getMonitorChart?isCommondto=true';
+    </script>
+    <script src="../../../../fui/js/jsboot.js"></script>
+    <script>
+    SrcBoot.output([
+        'frame/fui/js/libs/mustache.min.js',
+        './js/echarts.min.js',
+        './js/jquery-tab.js',
+        // 模拟数据，需删除
+        'frame/fui/js/libs/mock-min.js',
+        './_test/_testindex.js',
+
+        './js/index.js'
+    ]);
+    </script>
+    <!-- <script>
+		epoint.initPage('apiruntimestatisticsdatainfoaction', null, function() {
+			mini.get("combo1").setValue("api");
+		});
+
+		function openVisitDetail() {
+			var combo1 = mini.get("combo1").value;
+			epoint.openDialog('调用详情', 'frame/pages/default/desktop.html?type='
+					+ combo1 + '&othertype=visittimes');
+		}
+
+		function openFlowDetail() {
+			var combo1 = mini.get("combo1").value;
+			epoint.openDialog('流量详情',
+					'frame/pages/default/desktopflow.html?type=' + combo1
+							+ '&othertype=inputflow');
+		}
+
+		function openResponseTime() {
+			var combo1 = mini.get("combo1").value;
+			epoint.openDialog('响应详情',
+					'frame/pages/default/desktopresponse.html?type=' + combo1
+							+ '&othertype=responsetime');
+		}
+
+		//无法选择自身
+		function beaforenodeselect(e) {
+			if (!e.node.ckr) {
+				e.cancel = true;
+			}
+		}
+	</script>
+	-->
+</body>
+
+</html>

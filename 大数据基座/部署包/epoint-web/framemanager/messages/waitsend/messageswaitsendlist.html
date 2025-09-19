@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>待发消息列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a id="btnDel" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-search">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form" style="margin-right: 100px">
+				<div role="row">
+					<div role="control" label="时间">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options='{"format":"yyyy-MM-dd "}' width="39.5%"
+							dateFormat="yyyy-MM-dd " align="center" bind="beginTime" />
+						<div style="margin-left: 80px; margin-right: 80px">至</div>
+						<input class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options='{"format":"yyyy-MM-dd "}' width="39.5%"
+							dateFormat="yyyy-MM-dd " align="center" bind="endTime" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a> <a role="reset"
+			callback="resetCallback"></a> <a role="close"
+			callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="messageguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="title" width="100%" align="left">标题</div>
+				<div field="waitsendtime" width="200"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">待发送时间</div>
+				<div width="60" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messageswaitsendlistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"framemanager/messages/waitsend/messageswaitsendedit?type=waitsend&guid="
+							+ id, function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param, {state : 'info'});
+						}
+						searchData();
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!",{state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!", {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+	</script>
+</body>
+</html>

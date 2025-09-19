@@ -1,0 +1,1 @@
+SELECT count(*) FROM information_schema.COLUMNS WHERE table_schema = DATABASE () AND table_name = 'PORTRAIT_TAGS' AND COLUMN_NAME='TIME_TO_LIVE'

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>扩展配置页面</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="扩展类型">
+						<input id="exttype" class="mini-radiobuttonlist"
+							bind="extTabsConfig.exttype" action="getExtType"
+							onvaluechanged="typechanged" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="名称" starred="true">
+						<input id="extname" class="mini-textbox" maxLength="50"
+							bind="extTabsConfig.extname" style="width: 80%" required="true"
+							requiredErrorText="名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="地址" starred="true">
+						<input id="exturl" class="mini-textbox" maxLength="200"
+							bind="extTabsConfig.exturl" style="width: 80%" required="true"
+							requiredErrorText="地址不能为空" />
+					</div>
+				</div>
+
+				<div id="personal">
+					<div role="row">
+						<div role="control" label="图标">
+							<input id="exticon" class="mini-buttonedit"
+								onbuttonclick="openicon('small')" bind="extTabsConfig.exticon"
+								style="width: 80%" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="打开方式">
+							<input id="opentype" class="mini-radiobuttonlist"
+								bind="extTabsConfig.opentype" action="getOpenType"
+								style="width: 90%" />
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew" style="display: none;" onclick="if (epoint.validate()) {epoint.execute('addNew', '', newCallback);}">保存并新建</a>
+		<a class="mini-button" id="addClose" style="display: none;" onclick="if (epoint.validate()) {epoint.execute('addClose','',closeCallback);}">保存并关闭</a>
+		<a class="mini-button" state="primary" id="save" style="display: none;" onclick="if (epoint.validate()) {epoint.execute('update','',closeCallback);}">保存修改</a>
+		<a class="mini-button" id="cancelBtn" style="display: none;" onclick="epoint.closeDialog('close');">取消</a>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('exttabsconfigaction', '', initCallBack);
+
+		//由list页面传参时进行触发
+		function initCallBack(param) {
+			//如果新增
+			if (param.add) {
+				//隐藏修改按钮
+				document.getElementById("addNew").style.display = "";
+				document.getElementById("addClose").style.display = "";
+				document.getElementById("save").style.display = "none";
+				document.getElementById("cancelBtn").style.display = "none";
+			}
+			//如果修改
+			else {
+				//隐藏新增按钮
+				document.getElementById("addNew").style.display = "none";
+				document.getElementById("addClose").style.display = "none";
+				document.getElementById("save").style.display = "";
+				document.getElementById("cancelBtn").style.display = "";
+			}
+			mini.get("exttype").setValue("0");
+			$("#personal").hide();
+
+			if (param.exttype) {
+				mini.get("exttype").setValue(param.exttype);
+				$("#personal").show();
+			}
+
+			if (param.exticon) {
+				mini.get("exticon").setValue(param.exticon);
+				mini.get("exticon").setText(param.exticon);
+			}
+		}
+
+		function typechanged(e) {
+			//0:个人资料配置扩展,1:菜单配置扩展
+			if (e.value == "0") {
+				$("#personal").hide();
+				mini.get("exticon").setValue(null);
+				mini.get("exticon").setText(null);
+				mini.get("opentype").setValue(null);
+			} else if (e.value == "1") {
+				$("#personal").show();
+				mini.get("opentype").setValue("tabsnav");
+				mini.get("exticon").setValue("modicon-8");
+				mini.get("exticon").setText("modicon-8");
+			}
+		}
+
+		function openicon(type) {
+			epoint.openDialog('选择图标',
+					"framemanager/orga/uiset/menu/module/selectoa8icon?type="
+							+ type, openiconOperJS, {
+						'width' : 1000,
+						'height' : 420
+					});
+		}
+
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				mini.get("exticon").setText(rtnValue);
+				mini.get("exticon").setValue(rtnValue);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+				    epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			var exttype = mini.get("exttype").value;
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					epoint.showTips(data.msg,  {state : 'success'});
+				}else{
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+				
+			}
+			mini.get("exttype").setValue(exttype);
+			//opentype给个默认值
+			if (exttype == '1') {
+				mini.get("opentype").setValue('tabsnav');
+				mini.get("exticon").setValue("modicon-8");
+				mini.get("exticon").setText("modicon-8");
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

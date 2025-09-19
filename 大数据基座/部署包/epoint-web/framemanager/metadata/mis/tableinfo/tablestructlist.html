@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据表结构</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+</head>
+
+<style type="text/css">
+.backgroundcolor {
+	background-color: #B9F6F8;
+}
+
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+
+.mini-panel-toolbar {
+	background-color: white;
+}
+</style>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="new" onclick="add()">新增结构</a>
+		<a class="mini-button" id="showDialog" onclick="showAtEl();">快速新增结构</a>
+		<a class="mini-button" id="save" onclick="saveAll()">保存并同步</a> <a
+			class="mini-button" state="danger" id="delete"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录！',  {state : 'warning'});} else {deleteSelected();}">删除并同步</a>
+		<a class="mini-button" id="refresh" onclick="syncField()">增量同步结构</a>
+		<div class="mini-btn-group" id="export">
+			<a class="mini-button"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要导出的记录!',  {state : 'warning'});} else {epoint.execute('tablestructlistaction.export','',exporttc)}">脚本导出</a>
+
+			<input id="database" autoLoad="false"
+				action="tablestructlistaction.getDsTypes" textField="text"
+				valueField="id" class="mini-combobox mr10" style="margin-left: 8px" />
+		</div>
+
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10" showtype="tooltip">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>当前表必须设置主键，如果数据库该表已经有主键，无需设置；如果没有，请在这里勾选1个字段作为查询主键</p>
+		<!-- <p>
+				按钮<em>同步物理表结构：</em>当我们数据库物理表被删除或者没有的时候，我们可以通过配置好的结构字段重新反转生成物理表
+			</p>
+			<p>
+				按钮<em>获取物理表结构：</em>如果我们的结构字段与我们的真实物理表不一致，我们可以通过这个按钮来进行差异性同步。同步的过程是读取物理表字段新增、修改、删除mis表中的字段
+			</p> -->
+	</div>
+
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<!-- 					<div role="row"> -->
+				<!-- 						<div role="control" label="当前数据表名称"> -->
+				<!-- 							<input bind="tablestructlistaction.tableInfo.tableName" -->
+				<!-- 							class="mini-outputtext" /> -->
+
+				<!-- 						</div> -->
+				<!-- 						<div role="control" label="SQL数据表名称"> -->
+				<!-- 							<input bind="tablestructlistaction.tableInfo.sqlTableName" -->
+				<!-- 							class="mini-outputtext" /> -->
+				<!-- 						</div> -->
+				<!-- 					</div> -->
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="字段中文名称">
+						<input bind="tablestructlistaction.fieldChineseName"
+							class="mini-textbox" />
+
+					</div>
+					<div role="control" label="字段英文名">
+						<input bind="tablestructlistaction.fieldName" class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+
+		<div id="tableid" class="mini-hidden" bind="tableInfo.tableid"></div>
+		<div id="sysFieldIds" class="mini-hidden" bind="sysFieldIds"></div>
+
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="fieldid" multiSelect="true" allowResize="true"
+			style="width: 100%; height: 100%;"
+			action="tablestructlistaction.getDataGridData" showFooter="false"
+			allowSortColumn="false" oncellbeginedit="cellBeginEdit"
+			onbeforeselect="beforeselect" ondrawcell="onCheckRender">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+
+				<div type="indexcolumn" width="40">序</div>
+
+				<div field="fieldchinesename" title="fieldchinesename" width="200">
+					显示名称</div>
+				<div field="fieldname" title="fieldname" width="180">字段名</div>
+				<div field="fieldtype" width="100">数据类型</div>
+				<div field="fielddisplaytype" width="100">显示类型</div>
+				<div field="level" width="100">字段级别</div>
+				<div width="60" renderer="onEditRenderer">修改</div>
+				<div field="ordernumingrid" width="80" vtype="int;range:0,99999">
+					排序号 <input property="editor" class="mini-textbox" maxLength="5"
+						vtype="int;range:0,99999" style="width: 99%"
+						inputStyle="text-align:right" />
+				</div>
+				<div type="comboboxcolumn" field="controlwidth" width="80"
+					autoShowPopup="true">
+					控件宽度 <input autoLoad="false" data="selectItems.controlwidth"
+						property="editor" class="mini-combobox" style="width: 99%" />
+				</div>
+				<div field="todispingrid" width="60" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">列表</div>
+				<div field="isquerycondition" width="60" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">查询</div>
+
+				<div field="uniquefield" width="60" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">索引</div>
+				<div field="isorderfield" width="80" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">排序号</div>
+				<div field="mustfill" width="60" type="checkboxcolumn" truevalue="1"
+					falsevalue="0">必填</div>
+				<div field="dispInAdd" width="60" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">页面</div>
+				<div field="isexportexcel" width="60" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">导出</div>
+				<div field="isforeignkey" width="60" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">主键</div>
+			</div>
+		</div>
+	</div>
+	<div id="win1" class="mini-window" title="快速新增结构"
+		style="width: 800px; height: 100%;" showShadow="true"
+		showToolbar="true" showModal="false" allowResize="true"
+		allowDrag="true">
+		<div property="toolbar" style="padding: 5px;">
+			<a class="mini-button" state="primary" onclick="fastSave()">保存</a> <a
+				class="mini-button" state="danger" onclick="deleteRow()">删除</a>
+		</div>
+		添加行数：<input id="rowNum" class="mini-textbox"
+			onvaluechanged="addColumn" style="margin-bottom: 8px" />
+		<div id="datagrid2" class="mini-datagrid" multiSelect="true"
+			sortOrder="desc" showPager="false" idField="fieldid"
+			allowCellValid="true" showFooter="false"
+			action="tablestructlistaction.getFastAddModel" allowCellSelect="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="fieldchinesename" width="120">
+					显示名称 <input property="editor" class="mini-textbox"
+						style="width: 99%" />
+				</div>
+				<div field="fieldname" width="120">
+					字段名 <input property="editor" class="mini-textbox"
+						style="width: 99%" />
+				</div>
+				<div field="fieldtype" width="120" type="comboboxcolumn">
+					数据类型 <input property="editor" class="mini-combobox" data="[]"
+						allowInput="false" style="width: 99%" valueField="id"
+						textField="text" onvaluechanged="onDepartChanged" />
+				</div>
+				<div field="fielddisplaytype" width="120" type="comboboxcolumn">
+					显示类型 <input property="editor" class="mini-combobox" data="[]"
+						allowInput="false" style="width: 99%" valueField="id"
+						textField="text" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		var isAdmin = false;
+		var isOuAdmin = false;
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+		var urlparams = Util.getUrlParams();
+		var tableType = "";
+		//初始化页面
+		epoint.initPage("tablestructlistaction", '', initDataBase);
+
+		var grid = mini.get("datagrid");
+		//冻结前几列
+		grid.setFrozenStartColumn(0);
+		grid.setFrozenEndColumn(6);
+
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+			tableType = e.tableType;
+
+			if (e.isAdmin) {
+				isAdmin = e.isAdmin;
+			}
+			if (e.isOuAdmin) {
+				isOuAdmin = e.isOuAdmin;
+			}
+
+			if (isSub == "1" || tableType == 99) {
+				$('#new').hide();
+				$('#save').hide();
+				$('#delete').hide();
+				$('#refresh').hide();
+				$('#showDialog').hide();
+			}
+
+			if (tableType == 99) {
+				$("#export").attr("style", "display:none;");
+			}
+
+			$(window).resize();
+		}
+
+		var selectItems = {
+			'controlwidth' : [ {
+				id : 2,
+				text : '双倍宽'
+			}, {
+				id : 1,
+				text : '单倍宽'
+			} ]
+		};
+
+		grid.on("update", function(e) {
+			var sysFieldIds = mini.get("sysFieldIds").getValue();
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				if ((isSub == '1')
+						|| (urlparams.pageType && sysFieldIds
+								.indexOf(rows[i].fieldid) != -1)) {
+					grid.addRowCls(rows[i], 'backgroundcolor');
+				} else {
+					if (urlparams.pageType
+							&& sysFieldIds.indexOf(rows[i].fieldid) != -1) {
+						grid.addRowCls(rows[i], 'backgroundcolor');
+					} else {
+						grid.beginEditRow(rows[i]);
+					}
+				}
+			}
+		});
+
+		grid.on("drawcell", function(e) {
+			if (e.columnIndex == 0 && isSub == '1') {
+				e.cellHtml = "";
+			}
+		});
+
+		var dataTypes;
+		var displayTypes;
+		function showAtEl() {
+			var grid2 = mini.get('datagrid2');
+			grid2.clearRows();
+			mini.get('rowNum').setValue('');
+			epoint.execute('getDataList', '@none', '', function(data) {
+				dataTypes = data.dataTypeList;
+				displayTypes = data.displayTypeList;
+				var newRow = {
+					fieldtype : 'nvarchar',
+					fielddisplaytype : 'textbox'
+				};
+				grid2.addRow(newRow, 0);
+				grid2.beginEditRow(newRow);
+				grid2.getCellEditor(4, 0).setData(dataTypes);
+				grid2.getCellEditor(5, 0).setData(displayTypes);
+
+				var win = mini.get("win1");
+				var atEl = document.getElementById("showDialog");
+				win.showAtEl(atEl, {
+					xAlign : 'Center',
+					yAlign : 'Below'
+				});
+			});
+		}
+
+		function hideWindow() {
+			mini.get('datagrid2').clearRows();
+			mini.get('rowNum').setValue('');
+			var win = mini.get("win1");
+			win.hide();
+		}
+
+		function fastSave() {
+			var grid2 = mini.get('datagrid2');
+			if (grid2.isValid() == false) {
+				var error = grid2.getCellErrors()[0];
+				grid2.beginEditCell(error.record, error.column);
+				return;
+			} else {
+				epoint.execute('fastAdd', [ 'datagrid2' ], '', function(data) {
+					if (data.success) {
+						epoint.showTips(data.msg, {
+							state : 'success'
+						});
+						hideWindow();
+						epoint.refresh([ 'datagrid' ]);
+					} else {
+						epoint.showTips(data.msg, {
+							state : 'warning'
+						});
+					}
+				});
+			}
+		}
+
+		function deleteRow() {
+			var select = mini.get('datagrid2').getSelecteds();
+			for (var i = 0; i < select.length; i++) {
+				mini.get('datagrid2').removeRow(select[i], false);
+			}
+		}
+
+		function addColumn() {
+			var rowNum = mini.get('rowNum').getValue();
+			var num = parseInt(rowNum);
+			if (isNaN(num)) {
+				epoint.showTips("请输入数字！", {
+					state : 'warning'
+				});
+				mini.get('rowNum').setValue('');
+				return;
+			}
+			if (num > 100 || num < 1) {
+				epoint.showTips("请输入1-100之间的数值！", {
+					state : 'warning'
+				});
+				mini.get('rowNum').setValue('');
+				return;
+			}
+			for (var i = 0; i < num; i++) {
+				var newRow = {
+					fieldtype : 'nvarchar',
+					fielddisplaytype : 'textbox'
+				};
+				var grid2 = mini.get('datagrid2');
+				grid2.addRow(newRow, 0);
+				grid2.beginEditRow(newRow);
+				grid2.getCellEditor(4, 0).setData(dataTypes);
+				grid2.getCellEditor(5, 0).setData(displayTypes);
+			}
+		}
+
+		function cellBeginEdit(e) {
+			if (isSub == "1") {
+				e.cancel = true;
+			}
+		};
+
+		function beforeselect(e) {
+			if (isSub == "1") {
+				e.cancel = true;
+			}
+		}
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "updateInfo",
+					"fieldid,baseouguid");
+		};
+
+		// 修改
+		function updateInfo(e) {
+			//系统字段记录编辑按钮不绘制
+			var sysFieldIds = mini.get("sysFieldIds").getValue();
+			if (isSub == "1") {
+				epoint.showTips("非系统管理员不可以修改管理员创建的字段!", {
+					state : 'warning'
+				});
+				return;
+			}
+			if (urlparams.pageType
+					&& sysFieldIds.indexOf(e.record.fieldid) != -1) {
+				epoint.showTips("不允许修改系统字段!", {
+					state : 'warning'
+				});
+				return;
+			}
+			epoint.openDialog('修改结构',
+					'framemanager/metadata/mis/tableinfo/tablestructadd?fieldID='
+							+ e.fieldid + "&isSub=" + isSub, function(param) {
+						if (param && param != "close") {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 970,
+						'height' : 450
+					});
+		}
+
+		// 新增
+		function add() {
+			epoint.openDialog('添加结构',
+					'framemanager/metadata/mis/tableinfo/tablestructadd?tableID='
+							+ mini.get("tableid").getValue() + "&isSub="
+							+ isSub, function(param) {
+						if (param && param.indexOf("epoint") > -1) {
+							Util.safeEval(param);
+						} else if (param && param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 970,
+						'height' : 450
+					});
+		}
+
+		// 删除结构
+		function deleteSelected() {
+			var sysFieldIds = mini.get("sysFieldIds").getValue();
+			var data = grid.getSelecteds();
+			var num = 0;
+			for (var i = 0; i < data.length; i++) {
+				if (sysFieldIds.indexOf(data[i].fieldid) != -1) {
+					num++;
+					break;
+				}
+			}
+			if (num == 0) {
+				console.log(data);
+				epoint.execute('tablestructlistaction.deleteSelected', [
+						'datagrid', 'fui-form' ], msgCallBack);
+			} else {
+				epoint.showTips("删除的字段中包含系统字段不允许删除，请检查!", {
+					state : 'danger'
+				});
+				searchData();
+			}
+		}
+
+		// 保存结构
+		function saveAll() {
+			if (epoint.validate()) {
+				var sysFieldIds = mini.get("sysFieldIds").getValue();
+				var data = grid.getSelecteds();
+				var num = 0;
+				for (var i = 0; i < data.length; i++) {
+					if (sysFieldIds.indexOf(data[i].fieldid) != -1) {
+						num++;
+						break;
+					}
+				}
+				if (num == 0) {
+					if (grid.isValid() == false) {
+						var error = grid.getCellErrors()[0];
+						grid.beginEditCell(error.record, error.column);
+						return;
+					}
+					epoint.execute('tablestructlistaction.saveAll', [
+							'datagrid', 'fui-form' ], msgCallBack);
+				} else {
+					epoint.showTips("保存的字段中包含系统字段不允许修改，请检查!", {
+						state : 'danger'
+					});
+					searchKeepPage();
+				}
+			} else {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+		}
+
+		// 重建数据表
+		// 			function rebuildDatabase() {
+		// 				epoint.execute('tablestructlistaction.rebuildDatabase', 'datagrid', msgCallBack);
+		// 			}
+
+		// 同步结构
+		// 			function sysStruct() {
+		// 				epoint.execute('tablestructlistaction.sysStruct', 'datagrid', msgCallBack);
+		// 			}
+
+		//增量同步数据
+		function syncField() {
+			epoint.execute('tablestructlistaction.syncField', '', msgCallBack);
+		}
+
+		// 导出sql语句
+		function exporttc(data) {
+			var combox = mini.get("database");
+			epoint.openDialog(combox.getText() + '脚本导出',
+					"framemanager/metadata/mis/tableinfo/tablestructexport?tableID="
+							+ mini.get("tableid").getValue() + "&databaseType="
+							+ combox.getValue() + "&structID=" + data.structID
+							+ "&isSub=" + isSub, '', {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {
+					state : 'success'
+				});
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], function(data) {
+				// 				if (mini.get("fieldLevel").getValue() == "") {
+				// 					mini.get("fieldLevel").setText("不限制");
+				// 				}
+
+			});
+		}
+
+		var grid2 = mini.get('datagrid2');
+		grid2.on("cellbeginedit", function(e) {
+			var editor = e.editor;
+			var field = e.field, value = e.value;
+			if (field == "fielddisplaytype") {
+				var id = e.record.fieldtype;
+				if (id) {
+					epoint.execute('getDataList', '@none', id, function(data) {
+						var displayTypes = data.displayTypeList;
+						grid2.getCellEditor(5, 0).setData(displayTypes);
+					})
+
+				}
+
+			}
+		});
+
+		function onDepartChanged(e) {
+			var grid2 = mini.get('datagrid2');
+			var combo = e.sender;
+			var row = grid2.getEditorOwnerRow(combo);
+
+			var editor = grid2.getCellEditor("fielddisplaytype", row);
+			var id = combo.getValue();
+			if (id) {
+				epoint.execute('getDataList', '@none', id, function(data) {
+					var displayTypes = data.displayTypeList;
+					grid2.getCellEditor(5, row).setData(displayTypes);
+				})
+
+			}
+			//editor.setValue("");
+		}
+
+		function onCheckRender(e) {
+			//此功能只是隐藏掉选择框，但是还是可以被选到的，注意！！！！，要配合beforeselect使用
+			if (tableType == 99) {
+				if (e.cellCls === "mini-checkcolumn") {
+					e.cellHtml = "";
+				}
+				if (e.field == "todispingrid" || e.field == "isquerycondition"
+						|| e.field == "uniquefield"
+						|| e.field == "isorderfield" || e.field == "mustfill"
+						|| e.field == "dispInAdd" || e.field == "isexportexcel"
+						|| e.field == "isforeignkey") {
+					e.cellHtml = "";
+				}
+
+			}
+
+		}
+		grid.on("beforeselect", function(e) {
+
+			if (tableType == 99) {
+				e.cancel = true;
+			}
+		});
+
+		//]]>
+	</script>
+</body>
+
+</html>

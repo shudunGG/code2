@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>交换作业日志</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	 <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button mini-btn-danger" iconCls="icon-minuscircle" onclick="killProcess()">终止任务</a>
+        </div>
+    </div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="时间范围">
+						<input class="mini-daterangepicker" bind="beginDate,endDate"  id="time" rangeType="date"/>
+					</div>
+					<div role="control" label="状态">
+						<input class="mini-combobox" bind="status" id="status"
+							   data="[{text:'成功',id:'1'},{text:'失败',id:'0'},{text:'交换中',id:'2'},{text:'进程中断',id:'-1'}]"
+							   oncloseclick="onCloseClick" showClose="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 表格区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" showPager="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				            <div field="batchnum" width="200" headerAlign="center" align="center">流程批次号</div>
+				<div field="nodename" width="100" headerAlign="center"
+					align="center">节点名称</div>
+				<div field="starttime" width="140" headerAlign="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">开始时间</div>
+				<div field="seconds" width="70" headerAlign="center" align="center">耗时(秒)</div>
+				<div field="serverhost" width="140" headerAlign="center" align="center">运行服务ip</div>
+				<div field="status" width="80" headerAlign="center" align="center"
+					renderer="onStatusRenderer">状态</div>
+				<div field="flowguid" width="80" visible="false"></div>
+				<div field="download" width="60" headerAlign="center" align="center"
+					renderer="onDownLoadRenderer">日志下载</div>
+			</div>
+		</div>
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpschedulerloglistaction');
+
+		function onStatusRenderer(e) {
+			var color = 'red';
+			var text = '';
+			if (e.value) {
+				if (e.value == 1) {
+					text = '成功';
+					color = '#67C23A';
+				} else if (e.value == 0) {
+					text = '失败';
+					color = '#F56C6C';
+				} else if (e.value == -1) {
+					text = '进程中断';
+					color = '#E6A23C';
+				} else if(e.value == 2){
+					text = '警告';
+					color = '#E6A23C';
+				}else if(e.value == 3){
+					text = '挂起';
+					color = '#E6A23C';
+				}
+			} else {
+				text = '交换中';
+				color = '#909399';
+			}
+
+			return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+					+ text + '</span>';
+		}
+
+		function onDownLoadRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-download",
+					"download", 'rowguid,flowguid');
+		}
+
+		function download(e) {
+			//先判断是否运行中，运行中的截至
+			epoint.execute("checkFlowStatus",'', [e.rowguid], function(data){
+				if(data){
+					var form = document.getElementById('download_form');
+					form.action = data.url; 
+					form.submit();
+				}else{
+					var form = document.getElementById('download_form');
+					form.action = "dxpschedulerloglistaction.action?cmd=downloadLog&rowGuid="
+							+ e.rowguid+"&guid="+e.flowguid;
+					form.submit();
+				}
+			});
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onCloseClick(e){
+			e.sender.setValue('');
+			e.sender.setText('');
+		}
+		
+		function killProcess(){
+			epoint.confirm('此操作将直接终止正在运行中的批次任务，确认终止吗?', '', function() {
+				epoint.execute('killProcess', '', function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.alert(data.msg, '', function() {
+							epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+						}, 'success');
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			});
+		}
+	</script>
+</body>
+</html>

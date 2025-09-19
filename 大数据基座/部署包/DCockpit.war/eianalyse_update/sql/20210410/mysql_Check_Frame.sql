@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	information_schema.COLUMNS WHERE	TABLE_SCHEMA = DATABASE ( ) 	AND table_name = 'cockpit_column' and column_name='remark' AND COLUMN_TYPE='text'

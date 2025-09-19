@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>OA默认首页</title>
+    <link rel="stylesheet" href="oahome.css" />
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="portlet-wrapper" id="portlet-container">
+        <div class="portlet-cols clearfix">
+        </div>
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script src="oaportlets.js"></script>
+    <script>
+    //<![CDATA[  
+    //初始化页面
+    Util.ajax({
+        url: epoint.dealRestfulUrl('classicdataaction?query=portal'),
+        success: callback,
+        dataType: 'html'
+    });
+    var oaPortlets;
+
+    function callback(portalConfig) {
+        if (portalConfig) {
+            portalConfig = epoint.decodeJson(portalConfig);
+            // 处理配置项中的特殊字符
+            $.each(portalConfig.portlets, function(i, item) {
+                if (item.list && item.list.rows && item.list.rows.length) {
+
+                    $.each(item.list.rows, function(i, row) {
+                        row[0] = row[0].replace(/★/g, "'");
+
+                    });
+                }
+
+                // quicklnks 
+                if (item.quicklnks && item.quicklnks.length) {
+                    $.each(item.quicklnks, function(i, link) {
+                        item.quicklnks[i] = link.replace(/★/g, "'");
+                    });
+                }
+
+                // btns 
+                if (item.btns && item.btns.length) {
+                    $.each(item.btns, function(i, btn) {
+                        item.btns[i] = btn.replace(/★/g, "'");
+                    });
+                }
+            });
+
+            oaPortlets = new OaPortlets(portalConfig);
+        }
+    }
+    //该方法为通用的打开窗口方法，提供了根据不同type来使用不同的打开方式打开窗口的能力
+    function openWindowAuto(url, type, title, width, height) {
+        url = url.replace(/★/g, "\"\"");
+        //弹出一个div框
+        if ("popdiv" == type) {
+            if ("待办事宜" == title) {
+                OpenWaitWindow(url);
+            } else {
+                epoint.openDialog(title, url, '', {
+                    'width': width,
+                    'height': height
+                });
+            }
+        }
+        //在框架中打开一个tab
+        else if ("framediv" == type) {
+            top.TabsNav.addTab({
+                'url': url,
+                'name': title,
+                'id': Math.round(Math.random() * 1000),
+                'maxIcon': true,
+                'closeIcon': true
+            });
+        }
+        //打开一个新的浏览器窗口
+        else if ("newwindow" == type) {
+            if (!url.startWith('http') && !url.startWith(Util.getRootPath())) {
+                url = Util.getRootPath() + url;
+            }
+            if (!width && !height) {
+                OpenMaxWindow(url);
+            } else {
+                OpenWindow(url, width, height);
+            }
+        }
+    }
+
+    function OpenWaitWindow(url, title) {
+        if (title == undefined || title == "") {
+            title = '待办事宜处理';
+        }
+
+        epoint.openDialog(title, url, refreshWait);
+    }
+
+
+    function OpenWindow_Msg(url, type, title) {
+        //弹出一个div框
+        if ("popdiv" == type) {
+            if ("待办事宜" == title) {
+                OpenWaitWindow(url);
+            } else {
+                epoint.openDialog(title, url);
+            }
+        }
+        //在框架中打开一个tab
+        else if ("framediv" == type) {
+            top.TabsNav.addTab({
+                'url': url,
+                'name': title,
+                'id': Math.round(Math.random() * 1000),
+                'maxIcon': true,
+                'closeIcon': true
+            });
+        }
+        //打开一个新的浏览器窗口
+        else if ("newwindow" == type) {
+            OpenMaxWindow(url);
+        }
+    }
+
+    function refreshWait() {
+        top.TabsNav.refreshTabContent('tab-home');
+    }
+
+    //]]>
+    </script>
+</body>
+
+</html>

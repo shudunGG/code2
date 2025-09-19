@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>限频黑名单表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a id="btnAddRecord" class="mini-button"  onclick="openAdd" state="primary">新增记录</a>
+		<a id="btnDel" class="mini-button mini-btn-danger" onclick="deleteData">删除选定</a>
+	</div>
+	
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="对象实例具体值">
+						<div id="search_RestrictedObj" class="mini-textbox"
+							bind="restrictedinfolistaction.restrictedObjStr"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="5"></div>
+				<div type="indexcolumn" width="5" headerAlign="center">序</div>
+				<div field="restrictedtype" width="25" align="center" headerAlign="center">受限对象类型</div>
+				<div field="restrictedobj" width="25" align="center" headerAlign="center">受限对象实例</div>
+				<div field="restrictedcreatetime" width="25" align="center" headerAlign="center">受限开始时间</div>
+				<div field="ismanualterminate" width="25" align="center" headerAlign="center">解除方式</div>
+				<div field="autoterminatetime" width="25" align="center" headerAlign="center">自动解除时间</div>
+				<div field="manualterminatetime" width="25" align="center" headerAlign="center">手动解除时间</div>
+				<div width="50" align="center" headerAlign="center" renderer="onManualRenderer">手动解除</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('restrictedinfolistaction');
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint
+					.openDialog(
+							'新增记录',
+							"framemanager/metadata/security/restrictedinfo/restrictedinfoadd",
+							searchData, {
+								'width' : 750,
+								'height' : 300
+							});
+		}
+		
+		// 绘制手动解除列
+		function onManualRenderer(e) {
+			return "<a style=\"cursor: pointer\" onclick=\"manualSelect('" + e.record.rowguid + "')\">手动解除</a>";
+		}
+		
+		// 手动解除一行数据
+		function manualSelect(rowguid) {
+			// 弹出确认框
+			epoint.confirm("确定手动接触吗?", '', function() {
+				epoint.execute("manualSelect", '', [ rowguid ], function(data) {
+					if (data.msg) {
+						epoint.showTips(data.msg, {state : 'success'});
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}
+				});
+			});
+		}
+
+		function deleteData() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.showTips('请选择要删除的记录!', {state : 'warning'});
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData(param) {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+	</script>
+</body>
+</html>

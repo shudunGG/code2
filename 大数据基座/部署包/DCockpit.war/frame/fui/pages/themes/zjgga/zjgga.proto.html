@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title></title>
+    <script src="../../../js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="header clearfix">
+        <div class="header-left l">
+            <span class="header-back l" title="返回" onclick="goBack()"></span>
+        </div>
+        <div class="header-main">
+            <img class="logo" src="./images/logo.png" alt="张家港市公安局建模平台" />
+        </div>
+        <div class="header-right r clearfix">
+            <!-- user -->
+            <div class="user-info" id="user-info">
+                <div class="user-info-summary">
+                    <img src="./images/header/user.png" alt="" class="user-portrait" />
+                    <span class="user-name">用户名称</span>
+                </div>
+                <div class="user-action-panel">
+                    <div class="user-action-panel-inner">
+                        <div class="user-info-detail" id="user-info-detail">
+                            <img src="./images/header/user.png" alt="" class="user-portrait" />
+                            <span class="user-name"></span> <span class="user-dept"></span>
+                        </div>
+                        <ul class="user-action-list">
+                            <li class="user-action-item person-info" data-id="person-info-setting"
+                                id="person-info-setting" data-name="个人信息维护" title="个人信息维护"
+                                data-url="frame/pages/basic/personalset/personalinfo/personalinfo">个人信息维护</li>
+                            <li class="user-action-item role-change hidden" data-id="user-role-change" data-name="兼职切换"
+                                title="兼职切换">兼职切换</li>
+                            <!-- 此处扩展时添加 li 即可 -->
+                            <!-- <li class="user-action-item css样式类需定义图标" title="显示的名字"  url="要打开的链接地址" data-opentype="打开方式 tabsnav/dialog/blank之一" data-id="一个标识，请勿重复，可以不配置自动生成生成" script="如果打开一个链接不能满足需求，可以在此配置一段js脚本，将在点击时执行，配置url后此项无效" >显示的名字</li> -->
+                            <!-- <li class="user-action-item logout" title="注销登录">注销登录</li> -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <span class="logo-out" title="注销登录"></span>
+        </div>
+    </div>
+    <div class="main" id="main">
+        <div class="left-nav">
+            <div class="left-nav-header">
+                <div class="left-nav-name">栏目导航</div>
+            </div>
+            <div class="left-nav-body">
+                <ul class="left-menu" id="left-menu"></ul>
+            </div>
+
+            <span class="left-nav-toggle"></span>
+        </div>
+        <div class="main-content">
+            <iframe id="content-frame" class="tab-content" src="" height="100%" width="100%" frameborder="0"
+                scrolling="no"></iframe>
+            <div class="main-content-cover-wrap" id="cover-wrap"></div>
+        </div>
+    </div>
+    <script src="../../../js/jsboot.js"></script>
+
+    <script>
+        var getDataUrl = 'https://fe.epoint.com.cn/mock/26/themedataaction';
+
+        // 退出
+        function logout() {
+            mini.confirm('您确定要退出系统吗？', '系统提示', function (action) {
+                if (action == 'ok') {
+                    window.location.href = Util
+                        .getRightUrl('rest/logout?isCommondto=true');
+                }
+            })
+        }
+    </script>
+    <script>
+        SrcBoot.output(['./zjgga.js']);
+    </script>
+
+    <script>
+        // 获取url参数 初始化左侧菜单
+        var topParams = {
+            // 默认就加载的页面 如果没传入 会在获取到的子菜单中找第一个
+            defaultUrl: Util.getUrlParams('subPage') || './test/subPage/subPage.html',
+            // 父模块  code
+            code: Util.getUrlParams('menuCode') || '1234556',
+            // 父模块名称
+            name: Util.getUrlParams('menuName') || '栏目导航',
+            // 返回上一页的地址
+            backUrl: './test/test.html'
+        };
+        // 加载左侧菜单 获取不到数据时会自动隐藏
+        getLeftMenu(topParams)
+            .then(function () {
+                // mock
+                $('#left-menu').find('.left-menu-link').each(function (i, item) {
+                    if ($(item).attr('data-url')) {
+                        $(item).attr({
+                            'data-url': './test/subPage/subPage' + (Math.random() > .5 ? 2 : '') + '.html',
+                            'data-opentype': 'tabsnav'
+                        })
+                    }
+                });
+                // mock end
+            });
+        $('.left-nav-name').text(topParams.name);
+
+        // 返回点击
+        function goBack() {
+            location.replace(topParams.backUrl);
+        }
+
+        // 完全隐藏左侧导航 即没有左侧导航
+        function hideLeftNav() {
+            $('#main').removeClass('left-hide').addClass('left-none');
+        }
+        /**
+         * 切换左侧导航状态
+         * @param {boolean/undefined} show  切换到的状态 true 显示 false 隐藏 不传参数 则切换状态
+         */
+        function toggleLeftNav(show) {
+            $('#main').removeClass('left-none');
+            if (show === undefined) {
+                return $('#main').toggleClass('left-hide');
+            }
+            if (show) {
+                $('#main').removeClass('left-hide');
+            } else {
+                $('#main').addClass('left-hide');
+            }
+        }
+    </script>
+</body>
+
+</html>

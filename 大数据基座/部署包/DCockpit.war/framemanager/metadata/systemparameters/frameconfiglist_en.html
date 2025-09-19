@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>System parameters</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <!-- This must have,it is loaded with some loading effect -->
+    <div class="page-loading"></div>
+    <!-- About the layout on the left side of the content of the page -->
+    <div class="fui-left">
+        <!-- On the left side of the title of the
+             @local The internationalization of identity
+             Said in the language pack'sysParamCategory'The values
+         -->
+        <div role="head" title="Parameters of the classification">
+            <a class="action-icon icon-gear" title="Classification management" onclick="openType();"></a>
+        </div>
+        <!-- On the left side of the content area -->
+        <div role="body">
+            <ul id="tree" class="mini-tree" style="height:100%" textField="text" idField="id" parentField="pid" action="getTreeData" resultAsTree="false">
+            </ul>
+        </div>
+    </div>
+    <!-- About the layout on the right side of the content of the page -->
+    <div class="fui-right" id="fui-right">
+        <!-- toolbar area -->
+        <div class="fui-toolbar">
+            <div class="btn-group mr10">
+                <!-- localLabels used for internationalization -->
+                <a class="mini-button" onclick="addConfig">
+                    new parameters
+                </a>
+                <a id="deleteUser" class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelected);}">delete selected</a>
+                <a class="mini-button" onclick="epoint.execute('frameconfiglistaction.editConfig','',callback);" Visible="false">
+                    save changes
+                </a>
+             
+                 <a class="mini-button" iconCls="icon-gear"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a want to export record!', '', null, 'warning');} else {epoint.execute('export','',exportsql)}">script export</a>
+					 <input id="database" autoLoad="false"
+				action="getDsTypes" textField="text"
+				valueField="id" class="mini-combobox mr10" />
+            </div>
+            <a class="mini-dataexport" id="dataexport" gridId="datagrid" fileName="System parameters" action="getExportModel" extraId="fui-form"></a>
+          
+           
+           
+            
+        </div>
+        <!-- conditions area -->
+        <div class="fui-condition">
+            <!-- The form layout
+                 At the second request, the form automaticallydiv.fui-formIn theconditions
+            -->
+            <div class="fui-form" id="fui-form">
+                <div id="cform" role="form">
+                    <!-- 2column -->
+                    <div role="row">
+                        <div role="control" label="name or keyword">
+                            <input bind="frameconfiglistaction.frameConfig.configname" id="name" class="mini-textbox" />
+                        </div>
+                    </div>
+                </div>
+                <!-- Add a hidden field to the tree and the linkage of the table -->
+                <input bind="frameconfiglistaction.frameConfig.categoryguid" id="categoryGuid" class="mini-hidden" />
+            </div>
+            <!-- Search button -->
+            <a role="searcher" callback="searchData"></a>
+        </div>
+        <!-- content area -->
+        <div id="fuiContent" class="fui-content">
+            <div id="datagrid" class="mini-datagrid" sortOrder="desc" idField="sysguid" multiSelect="true" style="height: 100%;" allowResize="true" action="getDataGridData" showPager="true" >
+                <div property="columns">
+                <div type="checkcolumn" width="50"></div>
+                    <div type="indexcolumn" width="50" headerAlign="center">
+                        order
+                    </div>
+                    <div field="configname" width="80" headerAlign="center" allowSort="true" sortOrder="desc">
+                                                                 parameter name
+                        <input property="editor" class="mini-textbox" />
+                    </div>
+                    <div field="configvalue" width="150" headerAlign="center">
+                                                                  parameter value
+                        <input property="editor" class="mini-textbox" />
+                    </div>
+                    <div field="description" headerAlign="center" width="100%" >
+                                                                  parameters to describe
+                        <input property="editor" class="mini-textbox" />
+                    </div>
+                    <div field="ordernumber" width="120" align="right" allowSort="true" headerAlign="center" sortOrder="desc">
+                                                                   roworderNo.
+                        <input property="editor" class="mini-textbox" vtype="int" />
+                    </div>
+                    <div width="50" align="center" headerAlign="center" renderer="onEditRenderer">
+                                                                  edit
+                    </div>
+                    <div width="50" align="center" headerAlign="center" renderer="onDelRenderer">
+                                                                  delete
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+    
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+    <script>
+    // Initialize the page
+    epoint.initPage('frameconfiglistaction', '', initDataBase);
+    
+    function initDataBase(e) {
+		mini.get("database").setValue("oracle,B");
+		mini.get("database").setText("Oracle");
+	}
+
+    //The treejsobject
+    var tree = mini.get("tree");
+    // Click on the left side of theThe treeRefresh the form on the right side
+    tree.on("nodeselect", function(e) {
+        var id = e.node.id;
+        // To the leftThe treeClick on the nodeidIn a hidden field
+        // Send the second request, in the table will automatically bringconditions areaIn thecontent
+        mini.get('categoryGuid').setValue(id=='f9root'?"":id);
+        //Refresh the table
+        searchData();
+    });
+
+
+    // Search for tables
+    function searchData() {
+        epoint.refresh(['datagrid', 'fui-form']);
+    }
+
+    // Draw Edit Columns button
+    var onEditRenderer = function(e) {
+        return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+    };
+
+    // Draw the linedeletebutton
+    var onDelRenderer = function(e) {
+        return epoint.renderCell(e, "action-icon icon-remove", "delItems", "configname");
+    };
+
+    var temp_configName;
+    // deleteA line of data
+    function delItems(configName) {
+        temp_configName = configName;
+        // Pop-up confirmation box
+        epoint.confirm('confirmdelete?', '', function() {
+            epoint.execute("frameconfiglistaction.delConfig", '', [temp_configName], callback);
+        });
+    }
+
+    // The new popup Windows
+    function addConfig() {
+        var categoryGuid = mini.get('categoryGuid').getValue();
+        epoint.openDialog('Parameters of the new', 'mis/sysconf/systemparameters/frameconfig?categoryGuid=' + categoryGuid, addCallBack, {
+            'width': 800,
+            'height': 300
+        });
+    }
+    // The pop-upeditwindow
+    function editItems(sysGuid) {
+        epoint.openDialog('parameteredit', 'mis/sysconf/systemparameters/frameconfig?sysGuid=' + sysGuid, addCallBack, {
+            'width': 800,
+            'height': 300
+        });
+    }
+
+    // The pop-upClassification managementwindow
+    function openType() {
+        epoint.openDialog('System parametersClassification management', "framemanager/metadata/systemparameters/frameconfigcategory", isRefreshTree, {
+            'width': 1000,
+            'height': 500
+        });
+    }
+
+    // The refreshtree
+    function isRefreshTree(value) {
+        if (value) {
+            epoint.refresh(['tree']);
+        }
+    }
+
+    //The callback for the add operation
+    function addCallBack(param) {
+        if (param) {
+        	epoint.refresh(['datagrid', 'fui-form'],'',true);
+        }
+    }
+
+    //callback
+    function callback(args) {
+        if (args.msg) {
+            epoint.alert(args.msg, '', null, 'info');
+            epoint.refresh(['datagrid', 'fui-form'],'',true);
+        }
+    }
+  //delete selected
+	function deleteSelected() {
+		epoint.execute('deleteSelected', ['datagrid','fui-form'], callback);
+	}
+	// exportsqlstatements
+	function exportsql(data) {
+		var combox = mini.get("database").getValue();
+		var obj = combox.split(",");
+		epoint.openDialog(mini.get("database").getText() + 'Script export', "framemanager/metadata/systemparameters/frameconfigexport?configID=" + data.exportlist + "&databaseType=" + obj[0] + "&type=" + obj[1], '', {
+			'width' : 1000,
+			'height' : 400
+		});
+	}
+    </script>
+</body>
+
+</html>

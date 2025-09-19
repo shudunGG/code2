@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>卡片模板</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ "../js/chosen/chosen.css",
+			"../js/pagination/mricode.pagination.css", "../css/common.css",
+			"./css/common.css", "./css/data_setting.css" ]);
+</script>
+<style type="text/css">
+.sql-icon {
+	width: 330px;
+	height: 180px;
+	margin: 0 10px 17px 0;
+}
+
+.sql-item>a {
+	display: block;
+	margin: 0 10px;
+	border: 1px solid #dfe2e6;
+	height: 100%;
+	box-sizing: border-box;
+	border-radius: 8px;
+	padding: 13px 13px 0 18px;
+}
+</style>
+</head>
+
+<body>
+
+
+	<div class="main">
+		<div class="top-area clearfix">
+			<div class="right-btn-area r">
+				<span class="data-name">卡片模板名称：</span> <input type="text"
+					placeholder="请输入关键字" id="searchDataSourceName" class="search-input" />
+				<span class="data-category">全部状态：</span> <select name="data-choose"
+					id="data-choose" class="choose-category"></select> <a
+					href="javascript:;" class="search-button btn r">搜索</a>
+			</div>
+		</div>
+		<div class="tab">
+			<ul class="tab-hd clearfix">
+				<li class="panel"></li>
+			</ul>
+			<div class="tab-bd">
+				<div>
+					<div class="data-content">
+						<ul class="sql-list clearfix"></ul>
+					</div>
+					<div class="page" id="page"></div>
+				</div>
+				<div>
+					<div class="fui-form fui-condition" id="fui-form"
+						style="display: none;">
+						<div role="form">
+							<input id="dataSourceName" class="mini-textbox"
+								style="display: none;" /> <input id="dataSourceType"
+								class="mini-textbox" style="display: none;" />
+							<!-- <input bind="nodeName" id="nodeName"
+										class="mini-textbox" style="display:none;"/> -->
+						</div>
+						<!-- 							<input class="mini-hidden" id="belongouguid" bind="belongouguid" /> -->
+
+					</div>
+					<div class="fui-content mini-fit">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="dsid" multiSelect="true" extraId="fui-form"
+							style="width: 100%; height: 100%;" showPager="true"
+							action="getDataGridData">
+							<div property="columns">
+								<!-- <div type="checkcolumn" width="40" headerAlign="center"></div> -->
+								<div type="indexcolumn" width="60" headerAlign="center">序号</div>
+								<div field="dsname" width="100" headerAlign="center"
+									align="center" renderer="onNameRenderer">数据源名称</div>
+								<div field="dstype" width="80" headerAlign="center"
+									align="center">数据源类型</div>
+								<!-- <div field="loginuser" width="80" headerAlign="center"
+										align="center">登录用户</div> -->
+								<div field="belongouname" name="belongouname" width="80"
+									headerAlign="center" align="center">所属部门</div>
+								<div field="connectionstring" width="260" headerAlign="center">链接字符串</div>
+								<div field="isopen" headerAlign="center" align="center"
+									width="80" renderer="changeImage">是否公开</div>
+								<div field="ismyou" visible="false"></div>
+								<div width="100" headerAlign="center" align="center"
+									renderer="onOptionRenderer">操作</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/template" id="temp">
+        {{#list}}
+       <li class="sql-item" data-id="{{id}}">
+           <a href="javascript:void(0);">
+            <div class="clearfix">
+				<div class="{{^status}}hidden{{/status}}">启用</div>
+				<div class="{{#status}}hidden{{/status}}">停用</div>
+                <div class="clearfix l">
+                    <img src="images/{{src}}" alt="" class="sql-icon l" data-src="{{src}}">
+                </div>
+                
+           </div>
+           <ul class="detail-info">
+               <li class="detail-item" title="{{chartName}}">{{chartName}}</li>        
+           </ul>
+			<div class="btn-area clearfix">
+                    <button class="change-icon {{^status}}hidden{{/status}}" title="停用">停用</button>
+					<button class="change-icon {{#status}}hidden{{/status}}" title="启用">启用</button>
+					<button class="detail-icon" title="查看">查看</button>	
+                    <button class="delete-icon" title="删除">删除</button>
+                </div>
+          </a>
+       </li>
+      {{/list}}
+    </script>
+	<script type="text/template" id="temp1">
+	  <option value="">请选择状态</option>
+      {{#list}}
+       <option value="{{id}}">{{name}}</option>
+      {{/list}}
+    </script>
+	<script src="../../../../fui/js/jsboot.js"></script>
+
+	<script>
+		var isadmin = false;
+
+		epoint.initPage('cockpitcardtemplatelistjsaction', '', function(data) {
+		});
+
+		function changetmp(id) {
+			epoint.execute("changestatus", 'datagrid', [ id ], function(data) {
+				searchData();
+			});
+		}
+
+		function callBack(param) {
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		function opendetail(guid) {
+			epoint.openDialog('详细信息', "frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardtemplatedetailjs?guid=" + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function msgcallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+	</script>
+	<script>
+		var interfaceName = epoint
+				.dealRestfulUrl("../../../../../rest/cockpitcardtemplatelistjsaction/getCardTemplateListByChartName");
+		var interfaceSourceTypeName = epoint
+				.dealRestfulUrl("../../../../../rest/cockpitcardtemplatelistjsaction/getStatusList");
+	</script>
+	<script>
+		SrcBoot.output([ "../js/jquery-tab.js",
+				"../js/pagination/mricode.pagination.js",
+				"../js/chosen/chosen.jquery.min.js",
+				"frame/fui/js/libs/mustache.min.js",
+				"../js/jquery.nicescroll.min.js",
+				// "./_test/test_setting.js",
+				"../js/common.js", "./js/data_setting.js" ]);
+	</script>
+	<script>
+		function searchData() {
+			RequestData();
+		}
+	</script>
+</body>
+
+</html>

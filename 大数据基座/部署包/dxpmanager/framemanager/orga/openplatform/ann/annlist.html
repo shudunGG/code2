@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>公告列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+        .btn-in-column{margin-right:5px;}
+        .btn-in-column-text{margin-left:5px;margin-right:5px;}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="addAnn" class="mini-button" onclick="addAnn">创建公告</a>
+		</div>
+	</div>
+	
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="状态">
+						<div id="search_annStatus" class="mini-combobox" style="width:150px;"
+						textField="text" valueField="id" bind="annStatus" showClose="true"
+					    data="[{id:'1',text:'发布'},{id:'2',text:'未发布'}]" onkeyenter="searchData();" oncloseclick="onCloseClick"></div>
+					</div>
+					<div role="control" label="标题">
+						<input id="search_annTitle" class="mini-textbox"
+							bind="annTitle" onkeyenter="searchData();" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="newsGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="title" headerAlign="center" width="150">标题</div>
+				<div field="outline" headerAlign="center" align="left" width="100%">概要</div>
+				<div field="isReleased" headerAlign="center" align="center" width="150" renderer="onStatusRender">状态</div>
+				<div field="creatorName" headerAlign="center" align="center" width="150">作者</div>
+				<div field="gmtCreateTime" headerAlign="center" renderer="onTimeRender"
+					align="center" width="150">创建时间</div>
+				<div name="operation" headerAlign="center" renderer="onOperationRender"
+				align="center" width="200">操作</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		                      
+		//初始化页面
+		epoint.initPage('annlistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 格式化时间列
+		function onTimeRender(e) {
+			
+			var time = e.value;
+			
+			time = new Date(time);
+			
+			// 格式化时间
+			var year = time.getFullYear();
+			var month = time.getMonth() + 1;
+			month = fixZero(month);
+			var date = time.getDate();
+			date = fixZero(date);
+			var hours = time.getHours();
+			hours = fixZero(hours);
+			var minutes = time.getMinutes();
+			minutes = fixZero(minutes);
+			var seconds = time.getSeconds();
+			seconds = fixZero(seconds);
+			
+			return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+		}
+
+		function fixZero(data){
+			if (data < 10) {
+				data = '0' + data;
+			}
+			return data;
+		}
+		
+		// 公告状态格式化
+		function onStatusRender(e){
+			var status = e.value;
+			
+			var statusText = '';
+			if (status == 1) {
+				statusText = '已发布';
+			} else if (status == 2) {
+				statusText = '未发布';
+			}
+			return statusText;
+		}
+		
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form']);
+		}
+
+		// 绘制操作按钮
+		function onOperationRender(e) {
+			var newsGuid = e.row['newsGuid'];
+			var annStatus = e.row['isReleased'];
+			
+			// 发布
+			var releaseHtml = '<a class="mini-button btn-in-column" id="btnRelease" onclick="releaseAnn(\'' + newsGuid + '\');"><div class="btn-in-column-text">发布</div></a>';
+			// 撤回
+			var withdrawHtml = '<a class="mini-button mini-btn-warning btn-in-column" id="btnWithdraw" onclick="withdrawAnn(\'' + newsGuid + '\');"><div class="btn-in-column-text">撤回</div></a>';
+			// 删除
+			var deleteHtml = '<a class="mini-button mini-btn-danger btn-in-column" id="btnDelete" onclick="deleteAnn(\'' + newsGuid + '\');"><div class="btn-in-column-text">删除</div></a>'
+			// 查看详情
+			var forDetailHtml = '<a class="mini-button btn-in-column" id="btnDetail" onclick="toDetail(\'' + newsGuid + '\');"><div class="btn-in-column-text">查看详情</div></a>';
+		
+			var renderHtml = '<div>';
+			if (annStatus == 1) {
+				// 发布状态
+				renderHtml += withdrawHtml;
+			} else if (annStatus == 2) {
+				// 未发布状态
+				renderHtml += releaseHtml;
+			}
+			renderHtml += deleteHtml + forDetailHtml + '</div>';
+			return renderHtml;
+		}	
+		
+		// 创建公告
+		function addAnn() {
+			epoint.openDialog("创建公告", 'framemanager/orga/openplatform/ann/annadd', detailCallBack, {'width': 1000, 'height': 580});
+		}
+		
+		// 发布公告
+		function releaseAnn(annGuid){
+			epoint.execute('releaseAnn', '', [annGuid], dealAnnCallBack);
+		}
+		
+		// 撤回公告
+		function withdrawAnn(annGuid){
+			epoint.execute('withdrawAnn', '', [annGuid], dealAnnCallBack);
+		}
+		
+		// 删除公告
+		function deleteAnn(annGuid){
+			epoint.execute('deleteAnn', '', [annGuid], dealAnnCallBack);
+		}
+		
+		// 公告操作回调函数
+		function dealAnnCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		// 查看详情
+		function toDetail(annGuid){
+			epoint.openDialog("公告详情", 'framemanager/orga/openplatform/ann/anndetail?annGuid=' + annGuid, detailCallBack, {'width': 1000, 'height': 580});
+		}
+
+		// 查看详情回调
+		function detailCallBack(param) {
+	        if (param) {
+	        	epoint.refresh(['datagrid', 'fui-form'],'',true);
+	        }
+	    }
+		//]]>
+	</script>
+
+
+</body>
+</html>

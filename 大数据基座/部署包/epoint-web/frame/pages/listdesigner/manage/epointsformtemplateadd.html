@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>模版配置添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="模版名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.templatename"
+							required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模版类型" starred="true">
+						<div class="mini-radiobuttonlist" repeatItems="4"
+							id="templatetype" bind="dataBean.templatetype" textField="text"
+							valueField="id" value="0" action="getCctypeModel" required="true"
+							onvaluechanged="changtype"></div>
+					</div>
+				</div>
+				<div role="row" id="form1">
+					<div role="control" label="PC端新增模版地址">
+						<input class="mini-textbox" bind="dataBean.addTemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form2">
+					<div role="control" label="PC端详情模版地址">
+						<input class="mini-textbox" bind="dataBean.detailTemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form3">
+					<div role="control" label="PC端工作流模版地址">
+						<input class="mini-textbox" bind="dataBean.workflowtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form4">
+					<div role="control" label="PC端工作流只读地址">
+						<input class="mini-textbox"
+							bind="dataBean.workflowdetailtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form5">
+					<div role="control" label="PC端打印页模版地址">
+						<input class="mini-textbox" bind="dataBean.printdetailtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form6">
+					<div role="control" label="移动端新增模版地址">
+						<input class="mini-textbox" bind="dataBean.mobileaddtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form7">
+					<div role="control" label="移动端详情模版地址">
+						<input class="mini-textbox"
+							bind="dataBean.mobiledetailtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form8">
+					<div role="control" label="移动端工作流模版地址">
+						<input class="mini-textbox"
+							bind="dataBean.mobileworkflowtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="form9">
+					<div role="control" label="移动端工作流只读地址">
+						<input class="mini-textbox"
+							bind="dataBean.mobileworkflowdetailtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="templist">
+					<div role="control" label="PC端列表模版地址" id="pclist">
+						<input class="mini-textbox" bind="dataBean.listtemplateurl"
+							id="listtemplateurl" />
+					</div>
+				</div>
+				<div role="row" id="templist1">
+					<div role="control" label="移动端列表模版地址" id="mobilelist">
+						<input class="mini-textbox" bind="dataBean.mobileListtemplateurl"
+							id="mobileListtemplateurl" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999999" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('epointformtemplateaddaction', '', function(data) {
+			changtype();
+		});
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				// 清空表单
+				epoint.clear('fui-form');
+				mini.get("templatetype").setValue(0)
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+
+			}
+		}
+
+		//选择类型的时候触发事件
+		function changtype() {
+			var templatetype = mini.get("templatetype").getValue();
+			var pclistisshow = templatetype == "0" || templatetype == "3" ? "block"
+					: "none";
+			var formisshow = templatetype == "1" ? "block" : "none";
+			var mobilelistisshow = templatetype == "2" ? "block" : "none";
+			//pc端列表输入项控制显隐						 
+			document.getElementById("templist").style.display = pclistisshow;
+			//移动端列表输入项控制显隐
+			document.getElementById("templist1").style.display = mobilelistisshow;
+			//表单输入项控制显隐
+			document.getElementById("form1").style.display = formisshow;
+			document.getElementById("form2").style.display = formisshow;
+			document.getElementById("form3").style.display = formisshow;
+			document.getElementById("form4").style.display = formisshow;
+			document.getElementById("form5").style.display = formisshow;
+			document.getElementById("form6").style.display = formisshow;
+			document.getElementById("form7").style.display = formisshow;
+			document.getElementById("form8").style.display = formisshow;
+			document.getElementById("form9").style.display = formisshow;
+		}
+	</script>
+</body>
+</html>

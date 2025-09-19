@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息渠道列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="openAdd();"
+			id="btnAddRecord"> 新增记录 </a> <a id="btnDel" class="mini-button"
+			state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('将同步删除消息渠道下的消息发送规则，确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-combobox" bind="channelID" emptyText="请输入渠道ID搜索"
+				id="channelID" showNullItem="true" action="getChannelIdAll"
+				width="180px" oncloseclick="onCloseClick" showClose="true"
+				allowInput="true" textField="channelID" valueField="channelID"
+				onenter="searchData" /> <input class="mini-textbox"
+				bind="channelName" emptyText="请输入渠道名称搜索" onenter="searchData" /> <a
+				class="mini-button ml8" state="primary" iconCls="icon-search"
+				onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="channelid" width="150">渠道ID</div>
+				<div field="channelname" width="300">渠道名称</div>
+				<div field="initusertable" width="140">初始化用户表</div>
+				<div field="inituserfield" width="140">初始化用户字段</div>
+				<div field="tableback" width="140">是否支持消息撤回</div>
+				<div field="ordernumber" width="60">排序</div>
+				<!-- <div width="60" renderer="onImportRenderer">导入</div> -->
+				<div type="actioncolumn">
+					操作 <span type="action" icon="icon-edit" onclick="openEdit">修改</span>
+					<span type="action" icon="icon-gear" onclick="openExtendConfig"
+						renderer="onConfigRenderer">额外配置</span>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messageschannellistaction');
+
+		// 绘制行导入按钮
+		var onImportRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-copy", "importUser",
+					"channelid");
+		};
+		function importUser(channelid) {
+			epoint.confirm('确认导入', '', function() {
+				importFrameUser(channelid);
+			});
+		}
+		function importFrameUser(channelid) {
+			epoint.execute("importFrameUser?channelid=" + channelid, '',
+					importcallback);
+		}
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"framemanager/messages/channel/messageschanneladd",
+					function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 1100,
+						'height' : 550
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(row) {
+			epoint.openDialog('修改记录',
+					"framemanager/messages/channel/messageschanneledit?guid="
+							+ row.rowguid, function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param,{state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 1100,
+						'height' : 550
+					});
+		}
+
+		//渲染配置列表
+		var onConfigRenderer = function(e) {
+			if (e.record.extendconfigpage) {
+				e.icon.visible = true;
+			} else {
+				e.icon.visible = false;
+			}
+		};
+
+		function openExtendConfig(e) {
+			var extendconfigpage = e.extendconfigpage;
+			var channelguid = e.rowguid;
+			if (extendconfigpage == null || extendconfigpage == '') {
+				extendconfigpage = "framemanager/messages/channel/channeldefaultconfig";
+			}
+			epoint.openDialog('渠道个性配置', extendconfigpage + "?channelguid="
+					+ channelguid, function(data){
+				epoint.showTips(data, {state : 'success'});
+			}, {
+				'width' : 900,
+				'height' : 550
+			});
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				searchData();
+			}
+		}
+		function importcallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 类型channelID下拉选关闭方法
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

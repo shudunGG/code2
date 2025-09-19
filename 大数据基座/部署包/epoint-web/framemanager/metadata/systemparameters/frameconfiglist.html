@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>系统参数</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的左侧内容 -->
+	<div class="fui-left" id="fui-left">
+		<!-- 左侧的标题
+             @local 国际化的标识
+             表示从语言包中的'sysParamCategory'取值
+         -->
+		<div role="head" title="参数分类">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" onclick="openType()"
+					tooltip="分类设置"></a>
+			</div>
+		</div>
+
+		<!-- 左侧的内容区域 -->
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<!-- 左右布局页面的右侧内容 -->
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<!-- local标签用于国际化 -->
+			<div class="btn-group ">
+				<a class="mini-button" state="primary" onclick="addConfig"> 新增参数
+				</a> <a id="deleteUser" class="mini-button" state="danger"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!',  {state : 'warning'});} else {epoint.confirm('确认删除？','',deleteSelected);}">删除选中</a>
+				<a class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要操作的记录!', {state : 'warning'});}else{move();}">转移选中</a>
+			</div>
+
+			<div class="btn-group ">
+				<a class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！',  {state : 'warning'});} else {epoint.execute('exportScript','',exportsql)}">脚本导出</a>
+				<input id="database" autoLoad="false" action="getDsTypes"
+					textField="text" valueField="id" class="mini-combobox mr10" /> <a
+					class="mini-dataexport" id="dataexport" gridId="datagrid"
+					fileName="系统参数" action="getExportModel" extraId="fui-form"
+					exportAction="frameconfiglistaction.export"></a>
+			</div>
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="name"
+					bind="frameconfiglistaction.frameConfig.configname"
+					emptyText="请输入参数名称或关键字搜索" onenter="searchData" /> <input
+					class="mini-hidden"
+					bind="frameconfiglistaction.frameConfig.categoryguid"
+					id="categoryGuid" /> <input class="mini-hidden" bind="ishid"
+					id="ishid" /> <a class="mini-button ml8" state="primary"
+					iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="sysguid" multiSelect="true" style="height: 100%;"
+				allowResize="true" action="getDataGridData" showPager="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="configname" width="250" allowSort="true"
+						sortOrder="desc">
+						参数名称 <input property="editor" class="mini-textbox" />
+					</div>
+					<div field="configvalue" width="100">
+						参数值 <input property="editor" class="mini-textbox" />
+					</div>
+					<div field="description" width="100%">
+						参数描述 <input property="editor" class="mini-textbox" />
+					</div>
+					<div field="isrestjsboot" width="80" renderer="onCheckRestJs">接入js</div>
+					<div field="ordernumber" width="100" allowSort="true"
+						sortOrder="desc">
+						排序号 <input property="editor" class="mini-textbox"
+							vtype="int;range:0,99999999" />
+					</div>
+					<div type="actioncolumn">
+						操作 <span type="action" icon="icon-edit" onclick="editItems">修改</span>
+						<span type="action" icon="icon-remove" onclick="delItems">删除</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameconfiglistaction', '', initDataBase);
+
+		$(document).ready(function() {
+			// 将导出按钮文字设置为“导出”
+			$("#dataexport").find(".mini-button-text").text("导出")
+			$("#dataexport").click(function(e) {
+				$("#dataexport").find(".mini-button-text").text("导出")
+			});
+		});
+
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle,B");
+			mini.get("database").setText("Oracle");
+
+			//判断是否有获取到categoryguid，有的话影藏左侧树
+			if (e.categoryguidvalue) {
+				$('#fui-left').addClass("closed");
+				$('#fui-left').hide();
+				mini.get('categoryGuid').setValue(
+						id == 'f9root' ? "" : e.categoryguidvalue);
+			}
+
+			if (e.ishid) {
+				mini.get("ishid").setValue(e.ishid);
+			}
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('categoryGuid').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			searchData();
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		var temp_configName;
+		// 删除一行数据
+		function delItems(row) {
+			temp_configName = row.configname;
+			// 弹出确认框
+			epoint.confirm('确认删除吗', '', function() {
+				epoint.execute("frameconfiglistaction.delConfig", '',
+						[ temp_configName ], callback);
+			});
+		}
+
+		// 弹出新增窗口
+		function addConfig() {
+			var categoryGuid = mini.get('categoryGuid').getValue();
+			var isHid = mini.get('ishid').getValue();
+			epoint.openDialog('参数新增',
+					'framemanager/metadata/systemparameters/frameconfig?categoryGuid='
+							+ categoryGuid + '&flg=' + isHid, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						addCallBack(param);
+					}, {
+						'width' : 550,
+						'height' : 450
+					});
+		}
+		// 弹出修改窗口
+		function editItems(row) {
+			var isHid = mini.get('ishid').getValue();
+			epoint.openDialog('参数修改',
+					'framemanager/metadata/systemparameters/frameconfig?sysGuid='
+							+ row.sysguid + '&flg=' + isHid, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						addCallBack(param);
+					}, {
+						'width' : 550,
+						'height' : 450
+					});
+		}
+
+		// 弹出分类管理窗口
+		function openType() {
+			epoint
+					.openDialog(
+							'系统参数分类管理',
+							"framemanager/metadata/systemparameters/frameconfigcategory",
+							isRefreshTree, {
+								'width' : 1000,
+								'height' : 500
+							});
+		}
+
+		// 刷新tree
+		function isRefreshTree(value) {
+			if (value) {
+				epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			console.log("==" + param)
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.showTips(args.msg, {
+					state : 'success'
+				});
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', [ 'datagrid', 'fui-form' ],
+					callback);
+		}
+		// 导出sql语句
+		function exportsql(data) {
+			var combox = mini.get("database").getValue();
+			var obj = combox.split(",");
+			epoint.openDialog(mini.get("database").getText() + '脚本导出',
+					"framemanager/metadata/systemparameters/frameconfigexport?configID="
+							+ data.exportlist + "&databaseType=" + obj[0]
+							+ "&type=" + obj[1], '', {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+		// 转移选中
+		function move() {
+			epoint.execute('frameconfiglistaction.move', 'datagrid', movetc);
+		}
+
+		function movetc(data) {
+			epoint.openDialog('转移参数分类',
+					"framemanager/metadata/systemparameters/frameconfigcategoryselect?guidlist="
+							+ data.movelist, movetcCallBack, {
+						'width' : 500,
+						'height' : 400
+					});
+		}
+
+		function movetcCallBack(msg) {
+			if (msg && msg != 'close') {
+				searchKeepPage(msg);
+			}
+		}
+		function searchKeepPage(msg) {
+			if (msg == 'success') {
+				epoint.showTips('转移成功', {
+					state : 'success'
+				});
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onCheckRestJs(e) {
+			//默认接入的
+			var flag = "gridAllowUnselect" == e.row.configname
+					|| "EnableCustomSort" == e.row.configname
+					|| "noUseTabsNav" == e.row.configname
+					|| "adjustGridPageSize" == e.row.configname
+					|| "alertToTips" == e.row.configname
+					|| "fileSizeLimit" == e.row.configname
+					|| "fileLimitType" == e.row.configname
+					|| "editorModel" == e.row.configname
+					|| "uploadPreviewUrl" == e.row.configname
+					|| "uploadPreviewText" == e.row.configname
+					|| "gridPageSize" == e.row.configname;
+			if ("1" == e.row.isrestjsboot || flag) {
+				return epoint.renderCell(e, "action-icon icon-check");
+			}
+
+		}
+	</script>
+</body>
+
+</html>

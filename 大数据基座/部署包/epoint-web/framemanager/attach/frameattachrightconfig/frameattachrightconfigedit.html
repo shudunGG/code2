@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>附件权限配置表修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="鉴权类型">
+						<div class="mini-radiobuttonlist" id="verifytype" showNullItem="true" bind="verifytype"
+			              action="getVerifyTypeList" textField="text" valueField="id" onvaluechanged="change(this.value)" >
+			        	</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="clienttag">
+						<div id="cliengtag" class="mini-textbox" bind="cliengtag"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="clenginofo">
+						<div id="clienginfo" class="mini-textbox" bind="clienginfo"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="attachguid">
+						<div id="attachguid" class="mini-textbox" bind="attachguid"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" id="save" onclick="saveModify" state="primary">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameattachrightconfigeditaction', "", initCallback);
+		
+		function initCallback(data)
+        {
+			if (data.verifytype == 0)
+	        {
+				mini.get("cliengtag").enable();
+				mini.get("clienginfo").enable();
+				mini.get("attachguid").disable();
+	        }
+			if (data.verifytype == 1)
+	        {
+				mini.get("cliengtag").disable();
+				mini.get("clienginfo").disable();
+				mini.get("attachguid").enable();
+	        }
+        }
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+		
+        function change(verifytype) {
+        	if (verifytype == 0)
+	        {
+        		setEmpty();
+				mini.get("cliengtag").enable();
+				mini.get("clienginfo").enable();
+				mini.get("attachguid").disable();
+	        }
+			if (verifytype == 1)
+	        {
+				setEmpty();
+				mini.get("cliengtag").disable();
+				mini.get("clienginfo").disable();
+				mini.get("attachguid").enable();
+	        }
+        }
+        
+        function setEmpty() {
+			mini.get("cliengtag").setValue(null);
+			mini.get("clienginfo").setValue(null);
+			mini.get("attachguid").setValue(null);
+        }
+	</script>
+</body>
+</html>

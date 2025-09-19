@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>配置页</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="saveConfig"
+			onclick="saveConfig">保存配置</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="调度服务地址" style="width: 700px"
+						starred="true">
+						<input class="mini-textbox" id="scheduleraddress"
+							bind="schedulerAddress" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">调度服务地址，示例：http://192.168.206.33:8080/epoint-job-scheduler。调度服务高可用集群下，调度服务地址配置多个用逗号隔开。</div>
+				</div>
+				<div role="row">
+					<div role="control" label="调度服务连接超时时间(秒)"  style="width: 100px" >
+						<input class="mini-textbox" id="scheduleConnectTimeout" bind="scheduleConnectTimeout"  vtype="int;range:1,100"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">调度服务管理API的连接超时时间，不填默认为3</div>
+				</div>
+				<div role="row">
+					<div role="control" label="调度服务响应超时时间(秒)" style="width: 100px" >
+						<input class="mini-textbox" id="scheduleReadTimeout" bind="scheduleReadTimeout" vtype="int;range:1,100"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">调度服务管理API的响应超时时间，不填默认为7</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="注册中心地址" style="width: 700px">
+						<input class="mini-textbox" id="registryaddress"
+							bind="registryAddress" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">注册中心地址，示例：http://192.168.206.33:8080/epoint-job-registry（本地址不设置则与调度服务地址相同）</div>
+				</div> -->
+				<div role="row">
+					<div role="control" label="调度服务token" style="width: 700px">
+						<input class="mini-textbox" id="token" bind="token" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">输入调度服务预设token，未配置可不填。</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//初始化请求
+		epoint.initPage('epointjobmanagerconfigaction', "", "");
+
+		// 保存配置
+		function saveConfig() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', callback);
+			}
+		}
+
+		// 新增操作的回调
+		function callback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.showTips(data.msg,  {state : 'success'});
+					// 刷新页面
+					epoint.refresh([ 'fui-form' ], '', true);
+				}else{
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+			}
+		}
+	</script>
+</body>
+
+</html>

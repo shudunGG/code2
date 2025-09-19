@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>系统字段管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!--必须有，加载时的loading效果  -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a onclick="save" class="mini-button">保存</a>
+		</div>
+	</div>
+	<div class="fui-content" align="center">
+		<div class="fui-form" id="fui-form">
+			<div role="form" id="form">
+				<div role="row">
+					<div role="control" label="主表选择" starred="true">
+						<input id="mainTable" class="mini-combobox" style="width: 250px"
+							textField="text" valueField="id" bind="mainTableId"
+							onvaluechanged="onSelectChange" action="mainTableModel"
+							allowInput="false" showNullItem="true" nullitemText="请选择..."
+							emptyText="请选择..." requiredErrorText="请先选择主表!" required="true" />
+					</div>
+					<div role="control" label="主表字段选择" starred="true">
+						<input id="mainTableField" class="mini-combobox"
+							style="width: 250px" textField="text" valueField="id"
+							bind="mainFieldId" allowInput="false" showNullItem="true"
+							nullitemText="请选择..." emptyText="请选择..."
+							requiredErrorText="请先选择主表字段!" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联类型" starred="true">
+						<div class="mini-combobox" repeatItems="2" id="relationtype"
+							bind="relationType" textField="text" valueField="id"
+							action="getRelationTypeModel" style="width: 250px"
+							required="true"></div>
+					</div>
+					<div role="control" label="对应子表字段选择" starred="true">
+						<input id="goalTableField" class="mini-combobox" textField="text"
+							valueField="id" style="width: 250px" bind="goalFieldId"
+							action="goalFieldModel" allowInput="false" showNullItem="true"
+							nullitemText="请选择..." emptyText="请选择..."
+							requiredErrorText="请先选择主表字段!" required="true" />
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script type="text/javascript">
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("tablefieldrelationconfigeditaction");
+
+		function onSelectChange(e) {
+			if (e.value != null && e.value != "") {
+				epoint.execute("mainFieldValueChange", null, [ e.value ],
+						function(data) {
+							mini.get("mainTableField").setData(data);
+						});
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute("save", "", null, function(rtn) {
+					if (rtn && rtn.msg && rtn.flag == 'success') {
+						epoint.alertAndClose(rtn.msg);
+					} else if (rtn && rtn.msg) {
+						epoint.alert(rtn.msg);
+					}
+				});
+			}
+
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

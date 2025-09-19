@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Field to add</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have, when loading the loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" onclick="add();">sure add</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="The current data table name">
+						<input id="tablename" class="mini-outputtext" bind="tablename" />
+					</div>
+					<div role="control" label="SQL table name of data">
+						<input id="sqltablename" class="mini-outputtext"
+							bind="sqltablename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Chinese name" starred="true">
+						<input id="fieldChineseName" class="mini-textbox"
+							bind="tableStruct.fieldchinesename" required="true"
+							requiredErrorText="Chinese name can't be empty!" />
+					</div>
+					<div role="control" label="English name" starred="true">
+						<input id="fieldName" class="mini-textbox"
+							bind="tableStruct.fieldname" required="true"
+							requiredErrorText="English names can't be empty!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The field type">
+						<input id="fieldtypeMenu" autoLoad="false" action="getDataType"
+							textField="text" valueField="id" bind="tableStruct.fieldtype"
+							class="mini-combobox" value="nvarchar" onvaluechanged="changType" />
+					</div>
+					<div role="control" label="The length of the field" id="fieldlengthDiv">
+						<input class="mini-textbox" id="fieldLength" bind="fieldlength"
+							onvalidation="onFieldLengthValidation" vtype="int" /> <input
+							id="fieldlengthOrg" class="mini-hidden" bind="fieldlengthOrg" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Field display type" style="width:27%">
+						<input autoLoad="false" id="displayID" action="getDisplayType"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="Please select a data display type..." nullItemText="Please select a data display type..."
+							bind="tableStruct.fielddisplaytype" class="mini-combobox"
+							onvaluechanged="changeMacroString" />
+					</div>
+					<!--div role="control" label="The data source" style="width:27%">
+						<input autoLoad="false" id="codesource" action="getCodesource"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="Please select" nullItemText="Please select" allowInput="true"
+							onvalidation="onComboValidation"
+							bind="tableStruct.datasourceCodename" class="mini-combobox" />
+					</div>
+					<div class="btn-group mr10" style="width:10%">
+			            <a class="mini-button" id="codeItem" onclick="addCodeItem();">Code Items</a>
+		            </div-->
+				</div>
+				<div role="row" id="itemValue" >
+					<div role="control" label="items value">
+						<input class="mini-textbox" id="addItem" width="200px" /> 
+						<a class="mini-button" id="addRecord" width="100px" onclick="addRecord" iconCls="icon-addcircle">add item</a> 
+						<a class="mini-button" id="delRecord" width="100px" onclick="delRecord" iconCls="icon-minuscircle">delete item</a>
+						<select id="items" multiple="multiple" style="width: 100%; height: 100%"></select>
+					</div>
+				</div>
+				<div role="row" id="calculatePanel" style="display: none">
+					<div role="control" label="A formula to calculate">
+						<input class="mini-textbox" bind="calculateValue" />
+					</div>
+				</div>
+				<div role="row" id="macroPanel" style="display: none">
+					<div role="control" label="The macro control display">
+						<div id="macroDateDisplay" class="mini-combobox"
+							bind="macroDateDisplay" action="getMacroDateDisplayList"
+							textField="text" valueField="id"
+							style="display: none; width: 250px"></div>
+						<div id="macroStringDisplay" class="mini-combobox"
+							bind="macroStringDisplay" action="getMacroStringDisplayList"
+							textField="text" valueField="id"
+							style="display: none; width: 250px"
+							onvaluechanged="changeMacroString"></div>
+					</div>
+					<div role="control" label="When computing">
+						<div id="computerTime" class="mini-radiobuttonlist"
+							bind="rdoCaculateTimeDate" action="getTypeList" textField="text"
+							valueField="id"></div>
+					</div>
+				</div>
+				<div role="row" id="flowNumPanel" style="display: none">
+					<div role="control" label="Serial number prefix">
+						<input class="mini-textbox" bind="flowNumPreffix" />
+					</div>
+					<div role="control" label="Serial number digits">
+						<input class="mini-textbox" bind="flowNumLength" />
+					</div>
+				</div>
+				<div role="row" id="imagePanel" style="display: none">
+					<div role="control" label="image upload">
+						<div id="file" class="mini-webuploader"
+							action="formtablestructaddaction.getFileUploadModel"
+							fileNumLimit="1" limitType="jpg,png,jpeg" fileSingleSizeLimit="5120"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="In the list">
+						<div id="toDispInGrid" bind="tableStruct.todispingrid"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+					<div role="control" label="Whether the query conditions">
+						<div id="isQueryCondition" bind="tableStruct.isquerycondition"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Sort field">
+						<div id="isOrderField" bind="tableStruct.isorderfield"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+					<div role="control" label="Sort direction">
+						<div bind="tableStruct.orderdirection" action="getDirectionList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The control display width">
+						<div bind="controlwidth" action="getWidthList" textField="text"
+							valueField="id" class="mini-combobox"></div>
+					</div>
+					<div role="control" label="Required Fields">
+						<div id="mustFill" bind="tableStruct.mustfill"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Grid column widths">
+						<input class="mini-textbox" bind="tableStruct.gridwidth" />
+					</div>
+					<div role="control" label="Allow folding in Grid">
+						<div bind="tableStruct.gridmultirows" action="getBooleanList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Display in page">
+						<div bind="dispInAdd" action="getBooleanList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script type="text/javascript">var miniLocal='en_US.js';</script>
+	<input class="mini-hidden" id="epimagefileguid" bind="formtablestructaddaction.epimageguid"/>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Init page
+		epoint.initPage('formtablestructaddaction');
+
+		var typeSelectItems = mini.get("fieldtypeMenu");
+
+		function add() {
+			//handleFileGuid();
+			var items="";
+			var selOpt = $("#items option");
+			for(var n=0; selOpt!=null && selOpt.length>0 && n<selOpt.length; n++){
+				items += selOpt[n].innerHTML+";";
+			}
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', [ 2,items ], closeCallback);
+			}
+		}
+
+		// Operation callback
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag && (data.flag == "1")) {
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				} else {
+					epoint.alert(data.msg, '', null, 'info');
+				}
+			}
+		}
+
+		function changType(e) {
+			mini.get("displayID").setValue("");
+			var fieldtypeMenu = mini.get("fieldtypeMenu").getValue();
+			if (fieldtypeMenu != null && fieldtypeMenu != "") {
+				epoint.execute("valueChange", 'fui-form', [ fieldtypeMenu ],
+						tcallback);
+			}
+			changeMacroString();
+		}
+
+		function tcallback(data) {
+			if (data) {
+				mini.get("displayID").setData(data);
+			}
+		}
+
+		function onFieldLengthValidation(e) {
+			if (e.value) {
+				var orgValue = mini.get("fieldlengthOrg").getValue();
+				if (parseInt(e.value) < parseInt(orgValue)) {
+					e.isValid = false;
+					e.errorText = "Field length is not allowed to be less than the original value!";
+				}
+			}
+		}
+
+		function changeMacroString() {
+			var fieldtypeMenu = mini.get("fieldtypeMenu").getValue();
+			var displayID = mini.get("displayID").getValue();
+			var macroStringDisplay = mini.get("macroStringDisplay").getValue();
+			if (fieldtypeMenu != null && fieldtypeMenu != ""
+					&& displayID != null && displayID != "") {
+				if (fieldtypeMenu == "nvarchar" && displayID == "Macro") {
+					document.getElementById("macroPanel").style.display = 'block';
+					document.getElementById("macroStringDisplay").style.display = 'block';
+
+					if (macroStringDisplay != null
+							&& macroStringDisplay == "EPOINT_SYS_FlowNum") {
+						document.getElementById("flowNumPanel").style.display = 'block';
+					}
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				} else if (fieldtypeMenu == "Numeric"
+						&& displayID == "CalculateControl") {
+					document.getElementById("calculatePanel").style.display = 'block';
+					document.getElementById("macroPanel").style.display = 'none';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				} else if (fieldtypeMenu == "DateTime" && displayID == "Macro") {
+					document.getElementById("macroPanel").style.display = 'block';
+					document.getElementById("macroDateDisplay").style.display = 'block';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				} else if(fieldtypeMenu == "Image" && displayID == "epimage"){
+					document.getElementById("macroPanel").style.display = 'none';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';//'block'
+				} else{
+					document.getElementById("macroPanel").style.display = 'none';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				}
+			} else {
+				document.getElementById("macroPanel").style.display = 'none';
+				document.getElementById("macroStringDisplay").style.display = 'none';
+				document.getElementById("flowNumPanel").style.display = 'none';
+				document.getElementById("calculatePanel").style.display = 'none';
+				document.getElementById("macroDateDisplay").style.display = 'none';
+				document.getElementById("imagePanel").style.display = 'none';
+			}
+		}
+
+		function onComboValidation(e) {
+			if (e.value) {
+				var items = this.findItems(e.value);
+				if (!items || items.length == 0) {
+					e.isValid = false;
+					e.errorText = "The input value is not in the drop - down data";
+				}
+			}
+		}
+
+		function handleFileGuid() {
+			var imageupload = mini.get("file");//Get picture upload control
+			if (imageupload.length) {
+				var lia = imageupload.find('ul>li a');
+				var imageurl = lia.attr('href');
+				if (imageurl) {
+					mini.get("epimagefileguid").setValue(imageurl);
+				}
+			}
+		};
+		
+		function addRecord() {
+			var addItem = mini.get("addItem").getValue();
+			if(addItem){
+				var selObj = $("#items");
+				selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+			}
+			mini.get("addItem").setValue("");
+		}
+
+		function delRecord() {
+			var selOpt = $("#items option:selected");
+			selOpt.remove();
+			mini.get("addItem").setValue("");
+		}
+		
+		/**数据源相关暂注释
+		function addCodeItem(){
+    		epoint.openDialog("Code Items","framemanager/sform/formlistmanage/codemainlist", addCallBack, {
+    			'width':1000,
+    			'height':600
+    		});
+    	}
+		
+		function addCallBack(data){
+			if(data){
+				epoint.refresh('codesource');
+			}
+		}*/
+
+		//]]>
+	</script>
+</body>
+</html>

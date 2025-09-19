@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title></title>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div class="fui-accordions">
+					<div role="accordion" opened="true" ontoggle="onToggle">
+						<div role="head" title="基本信息"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="模板名称">
+									<input class="mini-outputtext" bind="dataBean.ChartName">
+								</div>
+								<div role="control" label="小程序ID">
+									<input class="mini-outputtext" bind="dataBean.smallprogramid">
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="模板描述">
+									<input class="mini-textarea" bind="dataBean.Remark" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="缩略图">
+									<img id="pic" src=""> <input id="chartIcon" class="mini-hidden"
+										bind="dataBean.chartIcon" />
+								</div>
+								<div role="control" label="排序号">
+									<input class="mini-textbox" bind="dataBean.OrderNum" vtype="int;range:0,99999;"
+										emptyText="请填写排序号..." width="65%" id="ordernum" /> <a class="mini-button"
+										id="editorder" onclick="editorder()"
+										style="width: 50px; margin-left: 5px;">编辑</a>
+									<a class="mini-button" id="saveorder" onclick="saveorder()"
+										style="width: 50px; margin-left: 5px;">保存</a>
+
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true" ontoggle="onToggle">
+						<div role="head" title="模板参数格式"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="模板描述">
+									<input class="mini-textarea" bind="dataBean.paramter" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 请修改相对路径 -->
+		<script src="../../../../../rest/resource/jsboot"></script>
+
+		<script>
+			var address = Util.getRootPath();
+			// 初始化页面
+			epoint.initPage('cockpitcardtemplatedetailjsaction',null,function (data) {
+				mini.get('ordernum').disable();
+				mini.get('saveorder').hide();
+				mini.get('editorder').show();
+				// $('#pic').attr('src',
+				// 		address
+				// 		+ "/frame/pages/eianalysemis/dxpdatasource/msg/images/"
+				// 		+ mini.get('chartIcon').getValue()
+				// 		);
+				$('#pic').attr("./images/" + data.guid + "/" + mini.get('chartIcon').getValue());
+
+			});
+			function editorder() {
+				mini.get('ordernum').enable();
+				mini.get('editorder').hide();
+				mini.get('saveorder').show();
+			}
+
+			function saveorder() {
+				epoint.execute("saveorder", '', '', function (data) {
+					if (data.msg) {
+						epoint.alert(data.msg);
+					}
+					searchData();
+				});
+			}
+
+			function searchData() {
+				epoint.refresh(['fui-form']);
+			}
+		</script>
+</body>
+
+</html>

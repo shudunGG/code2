@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>页面布局</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" onclick="generateFile()">生成页面</a>
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				<em>注意：</em>表单布局规范沿用之前的规范，有2列、4列、6列布局。不支持其他列数的布局方式
+			</p>
+		</div>
+
+		<div class="fui-content">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<font color="red">下面是针对新增和修改,明细页面的布局：</font>请输入最大列数(您将按照这种布局生成页面)：
+					</div>
+					<div role="row">
+						<input bind="columnNumber" class="mini-textbox" style="width:400px"/>
+					</div>
+					<div role="row">
+						<div class="mini-outputtext" bind="dataContent" ></div>
+					</div>
+					<div role="row">
+						<font color="red"> 你也可以在此进行详细的布局,按照行列分布,中间用;隔开,换行的时候请加#,只需填写序号即可。</font>
+					</div>
+					<div role="row">
+						<input bind="layOut" class="mini-textarea" style="width:400px"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			// 初始化页面
+			epoint.initPage('layoutpageaction', "", callback);
+
+			function callback() {
+			}
+
+			// 保存并关闭
+			function generateFile() {
+				if (epoint.validate()) {
+					epoint.execute('generateFile', 'fui-form', closeCallback);
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				if (data.msg) {
+					//if (data.msg.indexOf("成功") != -1) {
+					if(data.success){
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						parent.epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+		</script>
+	</body>
+
+</html>

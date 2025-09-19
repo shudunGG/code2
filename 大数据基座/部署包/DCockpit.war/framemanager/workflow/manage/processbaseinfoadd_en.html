@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The process to add</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="addProcess()">sure add</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="The name of the process" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="workflowProcess.processName" emptyText="The name of the processCan't be empty"
+							style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="category" id="type">
+						<input class="mini-buttonedit" allowInput="false" id="classname"
+							bind="itemName" style="width: 100%;" onbuttonclick="showSelect" />
+					</div>
+				</div>
+				<!--div role="row">
+					<div role="control" label="Form access address" id="showFormUrl">
+						<input class="mini-textbox" bind="formUrl" style="width: 100%;" />
+					</div>
+				</div-->
+				<div role="row">
+					<div role="control" label="Whether to enable">
+						<input class="mini-checkbox" bind="isStart" />
+					</div>
+					<div role="control" label="Whether to allow was listening in">
+						<input class="mini-checkbox" bind="isAllowListener" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input class="mini-textbox" bind="workflowProcess.orderNum"
+							style="width: 10%;" vtype="range:0,100000" />
+					</div>
+					<div role="control" label="Open the custom process">
+						<input class="mini-checkbox" bind="custom" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="open freedomprocess">
+						<input class="mini-checkbox" bind="freedom" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input class="mini-textarea" bind="workflowProcess.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<input bind="workflowProcess.classId" id="classid"
+					class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[ 
+		//Initialize the page
+		epoint.initPage("processbaseinfoaddaction", '', initAdd);
+
+		function initAdd(e) {
+			if (e) {
+				mini.get("classname").setValue(e.name);
+				mini.get("classname").setText(e.name);
+			}
+		}
+
+		var processVersionGuid;
+		var clickByNext = false;
+		var currentFlow;
+
+		function showSelect(e) {
+			epoint.openDialog('Choose belongcategory',
+					'framemanager/workflow/manage/selectItemcode',
+					showSelectOperJS, {
+						'width' : 300,
+						'height' : 550
+					});
+		}
+
+		function addProcess() {
+			if (epoint.validate()) {
+				epoint.execute('addProcess', '', addComplete);
+			}
+		}
+
+		function showSelectOperJS(data) {
+			if (data && data != 'close') {
+				var codeItem = data.split(";")[1];
+				var codeName = data.split(";")[0]
+				mini.get('classname').setValue(codeName);
+				mini.get('classname').setText(codeName);
+				mini.get('classid').setValue(codeItem);
+				// 						$("#templateform\\:classId")[0].value=codeItem;
+				// 				       	$("#templateform\\:className")[0].value=codeName;
+			}
+		}
+
+		function addComplete(data) {
+			if (data) {
+				var message = data.message;
+				if(data.flag != null && (data.flag == "1")){
+					var msg = message.split('#');
+					processVersionGuid = msg[1];
+					//New success disable Off button
+					mini.get('addbtn').disable();
+					epoint.alertAndClose(msg[0], '', '', '');
+				}else{
+					epoint.alert(message, '', '', 'warning');
+				}
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

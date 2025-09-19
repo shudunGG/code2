@@ -1,0 +1,1 @@
+ select count(*) from user_tab_columns where table_name = upper('frame_exttabsconfig') and column_name = upper('exturl') and data_type='NVARCHAR2' and data_length='400'

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SQL预览</title>
+
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+
+</style>
+<body>
+<!-- 页面内容区域 -->
+<div id="tabs0" class="mini-tabs" activeIndex="0" style="width:100%" plain="false">
+    <div title="PrestoSql">
+        <div id="form" class="fui-form">
+            <div role="form">
+                <div role="row">
+                    <input id="sql" name="sql" class="mini-textArea" allowInput="false" autoescape="true"
+                           height="480px" width="100%"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../../frame/fui/js/jsboot.js"></script>
+<script>
+		SrcBoot.output([ './js/sql-formatter.js' ]);
+
+</script>
+<script>
+		//获取表单数据
+		epoint.initPage('dxpmodelchecksqlaction','',function(data){
+		    if(data.isHive){
+		        //hive的情况下，展示hive的SQL
+                addTab();
+		    }
+			var sql='';
+			var hivesql='';
+			var count=data.sql.length;
+			for(var i=0;i<count;i++){
+				sql+=sqlFormatter.format(data.sql[i])+';\r\n';
+			}
+			mini.get('sql').setValue(sql);
+			var count=data.hivesql.length;
+			for(var i=0;i<count;i++){
+				hivesql+=sqlFormatter.format(data.hivesql[i])+';\r\n';
+			}
+			mini.get('hivesql').setValue(hivesql);
+		});
+
+        function addTab() {
+            var tabs = mini.get("tabs0");
+
+            //add tab
+            var tab = {title: "HiveSql"};
+            tab = tabs.addTab(tab);
+
+            //tab body
+            var el = tabs.getTabBodyEl(tab);
+            var htmlstr="<div  class=\"fui-form\">";
+            htmlstr+="<div role=\"form\">";
+            htmlstr+=" <div role=\"row\">";
+            htmlstr+="  <input id=\"hivesql\" name=\"hivesql\" class=\"mini-textArea\" allowInput=\"false\" autoescape=\"true\"";
+                        htmlstr+=" height=\"480px\" width=\"100%\"/>";
+            htmlstr+="</div>";
+            htmlstr+="</div>";
+            htmlstr+=" </div>";
+            el.innerHTML = htmlstr;
+            mini.parse();
+        }
+
+</script>
+</body>
+
+</html>

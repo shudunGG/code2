@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>新增授权</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="body">
+					<div role="row">
+						<div role="control" label="认证名称" starred="true">
+							<input id="principal" bind="principal" class="mini-textbox" 
+								required="true" requiredErrorText="认证名称不能为空" readOnly="true"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="认证文件" starred="true">
+							<div id="uploader" class="mini-webuploader" pickerText="导入"
+                                 action="getFileUploadModel" limitType="keytab" fileNumLimit="1" dataImport="true"
+                                 auto="true"></div>
+						</div>
+						<div role="control" label="授权方式" starred="true">
+							<input id="authorization" bind="authorization" class="mini-combobox" required="true" 
+								data="[{text:'写权限',id:'W'},{text:'读权限',id:'R'}]"
+								requiredErrorText="授权方式不能为空" readOnly="true"
+								onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row" id="groupnameRow">
+						<div role="control" label="消费组名称" starred="true">
+							<select id="groupname-0" style="width: 470px;height:29px;border-radius:4px;border:#d6d6d6 1px solid;padding-left:10px" ></select>
+								<a class="mini-button" iconCls="icon-addcircle" onclick="add()" style="margin-left:20px; width: 28px;height:28px;"></a>
+<!-- 								<a class="mini-button" iconCls="icon-minuscircle" onclick="deleteGroup()" style="margin-left:7px; width: 28px;height:28px;"></a>
+ -->						</div>
+					</div>
+				</div>
+			</div>
+ 			<div class="btn-group" style="margin: 30px auto; width: 30%;">
+				<a class="mini-button mr10 mini-btn-primary" iconCls="icon-addcircle" onclick="save()">确定</a>
+				<a class="mini-button mr10 mini-btn-danger" iconCls="icon-minuscircle" onclick="close()">关闭</a>
+			</div> 
+		</div>
+
+	<script id="template" type="x-tmpl-mustache">
+			<select id="groupname-{{index}}" style="margin-left:126px;margin-top:12px;width: 470px;height:29px;border-radius:4px;border:#d6d6d6 1px solid;padding-left:10px" ></select>
+			<button id="groupnameButton-{{index}}" type="button" onclick="deleteGroup(this.id)" style="margin-left:20px;margin-top:13px; width: 28px;height:28px;background:#fff;border-radius:4px;border:#d6d6d6 1px solid">㊀</button> 
+
+    </script>
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			var index=0;
+			var template = $("#template").html();
+			var menudata = [];
+
+			epoint.initPage('dxpkafkatopicrighteditaction', '', function(data){
+				var authorization = mini.get('authorization').getValue();
+				if(data.groups){
+					menudata =JSON.parse( data.groups );
+				}
+				if(authorization=="W"){
+					$('#groupnameRow').hide();
+				}else{
+					if(data.groupnameStr){
+						var strs = new Array(); //定义消费组
+						strs = data.groupnameStr.split(";");
+						for (i=0; i<strs.length; i++ ){
+							if(i>0){
+								var r = Mustache.render(template,{
+									"index":i,
+									"groupname":strs[i]
+								}) 
+								$('#groupnameRow').append(r);
+							}
+							
+							initmenu("#groupname-"+index,menudata,strs[i]);
+							index++;
+						}
+					}
+				}
+			});
+			function add() {
+				var r = Mustache.render(template,{
+					index:function(){
+						return index            //abc会替换双花括号内name
+					}
+				}) 
+				$('#groupnameRow').append(r);
+				initmenu('#groupname-'+index,menudata);
+				index++;
+			}
+			
+			function deleteGroup(id) {
+				var button_id = id.replace('groupnameButton-','');
+				var groupname = 'groupname-'+button_id;
+				var groupnameBr = 'groupnameBr-'+button_id;
+				var groupnameButton = 'groupnameButton-'+button_id;
+
+				$('#'+groupname).remove();
+				$('#'+groupnameBr).remove();
+				$('#'+groupnameButton).remove();
+			}
+			
+			var onValueChanged = function() {
+				var authorization = mini.get('authorization').getValue();
+				if(authorization == 'W'){
+					$('#groupnameRow').hide();
+				}else{
+					$('#groupnameRow').show();
+				}
+			}
+			
+			function save() {
+ 				if (epoint.validate()) {
+ 					var groupnameStr="";
+					if(index>0){
+						for(var i=0;i<index;i++){
+	 						var groupname = 'groupname-'+i; 		
+	 						if($('#'+groupname).val()){
+	 							groupnameStr += $('#'+groupname).val();
+	 							if(i<index-1){
+	 								groupnameStr += ";";
+	 							}
+	 						}
+	 					} 	
+					}
+					epoint.execute('edit', '@all', [groupnameStr], function(data) {
+						if (data.success == 'success') {
+							epoint.alert(data.msg, '提示', function() {
+								epoint.closeDialog();
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				} 
+			}
+
+			function close() {
+				epoint.closeDialog();
+			}
+			
+			var initmenu = function(dropdown,menudata,groupname) {
+		        var dropdown = $(dropdown);
+		        function createNode(data) {
+		        	for(j = 0,len=data.length; j < len; j++) {
+		                html +='<option value="'+data[j]["id"]+'"';
+		                if(data[j]["id"] == groupname){
+		                	html += 'selected';
+		                }
+		                html +='>'+data[j]["name"]+'</option>';
+		        	}
+		            return html;
+		        }
+		        var html = createNode(menudata);
+		        dropdown.append(html);
+		    }
+
+		</script>
+</body>
+</html>

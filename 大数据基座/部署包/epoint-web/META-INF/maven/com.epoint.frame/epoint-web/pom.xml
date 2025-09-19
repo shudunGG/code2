@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.epoint.frame</groupId>
+	<artifactId>epoint-web</artifactId>
+	<version>9.4.2-sp3</version>
+	<packaging>war</packaging>
+
+	<properties>
+		<!-- 指定编码与编译版本 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!-- war包不需要发布到本地和远程仓库 -->
+		<maven.install.skip>true</maven.install.skip>
+		<maven.deploy.skip>true</maven.deploy.skip>
+
+		<!-- tomcat7插件web应用端口 -->
+		<maven.tomcat.port>8080</maven.tomcat.port>
+		<!-- tomcat7插件web应用上下文路径，默认/web工程artifactId -->
+		<maven.tomcat.path>/${project.artifactId}</maven.tomcat.path>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.epoint.frame</groupId>
+				<artifactId>epoint-web-action</artifactId>
+				<version>9.4.2-sp3</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- ########################### 下面是框架自身的依赖包 ########################### -->
+		<!-- 配置管理依赖 -->
+		<!-- <dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-confmanage-action</artifactId>
+			<version>9.4.2-sp3</version>
+		</dependency> -->
+		
+		<!-- 框架基础组件包 -->
+		<dependency>
+			<groupId>com.epoint.sso</groupId>
+			<artifactId>epoint-sso-authenticator</artifactId>
+		</dependency>
+		<!-- 服务层实现依赖，如果有微服务可以做好配置后，去除依赖 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-metadata-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-log-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-attachfile-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-message-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-im-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-organ-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-am-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-ui-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-organ-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-tccmain-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-mobile-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-helpcenter-impl</artifactId>
+		</dependency>
+		<!-- web控制层组件包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-sform-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-helpcenter-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-showcase-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-mobile-action</artifactId>
+		</dependency>
+
+		<!-- 报表功能，需要时把注释打开 -->
+		<!-- <dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-stireport-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-stireport-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-stireport-action</artifactId>
+		</dependency> -->
+
+		<!-- ########################### 下面是其他通用的开源组件包 ########################### -->
+
+		<!-- Spring property属性值加解密支持，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>com.github.ulisesbocchio</groupId> 
+			<artifactId>jasypt-spring-boot</artifactId> 
+		</dependency> --> 
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- 数据库驱动包 -->
+		<!-- MySQL驱动 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- SQLserver驱动 -->
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>sqljdbc4</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Oracle驱动 -->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc7</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- 华为GaussDB，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>com.huawei.gauss</groupId> 
+			<artifactId>com.huawei.gauss.jdbc.ZenithDriver</artifactId> 
+			<scope>runtime</scope> 
+		</dependency> -->
+		<!-- 汉高库，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>com.epoint.3rdparty</groupId> 
+			<artifactId>HighGoJdbcDriver18</artifactId> 
+			<version>1.0</version> 
+		</dependency> -->
+		<!-- 达梦库，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>com.epoint.thirdparty</groupId> 
+			<artifactId>DmJdbcDriver18</artifactId> 
+			<version>1.0</version> 
+		</dependency> -->
+		<!-- 华为Hbase的包，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>com.epoint.bigdata</groupId> 
+			<artifactId>hadoop4hw</artifactId> 
+		</dependency> -->
+		<!-- 人大金仓数据库V8R3驱动包，需要时把注释打开 -->
+		<!--  <dependency>
+		  	<groupId>com.epoint.3rdparty</groupId>
+		  	<artifactId>KingBase8JdbcDriver</artifactId>
+		  	<version>2.0</version>
+		</dependency> -->
+		<!-- 神通数据库驱动包，需要时把注释打开 -->
+		<!-- <dependency>
+  			<groupId>com.epoint.thirdparty</groupId>
+  			<artifactId>oscarJDBC</artifactId>
+  			<version>1.0<version>
+		</dependency> -->
+
+		<!-- 邮件实现 -->
+		<!-- <dependency> 
+			<groupId>javax.mail</groupId> 
+			<artifactId>mail</artifactId> 
+		</dependency> -->
+
+		<!-- poi用于excel等office文档的操作 -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-schemas</artifactId>
+		</dependency>
+
+		<!-- ShardingJdbc分库分表，需要时把注释打开 -->
+		<dependency> 
+			<groupId>com.dangdang</groupId> 
+			<artifactId>sharding-jdbc-core</artifactId> 
+		</dependency>
+
+		<!-- 跨域实现，需要时把注释打开 -->
+		<dependency> 
+			<groupId>com.thetransactioncompany</groupId> 
+			<artifactId>cors-filter</artifactId> 
+		</dependency>
+
+		<!-- 消息中间件，需要时把注释打开 -->
+		 <dependency> 
+			<groupId>org.springframework.amqp</groupId> 
+			<artifactId>spring-rabbit</artifactId> 
+		</dependency>
+		
+		<!-- 最新ios推送使用 -->
+        <dependency>
+			<groupId>com.eatthepath</groupId>
+			<artifactId>pushy</artifactId>
+			<version>0.14.2</version>
+		</dependency>
+		<!-- webservice转发需要的包，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>wsdl4j</groupId> 
+			<artifactId>wsdl4j</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>com.epoint.3rdparty</groupId> 
+			<artifactId>soapui-xmlbeans</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>com.epoint.3rdparty</groupId> 
+			<artifactId>soapui</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>jdom</groupId> 
+			<artifactId>jdom</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>com.jgoodies</groupId> 
+			<artifactId>looks</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>org.apache.mina</groupId> 
+			<artifactId>mina-core</artifactId> 
+		</dependency> -->
+
+		<!-- 附件相关 -->
+		<!-- 阿里云存储SDK，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>com.aliyun.oss</groupId> 
+			<artifactId>aliyun-sdk-oss</artifactId> 
+		</dependency> -->
+		<!-- 腾讯云存储SDK，需要时把注释打开 -->
+		<!-- <dependency>
+			<groupId>com.qcloud</groupId> 
+			<artifactId>cos_api</artifactId> 
+		</dependency> -->
+
+		<!-- 文档水印，使用时全部打开（word及pdf） -->
+		<!-- pdf文件处理，如水印 -->
+		<!-- <dependency> 
+			<groupId>com.itextpdf</groupId> 
+			<artifactId>itextpdf</artifactId> 
+		</dependency>
+		<dependency> 
+			<groupId> com.itextpdf</groupId> 
+			<artifactId>itext-asian</artifactId> 
+		</dependency> -->
+		<!-- word文件处理，如水印 -->
+		<!-- <dependency> 
+			<groupId>com.aspose</groupId> 
+			<artifactId>aspose-words</artifactId> 
+			<classifier>jdk17</classifier> 
+		</dependency> -->
+
+		<!-- ######################### 下面的在框架web工程中才需要引入 ######################### -->
+
+		<!-- Spring Boot Servlet2.5 support，保留web.xml -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-legacy</artifactId>
+		</dependency>
+
+		<!-- 框架自检工具 -->
+		<dependency>
+			<groupId>com.epoint</groupId>
+			<artifactId>epoint-check</artifactId>
+		</dependency>
+
+		<!-- EL表达式 -->
+		<!-- <dependency> 
+			<groupId>javax.el</groupId> 
+			<artifactId>javax.el-api</artifactId> 
+			<scope>provided</scope> 
+		</dependency> -->
+
+		<!-- JSR-330依赖注入注解，在SpringCloud及WebSocket中都有依赖 -->
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+		</dependency>
+
+		<!-- JSR303数据校验API -->
+		<!-- <dependency> 
+			<groupId>javax.validation</groupId> 
+			<artifactId>validation-api</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>org.hibernate</groupId> 
+			<artifactId>hibernate-validator</artifactId> 
+		</dependency> -->
+		<!-- Apache的JSR303数据校验API实现，Spring4.0之后不再支持这个包 -->
+		<!-- <dependency> 
+			<groupId>org.apache.bval</groupId> 
+			<artifactId>bval-jsr303</artifactId> 
+			<version>0.5</version> 
+		</dependency> -->
+
+		<!-- ewebeditor，富文本编辑器，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>ewebeditor</groupId> 
+			<artifactId>ewebeditor</artifactId> 
+		</dependency> -->
+		<!-- ueditor，百度编辑器 -->
+		<dependency>
+			<groupId>com.baidu</groupId>
+			<artifactId>ueditor</artifactId>
+		</dependency>
+
+		<!-- 用于转换bean、映射、集合、Java数组和XML到JSON，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>net.sf.json-lib</groupId> 
+			<artifactId>json-lib</artifactId> 
+			<classifier>jdk15</classifier> 
+		</dependency> -->
+
+		<!-- cxf webservice，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>org.apache.cxf</groupId> 
+			<artifactId>cxf-rt-frontend-jaxws</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>org.apache.cxf</groupId> 
+			<artifactId>cxf-rt-transports-http</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>org.apache.cxf</groupId> 
+			<artifactId>cxf-rt-ws-security</artifactId> 
+		</dependency> -->
+
+		<!-- WebSocket，需要时把注释打开（框架的在线聊天功能会有应用） -->
+		<!-- <dependency> 
+			<groupId>org.atmosphere</groupId> 
+			<artifactId>atmosphere-runtime</artifactId> 
+		</dependency> -->
+		<!-- 开启WebSocket集群时需要引入 -->
+		<!-- <dependency> 
+			<groupId>org.atmosphere</groupId> 
+			<artifactId>atmosphere-redis</artifactId> 
+		</dependency> -->
+
+		<!-- 链路追踪brave相关配置依赖(接入Zipkin用Java库)，需要时把注释打开 -->
+		<!-- <dependency> 
+			<groupId>io.zipkin.brave</groupId> 
+			<artifactId>brave</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.brave</groupId> 
+			<artifactId>brave-spring-beans</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.brave</groupId> 
+			<artifactId>brave-instrumentation-spring-webmvc</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.brave</groupId> 
+			<artifactId>brave-instrumentation-httpclient</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.brave</groupId> 
+			<artifactId>brave-instrumentation-spring-rabbit</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.brave</groupId> 
+			<artifactId>brave-instrumentation-p6spy</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.reporter2</groupId> 
+			<artifactId>zipkin-sender-okhttp3</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.reporter2</groupId> 
+			<artifactId>zipkin-sender-amqp-client</artifactId> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.zipkin.zipkin2</groupId> 
+			<artifactId>zipkin</artifactId> 
+			<version>2.15.0</version> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.opentracing.contrib</groupId> 
+			<artifactId>opentracing-redis-jedis3</artifactId> 
+			<version>0.1.10</version> 
+		</dependency> 
+		<dependency> 
+			<groupId>io.opentracing.brave</groupId> 
+			<artifactId>brave-opentracing</artifactId> 
+			<version>0.34.2</version> 
+		</dependency> -->
+
+		<!-- REST API在线文档支持，需要时把注释打开 -->
+		<dependency>
+			<groupId>com.epoint</groupId>
+			<artifactId>epoint-restdocs</artifactId>
+		</dependency>
+
+		<!-- smar报表 -->
+		<dependency>
+			<groupId>net.sf.ezmorph</groupId>
+			<artifactId>ezmorph</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+
+		<!-- epoint-job管理页面 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-job-page</artifactId>
+		</dependency>
+		<!-- epoint-job执行器依赖 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-job-over-quartz</artifactId>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<!-- 多环境配置自动切换，注意这里的依赖包只在对应环境生效且会覆盖上面相同的依赖 -->
+		<!-- 普通应用环境 -->
+		<profile>
+			<id>normal</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<!-- spring.profiles.active -->
+				<profiles.active>normal</profiles.active>
+				<!-- web.xml中的启动类 -->
+				<bootClass>com.epoint.FrameWebApplication</bootClass>
+			</properties>
+		</profile>
+		<!-- 微服务应用环境 -->
+		<profile>
+			<id>micro</id>
+			<properties>
+				<profiles.active>micro</profiles.active>
+				<bootClass>com.epoint.FrameWebServiceApplication</bootClass>
+			</properties>
+			<dependencies>
+				<!-- 微服务注册与发现 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+				</dependency>
+
+				<!-- 微服务远程调用实现 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-openfeign</artifactId>
+				</dependency>
+				<!-- 远程调用采用Apache HttpClient -->
+				<dependency>
+					<groupId>io.github.openfeign</groupId>
+					<artifactId>feign-httpclient</artifactId>
+				</dependency>
+				<!-- 远程调用文件传输支持 -->
+				<dependency>
+					<groupId>io.github.openfeign.form</groupId>
+					<artifactId>feign-form-spring</artifactId>
+				</dependency>
+
+				<!-- 微服务熔断降级实现 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+				</dependency>
+
+				<!-- 微服务负载均衡实现 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+				</dependency>
+
+				<!-- 微服务目录基于Swagger实现 -->
+				<!-- <dependency> 
+					<groupId>io.springfox</groupId> 
+					<artifactId>springfox-swagger2</artifactId> 
+				</dependency> -->
+
+				<!-- 微服务运行指标监控 -->
+				<!-- <dependency> 
+					<groupId>org.springframework.cloud</groupId> 
+					<artifactId>spring-cloud-netflix-hystrix-stream</artifactId> 
+					<exclusions> 
+						<exclusion> 
+							<groupId>org.springframework.boot</groupId> 
+							<artifactId>spring-boot-starter-logging</artifactId> 
+						</exclusion> 
+					</exclusions> 
+				</dependency> 
+				<dependency> 
+					<groupId>org.springframework.cloud</groupId> 
+					<artifactId>spring-cloud-starter-bus-amqp</artifactId> 
+				</dependency> 
+				<dependency> 
+					<groupId>org.springframework.amqp</groupId> 
+					<artifactId>spring-rabbit</artifactId> 
+				</dependency> -->
+
+				<!-- RabbitMQ自动配置兼容XML个性化包 -->
+				<!-- <dependency> 
+					<groupId>org.springframework.boot</groupId> 
+					<artifactId>spring-boot-autoconfigure</artifactId> 
+					<version>1.5.19.RELEASE.e1</version> 
+				</dependency> 
+				<dependency> 
+					<groupId>org.springframework.cloud</groupId> 
+					<artifactId>spring-cloud-stream-binder-rabbit</artifactId> 
+					<version>1.3.4.RELEASE.e1</version> 
+				</dependency> -->
+			</dependencies>
+		</profile>
+	</profiles>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<!-- 二进制如证书文件不能过滤，防止这些文件被篡改 -->
+					<nonFilteredFileExtensions>
+						<nonFilteredFileExtension>so</nonFilteredFileExtension>
+						<nonFilteredFileExtension>dll</nonFilteredFileExtension>
+						<nonFilteredFileExtension>store</nonFilteredFileExtension>
+						<nonFilteredFileExtension>lic</nonFilteredFileExtension>
+						<nonFilteredFileExtension>p12</nonFilteredFileExtension>
+					</nonFilteredFileExtensions>
+				</configuration>
+				<!-- 解决war插件filtering开启后出现编译异常问题 -->
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.shared</groupId>
+						<artifactId>maven-filtering</artifactId>
+						<version>3.1.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<!-- war打包插件 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<webResources>
+						<!-- 开启过滤支持占位符参数替换 -->
+						<resource>
+							<directory>src/main/webapp</directory>
+							<filtering>true</filtering>
+							<includes>
+								<include>WEB-INF/web.xml</include>
+							</includes>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+			<!-- jrebel插件用于生成rebel.xml -->
+			<plugin>
+				<groupId>org.zeroturnaround</groupId>
+				<artifactId>jrebel-maven-plugin</artifactId>
+				<version>1.1.8</version>
+				<executions>
+					<execution>
+						<id>generate-rebel-xml</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<rebelXmlDirectory>${basedir}/src/main/resources</rebelXmlDirectory>
+				</configuration>
+			</plugin>
+			<!-- tomcat7运行插件 -->
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<uriEncoding>UTF-8</uriEncoding>
+					<url>http://localhost:${maven.tomcat.port}/</url>
+					<server>tomcat7</server>
+					<systemProperties>
+						<bootClass>${bootClass}</bootClass>
+						<!-- 微服务应用端口与上下文路径 -->
+						<server.port>${maven.tomcat.port}</server.port>
+						<server.context-path>${maven.tomcat.path}/rest</server.context-path>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

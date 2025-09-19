@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>元件设置</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/eleEdit.css">
+<style>
+.scroll {
+	height: 100%;
+	overflow-y: auto;
+}
+</style>
+<script>
+	var change = function(e) {
+		$('.text-colorpicker .mini-colorpicker-indication>i').css('color',
+				e.value);
+	}
+</script>
+</head>
+
+<body class="portal-child-page">
+	<div class="title active" id="title-header">
+		<span id="ele-name"></span> <i class="icon-eye"></i>
+	</div>
+	<div class="tabs relative">
+		<ul class="clearfix">
+			<li class="tab-item tab-column w-half l" data-ref="column">数据源</li>
+			<li class="tab-item w-half active l" data-ref="attr">属性</li>
+		</ul>
+		<ul class="tab-detail-container">
+			<li class="hidden" id="column-container">
+				<div class="clearfix lh-mid mt-20">
+					<div class="l bold ">数据来源</div>
+				</div> <input id="column" name="column" emptyText="选择数据来源" data=""
+				textField="name" valueField="id" value=""
+				class="mini-combobox w-full" /> <input id="columnUrl"
+				name="columnUrl" class="mini-textbox w-full" emptyText="输入链接地址"
+				visible="false" />
+				<div id="diy" name="diy" class="mini-checkbox" readOnly="false"
+					text="自定义数据来源" onvaluechanged="onDiyChange"></div>
+
+			</li>
+			<li class="" id="attr-container">
+				<div class="clearfix lh-mid">
+					<div class="l">最大宽高</div>
+					<div class="r">
+						<input id="maxStart" bind="element.maxstart" style="width: 70px;"
+							name="maxStart" maxValue="24" minValue="2"
+							class="mini-spinner l mr-5" /><span class="l mr-5">x </span> <input
+							id="maxEnd" maxValue="24" minValue="2" bind="element.maxend"
+							style="width: 70px;" name="maxEnd" class="mini-spinner l" />
+					</div>
+				</div>
+				<div class="clearfix lh-mid">
+					<div class="l">最小宽高</div>
+					<div class="r">
+						<input id="minStart" style="width: 70px;" bind="element.minstart"
+							name="minStart" class="mini-spinner l mr-5" maxValue="24"
+							minValue="2" /><span class="l mr-5">x </span> <input id="minEnd"
+							maxValue="24" minValue="2" style="width: 70px;"
+							bind="element.minend" name="minEnd" class="mini-spinner l " />
+					</div>
+				</div>
+				<div class="clearfix lh-mid">
+					<div class="l">详情打开方式</div>
+					<div class="r">
+						<input id="linkOpenType" bind="element.openwith"
+							name="linkOpenType"
+							data="[{text:'弹窗',id:'dialog'},{text:'内部跳转',id:'tabsNav'},{text:'新窗口',id:'blank'}]"
+							textField="text" valueField="id" value="dialog"
+							class="mini-combobox" style="width: 100px" />
+					</div>
+				</div>
+				<div class="clearfix lh-mid">
+					<div class="l">随主题换肤(推荐开启)</div>
+					<div class="r">
+						<div id="themeCheck" bind="element.themecheck" name="themeCheck"
+							class="mini-checkbox switch" checked="true" readOnly="false"
+							onvaluechanged="themeChange"></div>
+					</div>
+				</div>
+				<div id="ele-style" class="hidden">
+					<div class="clearfix lh-mid mt-20">
+						<div class="l bold ">元件样式</div>
+					</div>
+
+					<div class="clearfix lh-mid">
+						<div class="l">边框</div>
+						<div class="r">
+							<input id="border" name="border" bind="element.framesize"
+								style="width: 60px;" class="mini-spinner r " value="0"
+								minValue="0" /> <input id="borderColor"
+								bind="element.framecolor" class="mini-colorpicker r mr-5"
+								style="width: 100px;" format="hex" allowInput="true" />
+						</div>
+					</div>
+
+					<div class="clearfix lh-mid">
+						<div class="l">背景</div>
+						<div class="r">
+							<input id="bg" bind="element.backgroundcolor"
+								class="mini-colorpicker r mr-5" style="width: 100px;"
+								format="hex" allowInput="true" />
+						</div>
+					</div>
+
+					<div class="clearfix lh-mid">
+						<div class="l">阴影</div>
+						<div class="r">
+							<input id="shadow" bind="element.shadow"
+								class="mini-colorpicker r mr-5" style="width: 100px;"
+								format="hex" allowInput="true" />
+						</div>
+					</div>
+
+					<div class="clearfix lh-mid">
+						<div class="l">圆角</div>
+						<div class="r">
+							<input name="radius" bind="element.radius" style="width: 60px;"
+								class="mini-spinner r " value="0" minValue="0" />
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix lh-mid mt-20">
+					<div class="l bold">标题区</div>
+					<div class="r">
+						<div id="showHeader" bind="element.isshowtitle" name="showHeader"
+							class="mini-checkbox switch" checked="true" readOnly="false">
+						</div>
+					</div>
+				</div>
+				<div class="clearfix lh-mid">
+					<div class="l">标题</div>
+					<div class="l ml-30">
+						<input id="title" bind="element.title" style="width: 160px;"
+							name="title" class="mini-textbox l mr-5" /> <input
+							id="titleColor" visible="false" bind="element.fontcolor"
+							class="mini-colorpicker text-colorpicker l mr-5" format="hex"
+							allowInput="true" onvaluechanged="change" /> <input
+							id="titleBgColor" visible="false"
+							bind="element.titlebackgroundcolor"
+							class="mini-colorpicker l mr-5" format="hex" allowInput="true" />
+					</div>
+				</div>
+				<div class="clearfix lh-mid">
+					<div class="l">图标</div>
+					<div class="l ml-30">
+						<div class="l icon-set mr-5" id="icon-set"></div>
+						<input id="icon" style="width: 50px;" bind="element.icon"
+							name="icon" class="mini-textbox l mr-5 hidden" /> <input
+							id="iconColor" visible="false" bind="element.iconcolor"
+							class="mini-colorpicker r mr-5" style="width: 100px;"
+							format="hex" allowInput="true" />
+					</div>
+				</div>
+				<div class="clearfix lh-mid">
+					<div class="l">功能</div>
+					<div class="l ml-30">
+						<div id="showTitleCount" name="showTitleCount"
+							class="mini-checkbox" bind="element.isshowtitlecount"
+							readOnly="false" text="消息数量"></div>
+						<div id="showRefreshBtn" name="showRefreshBtn"
+							class="mini-checkbox" bind="element.isshowrefresh"
+							readOnly="false" text="刷新"></div>
+						<div id="showMoreBtn" name="showMoreBtn" class="mini-checkbox"
+							bind="element.isshowmorebutton" readOnly="false" text="更多"
+							onvaluechanged="moreChange"></div>
+						<div id="showAddBtn" name="showAddBtn" class="mini-checkbox"
+							bind="element.isshownewbutton" readOnly="false" text="新增"
+							onvaluechanged="addChange"></div>
+					</div>
+				</div>
+				<div class="clearfix lh-mid hidden" id="attr-more">
+					<div class="l">更多</div>
+					<div class="l ml-30">
+						<input id="moreUrl" style="width: 200px" bind="element.moreurl"
+							name="moreUrl" class="mini-textbox" />
+					</div>
+				</div>
+				<div class="clearfix lh-mid hidden" id="attr-add">
+					<div class="l">新增</div>
+					<div class="l ml-30">
+						<input id="addUrl" style="width: 200px" bind="element.newurl"
+							name="addUrl" class="mini-textbox" />
+					</div>
+				</div>
+				<div id="visible" bind="element.visible" name="visible"
+					class="mini-checkbox switch hidden" checked="true" readOnly="false">
+				</div>
+			</li>
+		</ul>
+	</div>
+
+	<!-- 子标签更多-->
+	<ul id="column-more-menu" class="more-menu">
+		<li class="menu-item" data-ref="default">设为默认</li>
+		<li class="menu-item" data-ref="edit">编辑</li>
+		<li class="menu-item text-red" data-ref="delete">删除</li>
+	</ul>
+
+	<div class="footer text-right clearfix">
+		<a class="mini-button r mr-5 portal-confirm" state="primary"
+			onclick="save()">保存</a> <a class="mini-button r mr-5 portal-cancel"
+			onclick="cancle()">取消</a>
+	</div>
+
+	<script type="x-tmpl-mustache" id="column-element-tpl">
+			<li class="column-item {{#default}}default{{/default}}" data-show-num="{{showNum}}" data-show-add-btn="{{showAddBtn}}" data-show-refresh-btn="{{showRefreshBtn}}" data-show-more-btn="{{showMoreBtn}}" data-more-url="{{moreUrl}}" data-add-url="{{addUrl}}" data-id="{{id}}" data-url="{{url}}" data-is-diy="{{isDiy}}" data-name="{{name}}" data-default="{{default}}">
+				<span class="column-item-name">{{name}}</span>
+				<span class="column-default">(默认)</span>
+				<div class="r lib-more action-icon icon-omit"></div>
+			</li>
+		</script>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var portalConfig = {
+			getColumns : 'rest/elementeditaction/getColumns?isCommondto=true', // 获取数据来源
+			initAction : "elementeditaction",
+			saveAction : "elementSave"
+		};
+	</script>
+	<script src="js/config.js"></script>
+	<script src="js/templateedit.js"></script>
+
+</body>
+
+</html>

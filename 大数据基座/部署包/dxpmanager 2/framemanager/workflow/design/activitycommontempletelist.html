@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>模板管理页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="saveActivityTemplete()">新增活动模板</a><a
+				class="mini-button mini-btn-danger" iconCls="icon-removecircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的记录！', '', null, 'warning');} else {epoint.confirm('是否确定删除？','',deleteSelected);}">删除选中</a>
+			<a class="mini-button" onclick="saveOrder">修改排序</a> <a
+				class="mini-button" iconCls="icon-edit" id="editeventbtn"
+				onclick="editevent()">模板方法管理</a>
+		</div>
+	</div>
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="新增活动模板名称" starred="false">
+						<input bind="searchString" class="mini-textbox" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="activityGuid" multiSelect="true" action="getResultListModel"
+			showPager="true" style="width: 100%; height: 100%;"
+			allowResize="true" allowCellEdit="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="80"></div>
+				<div type="indexcolumn" width="80" headerAlign="center">序</div>
+				<div field="activityName" width="100%" headerAlign="center">活动模板</div>
+				<div field="orderNum" width="150" headerAlign="center" align="right">
+					排序号<input property="editor" class="mini-textbox" minWidth="20"
+						inputStyle="text-align:right" vtype="int;range:0,99999999" />
+				</div>
+				<div width="50" headerAlign="center" align="center" renderer="edit">
+					修改</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("activitycommontempletelistaction");
+
+		//新增活动模板
+		function saveActivityTemplete() {
+			epoint.openDialog('新增活动模板',
+					'framemanager/workflow/design/activitycommontempleteframe',
+					searchData, {
+						'width' : 1000
+					});
+		}
+
+		//新增活动模板
+		function editevent() {
+			epoint
+					.openDialog(
+							'模板方法管理',
+							'framemanager/workflow/design/methodlist?processVersionGuid=commontemplete',
+							searchData, {
+								'width' : 1000
+							});
+		}
+		function createEditDialog(data) {
+			epoint.openDialog('修改配置',
+					'framemanager/workflow/design/activitycommontempleteframe?templeteactguid='
+							+ data + '&simple=0', searchData, {
+						'width' : 1000
+					});
+		}
+
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"createEditDialog");
+		}
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteActivityTemplete', 'datagrid', msgCallBack);
+		}
+
+		// 保存排序
+		function saveOrder() {
+			epoint.execute('saveOrder', 'datagrid', msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alert(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//]]>
+	</script>
+</body>
+</html>

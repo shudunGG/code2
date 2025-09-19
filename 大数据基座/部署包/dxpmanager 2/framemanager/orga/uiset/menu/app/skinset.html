@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>皮肤设置</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" pageSize="15" action="getDataGridData"
+			showPager="false" showColumns="false">
+			<div property="columns">
+				<div field="image1" align="center"></div>
+				<div field="image2" align="center"></div>
+				<div field="image3" align="center"></div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('skinsetaction');
+
+		var grid = mini.get("datagrid");
+
+		grid
+				.on(
+						"drawcell",
+						function(e) {
+							if (e.value) {
+								e.cellHtml = "<img src=\"../../../../../"
+										+ e.value
+										+ "\" height=\"185px\" onclick=\"setSkin('"
+										+ e.value
+										+ "')\" style=\"cursor: pointer\" title=\"点击设置应用主题\" width=\"245px\">";
+							}
+						});
+
+		function setSkin(url) {
+			epoint.execute("skinsetaction.setSkin", "", [url], function(e) {
+				epoint.alert(e.msg, '', null, 'info');
+			});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>控件示例</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <script>
+    document.write(
+      "<script src='../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>"
+    );
+  </script>
+  <script>
+    SrcBoot.output([
+      './css/common.new.css'
+    ]);
+  </script>
+  <style>
+    img.em-zwbjEdit {
+      padding-left: 80px;
+      height: 40px;
+    }
+
+    li.zwbj,
+    li.write {
+      padding: 5px 15px;
+      line-height: 40px;
+    }
+
+    .icon-write {
+      float: right;
+      height: 40px;
+    }
+  </style>
+
+<body>
+  <div class="page-loading"></div>
+  <!-- 内容区域 -->
+  <div class="mui-content">
+    <div class="em-title">
+      <div class="em-center">
+        <h4>{{{headhtml}}}</h4>
+        <p>{{fawenfilenumber}}</p>
+      </div>
+    </div>
+
+    <ul class="mui-table-view">
+      <li class="mui-table-view-cell list-cell">
+        <span>用户登录名</span>
+        <span id="loginId" class="ep-mui-outputtext r" bind="myinfomodifyaction.user.loginId"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>用户姓名</span>
+        <span id="displayName" class="ep-mui-outputtext r" bind="myinfomodifyaction.user.displayName"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>职务</span>
+        <span id="title" type="text" class="ep-mui-outputtext" bind="myinfomodifyaction.user.title"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>办公电话</span>
+        <span id="telephoneOffice" type="text" class="ep-mui-outputtext"
+          bind="myinfomodifyaction.user.telephoneOffice"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>移动电话</span>
+        <span id="mobile" type="text" class="ep-mui-outputtext" bind="myinfomodifyaction.user.mobile"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>家庭电话</span>
+        <span id="telephoneHome" type="text" class="ep-mui-outputtext"
+          bind="myinfomodifyaction.user.telephoneHome"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>身份证号</span>
+        <span id="identityCardNum" type="text" class="ep-mui-outputtext"
+          bind="myinfomodifyaction.user.identityCardNum"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>身份证号</span>
+        <span id="qqnumber" type="text" class="ep-mui-outputtext" bind="myinfomodifyaction.user.qqnumber"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell">
+        <span>个人资料</span>
+        <span id="information" type="text" class="ep-mui-outputtext"
+          bind="myinfomodifyaction.userExtendInfo.information"></span>
+      </li>
+      <li class="mui-table-view-cell list-cell zwbj">
+        <span>正文编辑</span>
+        <img src="./images/img_zwbj.png" id="texteditor" alt="" class="em-zwbjEdit ep-mui-texteditor r">
+      </li>
+      <li class="mui-table-view-cell list-cell write">
+        <span>手写签批</span>
+        <img src="./images/img_editor.png" id="writesign" alt="" class="icon-write ep-mui-writesign">
+      </li>
+    </ul>
+  </div>
+
+  <script type="text/template" id="tpl-subtable">
+    <div class="mui-table-view">
+      <div class="mui-table-view-cell">{{displayName}}</div>
+    </div>
+  </script>
+
+  <script>
+    document.write(
+      "<script src='../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>"
+    );
+  </script>
+
+  <script>
+    Util.loadJs(initPage);
+
+    function initPage() {
+      createTextEditor();
+      createWrite();
+      MControl.init();
+
+      epointm.initPage("data/myinfo.json", null, null, null, {
+        method: "GET"
+      });
+    }
+
+    // 自定义正文编辑控件
+    function createTextEditor() {
+      var control = MControl.control;
+      var TextEditor = function (dom) {
+        TextEditor.super.constructor.call(this, dom);
+      };
+
+      MControl.extend(TextEditor, control, {
+        type: 'texteditor',
+        _init: function () {
+          var self = this;
+
+          this.pathUrl = '';
+          // 先下载附件，在进行正文编辑
+          this.el.addEventListener('tap', function () {
+            ejs.io.downloadFile({
+              url: self.url,
+              fileName: self.fileName,
+              reDownloaded: 1,
+              isBackground: 1,
+              success: function (result) {
+                self.pathUrl = result.filePath;
+                var path = 'EpointTextEditor.EpointTextEditorPluginProvider.EptTextEditorAction';
+
+                window.JSBridge.callHandler('util', 'invokePluginApi', {
+                  'path': path,
+                  'dataMap': {
+                    'zwFilePath': pathUrl
+                  }
+                }, function (data) {
+                  ejs.ui.confirm({
+                    title: '提示',
+                    message: '是否对该文件进行上传',
+                    buttonLabels: ['取消', '确定'],
+                    cancelable: 1,
+                    success: function (result) {
+                      // do something
+                      console.log(result.pathUrl);
+                    }
+                  });
+                });
+              }
+            });
+          });
+        },
+        setText: function (text) {
+          this.fileName = text;
+        },
+        setValue: function (value) {
+          this.url = value;
+        },
+        getModule: function () {
+          return {
+            id: this.id,
+            url: this.url,
+            type: this.type
+          }
+        }
+      });
+      MControl.register(TextEditor, 'ep-mui-texteditor');
+    }
+
+    // 自定义手写签批控件
+    function createWrite() {
+      var control = MControl.control;
+      var WriteSign = function (dom) {
+        WriteSign.super.constructor.call(this, dom);
+      };
+
+      MControl.extend(WriteSign, control, {
+        type: 'writesign',
+        _init: function () {
+          var self = this;
+
+          this.url = '';
+          this.fileName = '';
+          this.el.addEventListener('tap', function () {
+            ejs.io.downloadFile({
+              url: self.url,
+              fileName: self.fileName,
+              reDownloaded: 1,
+              isBackground: 1,
+              success: function (result) {
+
+              }
+            });
+          });
+        },
+        getModule: function () {
+          return {
+            id: this.id,
+            type: this.type
+          };
+        }
+      });
+      MControl.register(WriteSign, 'ep-mui-writesign');
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- epoint-job-over-quartz，配置需要被quartz调度的class，排除在epoint-job管控外 -->
+	<!-- <bean id="OverQuartz" class="com.epoint.job.quartz.OverQuartz">
+		<property name="excludeClasses">
+			<set>
+			</set>
+		</property>
+	</bean> -->
+
+	<!-- 配置epoint-job、执行器 -->
+	<bean id="JobSpringExecutor" class="com.epoint.job.executor.conf.JobSpringExecutor">
+		<!-- 注册地址，调度服务地址 -->
+		<property name="registryAddresses" value="http://localhost:7600/epoint-job-scheduler" />
+		<!-- 执行器组AppName，执行器可能存在多个作为高可用，所有的这些高可用执行器节点作为一个执行器组 。这个名称会在注册的时候使用，所有的高可用执行节点配置相同的执行器组名称，告诉调度端是高可用节点 -->
+		<property name="appName" value="epoint-executor" />
+		<!-- 执行器IP[选填]，为空则自动获取，自动获取在多网卡的的情况下，可能会导致ip获取不准确，建议手动直接配置 -->
+		<property name="ip" value="" />
+		<!-- 执行器端口号[选填]，小于等于0则自动获取，此处端口和tomcat的端口非同一个端口，配置同一个端口可能导致端口占用报错 -->
+		<property name="port" value="9901" />
+		<!-- 访问令牌[选填]，和调度服务中的配置一致 -->
+		<property name="accessToken" value="abcdefg" />
+		<!-- 执行器日志路径[选填]，为空则使用默认路径，/data/applogs/epoint-job-executor/jobhandler -->
+		<property name="logPath" value="/data/applogs/epoint-job-executor/jobhandler" />
+		<!-- 执行器日志保存天数[选填]，值大于3时生效 -->
+		<property name="logRetentionDays" value="-1" />
+		<!-- 执行器cpu阈值上限 -->
+		<property name="cpuMax" value="0.6" />
+		<!-- 执行器内存阈值上限 -->
+		<property name="memoryMax" value="0.99" />
+		<!-- job执行监听，实现JobExecuteListener接口 -->
+		<property name="jobExecuteListener">
+			<bean class="com.epoint.job.executor.listener.EpointJobListener" />
+		</property>
+	</bean>
+
+</beans>

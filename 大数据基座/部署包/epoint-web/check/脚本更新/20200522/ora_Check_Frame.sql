@@ -1,0 +1,2 @@
+-- 这里是检测每天最后一条数据是否存在，所以第一个人建立的人请把最下方的数据做一个check
+select count(*) from user_indexes a ,user_ind_columns b where a.table_name=b.table_name and a.index_name = b.index_name and a.table_name like 'FRAME_USERROLE_SNAPSHOT_%' and a.index_name like 'UQ_FRAME_UR_SNAPSHOT_%' and b.column_name = 'OUGUID'

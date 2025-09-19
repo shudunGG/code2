@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>新增高可用通道</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+					<!-- 表单区域 -->
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="高可用通道名称" starred="true">
+									<input bind="dataBean.upstream_name" class="mini-textbox"
+										required="true" requiredErrorText="高可用通道名称不能为空!"
+										maxLength="100" style="width:90%"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="排序值">
+									<input class="mini-textbox" bind="dataBean.order_number"
+										vtype="int;range:0,99999999" style="width:90%"/>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="心跳配置"></div>
+				<div role="body">
+					<!-- 表单区域 -->
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="心跳检测接口地址">
+								    <input class="mini-textbox" bind="dataBean.pingurl"
+										maxLength="200" id="pingurl" style="width:90%"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">心跳检测接口地址。输入的地址一般有2种，通用接口地址和自定义接口地址，注意：无论哪种，有项目名的一定带上项目名。</div>
+							</div>
+							<div role="row">
+								<div role="control" style="color: red">第一种，通用接口地址（/rest/system/info/all ,适用于9.4.1sp1+），输入格式：例如：/epoint-web/rest/system/info/all。</div>
+							</div>
+							<div role="row">
+								<div role="control" style="color: red">第二种，自定义（自己定义可用的，适用于9.4.1sp1以下版本，并且返回的数据量不是很大的匿名接口）。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="接口协议类型">
+									<input class="mini-combobox" bind="dataBean.httptype" maxLength="200" action="getHttp" id="httptype" style="width:90%"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">接口协议类型。默认为http</div>
+							</div>
+							<div role="row">
+								<div role="control" label="健康检测成功状态">
+									<input class="mini-combobox" bind="dataBean.httpcode" maxLength="200" action="getHttpCode" multiSelect="true" id="httpcode" style="width:90%"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">指定HTTP回复的成功状态，默认认为2XX和3XX的状态是健康的。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="健康检测成功恢复次数">
+									<input class="mini-textbox" bind="dataBean.rise" vtype="int" id="rise" style="width:90%"/>(次)
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">连续检测一定次数该服务器正确的响应了，则重新将该服务器调度至服务器可用列表中。默认2次。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="健康检测失败次数">
+									<input class="mini-textbox" bind="dataBean.failcount" vtype="int" id="failcount" style="width: 90%"/>(次)
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">连续一定次数出现不响应的情况，则将该target踢出可用服务器列表中。默认5次。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="健康检测响应超时时间">
+									<input class="mini-textbox" bind="dataBean.readTimeout" vtype="int" id="readTimeout" style="width:90%"/>(ms)
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">后端健康请求的响应超时时间。单位 :ms，默认1000ms。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="健康检测连接超时时间">
+									<input class="mini-textbox" bind="dataBean.connectTimeout" vtype="int" id="connectTimeout" style="width:90%"/>(ms)
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">后端健康请求的连接超时时间。单位 :ms，默认1000ms。</div>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="toolbar">
+		<a class="mini-button" state="primary" id="addClose" style="display: none;" onclick="saveAndClose">保存并新建</a> 
+		<a class="mini-button" id="btnClose" style="display: none;" onclick="epoint.closeDialog('close')">取消添加</a>
+		<a class="mini-button" state="primary" id="editClose" style="display: none;" onclick="editClose">保存并关闭</a> 
+		<a class="mini-button" id="btnEditClose" style="display: none;" onclick="epoint.closeDialog('close')">取消修改</a>
+	</div>
+	
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('apichannelinfoaction', '', function(data) {
+			if (data && data.edit) {
+				document.getElementById("addClose").style.display = "none";
+				document.getElementById("btnClose").style.display = "none";
+				document.getElementById("editClose").style.display = "";
+				document.getElementById("btnEditClose").style.display = "";
+			} else {
+				document.getElementById("addClose").style.display = "";
+				document.getElementById("btnClose").style.display = "";
+				document.getElementById("editClose").style.display = "none";
+				document.getElementById("btnEditClose").style.display = "none";
+				mini.get('httptype').setValue('Http');
+				mini.get('httpcode').setValue('Http2XX,Http3XX,');
+				mini.get('rise').setValue(2);
+				mini.get('failcount').setValue(5);
+				mini.get('readTimeout').setValue(1000);
+				mini.get('connectTimeout').setValue(1000);
+			}
+		});
+		//新增
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', function(data) {
+					if (data && data.msg) {
+						if (data.success) {
+						    epoint.closeDialog(data.msg);
+						} else {
+							epoint.showTips(data.msg, {state : 'error'});
+						}
+					}
+				});
+			}
+		}
+
+		function editClose() {
+			if (epoint.validate()) {
+				epoint.execute('edit', '', function(data) {
+					if (data && data.msg) {
+						if (data.success) {
+						    epoint.closeDialog(data.msg);
+						} else {
+							epoint.showTips(data.msg, {state : 'error'});
+						}
+					}
+				});
+			}
+		}
+
+	</script>
+</body>
+</html>

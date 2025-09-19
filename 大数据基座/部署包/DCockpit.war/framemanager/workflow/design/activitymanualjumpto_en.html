@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Process change and jump configuration</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addTransition">The new change</a> <a
+				class="mini-button" onclick="saveOrder">Modify the sort</a> <a
+				class="mini-button" onclick="deleteTransition">delete selected</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- Add a hidden field -->
+		<input id="processVersionGuid" bind="processVersionGuid"
+			class="mini-hidden" /><input id="activityGuid" bind="activityGuid"
+			class="mini-hidden" />
+		<!-- The form area -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="transitionGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true" action="getDataGridData" showPager="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">
+					order
+				</div>
+				<div field="transitionName" width="200" headerAlign="center"
+					align="center">Name of the jump</div>
+				<div field="transitionDispName" width="200" headerAlign="center"
+					align="center">The display name</div>
+				<div field="orderNum" width="80" headerAlign="center" align="right">
+					order no<input property="editor" class="mini-textbox" inputStyle="text-align:right" vtype="int" />
+				</div>
+				<div field="actActivityName" width="200" headerAlign="center"
+					align="center">Name of the target activity</div>
+				<div field="condition" width="100%" headerAlign="center"
+					align="center">conditions</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">edit</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activityamanualjumptoaction');
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//callback
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh(['datagrid'],'',true);
+		}
+
+		//The new change
+		function addTransition() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			var url = 'framemanager/workflow/design/activitymanualjumptoselectactivity?activityGuid='
+					+ activityGuid
+					+ '&mode=jump&processVersionGuid='
+					+ processVersionGuid;
+			epoint.openDialog("The new change", url, callback, {
+				'width' : 800,
+				'height' : 500
+			});
+		}
+		//delete selectedline
+		function deleteTransition() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.confirm("determinedelete selectedRecord?", "", function(action) {
+					epoint.execute("deleteSelect", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("Please choose to delete records!", '', null, 'info');
+			}
+		}
+		// saveroworder
+		function saveOrder() {
+			epoint.execute('saveOrder', 'datagrid', callback);
+		}
+
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"openEditWindow");
+		}
+
+		function openEditWindow(transitionGuid) {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			epoint.openDialog('editChange the configuration',
+					"framemanager/workflow/design/activitytransitionframe?transitionGuid="
+							+ transitionGuid + "&mode=jump&processVersionGuid="
+							+ processVersionGuid, searchData, {
+						'width' : 1000
+					});
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

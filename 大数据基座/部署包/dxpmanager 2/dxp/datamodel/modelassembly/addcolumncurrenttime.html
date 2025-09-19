@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>追加时间列</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" vtype="maxLength:20"
+							required="true" emptyText="请输入步骤名称" requiredErrorText="步骤名称不能为空"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段名" starred="true">
+						<input id="columnName" name="columnName" class="mini-textbox"
+							required="true" emptyText="请输入字段名" onvalidation="englishjy"
+							requiredErrorText="字段名不能为空!"/>
+					</div>
+					<div role="control" label="中文注释" starred="true">
+						<input id="newcolumnname" name="newcolumnname"
+							required="true" class="mini-textbox" requiredErrorText="字段中文注释不能为空！" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="时间格式" starred="true">
+						<input class="mini-combobox" id="pdateformat" name="pdateformat"
+							required="true" oncloseclick="onCloseClick" showClose="true" requiredErrorText="时间格式不能为空！"
+							data="[{'id':'yyyy-MM-dd HH:mm:ss','text':'yyyy-MM-dd HH:mm:ss'},{'id':'yyyy/MM/dd HH:mm:ss','text':'yyyy/MM/dd HH:mm:ss'},{'id':'yyyyMMdd HH:mm:ss','text':'yyyyMMdd HH:mm:ss'},{'id':'yyyyMMddHHmmss','text':'yyyyMMddHHmmss'},{'id':'yyyy-MM-dd','text':'yyyy-MM-dd'},{'id':'yyyy/MM/dd','text':'yyyy/MM/dd'},{'id':'yyyyMMdd','text':'yyyyMMdd'}]" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script src="js/fieldcheck.js"></script>
+	
+	<script>
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modeladdcolumncurrenttimeaction?stepId='
+					+ nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {
+
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate('@all', false)) {
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+		
+	</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title></title>
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ '../js/lib/swiper5/swiper.min.css', '../js/lib/tooltip/tooltip.css', '../css/common.css', './css/index_library.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 左侧内容区域 -->
+	<div class="fui-left">
+		<!-- 内容区域 -->
+		<div role="body">
+			<h2 class="head clearfix">
+				<span class="head-title r">全部部门</span>
+			</h2>
+			<!-- 搜索框 -->
+			<!--  <div class="search-box">
+                <input type="text" class="search-input" placeholder="请输入关键字">
+                <a class="ico-search" href="javascript:;"></a>
+                <ul class="s-results" id="s-results">
+                    <li class="result-item"></li>
+                </ul>
+            </div> -->
+			<div class="swiper-container left-nav" id="left-nav"></div>
+		</div>
+		<div class="swiper-button-prev hidden"></div>
+		<div class="swiper-button-next hidden"></div>
+	</div>
+	<!-- 右侧内容区域 -->
+	<div class="fui-right">
+		<div class="fui-toolbar clearfix">
+			<div class="conditions l clearfix" >
+				<span class="l"> 分类： </span> <input id="status" class="mini-combobox l"  textField="text" valueField="id" value="4"
+					data='[{id: "4", text: "全部"},{id: "0", text: "未申请"},{id: "1", text: "审批中"},{id: "2", text: "已有权限"}]' style="width: 102px; height: 32px;" />
+				<div class="search-box l">
+					<input type="text" class="search-input" id="search-name" placeholder="请输入关键字"> 
+					<a class="ico-search" href="javascript:;" id="search"></a>
+					<ul class="s-results" id="s-results">
+						<li class="result-item"></li>
+					</ul>
+				</div>
+			</div>
+			<ul class="legend clearfix l" id="legend">
+				<li class="legend-item status0 active l" data-status="0">未申请</li>
+				<li class="legend-item status1 active l" data-status="1">审批中</li>
+				<li class="legend-item status2 active l" data-status="2">已有权限</li>
+			</ul>
+			<a class="operate-btn r" id="myapply"> <span>我的申请</span>
+			</a>
+		</div>
+		<div class="fui-content">
+
+			<div class="label-content">
+				<ul class="label-list" id="label-list">
+					<!--
+						status0：未申请
+						status1: 审批中
+						status2: 已有权限
+					-->
+					<li class="label-item status1">
+						<div class="label"></div>
+					</li>
+				</ul>
+			</div>
+			<!-- <a href="javascript:;" class="more" id="more">加载更多</a> -->
+			<div class="basket" id="basket">
+				申请篮<i class="num">9</i>
+			</div>
+		</div>
+	</div>
+
+	<!-- 左侧leftnav模板 -->
+	<script type="text/html" id="left-nav-tmpl">
+        <div class="swiper-wrapper">
+            {{#navList}}
+            <div class="swiper-slide nav-item" data-id="{{guid}}">
+                <span class="nav-item-name {{mark}}">{{name}}</span>
+            </div>
+            {{/navList}}
+        </div>
+    </script>
+
+
+	<!-- 导航tooltip模板 -->
+	<script type="text/html" id="nav-info-tmpl">
+        {{#info}}
+        <div class="nav-info tooltip">
+            <p class="name">{{name}}</p>
+            <p class="item"><span class="des l">别名：</span><span class="value">{{alias}}</span></p>
+            <p class="item"><span class="des l">描述：</span><span class="value">{{describe}}</span></p>
+        </div>
+        {{/info}}
+    </script>
+
+	<!-- 标签模板 -->
+	<script type="text/html" id="label-item-tmpl">
+        {{#list}}
+        <li class="label-item {{statusClass}} {{#isprimary}}primary{{/isprimary}}" data-id="{{id}}"
+            data-status="{{status}}" style="margin: 0 {{mright}} 40px {{mleft}}; transform: translateY({{transY}})">
+            <div class="label">
+                {{name}}
+            </div>
+        </li>
+        {{/list}}
+    </script>
+
+	<!-- 搜索下拉模板 -->
+	<script type="text/html" id="label-item-tmpl">
+        {{#list}}
+        <li class="result-item" data-id="{{id}}">{{value}}</li>
+        {{/list}}
+    </script>
+
+	<!-- 标签详情模板 -->
+	<script type="text/html" id="label-detail-tmpl">
+        {{#detail}}
+        <div class="label-detail {{statusClass}}" data-id="{{id}}">
+            <span class="status status0">未申请</span>
+            <span class="status status1">审批中</span>
+            <span class="status status2">已有权限</span>
+            <div class="head">
+                <p class="name">{{name}}</p>
+ 				<p class="type hidden">{{type}}</p>
+				<p class="isbasket hidden">{{isbasket}}</p>
+				<p class="normtype hidden">{{normtype}}</p>
+                <!-- 评价部分先注释,避免以后要用 -->
+                <!-- <div class="levels">
+                    <span class="level up">{{up}}</span>
+                    <span class="level like">{{like}}</span>
+                    <span class="level score"><i class="stars star{{stars}}"></i>{{person}}评分</span>
+                </div> -->
+            </div>
+            <ul class="details">
+                <li class="item">
+                    <span class="des">创建时间：</span>
+                    <span>{{createtime}}</span>
+                </li>
+                <li class="item">
+                    <span class="des">所属部门：</span>
+                    <span>{{providedept}}</span>
+                </li>
+                <li class="item">
+                    <span class="des">负责人：</span>
+                    <span>{{charge}}</span>
+                </li>
+               <li class="item">
+                    <span class="des">联系方式：</span>
+                    <span>{{phone}}</span>
+                </li>
+            </ul>
+            <div class="bottom-btns">
+                <div class="btns">
+                    <a href="javascript:;" class="label-btn" data-func="apply">申请引用</a>
+                    <a href="javascript:;" class="label-btn" data-func="view">{{#type}}查看样例数据{{/type}}{{^type}}查看指标{{/type}}</a>
+                    <a href="javascript:;" class="label-btn" data-func="add">{{#isbasket}}取消{{/isbasket}}加入申请篮</a>
+                </div>
+                <div class="btns">
+                    <a href="javascript:;" class="label-btn" data-func="cancel">取消申请</a>
+                    <a href="javascript:;" class="label-btn" data-func="view">查看样例数据</a>
+                </div>
+                <div class="btns">
+                    <a href="javascript:;" class="label-btn" data-func="up">点赞</a>
+                    <a href="javascript:;" class="label-btn" data-func="evaluate">评价(10)</a>
+                    <a href="javascript:;" class="label-btn" data-func="collect">收藏</a>
+                    <a href="javascript:;" class="label-btn" data-func="entity">查看实体数据</a>
+                </div>
+            </div>
+        </div>
+        {{/detail}}
+    </script>
+
+	<!-- 接口配置 -->
+	<script>
+		function getRootPath() {
+			var curWwwPath = window.document.location.href;
+			var pathName = window.document.location.pathname;
+			var pos = curWwwPath.indexOf(pathName);
+			var localhostPaht = curWwwPath.substring(0, pos);
+			//获取带"/"的项目名，如：/uimcardprj
+			var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+			return (localhostPaht + projectName);
+		}
+
+		window.pageConfig = {
+			//	getNavInfo : 'getNavInfo', // 左侧导航主体详细信息
+			getLabelsData : getRootPath() + '/rest/cockpitnormlibraryserver/getNormList', // 标签列表
+			getLabelDetailData : getRootPath() + '/rest/cockpitnormlibraryserver/getNormDetail', // 标签详情
+			//getRightEffect : 'getRightEffect', // 右侧效能评估
+			getSearchList : getRootPath() + '/rest/cockpitnormlibraryserver/getSearchList', // 搜索列表 
+			getLeftNavData : getRootPath() + '/rest/cockpitnormlibraryserver/getOuList', // 获取左侧导航数据
+			getBasket : getRootPath() + '/rest/cockpitnormlibraryserver/getBasket', // 数据篮
+			getMyApplyCount : getRootPath() + '/rest/cockpitnormlibraryserver/getMyApplyCount',
+			cancelApply : getRootPath() + '/rest/cockpitnormlibraryserver/cancelApply'
+		}
+	</script>
+
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<!-- 模拟数据 -->
+	<!-- 	<script src="../_test/mock.min.js"></script>
+	<script src="./_test/test_index_library.js"></script> -->
+
+	<script>
+		SrcBoot.output([ '../js/lib/swiper5/swiper.min.js', '../js/lib/fly.js', '../js/lib/tooltip/tooltip.js', '../js/util.js', './js/index_library.js', ]);
+	</script>
+	<script>
+		Util.hidePageLoading();
+	</script>
+</body>
+
+</html>

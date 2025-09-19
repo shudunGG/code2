@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>模型结果管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style>
+.modicon-117 {
+	color: #888;
+}
+</style>
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="结果名称">
+						<input bind="flowname" class="mini-textbox" />
+					</div>
+					<div role="control" label="模型名称">
+						<input bind="modelname" class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<!-- 列表区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="tableid" multiSelect="true"
+			style="width: 100%; height: 100%;" action="getDataGridData"
+			allowResize="true" showPager="true" allowUnselect="true"
+			allowCellWrap="true" allowCellSelect="true" allowCellEdit="true"
+			allowAlternating="true">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="modelname" width="150" headerAlign="center">模型名称</div>
+				<div field="tablename" width="150" headerAlign="center">结果名称</div>
+				<div field="sql_tablename" width="180" headerAlign="center">表名称</div>
+				<div field="generatedate" width="150" headerAlign="center"
+					align="center" data-options="{format:'yyyy-MM-dd HH:mm:ss'}">创建时间</div>
+				<div field="executeDate" width="150" headerAlign="center"
+					align="center" data-options="{format:'yyyy-MM-dd HH:mm:ss'}">最近执行时间</div>
+				<div field="tableid" visible="false"></div>
+				<div field="outputtype" visible="false"></div>
+				<div field="tabletype" visible="false"></div>
+				<div field="modelguid" visible="false"></div>
+				<div field="flowguid" visible="false"></div>
+				<div field="resulttype" width="100" headerAlign="center"
+					align="center">结果类型</div>
+				<div width="100" headerAlign="center" align="center"
+					renderer="onTableStructRenderer">数据结构</div>
+				<div field="edit" width="100" headerAlign="center" align="center"
+					renderer="onEditRenderer">查看数据</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+
+<script src="../../rest/resource/jsboot"></script>
+
+<!-- 配置变量 -->
+<script>
+	//<![CDATA[
+	//表格js对象
+	var grid = mini.get("datagrid");
+	//初始化页面
+	epoint.initPage("dxpmodeltableresultinfoaction");
+
+	function onTableStructRenderer(e) {
+		return epoint.renderCell(e, "action-icon icon-doc", "tableStruct",
+				"tableid,tabletype");
+	}
+
+	// 表结构
+
+	function tableStruct(e) {
+		var config = epoint.decodeJson(e);
+		if (config.tabletype == 3) {
+			epoint.openDialog('实体结构',
+					'frame/epointmis/backend/TableStructViewList?tableID='
+							+ config.tableid, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1200,
+						'height' : 550
+					});
+		} else {
+			epoint.openDialog('数据表结构',
+					'dxp/datamodel/resourcemanager/tablestructlist?tableID='
+							+ config.tableid, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					});
+		}
+
+	}
+
+	//渲染修改日志按钮
+	function onEditRenderer(e) {
+		return epoint.renderCell(e, "action-icon icon-search", "searchRecord",
+				"tableid,modelguid,outputtype,flowguid");
+	}
+
+	//查看数据
+
+	function searchRecord(e) {
+		if (e.outputtype == '2') {
+			epoint.openDialog('数据查看',
+					'dxp/datamodel/modelflow/modelresultviewchart?flowGuid='
+							+ e.flowguid+'&modelGuid='
+							+ e.modelguid+"&tableid="+e.tableid);
+		} else {
+			epoint.openDialog('查看结果',
+					'dxp/datamodel/modelflow/modelresultviewdata?modelGuid='
+							+ e.modelguid+"&tableid="+e.tableid);
+
+		}
+	}
+
+	// formThe search of
+	function searchData() {
+		if (epoint.validate()) {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	}
+
+	//]]>
+</script>
+</html>

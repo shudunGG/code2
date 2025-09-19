@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>展示方案字段配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="数据表选择" starred="true">
+					<div id="dataTable" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.tableId" action="getTableList"
+						onvaluechanged="selectTableChange(this.value,'A')" required="true"
+						requiredErrorText="请选择对应数据表!"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表字段选择" starred="true">
+					<div id="dataField" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.fieldId" required="true"
+						requiredErrorText="请选择对应数据表字段!"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="列标题" starred="true">
+					<input id="columnText" class="mini-textbox"
+						bind="dataBean.columntext" required="true"
+						requiredErrorText="列标题不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="是否自适应列宽">
+					<div id="isAdaptiveWidth" class="mini-radiobuttonlist"
+						repeatItems="2" textField="text" valueField="id" value="false"
+						bind="dataBean.isadaptivewidth"
+						data="[{id:true,text:'是'},{id:false,text:'否'}]"
+						onvaluechanged="changCustom(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="columnWidthArea" style="display: none">
+				<div role="control" label="列宽(px)" starred="true">
+					<input id="columnWidth" class="mini-textbox"
+						bind="dataBean.columnwidth" required="true"
+						requiredErrorText="列宽不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="列显示类型" starred="true">
+					<div id="columnType" class="mini-combobox"
+						action="getColumnDisplayType" bind="dataBean.columntype"
+						onvaluechanged="columnTypeChange" required="true"
+						requiredErrorText="列显示类型不能为空!" /></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序码" starred="true">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int" required="true" requiredErrorText="排序码不能为空!" />
+				</div>
+			</div>
+			<div role="row" id="controlArea" style="display: none">
+				<div role="control" label="控件类型" starred="true">
+					<div id="controlType" class="mini-combobox"
+						bind="dataBean.controltype" required="true"
+						requiredErrorText="控件类型不能为空!" /></div>
+				</div>
+			</div>
+			<div role="row" id="iconArea" style="display: none">
+				<div role="control" label="图标地址">
+					<input id="icon" class="mini-textbox" bind="dataBean.icon" />
+				</div>
+			</div>
+			<div role="row" id="addressArea" style="display: none">
+				<div role="control" label="超链地址" starred="true">
+					<input id="hyperLinkAddress" class="mini-textbox"
+						bind="dataBean.hyperlinkaddress" required="true"
+						requiredErrorText="超链地址不能为空!" />
+				</div>
+				<div role="control" label="打开方式" starred="true">
+					<div id="addressOpentype" class="mini-combobox"
+						bind="dataBean.addressopentype"
+						data="[{id:'0',text:'新窗口'},{id:'1',text:'弹窗'}]" textfield="text"
+						valuefield="id" onvaluechanged="openTypeChange" required="true"
+						requiredErrorText="打开方式不能为空!"></div>
+				</div>
+			</div>
+			<div role="row" id="dialogConfig" style="display: none">
+				<div role="control" label="弹窗宽度（px）" starred="true">
+					<input id="dialogWidth" class="mini-textbox"
+						bind="dataBean.dialogwidth" required="true"
+						requiredErrorText="弹框宽度不能为空!" />
+				</div>
+				<div role="control" label="弹窗高度（px）" starred="true">
+					<input id="dialogHeigh" class="mini-textbox"
+						bind="dataBean.dialogheigh" required="true"
+						requiredErrorText="弹框高度不能为空!" />
+				</div>
+			</div>
+			<div>
+				<p>
+					<span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;高级设置(设置表、字段、比较条件、比较值):</span>
+				</p>
+			</div>
+			<div role="row">
+				<div role="control" label="表">
+					<div id="tableId" class="mini-combobox" textField="text"
+						valueField="id" bind="tableId" action="getTableList"
+						onvaluechanged="selectTableChange(this.value,'B')"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="字段">
+					<div id="fieldId" class="mini-combobox" textField="text"
+						valueField="id" bind="fieldId"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="比较条件">
+					<div id="compare" class="mini-combobox" textField="text"
+						valueField="id" bind="compare"
+						data="[{text:'小于',id:'&lt;'},{text:'大于',id:'&gt;'},{text:'等于',id:'='},{text:'不等于',id:'!='}]"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="比较值">
+					<input id="value" class="mini-textbox" bind="value" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="html模板内容">
+					<input id="htmlTemplate" class="mini-textarea"
+						bind="dataBean.htmltemplate" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('mobiledisplayschemeconfigaddaction', '', initCallback);
+
+		function initCallback(data) {
+			if (data && data.type && data.type == "edit") {
+				if (data.isControl) {
+					document.getElementById("controlArea").style.display = "block";
+				}
+				if (data.isAddress) {
+					document.getElementById("addressArea").style.display = "block";
+					if (data.IsDivWinow) {
+						document.getElementById("dialogConfig").style.display = "block";
+					}
+				}
+				if (data.isIcon) {
+					document.getElementById("iconArea").style.display = "block";
+				}
+			}
+
+			var isCustomValue = mini.get("isAdaptiveWidth").getValue();
+			if (isCustomValue == "true") {
+				document.getElementById("columnWidthArea").style.display = "none";
+			} else {
+				document.getElementById("columnWidthArea").style.display = "block";
+			}
+
+			if (data.tableName && data.fieldName) {
+				mini.get('dataTable').setText(data.tableName);
+				mini.get('dataField').setText(data.fieldName);
+			}
+			if (data.cTableName && data.cFieldName) {
+				mini.get('tableId').setText(data.cTableName);
+				mini.get('fieldId').setText(data.cFieldName);
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				mini.get("htmlTemplate").setValue(
+						epoint.encodeUtf8(mini.get("htmlTemplate").getValue()));
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function selectTableChange(tabelId, type) {
+			//var dataTable = mini.get("dataTable").getValue();
+			if (tabelId) {
+				epoint.execute("dataTableValueChangeByType", 'fui-form', [ tabelId,
+						type ], mcallback);
+			}
+		}
+
+		function columnTypeChange() {
+			var columnType = mini.get("columnType").getValue();
+			if (columnType == "0") {
+				document.getElementById("controlArea").style.display = "none";
+				document.getElementById("addressArea").style.display = "none";
+				document.getElementById("iconArea").style.display = "none";
+			} else if (columnType == "1") {
+				//如果是控件列，控件类型下拉数据准备
+				document.getElementById("controlArea").style.display = "block";
+				document.getElementById("addressArea").style.display = "none";
+				document.getElementById("iconArea").style.display = "none";
+				epoint.execute("columnTypeValueChange", 'fui-form', '',
+						mcallback);
+			} else if (columnType == "2") {
+				document.getElementById("controlArea").style.display = "none";
+				document.getElementById("addressArea").style.display = "block";
+				document.getElementById("iconArea").style.display = "none";
+			} else if (columnType == "3") {
+				document.getElementById("controlArea").style.display = "none";
+				document.getElementById("addressArea").style.display = "none";
+				document.getElementById("iconArea").style.display = "block";
+			}
+		}
+
+		//打开方式变更
+		function openTypeChange() {
+			var openType = mini.get("addressOpentype").getValue();
+			if (openType == "1") {
+				document.getElementById("dialogConfig").style.display = "block";
+			} else {
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				if (data.type && data.type == "A") {
+					mini.get("dataField").setData(data.fieldslist);
+					mini.get("dataField").select(0);
+				} else if (data.type && data.type == "B") {
+					mini.get("fieldId").setData(data.fieldslist);
+					mini.get("fieldId").select(0);
+				}
+			}
+			if (data && data.controlslist) {
+				mini.get("controlType").setData(data.controlslist);
+				mini.get("controlType").select(0);
+			}
+		}
+
+		//更改选择列宽自适应配置
+		function changCustom(flag) {
+			if (flag == "true") {
+				document.getElementById("columnWidthArea").style.display = "none";
+			} else {
+				document.getElementById("columnWidthArea").style.display = "block";
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

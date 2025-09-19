@@ -1,0 +1,1 @@
+select count(*) from  user_tab_columns where table_name = upper('comm_feedback_detail_info') and column_name = upper('workitemguid')

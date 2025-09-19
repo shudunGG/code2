@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>专题管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增授权</a>
+		</div>
+		<div style="float: right;margin-right: 36px;margin-top: 8px;">
+			<a class="mini-button" style="height: 44px;cursor:default;" onclick="stopPropagation">人员视角</a>
+			<a style="color: #337ab7;margin-left: 10px;" id="contenturl">内容视角</a>
+		</div>
+	</div>
+
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+					<input class="mini-hidden" id="cockpitguid" bind="dataBean.cockpitguid"/>
+					<input id="columnguid" class="mini-hidden" bind="dataBean.columnguid" />
+					<input id="projectcateguid" class="mini-hidden" bind="dataBean.projectcateguid" />
+					<input id="projectguid" class="mini-hidden" bind="dataBean.rowguid" />
+			</div>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData2" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center" align="center">序</div>
+				<div field="username" headerAlign="center" align="center" width="120">用户名称</div>
+				<div field="ouname" headerAlign="center" align="center" width="120">所在部门</div>
+				<div field="projectnames" headerAlign="center" align="center" width="400">授权专题</div>
+				<div name="operate" type="actioncolumn" headerAlign="center" align="center">
+					<span type="action" icon="icon-trash" onclick="deleteContent">取消授权</span>
+					<span type="action" icon="icon-edit" onclick="openEdit">编辑授权</span>
+				</div>
+			</div>
+			
+		</div>
+	</div>
+		
+
+	
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var cockpitguid;
+		epoint.initPage('cockpitauthlistaction', '@all', function (data){
+			cockpitguid = data.cockpitguid;
+			mini.get("cockpitguid").setValue(cockpitguid);
+			
+			document.getElementById("contenturl").href="./cockpitauthlist?cockpitguid=" + cockpitguid;
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var guid = mini.get("cockpitguid").getValue();
+			epoint.openTopDialog("新增授权", './cockpitauthorization?cockpitguid=' + guid, searchData, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+
+		// 删除数据
+		function deleteContent(row) {
+			epoint.confirm('确认要取消该用户的所有授权专题吗？', '', function() {
+				epoint.execute('deleteContent', '', [ row.userguid ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+						searchData();
+					}
+				});
+			});
+		}
+
+		function openEdit(e){
+			epoint.openDialog("授权专题", './cockpitautheditproject?userguid=' + e.userguid + "&cockpitguid=" + cockpitguid, searchData, {
+				'width' : 600,
+				'height' : 800
+			});
+		}
+
+		function stopPropagation(e){
+			e.stopPropagation();
+		}
+
+	</script>
+</body>
+</html>

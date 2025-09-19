@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>订阅用户配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="saveAndClose">确认选择</a> 
+			<a class="mini-button" onclick="selectAll">全选</a>
+			<a class="mini-button" onclick="selectInvert">反选</a>
+			<a class="mini-button" onclick="selectNone">全不选</a> 
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+
+	</div>
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div class="mini-checkboxlist" action="getOptions"
+				repeatLayout="table" repeatItems="5" id="options"></div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('selectuserconfigaction', null, function(param) {
+			if (param.selectedConfigName) {
+				mini.get("options").setValue(param.selectedConfigName);
+			}
+		});
+
+		function selectAll() {
+			epoint.execute('selectAll', 'fui-form', '', function(param) {
+				if (param.selectConfigNames) {
+					mini.get("options").setValue(param.selectConfigNames);
+				}
+			});
+		}
+		
+		function selectInvert() {
+			var options = mini.get("options").getValue();
+			epoint.execute('selectInvert', 'fui-form', options, function(param) {
+				if (param.selectConfigNames) {
+					mini.get("options").setValue(param.selectConfigNames);
+				}
+			});
+		}
+		
+		function selectNone() {
+			mini.get("options").setValue("");
+		}
+
+		//保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var options = mini.get("options").getValue();
+				epoint.execute('save', 'fui-form', options, closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, null, null, null, 'success');
+				} else {
+					epoint.alert(msg, null, null, 'warning');
+				}
+			}
+		}
+	</script>
+</body>
+</html>

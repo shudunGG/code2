@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+<title>日期选择控件</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+<meta name="generator" content="www.leipi.org" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+    <![endif]-->
+<!--[if lte IE 7]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+    <![endif]-->
+<link rel="stylesheet" href="leipi.style.css">
+<script type="text/javascript"
+	src="../../../../frame/fui/js/widgets/ueditor/dialogs/internal.js"></script>
+
+<script type="text/javascript">
+	/* Thank you by  
+	                                                                                                        http://www.alt-tag.com/blog/2006/02/ie-dom-bugs/ */
+	function createElement(type, name) {
+		var element = null;
+		try {
+			element = document
+					.createElement('<' + type + ' name="' + name + '">');
+		} catch (e) {
+		}
+		if (element == null) {
+			element = document.createElement(type);
+			element.name = name;
+		}
+		return element;
+	}
+</script>
+</head>
+
+<body>
+	<div class="content">
+		<table class="table table-bordered table-striped table-hover">
+			<input type="hidden" id="datafield" />
+			<tr>
+				<th><span>控件名称</span><span class="label label-important">*</span></th>
+			</tr>
+			<tr>
+				<td><input type="text" id="orgname" placeholder="必填项"></td>
+			</tr>
+			<tr>
+				<th><span>输入操作类型</span></th>
+			</tr>
+			<tr>
+				<td><select id="InputDateType">
+						<option value="Input">可手动输入</option>
+						<option value="Select">只能选择</option>
+				</select></td>
+			</tr>
+		</table>
+	</div>
+	<script type="text/javascript">
+		var oNode = null, thePlugins = 'datetextbox';
+		window.onload = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				oNode = UE.plugins[thePlugins].editdom;
+				$G('InputDateType').value =  oNode.getAttribute('InputDateType');
+				$G('orgname').value =  oNode.getAttribute('title');
+				$G('datafield').value = oNode.getAttribute('datafield');
+			} else {
+				parent.controlId += 1;
+				var df = "Ctrl" + parent.controlId
+				$G('datafield').value = df;
+			}
+		}
+		dialog.oncancel = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+		dialog.onok = function() {
+			var gTitle = $G('orgname').value.replace(/\"/g, "&quot;");
+			if (gTitle == '') {
+				alert('请输入控件名称');
+				return false;
+			}
+			if (!oNode) {
+				try {
+					oNode = createElement('img', $G('datafield').value);
+					oNode.setAttribute('class', 'datetextbox');
+					oNode.setAttribute('data-ctrl', 'datetextbox');
+					oNode.setAttribute('datafield', $G('datafield').value);
+					oNode.setAttribute('datafieldcn', gTitle);
+					oNode.setAttribute('title', gTitle);
+					oNode.setAttribute('value', gTitle);
+					oNode.setAttribute('inputdatetype', $G('InputDateType').value);
+					// 					oNode.setAttribute('name', 'leipiNewField');
+					oNode.setAttribute('controltype', thePlugins);
+					editor.execCommand('insertHtml', oNode.outerHTML);
+				} catch (e) {
+					throw e;
+					return false;
+				}
+			} else {
+				oNode.setAttribute('class', 'datetextbox');
+				oNode.setAttribute('data-ctrl', 'datetextbox');
+				oNode.setAttribute('datafield', $G('datafield').value);
+				oNode.setAttribute('datafieldcn', gTitle);
+				oNode.setAttribute('title', gTitle);
+				oNode.setAttribute('value', gTitle);
+				oNode.setAttribute('inputdatetype', $G('InputDateType').value);
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+	</script>
+</body>
+
+</html>

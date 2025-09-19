@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>外部通讯录列表</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            './css/communicate.css'
+        ]);
+    </script>
+    <style>
+        /*头像信息栏*/
+        .input-name {
+            border: 1px solid #d9d9d9;
+            font-size:0.16rem;
+            margin-top: 8px;
+            height: 24px;
+            line-height: 24px;
+            padding-left: 8px;
+        }
+
+        .gender-item {
+            margin-top: 30px;
+            height: 26px;
+            margin-bottom: 48px;
+        }
+
+        .gender-item .gender-btn {
+            float: left;
+            margin-left: -1px;
+        }
+
+        .gender {
+            display: block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            cursor: pointer;
+            color: #999;
+            border: 1px solid #d9d9d9;
+            background-color: #f7f7f7;
+        }
+
+        .gender.active {
+            background-color: #fff;
+            color: #f96d41;
+        }
+
+        .change-photo > span {
+            color: #666;
+            font-size:0.14rem;
+            padding-left: 20px;
+            margin-left: 20px;
+            display: inline-block;
+            vertical-align: bottom;
+            background: url(images/icon-notice.png) no-repeat left center;
+        }
+    </style>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+<!-- 内容区域 -->
+<div class="fui-content">
+    <div class="content nicescroll" style="overflow: hidden;">
+        <!-- 头像信息栏 -->
+        <div class="staff-baseinfo clearfix">
+            <div class="staff-portrait big">
+                <img alt="portrait" class="icon-portrait" id="linkpic"/> <img
+                    src="images/icon-girl.png" alt="gender" class="icon-gender"
+                    id="icon-sex">
+            </div>
+            <!--<input class="input-name" id="linkdisplayname" />-->
+            <div>姓 名：
+                <input id="displayname" class="mini-textbox"
+                       bind="dataBean.linkdisplayname" required="true" vtype="maxLength:15"/>
+            </div>
+
+            <p class="gender-item clearfix">
+					<span class="gender-btn"> <a title="男" id="man"
+                                                 onclick="changeactive()">男</a> <input class="mini-textbox hidden"
+                                                                                       bind="dataBean.sex"
+                                                                                       required="true" id="setsex"/>
+					</span> <span class="gender-btn"> <a title="女" id="woman"
+                                                         onclick="changeactive()">女</a>
+					</span>
+            </p>
+            <div role="control" label="">
+                <div id="uploader" class="mini-webuploader"
+                     action="outerdetailviewaction.getFileUploadModel"
+                     fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp"
+                     mimeTypes="image/*" auto="true" onfilesuccess="OnPhotoSuccess"
+                     showDefaultUI="false"></div>
+            </div>
+            <div class="staff-btn">
+                <!--<a class="mini-button" plain="true" iconCls="icon-minuscircle">删除</a>-->
+                <!--<a class="mini-button" plain="true" iconCls="icon-backward">撤销</a>-->
+                <a class="mini-button"  onclick="saveModify">保存</a>
+            </div>
+        </div>
+        <!-- 详细信息栏 -->
+        <div class="detailsinfo" id="detail">
+            <!-- 联系方式 -->
+            <div class="fui-form">
+                <div role="form">
+                    <div role="row" style="display: none">
+
+                        <div role="control" label="排序">
+                            <input class="mini-textbox" bind="dataBean.ordernumber"
+                                   vtype="int;range:0,99999999" required="true" style="width: 100%;"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="手机号码">
+                            <input class="mini-textbox" bind="dataBean.mobile"
+                                   vtype="mobile" style="width: 100%;"/>
+                        </div>
+                        <div role="control" label="办公号码">
+                            <input class="mini-textbox" bind="dataBean.telephoneoffice"
+                                   vtype="tel" style="width: 100%;"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="QQ号码">
+                            <input class="mini-textbox" bind="dataBean.qqnumber"
+                                   style="width: 100%;" vtype="maxLength:15"/>
+                        </div>
+                        <div role="control" label="电子邮件">
+                            <input class="mini-textbox" bind="dataBean.email" vtype="email"
+                                   style="width: 100%;"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="家庭电话">
+                            <input class="mini-textbox" bind="dataBean.telephonehome"
+                                   vtype="phone" style="width: 100%;"/>
+                        </div>
+                        <div role="control" label="其他通讯">
+                            <input class="mini-textbox" bind="dataBean.otherimnumber"
+                                   style="width: 100%;" vtype="maxLength:20"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 其他 -->
+            <div class="otherinfo">
+                <div class="fui-form">
+                    <div role="form">
+                        <!-- <div role="row">
+                            <div role="control" label="单位">
+                            <input class="mini-textbox" required="true" bind="dataBean.companyname" style="width:100%;" />
+                            </div>
+
+                        </div> -->
+                        <div role="row">
+                            <div role="control" label="部门">
+                                <input class="mini-textbox" bind="dataBean.deptname"
+                                       style="width: 100%;" vtype="maxLength:15"/>
+                            </div>
+                            <div role="control" label="传真">
+                                <input class="mini-textbox" bind="dataBean.fax"
+                                       style="width: 100%;" vtype="maxLength:15"/>
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="职务">
+                                <input class="mini-textbox" bind="dataBean.title"
+                                       style="width: 100%;" vtype="maxLength:15"/>
+                            </div>
+                            <div role="control" label="邮编">
+                                <input class="mini-textbox" bind="dataBean.postaladdress"
+                                       vtype="postCode" style="width: 100%;"/>
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="单位">
+                                <input class="mini-textbox" bind="dataBean.companyname"
+                                       style="width: 100%;" vtype="maxLength:15"/>
+                            </div>
+                            <div role="control" label="地址">
+                                <input class="mini-textbox" bind="dataBean.workaddress"
+                                       style="width: 100%;" vtype="maxLength:15"/>
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="主页">
+                                <input class="mini-textbox" bind="dataBean.weburl"
+                                       style="width: 100%;" vtype="url"/>
+                            </div>
+                            <div role="control" label="个人博客">
+                                <input class="mini-textbox" bind="dataBean.txtpersonweburl"
+                                       style="width: 100%;" vtype="maxLength:20"/>
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="说明">
+                                <input class="mini-textbox" bind="dataBean.note"
+                                       style="width: 100%;"/>
+                            </div>
+                        </div>
+                        <!-- <div role="row">
+                            <div role="control" label="居住地地址">
+                                <input class="mini-textbox" bind="dataBean.txtzhuzaiaddress"
+                                     style="width: 100%;" />
+                            </div>
+                            <div role="control" label="居住地传真号">
+                                <input class="mini-textbox" bind="dataBean.txtzhuzaifax"
+                                    style="width: 100%;" />
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="居住地邮政地址">
+                                <input class="mini-textbox" bind="dataBean.txtzhuzaipostaladdress"
+                                     style="width: 100%;" />
+                            </div>
+                            <div role="control" label="个人博客">
+                                <input class="mini-textbox" bind="dataBean.txtpersonweburl"
+                                    style="width: 100%;" />
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="说明">
+                                <input class="mini-textbox" bind="dataBean.note"
+                                    style="width: 100%;" />
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../../rest/resource/jsboot"></script>
+<script>
+    SrcBoot.output([
+        '../../../fui/js/lib/jquery.nicescroll.min.js'
+    ]);
+</script>
+<script>
+    var uid = +Util.getUrlParams().uid;
+    epoint.initPage('outerdetailviewaction', null, function (data) {
+        if (data.dataBean) {
+            $("#linkdisplayname").val(data.dataBean.linkdisplayname);
+            if (data.dataBean.sex == "男") {
+                $("#man").addClass("gender active");
+                $("#woman").addClass("gender");
+                $("#icon-sex").attr('src', 'images/icon-boy.png');
+                $("#linkpic").attr('onerror', "javascript:this.src='images/photo-boy.png';");
+            }
+            else {
+                $("#woman").addClass("gender active");
+                $("#man").addClass("gender");
+                $("#icon-sex").attr('src', 'images/icon-girl.png');
+                $("#linkpic").attr('onerror', "javascript:this.src='images/photo-girl.png';");
+            }
+            $("#linkpic").attr('src', '../../../rest/oa9/communication/businesscard/outerdetailviewaction/loadImg?uid=' + data.dataBean.linkuserguid + '&isCommondto=true&vvv=' + Math.random());
+            //epoint.execute("loadImg",'',function(data){
+            //    if(data){
+            //	    $("#linkpic").attr('src',data.imgdata);
+            //    }
+            //});
+        }
+    });
+    Util.hidePageLoading();
+
+    function OnPhotoSuccess(args) {
+        epoint.execute("deleteoldpic", '', function () {
+            $("#linkpic").attr('src', '../../../rest/oa9/communication/businesscard/outerdetailviewaction/loadImg?uid=' + Util.getUrlParams().uid + '&isCommondto=true&vvv=' + Math.random());
+        });
+
+    }
+
+    //nicescroll
+    $(".nicescroll").niceScroll({
+        touchbehavior: false,
+        cursorcolor: "#f2f2f2",
+        cursoropacitymax: 1,
+        cursorwidth: 5,
+        cursorborder: "none",
+        cursorborderradius: "5px",
+        autohidemode: false
+    });
+
+    function checkName() {
+        var name = mini.get("displayname").getValue();
+        var ret = /^[a-zA-Z\u4e00-\u9fa5][0-9a-zA-Z\u4e00-\u9fa5]+$/;
+        if (ret.test(name)&&name.length<=15) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    function saveModify() {
+        if (epoint.validate('detail')) {
+            if (checkName()) {
+                if ($('#man').attr('class') == "gender active") {
+                    mini.get("setsex").setValue("男");
+                } else {
+                    mini.get("setsex").setValue("女");
+                }
+                epoint.execute('save', '', closeCallback);
+            }
+            else {
+                epoint.showTips("名字不合法，请输入中文或英文,长度不能超过15！", {
+                    state: 'danger',
+                    y: 'center'
+                });
+            }
+        }
+    }
+
+    function changeactive() {
+        if ($('#man').attr('class') == "gender") {
+            $("#man").addClass("gender active");
+            $("#woman").removeClass("active");
+        } else {
+            $("#woman").addClass("gender active");
+            $("#man").removeClass("active");
+        }
+    }
+
+    var $rightDetails = window.parent.$('#right-details'),
+        $initial = window.parent.$('.initial', $rightDetails),
+        $infodetail = window.parent.$('.infodetail', $rightDetails),
+        uid = Util.getUrlParams().uid;
+    // 关闭操作的回调
+    function closeCallback(data) {
+        if (data.msg) {
+            epoint.alert(data.msg, '提醒', function (action) {
+                //window.parent.location.reload();
+                $initial.addClass('hidden');
+                $infodetail.children('iframe').attr('src', './outerdetailview?uid=' + uid);
+                $infodetail.removeClass('hidden');
+                if (window.parent.requestCard)
+                    window.parent.requestCard();
+                epoint.closeDialog();
+            });
+            //epoint.alertAndClose(data.msg);
+
+        }
+    }
+</script>
+</body>
+
+</html>

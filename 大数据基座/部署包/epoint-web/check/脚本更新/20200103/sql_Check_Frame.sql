@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'app_info' and column_name='appsecret' and data_type='nvarchar' and character_maximum_length=500

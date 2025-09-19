@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>日志实例刷新</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div>
+					<input id="starttime" class="mini-datepicker" bind="startTime"
+						format="yyyy-MM-dd HH:mm:ss" timeFormat="HH:mm:ss" showTime="true" 
+						 onValuechanged="validateDate(this)" showOkButton="false" 
+						 showClearButton="true" allowInput="false" style="width: 100%" />
+				</div>
+			</div>
+			<br/>
+			<div>选择刷新的起始时间</div>
+			
+			<a class="mini-button" state="primary" id="refreshBtn" style="display: block; margin: 20px auto">刷新</a>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobrefreshloginstanceaction', '@all');
+		
+		//　日期控件的验证
+		var time = mini.get("starttime");
+
+		function validateDate(e) {
+			var start = time.getValue();
+			var end = new Date();
+			if (end - start < 0){
+				epoint.alert("开始时间不能比当前时间晚!", '', null, 'warning');
+				epoint.refresh('fui-form', "", true);
+			}
+		}
+		
+		// 刷新日志实例
+		function refreshLog() {
+			epoint.execute('refreshLogInstance', 'fui-form', closeCallback);
+		}
+		
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,{state : 'danger'});
+			}
+			else {
+				epoint.closeDialog();
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Process modification</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="editBtn" onclick="saveProcess()">save changes</a> 
+			<a class="mini-button" iconCls="icon-removecircle" id="cancle" onclick="epoint.closeDialog('ok')">cancel the change</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="process name" starred="true">
+						<input class="mini-textbox" id="processName" required="true" bind="processName"
+							emptyText="The name of the processCan't be empty" style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="category" id="type">
+						<input class="mini-buttonedit" id="className" bind="itemName" selectOnFocus="true" emptyText=""
+							style="width: 100%;" onbuttonclick="showSelect()" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="enabled">
+						<input class="mini-checkbox" bind="isStart" />
+					</div>
+					<div role="control" label="Whether to be allowed to be monitored">
+						<input class="mini-checkbox" bind="isAllowListener" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input class="mini-textbox" id="orderNum"
+							bind="workflowProcess.orderNum" vtype="range:0,100000" />
+					</div>
+					<div role="control" label="Opening a custom process">
+						<input class="mini-checkbox" bind="custom" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Open the free flow">
+						<input class="mini-checkbox" bind="freedom" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input class="mini-textarea" bind="workflowProcess.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<input bind="workflowProcess.classId" id="classId" class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("processsformlisteditaction", '', initEdit);
+
+		function initEdit(e) {
+			if (e) {
+				mini.get("className").setValue(e.name);
+				mini.get("className").setText(e.name);
+			}
+		}
+
+		function showSelect() {
+			epoint.openDialog('Choose belongcategory',
+					'framemanager/sform/workflow/manage/selectItemcode',
+					showSelectOperJS, {
+						'width' : 300,
+						'height' : 550
+					});
+		}
+
+		function saveProcess() {
+			if (epoint.validate()) {
+				epoint.execute('saveProcess', '', saveComplete);
+			}
+		}
+
+		function showSelectOperJS(data) {
+			if (data && data != 'close') {
+				var codeItem = data.split(";")[1];
+				var codeName = data.split(";")[0]
+				mini.get('className').setValue(codeName);
+				mini.get('className').setText(codeName);
+				mini.get('classId').setValue(codeItem);
+			}
+		}
+
+		function saveComplete(me) {
+			if (me.msg) {
+				if(me.flag != null && (me.flag == "1")){
+					epoint.alertAndClose(me.msg, '', null, null, 'success');
+				}else{
+					epoint.alert(me.msg, '', '', 'warning');
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

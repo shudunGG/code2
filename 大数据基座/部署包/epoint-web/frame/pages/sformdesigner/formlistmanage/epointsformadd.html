@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新建表单</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+
+	<div class="fui-toolbar">
+		<!--帮助按钮 -->
+		<a role="helper"> </a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			支持不选择数据表创建表单，如果不选择数据表那么会默认以formtable+时间戳(yyyyMMddHHmmss)的格式默认创建数据表</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+
+				<div role="row">
+					<div role="control" label="数据表来源">
+						<div id="mistable" name="level"
+							data="[{text:'自动生成',id:'auto'},{text:'mis表选取',id:'mis'},{text:'自定义数据表',id:'custom'}]"
+							textField="text" valueField="id" value="auto"
+							bind="dataBean.tablesource" class="mini-radiobuttonlist"
+							style="width: 100%" onvaluechanged="mistablechangtype"></div>
+					</div>
+
+				</div>
+				<div role="row" id="treeform" style="display: none">
+					<div role="control" starred="true">
+						<input id="formTree" class="mini-treeselect"
+							bind="dataBean.tableid" action="getTreeModal" multiSelect="false"
+							onbeforenodeselect="beforenodeselect" showFilter="true"
+							onvaluechanged="changtype" showRadioButton="true" required="true"
+							filterMode="server" showClose="true" oncloseclick="onCloseClick"
+							allowInput="true" emptyText="请选择mis表" />
+					</div>
+
+				</div>
+				<div role="row" id="sqlform" style="display: none">
+					<div role="control" starred="true">
+						<input class="mini-textbox" bind="mistablename" id="misname" required="true"
+							emptyText="请输入数据表英文名" onvalidation="onChineseValidation"
+							vtype="maxLength:30" />
+					</div>
+				</div>
+				<div role="row" id="form1">
+					<div role="control" label="表单名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.formname"
+							required="true" id="formname" vtype="maxLength:50" />
+					</div>
+
+				</div>
+
+				<div role="row">
+					<div role="control" label="表单模版" starred="true">
+						<div class="mini-combobox" repeatItems="2" id="templateguid"
+							bind="sformTemplate" textField="text" valueField="id"
+							allowInput="true" value="1" action="getsformTemplates"
+							required="true"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999999" id="ordernum" />
+					</div>
+				</div>
+				<div role="row" id="form2">
+					<input class="mini-hidden" bind="dataBean.tabletype" id="tabletype" />
+					<!-- <input class="mini-hidden" bind="mischangename"
+						id="mischangename" /> -->
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="子系统分类">
+						<input id="tabletypeTree" class="mini-treeselect"
+							bind="dataBean.tabletype" action="getTreeData"
+							multiSelect="false" onbeforenodeselect="tabletypeselect"
+							onvaluechanged="tablechangtype" />
+					</div>
+				</div> -->
+				<!-- <div role="row" id="attachment">
+					<div role="control" label="打印模板">
+						<div id="uploader" class="uc-oauploader" auto="true"
+							duplicate="true" fileNumLimit="1"
+							action="epointsformaddaction.getFileModel" editext="doc,docx"
+							required="true"></div>
+					</div>
+				</div> -->
+
+			</div>
+		</div>
+
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar-bottom">
+		<!-- <a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew">保存并新建</a> -->
+		<a class="mini-button" id="addClose" onclick="saveAndClose" state="primary">下一步</a>
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script
+		src="../../../../frame/fui/js/epoint/uc/oauploader/oauploader.js"></script>
+	<script>
+		var rowguid = ""
+		var isSub = ""
+		epoint.initPage('epointsformaddaction', '', function(data) {
+			if (data) {
+				if (data.name) {
+					mini.get("formTree").setText(data.name);
+				}
+				//mini.get('tabletypeTree').setValue(data.categoryNum);
+				mini.get('templateguid').setValue(data.templateGuid);
+				mini.get('templateguid').setText(data.templateName);
+				if (data.sqltablename) {
+					mini.get('misname').setValue(data.sqltablename);
+					mini.get('misname').setEnabled(false);
+				}
+				if (mini.get('mistable').getValue() == "") {
+					mini.get('mistable').setValue('auto');
+				}
+
+				rowguid = data.rowGuid;
+				isSub = data.isSub;
+			}
+			mistablechangtype();
+
+		});
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				// 清空表单
+				epoint.clear('formname');
+				//epoint.clear('tabletypeTree');
+				epoint.clear('ordernum');
+				epoint.clear('tabletype');
+
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag != null && (data.flag == "1")) {
+					if ("single" == Util.getUrlParams('formType')) {
+						Util.location.href = "epointsformcreate?rowguid="
+								+ rowguid + "&isSub=" + isSub
+								+ "&formType=single" + "&editType=add";
+					} else {
+						Util.location.href = "../formlistmanage/wordtransform/transform?rowguid="
+								+ rowguid
+								+ "&isSub="
+								+ isSub
+								+ "&formType="
+								+ Util.getUrlParams('formType')
+								+ "&editType=add";
+					}
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+
+			}
+		}
+
+		//选择类型的时候触发事件
+		function changtype() {
+
+			mini.get("formname").setValue(mini.get("formTree").getText());
+			var templatetype = mini.get("formTree").getValue();
+			epoint.execute('searchform', '', [ templatetype ], function(data) {
+				var scores = data.split(";");
+				//mini.get("mischangename").setValue(scores[0]);
+				//mini.get("formname").setValue(scores[0]);
+				if (scores[1] != "null") {
+					//mini.get("tabletypeTree").setValue(scores[1]);
+					mini.get("tabletype").setValue(scores[1]);
+				}
+
+			});
+		}
+
+		function beforenodeselect(e) {
+			if (e.isLeaf == false || e.record.ckr == false
+					|| e.record.path == 'parent' || e.record.noClick == true) {
+				e.cancel = true;
+			}
+		}
+
+		function tabletypeselect(e) {
+			if (e.record._pid == "-1") {
+				e.cancel = true;
+			}
+		}
+
+		function tablechangtype() {
+			if (mini.get("tabletype").getValue() == "") {
+				mini.get("tabletype").setValue(
+						mini.get("tabletypeTree").getValue());
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			mini.get("formname").setValue("");
+		}
+
+		function mistablechangtype() {
+			var mistable = mini.get("mistable").getValue();
+			if (mistable == "auto") {
+				document.getElementById("treeform").style.display = "none";
+				document.getElementById("sqlform").style.display = "none";
+			} else if (mistable == "mis") {
+				document.getElementById("treeform").style.display = "block";
+				document.getElementById("sqlform").style.display = "none";
+			} else {
+				document.getElementById("treeform").style.display = "none";
+				document.getElementById("sqlform").style.display = "block";
+			}
+
+		}
+
+		function onChineseValidation(e) {
+			if (e.isValid) {
+				if (isChinese(e.value) == true) {
+					e.errorText = "请使用英文或者英文加数字";
+					e.isValid = false;
+				}
+			}
+		}
+		/* 是否汉字 */
+		function isChinese(v) {
+			var re = new RegExp("^[\u4e00-\u9fa5]+$");
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		function onCloseForm() {
+			epoint.execute('deleteSform', '', '', window.parent.searchData());
+		}
+	</script>
+</body>
+</html>

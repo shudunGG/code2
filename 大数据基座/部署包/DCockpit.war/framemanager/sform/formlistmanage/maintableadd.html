@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>主表添加</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addNew" onclick="save();">保存</a> 
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="表单名称" starred="true">
+					<input id="tableName" class="mini-textbox" bind="tableBasicInfo.tableName" maxLength="50" vType="maxLength:50;"
+					    required="true" requiredErrorText="表单名称不能为空!" />
+				</div>
+			</div>
+			<!--div role="row">
+				<div role="control" label="主表名" starred="true">
+					<input id="sqlTableName" class="mini-textbox" bind="tableBasicInfo.sqlTableName" 
+					    required="true" requiredErrorText="数据库表名不能为空!" />
+				</div>
+			</div-->
+			<div role="row">
+				<div role="control" label="排序码">
+					<input id="orderNumber" class="mini-textbox" bind="orderNum" maxLength="8" vtype="int;range:0,99999999" required="true" requiredErrorText="排序码不能为空，请输入正整数!"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单类别">
+					<input id="formTree" class="mini-treeselect" bind="categoryNum" action="getTreeData"  multiSelect="false" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单模板配置">
+					<input name="syncType" bind="formModel"
+						data="[{text:'模板一',id:'1'},
+							{text:'模板二',id:'2'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单大小">
+					<input id="paperClass" name="paperClass" bind="paperClass"
+						data="[{text:'A4',id:'formdiv'},{text:'A5',id:'formdiv2'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单英文字段创建类型（不设置默认自动生成）">
+					<input id="ctrlEnCreateType" name="ctrlEnCreateType" bind="ctrlEnCreateType"
+						data="[{text:'自动',id:'automatic'},{text:'手动',id:'manual'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('maintableaddaction', '', initCallBack);
+		
+		function initCallBack(data){
+			if(data.edit && data.edit=="true"){
+				mini.get("paperClass").setEnabled(false);
+				mini.get("ctrlEnCreateType").setEnabled(false);
+			}
+			if (data.category) {
+				mini.get("formTree").setText(data.category);
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a id="addtype" class="mini-button mini-btn-primary" onclick="add">确定添加</a>
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveData">保存并关闭</a> <a id="deletetype"
+				class="mini-button mini-btn-danger" onclick="test">删除选中</a>
+
+		</div>
+	</div>
+
+	<table>
+		<tr>
+			<td>
+				<div id="grid1" class="mini-datagrid"
+					style="width: 250px; height: 305px; margin-left: 10px; margin-top: 0px"
+					idField="id" multiSelect="false" resultAsData="true"
+					showPager="false">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div header="源字段" field="text">
+							<input property="editor" class="mini-textbox" style="width: 100%" />
+						</div>
+					</div>
+				</div>
+			</td>
+
+			<td>
+				<div id="grid11" class="mini-datagrid"
+					style="width: 250px; height: 305px; margin-left: 5px; margin-top: 0px"
+					idField="id" multiSelect="false" resultAsData="true"
+					showPager="false">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div header="目标字段" field="id">
+							<input property="editor" class="mini-textbox" style="width: 100%" />
+						</div>
+					</div>
+				</div>
+			</td>
+
+			<td style="width: 60px; text-align: center;"><input
+				type="button" value=">" onclick="adds()"
+				style="width: 50px; height: 30px" /><br /> <input type="button"
+				value=">>" onclick="addAll()" style="width: 40px;" /><br /> <input
+				type="button" value="&lt;&lt;" onclick="removeAll()"
+				style="width: 40px;" /><br /> <input type="button" value="&lt;"
+				onclick="removes()" style="width: 50px; height: 30px" /><br /></td>
+			<td>
+				<div id="grid2" class="mini-datagrid"
+					style="width: 400px; height: 305px; margin-top: 30px" idField="id"
+					multiSelect="true" showPager="false" allowCellEdit="true"
+					allowCellSelect="true">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div header="源字段" field="text">
+							<input property="editor" class="mini-textbox" style="width: 100%" />
+						</div>
+						<div header="目标字段" field="id" width="80">
+							<input property="editor" class="mini-textbox" style="width: 100%" />
+						</div>
+					</div>
+				</div> <input type="button" value="Up" onclick="upItem()"
+				style="width: 55px;" /> <input type="button" value="Down"
+				onclick="downItem()" style="width: 55px;" />
+			</td>
+			<td style="width: 50px; text-align: center; vertical-align: bottom">
+
+			</td>
+		</tr>
+
+	</table>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+
+	<script>
+		/* 		function getForm() {
+		 var form = new mini.Form("#form");
+		 var data = form.getData(true, false);
+		 var s = mini.encode(data);
+		 return s;
+		 } */
+
+		//初始化页面
+		epoint.initPage('developmentaction', '', initGrid);
+		var grid = mini.get("grid1");
+		var grid11 = mini.get("grid11");
+
+		//soa需要隐藏列
+		function initGrid(e) {
+			if (e.enableSOA == true) {//要隐藏掉增删改操作
+				$('#btns').hide();
+				mini.get('addtype').setVisible(false);
+				mini.get('deletetype').setVisible(false);
+				mini.get('savetype').setVisible(false);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+			//lx : "保留非全局角色"
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditRow(newRow);
+
+		}
+
+		function test() {
+			var newRow = {
+			//lx : "保留非全局角色"
+			};
+			grid11.addRow(newRow, 0);
+			grid11.beginEditRow(newRow);
+		}
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		// 删除回调
+		function deleteCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', deleteCallBack);
+			searchData();
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', 'datagrid', msgCallBack);
+			searchData();
+		}
+
+		var grid1 = mini.get("grid1");
+		var grid11 = mini.get("grid11");
+		var grid2 = mini.get("grid2");
+
+		grid1.load();
+		grid11.load();
+
+		function adds() {
+
+			var items = grid1.getSelecteds();
+			var items2 = grid11.getSelecteds();
+			var temp = grid1.sender;
+			var temp2 = grid11.getData();
+
+			console.log(grid1.getValue());
+			console.log(grid1.getTextField());
+		
+			
+			grid1.removeRows(items);
+			grid11.removeRows(items2);
+			grid2.addRows(items, items2);
+		}
+		function addAll() {
+			var items = grid1.getData();
+			grid1.removeRows(items);
+			grid2.addRows(items);
+		}
+		function removes() {
+			var items = grid2.getSelecteds();
+			grid2.removeRows(items);
+			grid1.addRows(items);
+			grid11.addRows(items);
+			console.log(items);
+		}
+		function removeAll() {
+			var items = grid2.getData();
+			grid2.removeRows(items);
+			grid1.addRows(items);
+		}
+		function upItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveUp(items);
+		}
+		function downItem() {
+
+			var items = grid2.getSelecteds();
+			grid2.moveDown(items);
+		}
+		function saveData() {
+			var data = grid2.getData();
+			var json = mini.encode(data);
+			alert(json);
+		}
+	</script>
+</body>
+
+</html>

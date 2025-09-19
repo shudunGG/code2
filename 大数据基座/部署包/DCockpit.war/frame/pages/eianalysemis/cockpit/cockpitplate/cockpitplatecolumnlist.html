@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>主题管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增主题</a>
+			<a id="btnDel" class="mini-button" iconCls="icon-minuscircle" onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}"> 删除选定 </a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="主题名称">
+						<input class="mini-textbox" bind="dataBean.columnName" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center" align="center">序</div>
+				<div field="ColumnName" headerAlign="center" align="center">主题名称</div>
+				<div field="statusText" headerAlign="center" align="center" width="100">启用状态</div>
+				<div field="ColumnIcon" headerAlign="center">主题图标</div>
+				<div field="ColumnUrl" headerAlign="center">主题url</div>
+				<div field="Remark" headerAlign="center">主题描述</div>
+				<div field="OrderNum" headerAlign="center" align="center">排序号</div>
+				<div align="center" headerAlign="center" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitplatecolumnlistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增主题', "frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecolumnadd", searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+		};
+
+		// 弹出修改窗口
+		function editItems(guid) {
+			epoint.openDialog("修改主题", 'frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecolumnedit?guid=' + guid, callBack, {
+				'width' : 1000,
+				'height' : 450
+			});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', searchData);
+		}
+	</script>
+</body>
+</html>

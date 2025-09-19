@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>导入模型</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+<div class="fui-content">
+    <div class="fui-form" id="fui-form1">
+        <div role="form">
+            <div id="form" class="fui-form">
+                <div role="form">
+                    <div role="row">
+                        <div role="control" label="节点域" starred="true">
+                            <input id="nodeGuid" bind="nodeGuid" class="mini-combobox"
+                                   required="true" requiredErrorText="节点域不能为空" onvaluechanged="nodechanged"
+                                   action="dxpdatadeveloplistaction.getNodeGuidList"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                       <div role="control" label="Presto数据源" starred="true">
+								<input class="mini-combobox" action="getPrestoDs" id="prestodsid"
+									multiSelect="false" bind="prestodsid" required="true"
+									textField="text" valueField="id" 
+									requiredErrorText="prestor数据源不能为空" />
+						</div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="作业json文件" starred="true">
+                            <div id="uploader" class="mini-webuploader" pickerText="导入" 
+                                 action="getFileUploadModel" limitType="json" fileNumLimit="1" dataImport="true"
+                                 auto="true"></div>
+                        </div>
+                    </div>
+                    <div role="row">
+						<div role="control" label="高级配置">
+							<input id="advancedsetting" class="mini-checkbox" text="" width="13px"/>
+						</div>
+						<div role="control"></div>
+					</div>
+                    <div role="row" id="advancedsetting-01">
+                        <div role="control" label="内存（M）">
+                            <input id="xms" bind="xms" class="mini-textbox" vtype="int;range:1,2048"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-group" style="margin: 0 auto; width: 25%;">
+        <a class="mini-button mini-btn-primary" onclick="save()">确定</a>
+        <a class="mini-button mini-btn-primary" onclick="close()">关闭</a>
+    </div>
+</div>
+
+<script src="../../../rest/resource/jsboot"></script>
+<script>
+    var flowguid;
+    var advancedsetting=mini.get('advancedsetting');
+    epoint.initPage('dxpmodeluploadflowaction', '', function (data) {
+        flowguid = data.flowGuid;
+     	//高级配置不展开
+		$('#advancedsetting-01').hide();
+    });
+
+    function save() {
+        if (epoint.validate()) {
+            epoint.execute('save', '@all', function (data) {
+            	console.log(data);
+                if (data.result.indexOf('导入成功')!=-1) {
+                    epoint.alert(data.result, '提示', function () {
+                        epoint.closeDialog(flowguid);
+                    }, 'success');
+                } else {
+                    epoint.alert(data.result,'错误提示','','warning');
+                }
+            });
+        }
+    }
+
+    function close() {
+        epoint.closeDialog(flowguid);
+    }
+    
+    function nodechanged(){
+    	epoint.refresh(['prestodsid','nodeGuid']);
+    }
+    
+    
+  //高级设置
+    advancedsetting.on('valuechanged',function(e){
+    	if(e.value=='true'){
+    		$('#advancedsetting-01').show();
+    	}else{
+    		$('#advancedsetting-01').hide();
+    	}
+    });
+
+</script>
+</body>
+</html>

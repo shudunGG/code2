@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>交换流程</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择分组">
+			<a class="mini-button mini-btn-primary r" onclick="addGroup()">新增分组</a>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" textField="text" idField="id"
+				parentField="pid" action="getTreeModel" resultAsTree="false"
+				filterMode="server">
+			</ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button mini-btn-primary " id="addSub"
+					onclick="openAdd">新增组件</a> <a class="mini-button" id="deleteSub"
+					onclick="deleteSub">删除组件</a> <a class="mini-button" id="saveOrder"
+					onclick="saveOrder">保存排序</a><!-- <a class="mini-button" id="initSub"
+					onclick="initSub">初始化组件</a> -->
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-search" primaryControl="subassemblyName" opened="false">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="组件名称">
+							<input bind="subassemblyName" id="subassemblyName"
+								class="mini-textbox" />
+						</div>
+					</div>
+					<input bind="groupGuid" id="groupGuid" class="mini-hidden" />
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 表格区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true" allowCellSelect="true"
+				allowCellValid="true" allowCellEdit="true" editNextOnEnterKey="true"
+				style="width: 100%; height: 100%;" showPager="true"
+				action="getDataGridData">
+				<div property="columns">
+					<div type="checkcolumn" width="35"></div>
+					<div type="indexcolumn" width="45" headerAlign="center">序</div>
+					<div field="pluginname" width="100" align="center" headerAlign="center"
+						align="left">组件名称</div>
+					<div field="steptype" width="90" align="center" headerAlign="center">组件类型</div>
+					<div field="classpath" width="250" align="center" headerAlign="center"
+						align="left">组件实现类路径</div>
+					<div field="ordernum" width="50" align="center" headerAlign="center">排序<input property="editor" class="mini-textbox" style="width: 100%;" /></div>
+					<div width="50" headerAlign="center" align="center" renderer="onEditRenderer">编辑</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpdevsubassembmanageraction', '', function(data) {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				buttonDisable();
+			}
+		});
+
+		var tree = mini.get('tree');
+		tree.on('beforenodeselect', function(e) {
+			if (e.node.id === 'f9root') {
+				mini.get('groupGuid').setValue('');
+			} else {
+				mini.get('groupGuid').setValue(e.node.id);
+			}
+			searchData();
+		});
+
+		var grid = mini.get('datagrid');
+		//隐藏第五列生成状态和第八列调度状态
+		grid.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+
+		function openAdd() {
+			var groupGuid = mini.get('groupGuid').getValue();
+			epoint.openDialog("新增组件", "./devsubassemblyadd?groupGuid="
+					+ groupGuid, function() {
+				epoint.refresh(['tree', 'datagrid', 'fui-form']);
+			}, {
+				'width' : 900,
+				'height' : 450
+			})
+		}
+
+		function addGroup() {
+			epoint.openDialog("新增分组", "./devsubassemblygroupadd", function() {
+				epoint.refresh('tree');
+			}, {
+				'width' : 700,
+				'height' : 400
+			})
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon modicon-64", "edit",
+					"rowguid");
+		}
+
+		function edit(data) {
+			epoint.openDialog("编辑组件", "./devsubassemblyadd?rowguid=" + data,
+					function() {
+						epoint.refresh(['tree','datagrid', 'fui-form']);
+					}, {
+						'width' : 900,
+						'height' : 450
+					})
+		}
+		
+		function deleteSub(){
+			epoint.confirm('确认删除吗?', '', function() {
+				epoint.execute('deleteSel', '@all', closeCallback);
+			});
+		}
+
+		function initSub(){
+			epoint.execute('initSub', '@all', closeCallback);
+		}
+		
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功') != -1) {
+				epoint.alertAndRefresh(data.msg);
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+		
+		function buttonEnable() {
+			mini.get('deleteSub').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('deleteSub').disable();
+		}
+		
+		function saveOrder(){
+			epoint.execute('saveOrder', '@all', closeCallback);
+		}
+		
+		
+	</script>
+</body>
+</html>

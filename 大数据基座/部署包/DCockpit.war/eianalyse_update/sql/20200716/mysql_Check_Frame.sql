@@ -1,0 +1,1 @@
+select count(1) from information_schema.tables where TABLE_SCHEMA=DATABASE() and table_name='kgms_textdata_predicate'

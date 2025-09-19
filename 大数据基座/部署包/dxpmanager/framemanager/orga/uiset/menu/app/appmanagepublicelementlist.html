@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>元件管理</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addPortal" iconCls="icon-addcircle">新增元件</a>
+			<a class="mini-button" onclick="savePortal" iconCls="icon-save">保存元件</a>
+			<a class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}"
+				iconCls="icon-minuscircle">删除元件</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="portaletname" headerAlign="center" width="100%">
+					元件名称</div>
+				<div field="categoryName" headerAlign="center" width="150">
+					所在桌面</div>
+				<div field="heigth" headerAlign="center" width="100" align="center">
+					高度</div>
+				<div field="width" headerAlign="center" width="100" align="center">
+					宽度</div>
+				<div field="position_left" headerAlign="center" width="100"
+					align="center">左边</div>
+				<div field="position_top" headerAlign="center" width="100"
+					align="center">顶部</div>
+				<div field="ordernum" headerAlign="center" align="right" width="80">
+					排序</div>
+				<div field="isenable" type="checkboxcolumn" headerAlign="center"
+					width="80" align="center">启用</div>
+				<div field="wqgk" type="checkboxcolumn" headerAlign="center"
+					width="80" align="center">公开</div>
+				<div field="nobk" type="checkboxcolumn" headerAlign="center"
+					width="80" align="center">无边框</div>
+				<div name="pedit" width="50" headerAlign="center" align="center"
+					renderer="onEditRenderer">修改</div>
+				<div name="pright" width="50" headerAlign="center" align="center"
+					renderer="onRightRenderer">权限</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('appmanagepublicelementlistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增 修改回调
+		function addEditCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//修改
+		function savePortal() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+
+		//新增元件
+		function addPortal() {
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint
+					.openDialog(
+							'新增元件',
+							'framemanager/orga/uiset/menu/app/appmanagepublicelementadd',
+							addEditCallBack, settings);
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelect', 'datagrid', msgCallBack);
+		}
+
+		function editItems(rowguid) {
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint.openDialog('修改元件',
+					'framemanager/orga/uiset/menu/app/appmanagepublicelementedit?guid='
+							+ rowguid, addEditCallBack, settings);
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems",
+					"rowguid")
+		};
+
+		function openRight(rowguid) {
+			var settings = {
+				'width' : 680,
+				'height' : 550
+			};
+			epoint.openDialog('配置元件权限',
+					'framemanager/orga/uiset/menu/app/appmanagerightset?portaletguid='
+							+ rowguid, searchData, settings);
+		}
+
+		// 绘制行权限按钮
+		var onRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "openRight",
+					"rowguid")
+		};
+		//]]>
+	</script>
+
+
+</body>
+</html>

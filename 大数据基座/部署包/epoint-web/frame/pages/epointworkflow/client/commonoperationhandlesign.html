@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ 'frame/pages/epointworkflow/css/handlepage.css']);
+</script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="process-container">
+		<div class="fui-block">
+			<h2 class="fui-block-hd">
+				签署意见
+			</h2>
+			<div class="fui-block-bd signmember-container" id="opinion">
+				<div class="opinion-txt">
+					<textarea class="mini-textarea" style="height: 150px; width: 100%;"
+						id="opinioncontent" maxLength="500"></textarea>
+					<div class="add-myopinion" id="addmyopiniondiv">
+						<p class="add-myopinion-row fui-color-hover"><i class="action-icon icon-addcircle "></i>添加到我的意见模版</p>
+					</div>
+				</div>
+				<div class="opinion-tmpl" id="opinion-tmpl">
+					<div class="mini-tabs" height="100%" id="opinionTmplTab">
+						<div title="公共意见模版" >
+							<div id="commonopinionlist" class="mini-listbox" showCheckBox="true" multiSelect="true" textField="opiniontext" valueField="opinionguid"></div>
+						</div>
+						<div title="我的意见模版" >
+							<div id="useropinionlist" class="mini-listbox" showCheckBox="true" multiSelect="true" textField="opiniontext" valueField="opinionguid"></div>
+						</div>
+					</div>
+					<span class="fui-layout-toggle icon-toright split" id="tmplsplit"></span>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<h2 class="fui-block-hd">
+				处理历史
+			</h2>
+			<div class="fui-block-bd signopinion-container">
+				<div id="workitemdatagrid" class="mini-datagrid" sortOrder="desc"
+					idField="workitemguid" multiSelect="true" showPager="false">
+					<div property="columns">
+						<div type="indexcolumn" headerAlign="center" width="30">序</div>
+						<div field="activityname" width="150">步骤</div>
+						<div field="username" width="150">人员</div>
+						<div field="operatedate" width="200" dateFormat="yyyy-MM-dd HH:mm:ss"
+							data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">处理时间</div>
+						<div field="opinion" width="100%">处理意见</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="status-bar">
+			<span>当前步骤：<b id="curr_step">拟稿</b>当前操作：<b id="curr_op">送下一步</b></span>
+			<div class="btn-bar" id="btnbar">
+				<a class="mini-button mini-btn-primary btnsubmit" id="btnsubmit">确认提交</a><a
+					class="mini-button btncancel" id="btncancel">取消</a>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		window.isexecutebtnsubmit = false;
+		Util.loadPageModule({
+			templ : 'frame/pages/epointworkflow/client/handlepage.templ',
+			js : '../js/handlepass.js'
+		});
+
+		$(function() {
+			var tabs = mini.get('opinionTmplTab');
+			$(window).resize(function () {
+				tabs.doLayout();
+			});
+			setTimeout(function () {
+				$(window).resize();
+			}, 100);
+			var $opinion = $("#opinion"), $tmplsplit = $("#tmplsplit");
+
+			$tmplsplit.on("click", function() {
+				$opinion.toggleClass("shrink");
+			})
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+	<!-- 引入属性配置文件，相关属性通过占位符替换，这里采用自定义的占位符处理器支持属性值加密 -->
+	<bean id="propertyConfigurer" class="com.epoint.frame.spring.config.EncryptPropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+		<property name="locations">
+            <list>
+                <value>classpath:rabbitmq.properties</value>
+            </list>
+        </property>
+	</bean>
+
+	<!-- 连接工厂配置信息，支持SSL加密通信 -->
+	<bean id="clientConnectionFactory" class="org.springframework.amqp.rabbit.connection.RabbitConnectionFactoryBean">
+		<property name="useSSL" value="${rabbitmq.ssl.enabled}" />
+		<property name="keyStore" value="${rabbitmq.ssl.keyStore}" />
+		<property name="trustStore" value="${rabbitmq.ssl.trustStore}" />
+		<property name="keyStorePassphrase" value="${rabbitmq.ssl.keyStorePassphrase}" />
+		<property name="trustStorePassphrase" value="${rabbitmq.ssl.trustStorePassphrase}" />
+	</bean>
+
+	<rabbit:connection-factory id="connectionFactory" connection-factory="clientConnectionFactory" 
+		addresses="${rabbitmq.addresses}" username="${rabbitmq.username}" password="${rabbitmq.password}" virtual-host="/" />
+
+	<!-- 当前声明的exchange和queue会在服务器上自动生成 -->
+	<rabbit:admin connection-factory="connectionFactory" />
+
+	<!-- rabbitTemplate，注意框架默认的id=rabbitTemplate唯一且不可变更 -->
+	<rabbit:template id="rabbitTemplate" connection-factory="connectionFactory" />
+
+	<!-- 1定义门户渠道队列 -->
+	<rabbit:queue name="remindGatewayQueue" />
+
+	<!-- 2定义移动端渠道队列 -->
+	<rabbit:queue name="remindMobileQueue" />
+
+	<!-- 3定义企业微信渠道队列 -->
+	<rabbit:queue name="remindWeiXinQueue" />
+
+	<!-- 4定义短信渠道队列 -->
+	<rabbit:queue name="remindSmsQueue" />
+
+	<!-- 5定义钉钉渠道队列 -->
+	<rabbit:queue name="remindDingDingQueue" />
+
+	<!-- 6定义epoint-msg渠道队列 -->
+	<rabbit:queue name="remindMsgQueue" />
+
+	<!-- 7定义其他渠道队列 -->
+	<rabbit:queue name="remindOtherQueue" />
+
+	<!-- 消费者 -->
+	<bean id="remindChannelListener" class="com.epoint.frame.service.message.remind.listener.RemindChannelListener" />
+
+	<!-- 配置监听器 -->
+	<!-- the container will acknowledge the message automatically, unless the MessageListener throws an exception -->
+	<!-- 1、门户监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="20" prefetch="1">
+		<rabbit:listener queues="remindGatewayQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 2、移动端监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="20" prefetch="1">
+		<rabbit:listener queues="remindMobileQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 3、企业微信监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="5" prefetch="1">
+		<rabbit:listener queues="remindWeiXinQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 4、短信监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="5" prefetch="1">
+		<rabbit:listener queues="remindSmsQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 5、钉钉监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="5" prefetch="1">
+		<rabbit:listener queues="remindDingDingQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 6、msg监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="1" prefetch="1">
+		<rabbit:listener queues="remindMsgQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 7、其他监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="20" prefetch="1">
+		<rabbit:listener queues="remindOtherQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+</beans>

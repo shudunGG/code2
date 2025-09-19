@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>表单字段共享关联</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="removeAll"
+			id="btnAddRecord"> 一键全部解绑 </a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" bind="searchString" emptyText="请输入字段名称"
+				width="300" /><a class="mini-button ml8" state="primary"
+				iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="FIELDID"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="FIELDNAME" name="FIELDNAME" width="100">表单字段</div>
+				<div field="FIELDCHINESENAME" name="FIELDCHINESENAME" width="100">表单字段中文名</div>
+				<div field="sharefieldname" name="sharefieldname" width="100">共享字段</div>
+				<div field="sharefieldcname" name="sharefieldcname" width="100">共享字段中文名</div>
+				<div width="60" renderer="onFieldBindRender">绑定字段</div>
+				<div field="formguid" name="formguid" width="60"
+					renderer="onFieldBindRemoveRenderer">移除关系</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var shareId = Util.getUrlParams('guid');
+		var tableConfigGuid = Util.getUrlParams('tableconfigguid');
+		var formGuid = Util.getUrlParams('formguid');
+
+		// 初始化页面
+		epoint.initPage('epointsformfieldrelationlistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 绘制字段绑定按钮
+		var onFieldBindRender = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "fieldBind",
+					"epoint_total");
+		};
+
+		// 弹出窗口
+		function fieldBind(data) {
+			epoint.openDialog("表单字段关联共享",
+					"frame/pages/sformdesigner/share/epointsformsharefieldselect?guid="
+							+ shareId + "&tableconfigguid=" + tableConfigGuid
+							+ "&fieldname=" + data.FIELDNAME + "&fieldcname="
+							+ data.FIELDCHINESENAME, callBack, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 绘制移除关系按钮
+		var onFieldBindRemoveRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"fieldBindRemove", "epoint_total");
+		};
+
+		function fieldBindRemove(data) {
+			epoint.execute('fieldBindRemove', '', [ data.FIELDNAME,
+					data.formguid ], callBack);
+		}
+
+		// 一键全部解绑
+		function removeAll() {
+			epoint.execute('fieldBindAllRemove', '', formGuid, callBack);
+		}
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 回调刷新
+		function callBack(data) {
+			epoint.refresh([ 'datagrid' ], '', true);
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片模板列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="./css/mricode.pagination.css">
+<link rel="stylesheet" href="./css/communicate.css">
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="模板名称">
+						<input class="mini-textbox" bind="dataBean.ChartName" id="ChartName" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<input class="mini-hidden" id="name"/><input class="mini-hidden" id="rowguid"/>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<!-- 卡片 -->
+	    <div class="card-items clearfix nicescroll" id="card-items"></div>
+	</div>
+	<div class="page" id="page"></div>
+
+<!-- 卡片模板 -->
+<script type="x-tmpl-mustache" id="cardlist-tmpl">
+  {{#list}}
+    <div class="card-itembox" >
+        <div class="card-item" id="{{rowguid}}">
+            <div class="staff-baseinfo clearfix samll">
+                <div class="staff-portrait">
+                    <img style="cursor:pointer" src="{{chartIcon}}" class="icon-portrait"/>
+                </div>
+            </div>
+			<div class="contact clearfix">
+				<div class="contact-ect l">
+					<span style="float: left;font-weight:bold">模板名称:<span class="text" style="font-weight:normal">{{chartName}}&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+                	<span style="float: left;font-weight:bold">使用数:<span class="text" style="font-weight:normal">{{useCount}}&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+				</div>
+			</div>
+            <div class="sender-bar">
+                <a class="edit-icon" href="javascript:chooseItems('{{rowguid}}','{{chartName}}')">确定选择</button>
+            </div>
+        </div>
+    </div>
+    {{/list}}
+</script>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../../../../fui/js/widgets/jquery.nicescroll.min.js"></script>
+	<script src="js/mricode.pagination.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitcardtemplatelistaction', null, function(data) {
+		});
+		
+		var $cardContainer = $("#card-items");
+		var cardListTmpl = $("#cardlist-tmpl").html();
+		var $pager = $("#page");
+		var param = {
+			chartName: '',
+			pageIndex: 0,
+			pageSize: 12,
+			total: 0
+		};
+
+		function RequestData() {
+			$.ajax({
+				url: Util.getRootPath() + 'rest/cockpit/getCardTemplateListByChartName',
+				type: "POST",
+				dataType: "JSON",
+				data: {
+					params: JSON.stringify(param)
+				},
+				success: function (res) {
+					var data = res.custom;
+					param.total = data.total;
+					$cardContainer.html(Mustache.render(cardListTmpl, data));
+					renderPager();
+				}
+			});
+		}
+
+
+		// 渲染分页
+		function renderPager() {
+			if ($pager.pagination()) {
+				$pager.pagination('setPageIndex', param.pageIndex);
+				$pager.pagination('setPageSize', param.pageSize);
+				$pager.pagination('render', param.total);
+			} else {
+				// 默认渲染第一个
+				$pager.pagination({
+					pageIndex: param.pageIndex,
+					pageSize: param.pageSize,
+					total: param.total,
+					pageBtnCount: 8,
+					firstBtnText: "&lt;",
+					lastBtnText: "&gt;",
+					showInfo: false,
+					showJump: true,
+					showPageSizes: true,
+					pageSizeItems: [12, 16, 20, 24],
+					pageElementSort: ['$page', '$size', '$jump']
+				});
+				$pager.on("pageClicked", function (event, data) {
+					param.chartName = mini.get("ChartName").getValue();
+					param.pageIndex = data.pageIndex;
+					param.pageSize = data.pageSize;
+					RequestData();
+				}).on('jumpClicked', function (event, data) {
+					param.chartName = mini.get("ChartName").getValue();
+					param.pageIndex = data.pageIndex;
+					param.pageSize = data.pageSize;
+					RequestData();
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			param.chartName = mini.get("ChartName").getValue();
+			param.pageIndex = 0;
+			RequestData();
+		}
+
+		function callBack() {
+			epoint.refresh();
+			initPage();
+		}
+
+		// 选择
+		function chooseItems(id,name) {
+			mini.get('rowguid').setValue(id);
+			mini.get('name').setValue(name);
+			GetData(id,name);
+			CloseWindow("ok");
+		}
+
+		function GetData(rowguid, chartName) {
+			rowguid = mini.get('rowguid').getValue();
+			chartName = mini.get('name').getValue();
+			var data = [rowguid,chartName];
+			return data;
+		}
+		
+		function CloseWindow(action) {
+			if (window.CloseOwnerWindow)
+				return window.CloseOwnerWindow(action);
+			else
+				window.close();
+		}
+		
+		function onExampleRenderer(e) {
+			var curWwwPath=window.document.location.href;
+			var pathName=window.document.location.pathname;
+			var pos=curWwwPath.indexOf(pathName);
+			var localhostPaht=curWwwPath.substring(0,pos);
+			var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+			var imagePath=localhostPaht+projectName+e.record.ChartIcon;
+			console.log(e.record.ChartIcon);
+			if(e.record.ChartIcon != '自定义'){
+				return "<img src='" + imagePath + "' width='80px;' height='80px;' />";
+			}else{
+				return  e.record.ChartIcon;
+			}
+		}
+		
+		function bindEvent() {
+			// 移入移出
+			$cardContainer.on("mouseenter", ".sql-item>a", function () {
+				var that = $(this),
+					$icon = that.find(".sql-icon"),
+					src = $icon.attr('src'),
+					srcArray = src.split("."),
+					activesrc = srcArray[0] + '-active.' + srcArray[1];
+				$icon.attr('src', activesrc);
+
+			}).on("mouseleave", ".sql-item>a", function () {
+				var that = $(this),
+					$icon = that.find(".sql-icon"),
+					src = "images/" + $icon.data("src");
+				$icon.attr('src', src);
+			});
+
+		}
+		
+		function initPage() {
+			RequestData();
+			bindEvent();
+		}
+		
+		initPage();
+		
+		$("#card-items").niceScroll({
+			cursorcolor: "#ccc",
+			cursorwidth: "6px",
+			cursorborder: "none",
+			bouncescroll: false,
+			zindex: 9999,
+			horizrailenabled: false
+		});
+	</script>
+</body>
+</html>

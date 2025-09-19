@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增主题</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css" href="./css/addcolumn.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<!-- <a class="mini-button" iconCls="icon-save" id="add" onclick="saveAndProcess()">保存并送审</a> -->
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose()">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="主题名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.ColumnName"
+							required="required" requiredErrorText="主题名称不能为空"
+							emptyText="请填写主题名称..." vtype="maxLength:50;" />
+					</div>
+					<div role="control" label="ApiCode">
+						<input class="mini-textbox" readonly="true" emptyText="提交后自动生成"
+							bind="dataBean.apicode">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主题描述">
+						<input class="mini-textarea" bind="dataBean.remark" vtype="maxLength:9999"
+							emptyText="请填写主题描述..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门">
+						<input id="createou" class="mini-textbox" readonly="true" />
+					</div>
+					<div role="control" label="创建人">
+						<input class="mini-textbox" id="createuser" readonly="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主题排序">
+						<input class="mini-textbox" bind="dataBean.OrderNum"
+							emptyText="请填写主题排序..." vtype="int;range:0,99999;" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="专题分类">
+						<div>
+							<input class="mini-textbox"
+								style="display: inline-block; width: 24.8%" id="special-textbox">
+							<a class="mini-button mini-btn-primary" id="add-classify"
+								onclick="" iconCls="icon-add">添加分类</a>
+						</div>
+						<ul class="classify-list clearfix" id="classify-list">
+						</ul>
+					</div>
+				</div>
+				<div id="editWindow" class="mini-window" title="修改专题分类"
+					style="width: 550px; height: 180px" showModal="true"
+					allowResize="true" allowDrag="true">
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<a class="mini-button" id="addNew" onclick="save">提交</a><a
+								class="mini-button" onclick="closewindow">关闭</a>
+						</div>
+					</div>
+					<div id="editform" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="专题分类" starred="true">
+									<div class="mini-textbox" required="true" vtype="maxLength:100;"
+										requiredErrorText="专题分类不能为空!" bind="projectcatename" onvalidation="onNameValidation"></div>
+								</div>
+							</div>
+							<div class="mini-hidden" id="categuid" bind="categuid"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/html" id="classify-tmpl">
+        {{#list}}
+        <li class="classify-item">
+            <span class="classify-item-name" title="{{name}}" guid="{{guid}}" onclick="oncateedit('{{guid}}')">{{name}}</span>
+            <span class="action-icon icon-removethin classify-item-close" data-name="{{name}}" data-guid="{{guid}}" title="删除"></span>
+        </li>
+        {{/list}}
+    </script>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="./js/addcolumn.js"></script>
+	<script>
+		var urlguid = Util.getUrlParams('guid');
+		// 初始化页面
+		epoint.initPage('cockpitcolumnaddaction', null, function(data) {
+			var createou = mini.get("createou");
+			createou.setValue(data.createouname);
+			if (data.isadmin) {
+				createou.enable();
+			} else {
+				createou.disable();
+			}
+			mini.get("createuser").setValue(data.createusername);
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+			try {
+				var cates = JSON.parse(data.cates);
+			} catch (error) {
+
+			}
+
+			if (cates) {
+				for (var i = 0; i < cates.length; i++) {
+					$('#classify-list').append(
+							Mustache.render($('#classify-tmpl').html(), {
+								list : cates[i]
+							}));
+				}
+
+			}
+
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', getProjectCate(),
+						closeCallback);
+			}
+		}
+
+		function saveAndProcess() {
+			if (epoint.validate()) {
+				epoint.execute('process', 'fui-form', getProjectCate(),
+						closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.error) {
+				epoint.alert(data.error);
+			} else {
+				if (data.msg) {
+					epoint.alertAndClose(data.msg);
+				}
+			}
+		}
+
+		function getProjectCate() {
+			var cateNames = '';
+			$(".classify-item-name").each(function(i, v) {
+				cateNames += ';' + v.getAttribute("title");
+			});
+			return cateNames.substring(1);
+		}
+
+		function oncateedit(guid) {
+			if (urlguid) {
+				mini.get('categuid').setValue(guid);
+				mini.get("editWindow").show();
+			}
+		}
+
+		function closewindow() {
+			mini.get("editWindow").hide();
+		}
+
+		function save() {
+			if (urlguid) {
+				if (epoint.validate()) {
+					epoint.execute('editCate', 'editform', function(data) {
+						if (data.msg) {
+						    if (data.msg.indexOf("成功") != -1) {
+						    	closewindow();
+								epoint.alert(data.msg);
+								$('#classify-list').empty();
+								epoint.refresh();
+						    } else {
+						        epoint.alert(data.msg, '', null, 'info');
+						    }
+						}
+					});
+				}
+			}
+		}
+		
+		function onNameValidation(e) {
+	        if (e.isValid) {
+	        	$(".classify-item-name").each(function(){
+	    			if($(this).html()==e.value){
+	    				e.errorText = "请输入不重复的分类名";
+		                e.isValid = false;
+		                return;
+	    			}
+	    		});
+	        }
+	    }
+	</script>
+</body>
+</html>

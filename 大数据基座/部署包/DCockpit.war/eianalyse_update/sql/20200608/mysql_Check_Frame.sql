@@ -1,0 +1,1 @@
+select count(1) from code_items ci inner join code_main cm on ci.CODEID=cm.CODEID and cm.CODENAME='指标类型' where ci.itemtext='人工'

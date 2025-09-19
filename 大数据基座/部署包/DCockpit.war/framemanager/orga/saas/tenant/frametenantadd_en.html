@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="content-type" content="text/html" />
+		<title>Tenant management add</title>
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" onclick="saveAndNew" iconCls="icon-save">save and new</a><a
+				class="mini-button" id="addClose" onclick="saveAndClose" iconCls="icon-save">save and close</a><a
+				class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">shut down</a>
+			</div>
+		</div>
+
+		<!-- content area -->
+		<div class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div id="fui-form" class="fui-form">
+					<div role="row">
+						<div role="control" label="tenantname" starred="true">
+							<input id="tenantname" class="mini-textbox"
+							bind="dataBean.tenantname" required="true"
+							requiredErrorText="The tenant nameCan't be empty!" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="sign name" starred="true">
+							<input id="tenantsysname" class="mini-textbox"
+							bind="dataBean.tenantsysname" required="true"
+							requiredErrorText="The tenant sign the nameCan't be empty!"
+							onvalidation="onEnglishValidation"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="order no">
+							<input id="ordernumber" class="mini-textbox" value="0"
+							bind="dataBean.ordernumber" vtype="int"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			// Initialize the page
+			epoint.initPage('frametenantaddaction');
+
+			function saveAndNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				}
+			}
+
+			// New correction operation
+			function newCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alert(data.msg, '', null, 'success');
+						// Empty form
+						epoint.clear('fui-form');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+
+			// Shut downOperation of the callback
+			function closeCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+
+			function onEnglishValidation(e) {
+				if (e.isValid) {
+					if (isEnglish(e.value) == false) {
+						e.errorText = "The tenant sign the nameMust be in English";
+						e.isValid = false;
+					}
+				}
+			}
+
+			/* Whether or not English */
+			function isEnglish(v) {
+				var re = new RegExp("^[a-zA-Z]+$");
+				if (re.test(v))
+					return true;
+				return false;
+			}
+		</script>
+	</body>
+</html>

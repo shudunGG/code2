@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>添加数据表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="add" onclick="update('1')">保存修改</a>
+			<!--  <a class="mini-button" iconCls="icon-refresh" id="add"
+				onclick="update('2')">保存并同步</a> -->
+			<a class="mini-button" id="addCancel" iconCls="icon-minuscircle" onclick="epoint.closeDialog">取消添加</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="表中文名称" starred="true">
+						<input class="mini-textbox" bind="eiatablebasicinfoeditaction.tableBasicInfo.tableName" required="true" requiredErrorText="表中文名称不能为空"
+							vtype="maxLength:50" width="90%" />
+					</div>
+
+					<div role="control" label="排序号">
+						<input bind="eiatablebasicinfoeditaction.tableBasicInfo.ordernum" class="mini-textbox" vtype="int;range:0,99999" width="90%" />
+					</div>
+					<!-- 	<div role="control" label="SQL表名" starred="true">
+						<input id="sqlTableName"
+							bind="eiatablebasicinfoeditaction.tableBasicInfo.sqlTableName"
+							class="mini-textbox" emptyText="数据表名" required="true"
+							requiredErrorText="SQL表名不能为空" />
+					</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('eiatablebasicinfoeditaction');
+
+		// 保存并关闭
+		function update(type) {
+			if (epoint.validate()) {
+				if (type == '1') {
+					epoint.execute('eiatablebasicinfoeditaction.update', 'fui-form', [ type ], closeCallback);
+				} else {
+					epoint.confirm('修改信息会同步修改数据库中表的信息,您确定修改吗?', '', function() {
+						epoint.execute('eiatablebasicinfoeditaction.update', 'fui-form', [ type ], closeCallback);
+					});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.strScript) {
+				//if (data.strScript[0].indexOf("成功") != -1) {
+				if (data.success) {
+					epoint.alertAndClose(data.strScript, '', null, null, 'success');
+				} else {
+					epoint.alert(data.strScript, '', null, 'error');
+				}
+			}
+		}
+			
+	</script>
+</body>
+
+</html>

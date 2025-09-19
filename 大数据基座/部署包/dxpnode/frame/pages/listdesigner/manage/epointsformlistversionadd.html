@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>模版配置添加</title>
+<script src="../../../fui/js/cssboot.js"></script>
+
+<script>
+	SrcBoot
+			.output([ '../../../../framemanager/orga/uiset/menu/module/subscribemodule/checkboxtree.css' ]);
+</script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="版本基本信息"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="关联模版" starred="true">
+									<div class="mini-treeselect" id="templateguid"
+										bind="dataBean.templateguid" action="getTemplateTreeModel"
+										multiSelect="false" showFilter="true" required="true"
+										onbeforenodeselect="beforenodeselect" showRadioButton="true"></div>
+								</div>
+								<!-- <div role="control" label="移动端列表模版" starred="true">
+									<div class="mini-combobox" repeatItems="2"
+										id="mobiletemplateguid" bind="dataBean.mobiletemplateguid"
+										textField="text" valueField="id" value="2"
+										action="getmobiletableid"></div>
+								</div> -->
+							</div>
+							<div role="row" id="form1">
+								<div role="control" label="分页方式" starred="true">
+									<div class="mini-radiobuttonlist" id="pagetype"
+										bind="dataBean.pagetype" textField="text" valueField="id"
+										allowInput="true" value="0" action="getpageTypeModel"
+										required="true" onvaluechanged="changpage"></div>
+								</div>
+							</div>
+							<div role="row" id="form2" starred="true">
+								<div role="control" label="单页显示记录数" starred="true" id="pagenum">
+									<input class="mini-textbox" bind="dataBean.pagevolume"
+										id="pagevolume" required="true" vtype="int;range:1,100" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="关联表单">
+									<input id="selectsform" bind="selectSformValue"
+										allowInput="false" class="mini-buttonedit" emptyText=""
+										onbuttonclick="selectSform();" selectOnFocus="true" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="排序号">
+									<input class="mini-textbox" bind="dataBean.ordernum"
+										vtype="int;range:0,99999999" />
+								</div>
+							</div>
+						</div>
+						<div class="mini-hidden" bind="dataBean.formlisttype"
+							id="listtype"></div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="展示列字段选择"></div>
+				<div role="body">
+					<div class="tree-container" id="tree-container"></div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="查询区域字段选择"></div>
+				<div role="body">
+					<div class="tree-container" id="tree-container2"></div>
+				</div>
+			</div>
+			<input id="showfields" bind="showFields" class="mini-hidden" /> <input
+				id="searchfields" bind="searchFields" class="mini-hidden" />
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var ITEM_TPL = '\
+		<span class="cb-container level-1 asblock">\
+		    <input type="checkbox" id="{{type}}_{{value}}" dataid="{{value}}" class="cb-cb"><span class="cb-show"></span><label for="{{type}}_{{value}}" class="cb-label">{{text}}</label>\
+		</span>\
+		<div class="check-group" >\
+		  {{{subItems}}}\
+		</div>\
+		';
+
+		var SUBITEM_TPL = '\
+		<span class="cb-container level-2" data-ctext="{{text}}" data-pytext="{{py}}">\
+		    <input type="checkbox" id="{{type}}_{{value}}" dataid="{{value}}" class="cb-cb"><span class="cb-show"></span><label for="{{type}}_{{value}}" class="cb-label">{{text}}</label>\
+		</span>\
+		';
+
+		var tableId = "";
+		epoint.initPage('epointsformlistversionaddaction', '', function(data) {
+			changpage();
+			tableId = data.tableId;
+			//绘制表、字段层级关联选择
+			$(genCheckhtml(data, 'show'))
+					.appendTo($("#tree-container").empty());
+			$(genCheckhtml(data, 'search')).appendTo(
+					$("#tree-container2").empty());
+			//初始化时给控件绑值
+			mini.get('selectsform').setText(data.versionName);
+			mini.get('selectsform').setValue(data.pageurlcheck);
+			//定义级联点击事件
+			$(".tree-container").on('click', '.cb-cb', function() {
+				var $cb = $(this).parent();
+				var checked = $(this).prop('checked');
+				if ($cb.hasClass('level-1')) { //如果点了表，级联触发字段选择
+					$cb.next().find('.cb-container').each(function(i, item) {
+						var $item = $(item);
+						if (checked) {
+							$item.find('.cb-cb').prop('checked', true);
+						} else {
+							$item.find('.cb-cb').prop('checked', false);
+						}
+					});
+				}
+
+				//将选择项组装后放到hidden控件中
+				var selectshowfields = '';
+				var selectsearchfields = '';
+				$(".check-group").find('.cb-cb').each(function(i, item) {
+					var $cb = $(this).parent();
+					if ($(this).prop('checked')) {
+						if (this.id.indexOf('show') == 0) {
+							selectshowfields += ',' + $(this).attr('dataid');
+						} else {
+							selectsearchfields += ',' + $(this).attr('dataid');
+						}
+					}
+				});
+				if (selectshowfields.length > 0)
+					selectshowfields = selectshowfields.substring(1);
+				if (selectsearchfields.length > 0)
+					selectsearchfields = selectsearchfields.substring(1);
+
+				mini.get("showfields").setValue(selectshowfields);
+				mini.get("searchfields").setValue(selectsearchfields);
+			});
+		});
+
+		var okey = '', filterTimer;
+		$(".tree-container").on(
+				'keyup',
+				'.filter-input',
+				function(e) {
+					var $target = $(e.target), $group = $target
+							.siblings('.check-group'), key = $
+							.trim(e.target.value);
+
+					if (key != okey) {
+						if (filterTimer) {
+							clearTimeout(filterTimer);
+						}
+						filterTimer = setTimeout(function() {
+							doFilter($group, key);
+						}, 400);
+					}
+
+				});
+
+		var doFilter = function($group, key) {
+			if (key === '') {
+				$group.children().removeClass('hidden');
+			} else {
+				key = key.toLocaleLowerCase();
+				$group.children().each(
+						function(i, item) {
+							var $item = $(item), ctext = $item.data('ctext')
+									.toLocaleLowerCase(), pytext = $item.data(
+									'pytext').toLocaleLowerCase();
+
+							if (ctext.indexOf(key) > -1
+									|| pytext.indexOf(key) > -1) {
+								$item.removeClass('hidden');
+							} else {
+								$item.addClass('hidden');
+							}
+						});
+			}
+
+			okey = key;
+		};
+
+		function genCheckhtml(data, type) {
+			var html = [];
+			$.each(JSON.parse(data.tables), function(i, item) {
+				var subhtml = [];
+				$.each(JSON.parse(data[item.value]), function(j, subitem) {
+					subhtml.push(Mustache.render(SUBITEM_TPL, $.extend(subitem,
+							{
+								type : type
+							})));
+				});
+
+				html.push(Mustache.render(ITEM_TPL, $.extend(item, {
+					subItems : joinArr(subhtml, ''),
+					type : type
+				})));
+			});
+			html
+					.push('<input type="text" class="filter-input mini-textbox-border"/><i class="filter-icon icon-search"></i>');
+			return joinArr(html, '');
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-accordions', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alertAndClose(data.msg);
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function changpage() {
+			var pagetype = mini.get("pagetype").getValue();
+			//自定义的时候显示分页数量可填
+			if (pagetype == "2") {
+				$("#form2").show();
+			} else {
+				epoint.clear('pagevolume');
+				$("#form2").hide();
+			}
+		}
+
+		function beforenodeselect(e) {
+			if (e.isLeaf == false || e.node.pid == '-1') {
+				e.cancel = true;
+			} else {
+				mini.get("listtype").setValue(e.node.pid);
+			}
+		}
+
+		var joinArr = function(arr, c) {
+			if (c === undefined) {
+				c = '';
+			}
+			if (!arr || !arr.length) {
+				return '';
+			}
+			var str = arr[0], i = 1, l = arr.length;
+			while (i < l) {
+				str += c + arr[i];
+				i++;
+			}
+			return str;
+		};
+
+		function selectSform() {
+			epoint.openDialog("选择表单",
+					'frame/pages/sformdesigner/sformselect?tableId=' + tableId,
+					function(e) {
+						var values = e.split(";");
+						mini.get('selectsform').setText(values[3]);
+						mini.get('selectsform').setValue(values[2]);
+					}, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+	</script>
+</body>
+</html>

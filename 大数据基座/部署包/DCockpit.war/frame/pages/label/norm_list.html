@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="renderer" content="webkit" />
+    <title>指标列表</title>
+    <script src="../../js/boot/boot.min.js"></script>
+    <script>
+      ResBoot.output([
+        "js/widgets/element-ui/lib/theme/index.css",
+        "./css/label_list.css",
+      ]);
+    </script>
+  </head>
+
+  <body id="body">
+    <!-- 公共头部 -->
+    <div id="header" class="header">
+      <div class="container">
+        <p class="header-title">指标门户</p>
+      </div>
+    </div>
+
+    <div class="main" id="app">
+      <!-- 搜索区域 -->
+      <div class="search-area">
+        <div id="search-bar" class="search-bar">
+          <input
+            id="search-input"
+            v-model="keyword"
+            class="search-input"
+            type="text"
+            placeholder="请输入数据资源"
+          />
+          <div id="search-hint" class="search-hint">
+            <ul id="hints"></ul>
+          </div>
+          <i id="clear-btn" class="clear-btn"></i>
+          <a class="search-btn" id="search-btn">搜索</a>
+          <p id="search-heat" class="search-heat">
+            <span class="search-heat-label">热门搜索：</span>
+          </p>
+        </div>
+      </div>
+      <div class="container">
+        <!-- 筛选区域 -->
+        <div id="filter-area" class="filter-area">
+          <p class="filter-head">筛选条件</p>
+          <ul id="filter-list" class="filter-list">
+            <li class="filter-item active" body="all">
+              <i class="filter-item-checkbox"></i>
+              <span>不限</span>
+            </li>
+          </ul>
+        </div>
+        <!-- 列表区域 -->
+        <div id="list-area" class="list-area">
+          <div class="list-head">
+            <span>指标信息(</span>
+            <span id="item-num" class="highlight"></span>
+            <span>)</span>
+            <div class="sort-options">
+              <span class="sort-option zonghe active">综合排序</span>
+              <span class="sort-option watch">最多浏览</span>
+              <span class="sort-option update">最近更新</span>
+            </div>
+          </div>
+          <ul id="list" class="list"></ul>
+          <!-- 分页 -->
+          <el-pagination
+            id="pagination"
+            class="pagination"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            background
+            layout="prev, pager, next, total, jumper, sizes"
+            :total="total"
+            :current-page.sync="current"
+            :page-size="10"
+            :page-sizes="[5,10,20,50]"
+          >
+          </el-pagination>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <!-- 列表项模板 -->
+    <script id="list-item-tmpl" type="mustache-tmpl">
+      {{#items}}
+      <li class="list-item">
+          <p class="list-item-head">
+              <a class="list-item-title" href="./norm_detail.html?rowguid={{guid}}">{{title}}</a>
+              <span class="update-time">指标更新时间:{{time}}</span>
+          </p>
+          <p class="list-item-text1">
+              <span>创建部门:{{dep}}</span>
+              <span>公开类型:{{type}}</span>
+          </p>
+          <p class="list-item-text2">
+              <span>所属领域:{{body}}</span>
+              <span>指标类型:{{cate}}</span>
+              <span class="watch-times">{{num}}次</span>
+          </p>
+      </li>
+      {{/items}}
+    </script>
+
+    <!-- 配置放于最前 -->
+    <script>
+      function getRootPath() {
+        var curWwwPath = window.document.location.href;
+        var pathName = window.document.location.pathname;
+        var pos = curWwwPath.indexOf(pathName);
+        var localhostPaht = curWwwPath.substring(0, pos);
+        //获取带"/"的项目名，如：/uimcardprj
+        var projectName = pathName
+            .substring(0, pathName.substr(1).indexOf('/') + 1);
+        return (localhostPaht + projectName);
+      }
+      Config.ajaxUrls = {
+        // filtersUrl: Config.realUrl + "dongguan/filters",
+        filtersUrl: getRootPath() + '/rest/cockpitnorm/getType',
+        // keywordsUrl: Config.realUrl + "dongguan/keywords",
+        keywordsUrl: getRootPath() + '/rest/cockpitnorm/getHotKeywords',
+        // listUrl: Config.realUrl + "dongguan/list",
+        listUrl: getRootPath() + '/rest/cockpitnorm/getList',
+        // hintUrl: Config.realUrl + "dongguan/hints",
+        hintUrl: getRootPath() + '/rest/cockpitnorm/getExtendKeywords'
+      };
+    </script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+      ResBoot.output([
+        "js/widgets/vue.min.js",
+        "js/widgets/element-ui/lib/index.js",
+        "./js/norm_list.js",
+      ]);
+    </script>
+  </body>
+</html>

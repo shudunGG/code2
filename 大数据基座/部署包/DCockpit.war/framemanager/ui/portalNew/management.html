@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>元件管理</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet"
+	href="mCustomScrollbar/jquery.mCustomScrollbar.min.css">
+<link rel="stylesheet" href="./management/management.css">
+</head>
+
+<body>
+	<div class="sidebar" id="sidebar">
+		<span class="sidebar-trigger"></span>
+		<div class="tabview" id="left-tabview">
+			<div class="tabview-header clearfix" data-role="head">
+				<div class="tabview-header-item active" data-role="tab"
+					data-target="one">布局</div>
+				<div class="tabview-header-item" data-role="tab" data-target="two">元件</div>
+			</div>
+			<div class="tabview-body" data-role="body" id="tabview-body">
+				<div class="tabview-body-item" data-id="one" data-role="tab-content">
+					<div class="layout-wrap">
+						<div class="layout-tpl">
+							<h2 class="layout-header">
+								<span class="trigger"></span> <span class="name">通栏模块</span> <span
+									class="userset-help"
+									title="依次输入每列的数值，并用：符号分割它们，系统将会根据这些数值的大小，生成对应列宽比的通栏模块。"></span>
+							</h2>
+							<div class="layout-list" id="simple-layout-list">
+								<div class="simple-layout-userset">
+									<input class="simple-layout-userset-input" type="text"
+										placeholder="输入自定义比例" id="simple-layout-userset-input">
+									<span class="btn add"></span>
+								</div>
+							</div>
+
+						</div>
+						<div class="layout-oftenuse">
+							<h2 class="layout-header">
+								<span class="trigger"></span> <span class="name">常用模板</span>
+							</h2>
+							<div class="layout-list"></div>
+						</div>
+					</div>
+				</div>
+				<div class="tabview-body-item hidden" data-id="two"
+					data-role="tab-content">
+					<div class="el-wrap">
+						<div class="el-search">
+							<input class="el-search-input" type="text" id="search"
+								placeholder="请输入元件模板名称"> <i class="el-search-icon"></i>
+						</div>
+						<div class="el-content" id="el-content">
+							<div class="cotent-panel"></div>
+							<div class="result-panel hidden"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="right-container" id="right-container">
+		<div class="right-toolbar fui-toolbar clearfix">
+			<div class="btn-group r clearfix">
+				<span class="mini-button  l" onclick="saveAsCommonTpl">存为常用模板</span>
+                <span class="mini-button mini-btn-primary l" onclick="portalPublish">发布</span>
+                <span class="mini-button" iconCls="icon-askcircle" style="height: 24px;" tooltip="查看帮助" onclick="showHelp"></span>
+			</div>
+		</div>
+		<div class="main-content-wrap">
+			<div class="main-content-container"
+				style="height: auto; min-height: 100%;"></div>
+		</div>
+    </div>
+    <div class="help-center-container" id="help-center">
+        <span class="help-center-close icon-removethin action-icon"></span>
+        <div class="help-center">
+            <img src="./management/images/help/setting.png" data-size="[1000, 2730]">
+            <img src="./management/images/help/standard.png" data-size="[1000, 5000]">
+        </div>
+    </div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 获取门户布局和元件内容地址
+		var getPortalDataUrl = epoint
+				.dealRestfulUrl('frameportallistaction/getPortalDetail');
+		// 布局模板获取地址
+		var getLayoutDataUrl = epoint
+				.dealRestfulUrl('frameportallistaction/getLayoutTempList');
+		// 元件模板获取地址
+		var getElDataUrl = epoint
+				.dealRestfulUrl('frameportallistaction/getELTempList');
+		// 创建元件的请求地址
+		var createElementUrl = epoint
+				.dealRestfulUrl('frameportallistaction/addPortalElement');
+		// 元件移除的请求地址
+		var deleteElementUrl = epoint
+				.dealRestfulUrl('frameportallistaction/deletePortalElement');
+		// 布局切换，元件位置调整的保存地址
+		var saveElementsUrl = epoint
+				.dealRestfulUrl('frameportallistaction/saveChanges');
+		// 元件配置后新数据获取地址 用于某元件配置更新后 使用新数据重新绘制元件
+		var getELementDataUrl = epoint
+				.dealRestfulUrl('frameportallistaction/getElementDetail');
+		var saveLayoutDataUrl = epoint
+				.dealRestfulUrl('frameportallistaction/saveAsCommonLayout');
+		// 门户ID
+		var portalGuid = Util.getUrlParams('portalGuid');
+
+		// 通栏模块的配置
+		var simpleTplConfig = [ {
+			name : '12',
+			cols : [ 12 ],
+			// 图片在此位置应有两张，此处配置的为默认展示的，加-h的为高亮展示的
+			icon : './management/images/layout/12.png'
+		}, {
+			name : '6:6',
+			cols : [ 6, 6 ],
+			icon : './management/images/layout/6-6.png'
+		}, {
+			name : '4:8',
+			cols : [ 4, 8 ],
+			icon : './management/images/layout/4-8.png'
+		}, {
+			name : '4:4:4',
+			cols : [ 4, 4, 4 ],
+			icon : './management/images/layout/4-4-4.png'
+		}, {
+			name : '3:3:6',
+			cols : [ 3, 3, 6 ],
+			icon : './management/images/layout/3-3-6.png'
+		}, {
+			name : '3:3:3:3',
+			cols : [ 3, 3, 3, 3 ],
+			icon : './management/images/layout/3-3-3-3.png'
+		} ];
+	</script>
+
+	<script src="mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+	<script src="./management/management.js"></script>
+	<script>
+		// 根据传递的门户id初始化门户布局和元件信息
+		initportal(portalGuid);
+		// 发布点击的真实保存
+		function portalPublish() {
+			saveLayoutAndElements();
+		}
+		// 存为常用模板的处理函数
+		function saveAsCommonTpl() {
+			mini.prompt("请为您的布局输入一个名称", "请输入名称", function(action, value) {
+				if (action == "ok") {
+					value = $.trim(value);
+					if (value) {
+						window.saveLayoutData(value);
+					} else {
+						epoint.alert('必须输入名称');
+					}
+				} else {
+					// alert("取消");
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Report management</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<div class="page-loading"></div>
+
+
+	<!-- the left tree -->
+	<div class="fui-left">
+
+		<div role="head" title="Classification management">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" style="margin-top: 5px;"
+					onclick="editCat();">classificationmanagement</a>
+			</div>
+		</div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<!-- Right-side content area -->
+	<div class="fui-right">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addbtn" onclick="addReport();">new report</a><a
+					class="mini-button" id="savebtn" onclick="saveReport();">save changes</a> <a
+					class="mini-button" id="delbtn" onclick="deleteSelect();">delete selected</a><a
+					class="mini-button" onclick="setDs();">set up the data source</a>
+			</div>
+			<input id="dsID" action="getDsItems" allowInput="false"
+				autoLoad="true" class="mini-combobox" showNullItem="false" />
+		</div>
+
+
+		<!-- conditions area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="report name">
+							<div class="mini-textbox" bind="reportName"></div>
+						</div>
+						<div role="control"></div>
+					</div>
+					<!-- Add a hidden field to the tree and the linkage of the table -->
+					<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+						class="mini-hidden" />
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- The list of area -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true"
+				allowCellEdit="true">
+				<!-- allowCellEdit="true" -->
+				<div property="columns">
+					<div type="checkcolumn" width="80"></div>
+					<div type="indexcolumn" width="80" headerAlign="center">
+						order
+					</div>
+					<div field="reportname" headerAlign="center" width="120">
+						report name<input property="editor" class="mini-textbox" />
+					</div>
+					<div field="dsName" headerAlign="center" width="100%">data source</div>
+					<div field="categoryname" headerAlign="center" width="150">report category</div>
+					<div field="ordernumber" headerAlign="center" width="150">
+						roworderNo.<input property="editor" class="mini-textbox" vtype="int" />
+					</div>
+					<div headerAlign="center" renderer="onDownLoadRender" align="center"
+						width="80">download</div>
+					<div headerAlign="center" renderer="onEditRender" align="center"
+						width="70">edit</div>
+					<div headerAlign="center" renderer="onPreviewRender" align="center"
+						width="80">preview</div>
+				</div>
+			</div>
+		</div>
+
+
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[ 
+        //Initialize the page
+        epoint.initPage ("reportinfolistaction");
+        
+        //The treejsobject
+        var tree = mini.get ("tree");
+        
+        //Click on theThe treeNode to refresh the form
+        tree.on ("nodeselect", function (e)
+        {
+	        if (e.node)
+	        {
+		        var id = e.node.id;
+		        //willthe left treeClick on theThe nodes of theidIn a hidden field
+		        mini.get ('leftTreeNodeGuid').setValue (id);
+	        }
+	        //Refresh the table
+	        epoint.refresh (['datagrid', 'fui-form']);
+        });
+        
+        // Search for tables
+        function searchData ()
+        {
+	        epoint.refresh ([
+	                'datagrid', 'fui-form', 'tree'
+	        ]);
+        }
+
+        //Edit category
+        function editCat ()
+        {
+	        epoint.openDialog ("Statements classification configuration", "report/reportcategorylist", function (data)
+	        {
+	        	epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+	        },
+	        {
+	            width : 1000,
+	            height : 500
+	        });
+        }
+
+        //The new report
+        function addReport ()
+        {
+	        if (tree.getValue () && tree.getValue () != "f9root")
+	        {
+		        epoint.openDialog ("new report", 'report/reportinfo?categoryName=' + tree.getText ()
+		                + '&categoryGuid=' + tree.getValue (), function (data)
+		        {
+		        	epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+		        },
+		        {
+		            'width' : 1000,
+		            'height' : 500
+		        });
+	        }
+	        else
+	        {
+		        epoint.alert ("Please report the classification!", '', null, 'info');
+	        }
+        }
+
+        //save changes
+        function saveReport ()
+        {
+	        epoint.execute ("save", "datagrid", function (data)
+	        {
+		        epoint.alert (data.message, '', null, 'info');
+		        //Refresh the table
+		        epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+	        });
+        }
+
+        // Draw Edit Columns button
+        var onPreviewRender = function (e)
+        {
+	        return epoint.renderCell (e, "action-icon icon-search", "openPreview")
+        };
+        
+        // Initialize thestimulsoftreportshow.jspparameter
+        var optionsparams = {
+    		'showExportDialog':true,
+			'showViewModeButton': true,
+			'showZoomButton': true,
+			'showMenuMode': 'Hover',
+			'viewMode': 'OnePage',
+			'showPageShadow': true,
+			'showTooltips': false,
+			'scrollbarsMode': false,
+			'rightToLeft': false
+    	}; 
+        function openPreview (rowguid)
+        {
+	        epoint.openDialog ("reportpreview", "frame/pages/stimulsoftreport/stimulsoftreportshow.jsp?rowguid=" + rowguid);
+        }
+
+        //Apply colours to a drawingeditbutton
+        var onEditRender = function (e)
+        {
+	        return epoint.renderCell (e, "action-icon icon-edit", "editReport")
+        }
+
+        function editReport (rowguid)
+        {
+	        epoint.openDialog ("edit report", 'report/reportinfo?reportGuid=' + rowguid, function (data)
+	        {
+	        	epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+	        },
+	        {
+	            'width' : 1000,
+	            'height' : 500
+	        });
+        }
+
+        //delete selectedline
+        function deleteSelect ()
+        {
+	        var datagrid = mini.get ('datagrid');
+	        var ids = datagrid.getSelectedIds ();
+	        if (ids.length > 0)
+	        {
+		        epoint.confirm ("determinedelete selectedRecord?", "", function (action)
+		        {
+			        epoint.execute ("delete", "datagrid", function (data)
+			        {
+				        if (data.message)
+				        {
+					        epoint.alert (data.message, '', null, 'info');
+					        epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+				        }
+			        });
+		        });
+	        }
+	        else
+	        {
+		        epoint.alert ("Please choose to delete records!", '', null, 'info');
+	        }
+        }
+
+        //Set up the data source
+        function setDs ()
+        {
+	        var dsID = mini.get ("dsID").getValue ();
+	        if (dsID.length > 0)
+	        {
+		        var datagrid = mini.get ('datagrid');
+		        var ids = datagrid.getSelectedIds ();
+		        if (ids.length > 0)
+		        {
+			        epoint.confirm ("determineeditThe selectedThe reportThe data source??", "", function (action)
+			        {
+				        epoint.execute ("saveDs", "datagrid", [
+					        dsID
+				        ], function (data)
+				        {
+					        if (data.message)
+					        {
+						        epoint.alert (data.message, '', null, 'info');
+						        epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+					        }
+				        });
+			        });
+		        }
+		        else
+		        {
+			        epoint.alert ("Please choose toeditThe record of!", '', null, 'info');
+		        }
+	        }
+	        else
+	        {
+		        epoint.alert ("Please select aThe data source!", '', null, 'info');
+	        }
+        }
+        
+        //Apply colours to a drawingdownloadbutton
+        var onDownLoadRender = function (e)
+        {
+        	if(e.row.attachguid)
+        		return epoint.renderCell (e, "action-icon icon-download", "downloadReport", "attachguid");
+        }
+        
+        function downloadReport(attachGuid){
+        	window.open("../mis/base/attach/attachdown?attachGuid=" + attachGuid);
+        }
+
+        //]]>
+	</script>
+</body>
+</html>

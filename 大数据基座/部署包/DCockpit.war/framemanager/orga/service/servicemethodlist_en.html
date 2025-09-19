@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Approach to managing</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd" iconCls="icon-addcircle">new
+				method</a><a class="mini-button" onclick="saveBtn"
+				iconCls="icon-addcircle">save Settings</a><a class="mini-button"
+				onclick="deleteAll" iconCls="icon-removecircle">empty</a>
+		</div>
+	</div>
+	<!-- conditions area -->
+	<div class="fui-condition" opened="true">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="role list">
+						<input id="roleType" autoLoad="false" bind="roleTypeGuid"
+							action="getFrameRoleType" textField="text"
+							emptyText="unclassified" showNullItem="true"
+							nullItemText="unclassified" onvaluechanged="roleTypeChange"
+							valueField="id" class="mini-combobox mr10" />
+					</div>
+					<div role="control" label="method names">
+						<input bind="methodName" class="mini-textbox"
+							onkeypress="updateTable" vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="role">
+						<div id="roleGroup" class="mini-checkboxlist" repeatItems="5"
+							repeatLayout="table" textField="text" valueField="id"
+							bind="selectRoleGuids" onvaluechanged="roleGroupChange"
+							action="checkgroupModal"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- content area -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			showPager="true" allowCellEdit="true" idField="methodguid"
+			action="getDataGridData" showFooter="false"
+			style="width: 100%; height: 100%" allowSortColumn="false"></div>
+	</div>
+
+
+
+	<script type="text/javascript">var miniLocal='en_US.js';</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<link href="../../../fui/js/miniui/plugin/gridcheckall/checkall.css"
+		rel="stylesheet" type="text/css" />
+	<script src="../../../fui/js/miniui/plugin/gridcheckall/checkall.js"
+		type="text/javascript"></script>
+	<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("servicemethodlistaction",'',callbackinit);
+			
+			var moduleGuid="";
+			// Table object
+			var grid = mini.get("datagrid");
+			
+			// Initialize the back off, dynamically generated columns
+			function callbackinit(data) {
+				adjustContentHeight();//hiddenconditionCome out To recount a height
+				if (data) {
+					if(data.moduleGuid){
+						moduleGuid=data.moduleGuid;
+					}
+					drawDynamicColumn(data);
+				}
+			}
+			function updateTable(){
+				if (event.keyCode == 13) {
+					searchData();
+				}
+			}
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			// Back to thediaoremind
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', searchData(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true, 'success');
+						});
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			//new
+			function openAdd() {
+				var serviceguid = Util.getUrlParams('serviceguid');
+				var settings = {
+					'width' : 600,
+					'height' : 350
+				};
+				epoint.openDialog('newThe service method', 'mis/sysconf/service/servicemethodadd?serviceguid=' + serviceguid, addEditCallBack, settings);
+			}
+
+			//Save Settings
+			function saveBtn() {
+				epoint.execute('saveBtn', '', msgCallBack);
+			}
+
+			//delete selected
+			function deleteSelected(methodguid) {
+				epoint.execute('deleteSelected', 'datagrid',[methodguid], msgCallBack);
+			}
+			
+			function deleteAll(){
+				epoint.confirm('This operation will delete all methods of the current service configuration,Sure?', '', function() {
+					epoint.execute('deleteAll', 'datagrid', msgCallBack);
+				});
+			}
+			
+
+			//Open the configuration page
+			function openRight(methodguid) {
+				var settings = {
+					'width' : 800,
+					'height' : 500
+				};
+				epoint.openDialog('Configure method permissions', 'framemanager/orga/service/servicemethodright?methodguid=' + methodguid, '', settings);
+			}
+
+			//Drawing configuration access button
+			function onMethodRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-gear", "openRight", "methodguid");
+			}
+
+			//new editBack to theadjustable
+			function addEditCallBack(param) {
+				if (param) {
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}
+			}
+
+			function editItems(methodguid) {
+				var settings = {
+					'width' : 600,
+					'height' : 350
+				};
+				epoint.openDialog('editThe service method', 'framemanager/orga/service/servicemethodedit?methodguid=' + methodguid, addEditCallBack, settings);
+			}
+
+			// Draw Edit Columns button
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "editItems", "methodguid")
+			};
+			
+			
+			function deleteMethod(methodguid){
+				// Pop-up confirmation box
+				epoint.confirm("Deletes data synchronize method removes its permissions,Sure you want to delete?", '', function() {
+					epoint.execute("deleteSelected", 'datagrid', [ methodguid ],msgCallBack);
+				});
+			}
+			
+			// Draw a delete button
+			var onDelRenderer = function(e) {
+				var url=epoint.renderCell(e, "action-icon icon-remove", "deleteMethod","methodguid");
+				if(e.row.methodname=='pageLoad'){
+					if(!moduleGuid){//Is not related modules,At this time is not allowed to delete
+						url="";
+					}
+				}
+				return url;
+			};
+			
+			
+			// roleCategory change
+			function roleTypeChange() {
+				epoint.execute('roleTypeChange', '', function(data) {
+					drawDynamicColumn(data);
+					searchData();
+				});
+			}
+
+			// Display mode change
+			function moduleDisplayChange() {
+				searchData();
+			}
+
+			// chooserolechange
+			function roleGroupChange() {
+				epoint.execute("initDynamicRole", 'roleGroup', function(data) {
+					drawDynamicColumn(data);
+					searchData();
+				});
+			}
+
+			// Draw the dynamic column
+			function drawDynamicColumn(data) {
+				if(data.columns){
+					var tmp = data.columns;
+					var columns = eval('(' + tmp + ')');
+					grid.set(columns);
+					var tmpObj = epoint.decodeJson(tmp);
+					var columnsObj = tmpObj.columns;
+					if(columnsObj && columnsObj.length){
+						$.each(columnsObj, function(k,v){
+							if(columnsObj[k].type=='checkboxcolumn'){
+								new CheckAll(grid, columnsObj[k].name);
+							}
+						});
+					}
+				}
+				
+			}
+
+			//]]>
+		</script>
+</body>
+</html>

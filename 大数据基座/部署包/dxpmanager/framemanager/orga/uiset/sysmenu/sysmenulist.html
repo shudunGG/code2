@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>快捷方式管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add('1')" iconCls="icon-addcircle">新增模块</a>
+			<a class="mini-button" onclick="add('2')" iconCls="icon-addcircle">新增快捷链接</a>
+			<a class="mini-button" onclick="saveChange()"
+				iconCls="icon-addcircle">保存修改</a> <a
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}"
+				iconCls="icon-minuscircle">删除选中</a>
+		</div>
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<span class="text-danger"> 如果模块或者快捷链接已被删除,需要在此页面上手动删除这些系统菜单 </span>
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="sysMenuName" headerAlign="center" width="150">
+					菜单名称</div>
+				<div field="sysMenuUrl" headerAlign="center" width="100%">
+					对应地址</div>
+				<div field="orderNumber" headerAlign="center" width="60"
+					align="right" vtype="int;range:0,99999999">
+					排序号 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%" />
+				</div>
+				<div field="sysMenuType" headerAlign="center" width="60"
+					align="right">菜单类型</div>
+				<div field="sysMenuOpenType" headerAlign="center" width="80"
+					align="center">新开窗口</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('sysmenulistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增模块
+		function add(sysMenuType) {
+			var settings = {
+				'width' : 300,
+				'height' : 400
+			};
+			epoint.openDialog('新增系统菜单',
+					'framemanager/orga/uiset/sysmenu/sysmenuadd?sysMenuType='
+							+ sysMenuType, function(e) {
+						if (e.indexOf('成功') > 0) {
+							epoint.alert(e, '', '', 'success');
+						}
+						searchData();
+					}, settings);
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			searchData();
+		}
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+		//保存修改
+		function saveChange() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+
+			epoint.execute("saveChange", [ 'datagrid' ], function(data) {
+				epoint.alert(data.msg, '', null, 'info');
+				searchData();
+			});
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

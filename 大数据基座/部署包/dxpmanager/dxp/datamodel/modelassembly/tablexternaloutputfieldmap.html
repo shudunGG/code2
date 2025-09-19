@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns"
+		style="padding-top: 10px; border-bottom: none;">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary" onclick="save">保存修改</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+			<a class="mini-checkBox" id='showOrHide' onValueChanged='showOrHide' >隐藏已映射字段</a>
+
+		</div>
+		<input id="tableData" name="tableData" style="display: none;"
+			class="mini-textbox">
+			
+		
+	</div>
+	<div class="fui-condition" style="width: 75%;">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="源字段" style="width: 30%;">
+						<input id="sourceField" class="mini-textbox" style="margin-left: -10px;"/>
+					</div>
+					<div role="control" label="目标字段" style="width: 35%;padding-lefte:20px">
+						<input id="targetField" class="mini-textbox" style="margin-left: -10px;"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchPrimaryKey"></a>
+	</div>
+	<table style="height: 40%;">
+		<tr>
+			<td>
+				<div id="grid1" class="mini-datagrid"
+					style="width: 100%; height:100%; margin-top: 0px; margin-left: 15px;"
+					multiSelect="false" resultAsData="true" showPager="false"
+					action="getSourceGridData">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div header="源字段" field="sourceField"></div>
+					</div>
+				</div>
+			</td>
+
+			<td>
+				<div id="grid11" class="mini-datagrid"
+					style="width: 100%; height: 100%; margin-left: 25px; margin-top: 0px"
+					multiSelect="false" resultAsData="true" showPager="false"
+					showPager="false" action="getTargetGridData">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div header="目标字段" field="targetField"></div>
+					</div>
+				</div>
+			</td>
+
+			<td style="width: 60px; margin-left: 10px; text-align: center;">
+				<input type="button" value=">" onclick="adds()"
+				style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+				type="button" value=">>" onclick="addAll()"
+				style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+				type="button" value="&lt;&lt;" onclick="removeAll()"
+				style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+				type="button" value="&lt;" onclick="removes()"
+				style="width: 50px; height: 30px; margin-left: 50px;" /><br />
+			</td>
+			<td>
+				<div id="grid2" class="mini-datagrid"
+					style="width: 100%; height: 330px; margin-left: 30px; margin-top: 0px"
+					multiSelect="true" showPager="false" allowCellEdit="true"
+					allowCellSelect="true">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div header="源字段" field="items[0].sourceField">
+							<input id="sourceField" name="sourceField" class="mini-textbox"
+								bind="items[0].sourceField" />
+						</div>
+						<div header="目标字段" field="items2[0].targetField">
+							<input id="targetField" name="targetField" class="mini-textbox"
+								bind="items2[0].targetField" />
+						</div>
+					</div>
+				</div> <input type="button" value="Up" onclick="upItem()"
+				style="width: 55px; margin-left: 30px; margin-top: 30px;" /> <input
+				type="button" value="Down" onclick="downItem()" style="width: 55px;" />
+			</td>
+			<td style="width: 50px; text-align: center; vertical-align: bottom">
+
+			</td>
+		</tr>
+
+	</table>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var grid1 = mini.get("grid1");
+		var grid11 = mini.get("grid11");
+		var grid2 = mini.get("grid2");
+		
+		var columnlinkStr;
+		var isShowFields = false;
+
+		epoint.initPage('modeltableexternaloutputfieldmapaction','',function(data){
+			mini.get('showOrHide').setValue(true);
+			columnlinkStr = localStorage.getItem("cloumnlink");//data.columnlink;
+			if(columnlinkStr!=''){
+				var tmpcolumn=[];
+				var columnlinkArray=JSON.parse(columnlinkStr);
+				var length3 = Object.keys(columnlinkArray).length;
+				for (var i = 0; i < length3; i++) {
+					if(columnlinkArray[i].isfield=='1'){
+						tmpcolumn.push(columnlinkArray[i]);
+					}
+				}
+				columnlinkStr=JSON.stringify(tmpcolumn);
+			}
+			getAll();
+		});
+
+		function getColumnLink() {
+			var items3 = grid2.getData();
+			var targetFields=grid11.getData();
+			var columnLink = [];
+			for (var i = 0; i < items3.length; i++) {
+				columnLink[i] = {
+					"sourceField" : items3[i].items[0].sourceField,
+					"targetField" : items3[i].items2[0].targetField,
+					"sourceType" : items3[i].items[0].sourceType,
+					"targetType" : items3[i].items2[0].targetType,
+					"isfield":"1",
+				}
+			}
+			var len=items3.length;
+			for (var i = 0; i < targetFields.length; i++) {
+				columnLink[len] ={
+						"sourceField" : "",
+						"targetField" : targetFields[i].targetField,
+						"isfield":"0"
+					}
+				len++;
+			}
+			return mini.encode(columnLink);
+		}
+
+		//保存修改
+		function save() {
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				var columnLink = getColumnLink();
+				epoint.closeDialog(columnLink);
+			}
+		}
+
+		function adds() {
+			//获取源字段中数据并解析
+			var items = grid1.getSelecteds();
+			var items2 = grid11.getSelecteds();
+			if (items.length == 1 && items2.length == 1) {
+				var items3 = {
+					"items" : items,
+					"items2" : items2
+				};
+				if(!isShowFields){
+					grid1.removeRows(items);
+					grid11.removeRows(items2);
+				}
+				grid2.addRow(items3, 0);
+			} else {
+				epoint.alert("请选择源字段或目标字段", '', null, 'warning');
+			}
+		}
+
+		function removeAll() {
+			var items3 = grid2.getData();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			grid1.load();
+			grid11.load();
+		}
+
+		function addAll() {
+			var items = grid1.getData();
+			var items2 = grid11.getData();
+			var length1 = Object.keys(items).length;
+			var length2 = Object.keys(items2).length;
+			var count = 0;
+			for (var i = 0; i < length1; i++) {
+				for (var j = 0; j < length2; j++) {
+					if ((items[i].sourceField.toLowerCase()) == (items2[j].targetField.toLowerCase())) {
+						count++;
+						var res1 = [];
+						res1.push(items[i]);
+						var res2 = [];
+						res2.push(items2[j]);
+						var items3 = {
+							"items" : res1,
+							"items2" : res2
+						}
+						if(!isShowFields){
+							grid1.removeRows(res1);
+							grid11.removeRows(res2);
+						}
+						grid2.addRow(items3, 0);
+						break;
+					}
+
+				}
+			}
+			if (count == 0) {
+				epoint.alert("没有匹配的字段", '', null, 'warning');
+			}
+		}
+
+		function removes() {
+			var items3 = grid2.getSelecteds();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			
+			for (var i = 0; i < length; i++) {
+				var items = grid1.getData();
+				var items2 = grid11.getData();
+				var length1 = Object.keys(items).length;
+				var length2 = Object.keys(items2).length;
+				var flag1 = true;
+				var flag2 = true;
+				for (var j = 0; j < length1; j++) {
+					if(items[j].sourceField.toLowerCase() == items3[i].items[0].sourceField.toLowerCase()){
+						flag1 = false;
+					}
+				}
+				for (var j = 0; j < length2; j++) {
+					if(items2[j].targetField.toLowerCase() == items3[i].items2[0].targetField.toLowerCase()){
+						flag2 = false;
+					}
+				}
+				if(flag1){
+					grid1.addRows(items3[i].items);
+				}
+				if(flag2){
+					grid11.addRows(items3[i].items2);
+				}
+				
+			}
+		}
+
+		function upItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveUp(items);
+		}
+		function downItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveDown(items);
+		}
+		
+		function getAll() {
+			if(columnlinkStr == ''){
+				return;
+			}
+			var items = grid1.getData();
+			var items2 = grid11.getData();
+			var columnlinkArray=JSON.parse(columnlinkStr);
+			var length1 = Object.keys(items).length;
+			var length2 = Object.keys(items2).length;
+			var length3 = Object.keys(columnlinkArray).length;
+			for (var i = (length3-1); i >= 0; i--) {
+				var res1 = [];
+				var res2 = [];
+				for (var j = 0; j < length1; j++) {
+					if(items[j].sourceField.toLowerCase() == columnlinkArray[i].sourceField.toLowerCase()){
+						res1.push(items[j]);
+						break;
+					}
+				}
+				for (var j = 0; j < length2; j++) {
+					if(items2[j].targetField.toLowerCase() == columnlinkArray[i].targetField.toLowerCase()){
+						res2.push(items2[j]);
+						break;
+					}
+				}
+				var items3 = {
+					"items" : res1,
+					"items2" : res2
+				}
+
+				if(!isShowFields){
+					grid1.removeRows(res1);
+					grid11.removeRows(res2);
+				}
+				grid2.addRow(items3, 0);
+			}
+		}
+		
+		function showFields(){
+			isShowFields = true;
+			grid1.load();
+			grid11.load();
+		}
+		
+		function hideFields(){
+			isShowFields = false;
+			epoint.refresh(['grid1','grid11'], function (data) {
+				var items = grid1.getData();
+				var items2 = grid11.getData();
+				var items3 = grid2.getData();
+
+				var length1 = Object.keys(items).length;
+				var length2 = Object.keys(items2).length;
+				var length3 = Object.keys(items3).length;
+
+	 			for (var i = 0; i < length3; i++) {
+					var res1 = [];
+					var res2 = [];
+					for (var j = 0; j < length1; j++) {
+						if(items[j].sourceField.toLowerCase() == items3[i].items[0].sourceField.toLowerCase()){
+							res1.push(items[j]);
+							break;
+						}
+					}
+					for (var j = 0; j < length2; j++) {
+						if(items2[j].targetField.toLowerCase() == items3[i].items2[0].targetField.toLowerCase()){
+							res2.push(items2[j]);
+							break;
+						}
+					}
+					grid1.removeRows(res1);
+					grid11.removeRows(res2);
+				} 
+			}, true);
+		}
+		
+		function showOrHide(e){
+			if(e.value == 'true'){
+				hideFields();
+			}else{
+				showFields();
+			}
+		}
+		
+		//搜索源，目标
+		//搜索源，目标
+		function searchPrimaryKey() {
+			var sourceField = mini.get("sourceField").getValue();
+			if (sourceField != "") {
+				var items = grid1.getData();
+				var j = 0;
+				for (var i = 0; i < items.length; i++) {
+					var fromField = items[i].sourceField;
+					var sourceFieldReg = null;
+					sourceFieldReg = new RegExp(sourceField, "i");
+					if (sourceFieldReg.test(fromField)) {
+						grid1.moveRow(
+								grid1.getRow(i), j);
+						j++;
+					}
+				}
+			}
+			var targetField = mini.get("targetField").getValue();
+			if (targetField != "") {
+				var items2 = grid11.getData();
+				var j = 0;
+				for (var i = 0; i < items2.length; i++) {
+					var toField = items2[i].targetField;
+					var targetFieldReg = null;
+					targetFieldReg = new RegExp(targetField, "i");
+					if (targetFieldReg.test(toField)) {
+						grid11.moveRow(
+								grid11.getRow(i), j);
+						j++;
+					}
+				}
+			}
+		}
+		
+	</script>
+</body>
+
+</html>

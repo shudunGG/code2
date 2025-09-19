@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>专题详情</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../css/cockpitprojectlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="专题名称">
+						<input class="mini-outputtext" bind="dataBean.projectName" />
+					</div>
+					<div role="control" label="ApiCode">
+						<input class="mini-outputtext" bind="dataBean.apicode">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="专题描述">
+						<input class="mini-outputtext" bind="dataBean.remark" />
+					</div>
+				</div>
+				<div id="bigscreen">
+					<div role="row">
+						<div role="control" label="屏端地址">
+
+							<div id="bgrow">
+								<div class="adddprow form-row">
+									<div class="resolution">
+										<span>分辨率：</span> <input class="mini-outputtext"
+											name="dpresolution" required="true" />
+									</div>
+									<div class="resolution">
+										<span>地址：</span> <input class="mini-outputtext" name="dpurl"
+											vtype="url" required="true" />
+									</div>
+								</div>
+							</div>
+							<!-- 							<div class="operate text-center">
+								<span class="operate-plus">+ 增加一条</span>
+							</div> -->
+						</div>
+
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门">
+						<input id="createou" class="mini-outputtext"
+							bind="dataBean.createou" />
+					</div>
+					<div role="control" label="创建人">
+						<input class="mini-outputtext" readonly="true" id="createusername">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="负责人">
+						<input id="liableperson" class="mini-outputtext"
+							bind="dataBean.liableperson" />
+					</div>
+					<div role="control" label="联系电话">
+						<input id="phone" class="mini-outputtext" bind="dataBean.phone" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="开放状态">
+						<input id="isPublic" class="mini-outputtext"
+							bind="dataBean.isPublic" />
+					</div>
+					<div role="control" label="排序号">
+						<input id="ordernum" class="mini-outputtext"
+							bind="dataBean.ordernum" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标分类">
+						<div id="setguid" bind="dataBean.normsetname"
+							class="mini-outputtext"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<script type="text/templ" id="row-tpl">
+		<div class="adddprow form-row" >
+			<div class="resolution">
+				<span>分辨率：</span> <input class="mini-outputtext" name="dpresolution" />
+			</div>
+			<div class="resolution">
+				<span>地址：</span> <input class="mini-outputtext" name="dpurl" vtype="url"/>
+			</div>
+		</div>
+    </script>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var $bigscreen = $('#bigscreen');
+		var $bgrow = $("#bgrow");
+		var rowTpl = $('#row-tpl').html();
+		var bigscreen;
+		// 初始化页面
+		epoint.initPage('cockpitprojectdetailaction', null, function(data) {
+			mini.get("createusername").setValue(data.createusername);
+			mini.get("createou").setValue(data.createouname);
+
+			if (data.bigscreenurl) {
+				json = JSON.parse(data.bigscreenurl);
+				var len = json.length;
+				for (var i = 0; i < len; i++) {
+					var bigscreenurl = json[i];
+					if (mini.getsbyName('dpresolution').length < len) {
+						// 直接将模板加到页面上
+						$bgrow.append(rowTpl);
+						// 解析里面的控件
+						mini.parse($bgrow[0]);
+						epoint.refresh('bgrow');
+					}
+					$('#bgrow').each(
+							function() {
+								mini.getsbyName('dpresolution')[i]
+										.setValue(bigscreenurl.dpresolution);
+								mini.getsbyName('dpurl')[i]
+										.setValue(bigscreenurl.dpurl);
+							});
+				}
+			}
+		});
+	</script>
+</body>
+
+</html>

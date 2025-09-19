@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>topic列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="分组">
+			<a class="mini-button mini-btn-primary" style="margin-left: 40px;"
+				onclick="addGroup()">新增分组</a>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" textField="text" idField="id"
+				parentField="pid" action="getTreeModel" resultAsTree="false"
+				filterMode="server">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button mini-btn-primary" iconCls="icon-addcircle" onclick="add();">新增topic</a> <a
+					class="mini-button mini-btn-danger" iconCls="icon-minuscircle" onclick="deleteSelected();">删除选中</a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-search" primaryControl="topicName" opened="false">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="topic名称">
+							<input bind="topicName" id="topicName" class="mini-textbox" />
+						</div>
+						<div role="control" label="所属节点">
+							 <input bind="nodeGuid" id="nodeGuid" class="mini-combobox" action="getNodeGuidList"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="是否启用">
+							<input bind="topicStatus" class="mini-combobox" data="[{text:'否',id:'0'},{text:'是',id:'1'}]" textField="text" valueField="id"/>
+						</div>
+						<div role="control" label="">
+						</div>
+				</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="groupGuid" id="groupGuid" class="mini-hidden" />
+					<input bind="needPrincipal" id="needPrincipal" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				multiSelect="true" action="getDataGridModel"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellEdit="true" showPager="true" allowCellSelect="true">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="topicname" headerAlign="center" align="center">topic名称</div>
+					<div field="nodename" headerAlign="center" align="center">所属节点</div>
+					<div field="createdate" headerAlign="center" align="center"
+						data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">创建时间</div>
+					<div field="stopdate" headerAlign="center" align="center"
+						data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">停用时间</div>
+					<div type="checkboxcolumn" field="status" name="status" headerAlign="center" 
+						align="center" trueValue="1" falseValue="0">启用</div>
+					<div field="type" headerAlign="center" align="center" renderer="onTypetRender">类型</div>
+					<div headerAlign="center" align="center" renderer="onOptRender">操作</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		epoint.initPage('dxpkafkatopiclistaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on('nodeselect', function(obj) {
+			if (obj.node) {
+				var id = obj.node.id;
+				//将左侧树点击的节点id放到隐藏域中
+				mini.get('groupGuid').setValue(id == 'f9root' ? "" : id);
+			}
+			//刷新表格
+			searchData();
+		});
+
+		var grid = mini.get("datagrid");
+		
+		grid.on("drawcell", function(e) {
+			var field = e.field,
+			rowIndex = e.rowIndex,
+            columnIndex = e.columnIndex;
+       		if(field == 'status'){
+			    setTimeout(function(){
+	                $(grid.getCellEl(rowIndex,columnIndex)).find('.mini-grid-checkbox').addClass('switch');
+	            },1);
+            }
+		});
+		
+		grid.on("cellcommitedit", function(e){
+			if(e.row.type == 2){
+				epoint.alert('CDC类型topic无法编辑或授权');
+				return;
+			}
+			epoint.execute('stopOrStartTopic', '@none', [e.row.rowguid, e.value], function(e) {
+				if(e.success) {
+					epoint.alert(e.msg, '', function(){
+						searchData();
+					}, 'success');
+				}
+				else {
+					epoint.alert(e.msg, '', null, 'warning');
+				}
+			});
+		});
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onOptRender(e) {
+			return '<a href="javascript:void(0);" onclick="subscribeManage('
+					+ "'" + e.row.rowguid + "','" + e.row.type + "'" + ');" >' + '授权管理' + '</a>'
+					+ '<span>&nbsp;&nbsp;</span>'
+					+ '<a href="javascript:void(0);" onclick="editTopic(' + "'"
+					+ e.row.rowguid + "','" + e.row.type + "'" + ');" >' + '编辑' + '</a>'
+					+ '<span>&nbsp;&nbsp;</span>'
+					+ '<a href="javascript:void(0);" onclick="partitionStatus('
+					+ "'" + e.row.rowguid + "'" + ');" >' + '分区状态' + '</a>';
+		}
+		
+		function onTypetRender(e) {
+			if(e.row.type == 2){
+				return 'CDC';
+			}else{
+				return '普通';
+			}
+		}
+
+		// 订阅管理
+		function subscribeManage(rowguid,type) {
+			var needPrincipal = mini.get('needPrincipal').getValue();
+			//if(needPrincipal == 0){
+			//	epoint.alert('kafka未接入认证，无需授权。');
+			//	return;
+			//}
+			if(type == 2){
+				epoint.alert('CDC类型topic无法编辑或授权。');
+				return;
+			}
+			epoint.openDialog("授权管理",
+					'dxp/kafka/manager/dxpkafkatopicrightlist?topicGuid='
+							+ rowguid, function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		// 编辑
+		function editTopic(rowguid,type) {
+			if(type == 2){
+				epoint.alert('CDC类型topic无法编辑或授权');
+				return;
+			}
+			epoint.openDialog("编辑topic",
+					'dxp/kafka/manager/dxpkafkatopicedit?topicGuid='
+							+ rowguid, function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		// 分区状态
+		function partitionStatus(rowguid) {
+			epoint.openDialog("分区状态",
+					'dxp/kafka/manager/dxpkafkapartitionstatus?rowguid='
+							+ rowguid, function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		// 删除选中
+		function deleteSelected() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.execute('checkDelete', [ 'datagrid', 'fui-form' ], null,
+						function(data) {
+							if (data.success) {
+								epoint.confirm('确认删除？', '操作确认', function() {
+									epoint.execute('delete', [ 'datagrid',
+											'fui-form' ], null, function(data) {
+										if (data.success) {
+											epoint.alert(data.msg, '', null,
+													'success');
+											searchData();
+										} else {
+											epoint.alert(data.msg, '', null,
+													'warning');
+										}
+									});
+								});
+							} else {
+								epoint.alert(msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+
+		// 新增
+		function add() {
+			epoint.openDialog("新增topic",
+					'dxp/kafka/manager/dxpkafkatopicadd?groupGuid='
+							+ mini.get('tree').getValue(), function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		function addGroup() {
+			epoint.openDialog("新增分组",
+					"dxp/kafka/manager/dxpkafkatopicgroupadd", function() {
+						epoint.refresh('tree');
+					}, {
+						'width' : 800,
+						'height' : 600
+					})
+		}
+	</script>
+</body>
+</html>

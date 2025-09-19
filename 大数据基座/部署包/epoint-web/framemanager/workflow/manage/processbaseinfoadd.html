@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>过程添加</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<div class="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="过程名称" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="workflowProcess.processName" emptyText="过程名称不能为空"
+							style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="类别" id="type">
+						<input class="mini-buttonedit" allowInput="false" id="classname"
+							bind="itemName" style="width: 100%;" onbuttonclick="showSelect" />
+					</div>
+				</div>
+				<!--div role="row">
+					<div role="control" label="表单访问地址" id="showFormUrl">
+						<input class="mini-textbox" bind="formUrl" style="width: 100%;" />
+					</div>
+				</div-->
+				<div role="row">
+					<div role="control" label="是否启用">
+						<input class="mini-checkbox" bind="isStart" />
+					</div>
+					<div role="control" label="是否允许被监听">
+						<input class="mini-checkbox" bind="isAllowListener" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input class="mini-textbox" bind="workflowProcess.orderNum"
+							style="width: 40%;" vtype="int;range:0,99999999" />
+					</div>
+					<div role="control" label="开启自定义流程">
+						<input id="custom" class="mini-checkbox" bind="custom" onValueChanged="showControl"/>
+					</div>
+				</div>
+				<div role="row" id="customType" style="display:none">
+					<div role="control"   label="非弹窗设计模式">
+						<input class="mini-checkbox" bind="customType" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="开启自由流程">
+						<input class="mini-checkbox" bind="freedom" />
+					</div>
+					<div role="control">
+						<span class="text-danger">自由流程与自定义流程无法同时开启！</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textarea" bind="workflowProcess.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<input bind="workflowProcess.classId" id="classid"
+					class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addbtn" onclick="addProcess()">确定新增</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		//初始化页面
+		epoint.initPage("processbaseinfoaddaction", '', initAdd);
+
+		function initAdd(e) {
+			if (e) {
+				mini.get("classname").setValue(e.name);
+				mini.get("classname").setText(e.name);
+			}
+		}
+
+		var processVersionGuid;
+		var clickByNext = false;
+		var currentFlow;
+
+		function showSelect(e) {
+			epoint.openDialog('选择所属类别',
+					'framemanager/workflow/manage/selectItemcode',
+					showSelectOperJS, {
+						'width' : 350,
+						'height' : 400
+					});
+		}
+
+		function addProcess() {
+			if (epoint.validate()) {
+				epoint.execute('addProcess', '', addComplete);
+			}
+		}
+
+		function showSelectOperJS(data) {
+			if (data && data != 'close') {
+				var codeItem = data.split(";")[1];
+				if (codeItem != 'f9root') {
+					var codeName = data.split(";")[0];
+					mini.get('classname').setValue(codeName);
+					mini.get('classname').setText(codeName);
+					mini.get('classid').setValue(codeItem);
+				}
+				// 						$("#templateform\\:classId")[0].value=codeItem;
+				// 				       	$("#templateform\\:className")[0].value=codeName;
+			}
+		}
+
+		function addComplete(data) {
+			if (data) {
+				var message = data.message;
+				if (data.flag != null && (data.flag == "1")) {
+					var msg = message.split('#');
+					processVersionGuid = msg[1];
+					//新增成功时disable掉按钮
+					mini.get('addbtn').disable();
+					epoint.closeDialog(msg[0]);
+				} else {
+					epoint.alert(message, '', '', 'warning');
+				}
+			}
+		}
+		
+		function showControl() {
+			var value = mini.get("custom").getValue();
+			if (value == "true") {
+				$("#customType").show();
+			} else {
+				$("#customType").hide();
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

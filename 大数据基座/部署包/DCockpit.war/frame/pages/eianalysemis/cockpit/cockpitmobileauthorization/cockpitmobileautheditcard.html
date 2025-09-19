@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>配置授权</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    </script>
+    <style type="text/css">
+    </style>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <!-- 页面内容区域 -->
+    <div class="fui-content">
+        <div class="fui-form" id="fui-form">
+            <div role="row" id="target">
+                授权对象：
+            </div>
+            <div role="row">
+                <div class="form-control " label="" style="border: 1px solid #ebebeb; height: 340px; width:100%;overflow:auto;">
+                    <div class="mini-tree" id="tree" action="getCardTreeModel" showCheckBox="true" ></div>
+                </div>
+            </div>
+            <div style="width: 100%;text-align: center;">
+                <a class="mini-button mini-btn-primary" style="margin: 5px auto;width: 120px;" 
+                    iconCls="icon-addcircle" onclick="saveAndClose">保存授权</a>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="../../../../../rest/resource/jsboot"></script>
+    <script>
+        var projectguids;
+        var tree = mini.get("tree");
+        tree.on("nodeselect", function(e) {
+            console.log(tree.getList());
+        });
+		epoint.initPage('cockpitmobileauthorizationaction', '@all', function (data){
+            if(data.cardguids){
+            	cardguids = data.cardguids.split(",");
+                for(var i=0;i<cardguids.length;i++){
+                    var node = tree.getNode(cardguids[i]);
+                    tree.checkNode ( node );
+                }
+            }
+            if(data.username){
+                document.getElementById("target").innerHTML = "授权对象：" + data.username;
+            }
+		});
+
+        function saveAndClose(){
+            var nodeList = tree.getList();
+            var guids = '';
+            for(var i=0;i<nodeList.length;i++){
+                if(nodeList[i].type == 'card' &&nodeList[i].checked){
+                    console.log(nodeList[i].text);
+                    guids += ',' + nodeList[i].id;
+                }
+            }
+            // console.log(guids);
+            epoint.execute("saveContent", '@none', guids.substring(1), function (data){
+                epoint.alertAndClose("授权成功");
+            });
+        }
+    </script>
+</body>
+
+</html>

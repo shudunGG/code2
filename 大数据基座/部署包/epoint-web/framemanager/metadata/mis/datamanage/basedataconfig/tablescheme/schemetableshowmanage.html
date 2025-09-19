@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a id="save" class="mini-button" onclick="save">保存并关闭</a>
+	</div>
+
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="tableid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="tablename" width="100">表名</div>
+				<div field="sql_tablename" width="100%">表英文名称</div>
+				<div type="checkboxcolumn" field="isvisible" name="isvisible"
+					trueValue="1" falseValue="0" width="100" headerAlign="center">是否显示</div>
+				<div width="50" renderer="onUpRender">上移</div>
+				<div width="50" renderer="onDownRenderer">下移</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+
+	<link
+		href="../../../../../../frame/fui/js/miniui/plugin/gridcheckall/checkall.css"
+		rel="stylesheet" type="text/css" />
+	<script
+		src="../../../../../../frame/fui/js/miniui/plugin/gridcheckall/checkall.js"
+		type="text/javascript"></script>
+	<script>
+		//<![CDATA[ 
+		var grid = mini.get("datagrid");
+		epoint.initPage('schemetableshowmanageaction');
+
+		function save() {
+			epoint.execute("save", null, [ grid.data ], function(data) {
+				if (data && data.msg) {
+					epoint.alertAndClose(data.msg);
+				}
+
+			})
+		}
+
+		//复选全选功能初始化,多次调用会出问题
+		function drawDynamicColumn() {
+			var columnsObj = grid.columns;
+			if (columnsObj && columnsObj.length) {
+				$.each(columnsObj, function(k, v) {
+					if (columnsObj[k].type == 'checkboxcolumn') {
+						new CheckAll(grid, columnsObj[k].name);
+					}
+				});
+			}
+		}
+
+		$(function() {
+			drawDynamicColumn();
+		})
+
+		function onUpRender(e) {
+			return epoint.renderCell(e, "action-icon icon-up", "openUp",
+					"epoint_total");
+		}
+
+		function openUp() {
+			var row = grid.getSelected();
+			if (row) {
+				var index = grid.indexOf(row);
+				if (index == 0) {
+					epoint.showTips("第一条记录，无法上移！");
+					return;
+				}
+				grid.moveRow(row, index - 1);
+			} else {
+				alert("请选择一条记录");
+			}
+		}
+
+		function onDownRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-down", "openDown",
+					"epoint_total");
+		}
+
+		function openDown() {
+			//获取最后一条记录的下标
+			var totalCount = grid.totalCount - 1;
+			var row = grid.getSelected();
+			if (row) {
+				var index = grid.indexOf(row);
+				if (index == totalCount) {
+					epoint.showTips("最后一条记录，无法下移！");
+					return;
+				}
+
+				grid.moveRow(row, index + 2);
+			} else {
+				alert("请选择一条记录");
+			}
+		}
+
+		function confirmScheme() {
+			epoint.execute("save", null, null, function(data) {
+				if (data && data.msg) {
+					epoint.closeDialog();
+				}
+			})
+		}
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         id="WebApp_ID" version="3.0">
+
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<!-- 应用启动类在pom.xml的profile中根据不同的应用模式生成 -->
+		<param-value>com.epoint.FrameWebApplication</param-value>
+	</context-param>
+	
+	<listener>
+		<listener-class>org.springframework.boot.legacy.context.web.SpringBootContextLoaderListener</listener-class>
+	</listener>
+
+	<listener>
+		<listener-class>com.epoint.authenticator.env.EnvironmentLoaderListener</listener-class>
+	</listener>
+	<!-- 初始化kettle组件 -->
+	<listener>
+		<listener-class>com.epoint.dxp.init.KettleInitListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>com.epoint.dxp.init.SigarInitListener</listener-class>
+	</listener>
+	<!-- 初始化建模界面 -->
+	<listener>
+		<listener-class>com.epoint.dxp.init.ModelThemeInitListener</listener-class>
+	</listener>
+
+	<!-- 第一个编码过滤器，必须放在首位 -->
+	<filter>
+		<filter-name>EncodingFilter</filter-name>
+		<filter-class>com.epoint.basic.filter.EpointEncodingFilter</filter-class>
+		<async-supported>true</async-supported>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>EncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- 跨域过滤器配置 -->
+	<filter>
+		<filter-name>CORS</filter-name>
+		<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+		<async-supported>true</async-supported>
+		
+		<init-param>
+			<param-name>cors.allowGenericHttpRequests</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.allowOrigin</param-name>
+			<param-value>*</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.allowSubdomains</param-name>
+			<param-value>false</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.supportedMethods</param-name>
+			<param-value>GET, HEAD, POST, OPTIONS</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.supportedHeaders</param-name>
+			<param-value>Accept, Origin, X-Requested-With, Content-Type, Last-Modified</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.exposedHeaders</param-name>
+			<param-value>X-Test-1, X-Test-2</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.supportsCredentials</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>cors.maxAge</param-name>
+			<param-value>3600</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>CORS</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- 安全框架GET过滤器-->
+	<filter>
+		<filter-name>EpointSecurityGetFilter</filter-name>
+		<filter-class>com.epoint.frame.security.filter.EpointSecurityGetFilter</filter-class>
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>EpointSecurityGetFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- SSO登录安全 -->
+	<filter>
+		<filter-name>shiroFilter</filter-name>
+		<filter-class>com.epoint.authenticator.filter.EpointShiroFilter</filter-class>
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>shiroFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- F9的文件上传 -->
+	<filter>
+		<filter-name>F9 FileUpload Filter</filter-name>
+		<filter-class>com.epoint.basic.faces.fileupload.FileUploadExtFilter</filter-class>
+		<async-supported>true</async-supported>
+		<init-param>
+			<param-name>uploadDirectory</param-name>
+			<param-value></param-value>
+		</init-param>
+		<init-param>
+			<param-name>thresholdSize</param-name>
+			<param-value>4000000</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>F9 FileUpload Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- 安全框架POST过滤器 (放在上传后面) -->
+	<filter>
+		<filter-name>EpointSecurityPostFilter</filter-name>
+		<filter-class>com.epoint.frame.security.filter.EpointSecurityPostFilter</filter-class>
+		<async-supported>true</async-supported>
+	</filter>
+	<filter-mapping>
+		<filter-name>EpointSecurityPostFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- Druid(框架的数据库连接池实现方案),监控数据库,以及WEB访问连接信息 ,需要性能监控排查的时候可以打开 -->
+	<filter>
+		<filter-name>DruidWebStatFilter</filter-name>
+		<filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+		<async-supported>true</async-supported>
+		<init-param>
+			<param-name>exclusions</param-name>
+			<param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,*.jsp,/druid/*,/download/*</param-value>
+		</init-param>
+		<init-param>
+			<param-name>sessionStatMaxCount</param-name>
+			<param-value>20000</param-value>
+		</init-param>
+		<init-param>
+			<param-name>sessionStatEnable</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<param-name>principalSessionName</param-name>
+			<param-value>session_user_key</param-value>
+		</init-param>
+		<init-param>
+			<param-name>profileEnable</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>DruidWebStatFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<servlet>
+		<servlet-name>DruidStatView</servlet-name>
+		<servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+		<init-param>
+			<param-name>resetEnable</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DruidStatView</servlet-name>
+		<url-pattern>/druid/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- session过期时间配置 -->
+	<session-config>
+		<session-timeout>60</session-timeout>
+	</session-config>
+
+	<!-- cxf webservice -->
+	<servlet>
+		<servlet-name>CXFServlet</servlet-name>
+		<servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CXFServlet</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- SpringMVC -->
+	<servlet>
+		<servlet-name>SpringMvcDispatcher</servlet-name>
+		<servlet-class>com.epoint.core.dto.EpointDispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextAttribute</param-name>
+			<param-value>org.springframework.web.context.WebApplicationContext.ROOT</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SpringMvcDispatcher</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+		<url-pattern>*.action</url-pattern>
+	</servlet-mapping>
+
+	<!-- WebSocket -->
+	<servlet>
+		<description>AtmosphereServlet</description>
+		<servlet-name>AtmosphereServlet</servlet-name>
+		<servlet-class>org.atmosphere.cpr.AtmosphereServlet</servlet-class>
+		<init-param>
+			<param-name>org.atmosphere.cpr.packages</param-name>
+			<param-value>com.epoint.dxp.websocket.DxpPushKettleLog,org.atmosphere.samples</param-value>
+		</init-param>
+		<init-param>
+			<param-name>org.atmosphere.interceptor.HeartbeatInterceptor.clientHeartbeatFrequencyInSeconds</param-name>
+			<param-value>60</param-value>
+		</init-param>
+		<load-on-startup>0</load-on-startup>
+		<async-supported>true</async-supported>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AtmosphereServlet</servlet-name>
+		<url-pattern>/websocket/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- 报表 -->
+	<servlet>
+		<servlet-name>StimulsoftResource</servlet-name>
+		<servlet-class>com.stimulsoft.web.servlet.StiWebResourceServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>StimulsoftResource</servlet-name>
+		<url-pattern>/stimulsoft_web_resource/*</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>StimulsoftAction</servlet-name>
+		<servlet-class>com.epoint.report.controller.servlet.MyWebViewerActionServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>StimulsoftAction</servlet-name>
+		<url-pattern>/stimulsoft_webviewer_action</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>StimulsoftDesignerAction</servlet-name>
+		<servlet-class>com.stimulsoft.webdesigner.servlet.StiWebDesignerActionServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>StimulsoftDesignerAction</servlet-name>
+		<url-pattern>/stimulsoft_webdesigner_action</url-pattern>
+	</servlet-mapping>
+
+	<mime-mapping>
+		<extension>woff</extension>
+		<mime-type>application/x-font-woff</mime-type>
+	</mime-mapping>
+
+	<mime-mapping>
+		<extension>ttf</extension>
+		<mime-type>application/octet-stream</mime-type>
+	</mime-mapping>
+
+	<mime-mapping>
+		<extension>otf</extension>
+		<mime-type>application/octet-stream</mime-type>
+	</mime-mapping>
+
+	<mime-mapping>
+		<extension>manifest</extension>
+		<mime-type>text/cache-manifest</mime-type>
+	</mime-mapping>
+
+	<mime-mapping>
+		<extension>xhtml</extension>
+		<mime-type>application/xml</mime-type>
+	</mime-mapping>
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+
+	<!-- 错误页面地址 -->
+	<error-page>
+		<error-code>400</error-code>
+		<location>/frame/pages/login/errorpage/errorpage</location>
+	</error-page>
+
+	<error-page>
+		<error-code>404</error-code>
+		<location>/frame/pages/login/404page/404page</location>
+	</error-page>
+
+	<!-- 自检工具 -->
+	<servlet>
+		<servlet-name>CheckServlet</servlet-name>
+		<servlet-class>com.epoint.check.servlet.CheckServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+		<init-param>
+			<param-name>loginUsername</param-name>
+			<param-value>e00b55a06575d881007426925263a0d5</param-value>
+		</init-param>
+		<init-param>
+			<param-name>loginPassword</param-name>
+			<param-value>e00b55a06575d881007426925263a0d5</param-value>
+		</init-param>
+		<init-param>
+			<param-name>noNeedAuth</param-name>
+			<param-value>/index/getConfigvaluenoauth</param-value>
+		</init-param>
+	</servlet>
+    <servlet-mapping>
+        <servlet-name>CheckServlet</servlet-name>
+        <url-pattern>/autocheck/*</url-pattern>
+    </servlet-mapping>
+	
+</web-app>

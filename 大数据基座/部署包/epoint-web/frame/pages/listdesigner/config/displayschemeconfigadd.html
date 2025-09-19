@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>展示方案字段配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="列标题" starred="true">
+					<input id="columnText" class="mini-textbox"
+						bind="dataBean.columntext" required="true" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int;range:-100,99999999" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="列展示类型" starred="true">
+					<div id="columnType" class="mini-radiobuttonlist"
+						action="getColumnDisplayType" bind="dataBean.columntype"
+						onvaluechanged="columnTypeChange()" required="true" /></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="隐藏">
+					<div id="isHide" bind="dataBean.ishide" value="false"
+						class="mini-checkbox"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="自适应宽度">
+					<div id="isAdaptiveWidth" bind="dataBean.isadaptivewidth"
+						value="false" class="mini-checkbox" onvaluechanged="changCustom()"></div>
+				</div>
+			</div>
+			<div role="row" id="columnWidthArea">
+				<div role="control" label="列宽(px)" starred="true">
+					<input id="columnWidth" class="mini-textbox"
+						vtype="int;range:1,3000" bind="dataBean.columnwidth"
+						required="true" />
+				</div>
+			</div>
+			<div role="row" id="colNameArea" style="display: none">
+				<div role="control" label="自定义列显示内容" starred="true">
+					<input id="colName" class="mini-textbox"
+						bind="dataBean.customcolname" required="true" />
+				</div>
+			</div>
+			<div role="row" id="table" style="display: none">
+				<div role="control" label="绑定表" starred="true">
+					<div id="dataTable" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.tableId" action="getTableList"
+						onvaluechanged="selectTableChange()" required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="field" style="display: none">
+				<div role="control" label="绑定字段" starred="true">
+					<div id="dataField" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.fieldId" required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="controlArea" style="display: none">
+				<div role="control" label="编辑类型" starred="true">
+					<div id="controlType" class="mini-radiobuttonlist"
+						bind="dataBean.controltype" action="getControlType" /></div>
+				</div>
+			</div>
+			<div role="row" id="alignTypeArea">
+				<div role="control" label="对齐方式">
+					<div id="alignType" class="mini-radiobuttonlist"
+						bind="dataBean.aligntype" action="getAlignType" ></div>
+				</div>
+			</div>
+			<div role="row" id="isAllowSortArea" style="display: none">
+				<div role="control" label="允许排序">
+					<div id="isAllowSort" bind="dataBean.isallowsort" value="false"
+						class="mini-checkbox"></div>
+				</div>
+			</div>
+			<div role="row" id="iconArea" style="display: none">
+				<div role="control" label="图标选择">
+					<input id="icon" class="mini-combobox" bind="dataBean.icon"
+						action="getIcons" ondrawcell="onDrawCell" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="操作类型" starred="true">
+					<input id="operateType" class="mini-radiobuttonlist"
+						bind="dataBean.operatetype" action="getOperateType"
+						onvaluechanged="operateTypeChange()" required="true" />
+				</div>
+			</div>
+			<div role="row" id="deletePromptArea" style="display: none">
+				<div role="control" label="删除提示">
+					<input id="deletePrompt" class="mini-textbox"
+						bind="dataBean.deleteprompt" />
+				</div>
+			</div>
+			<div role="row" id="dialogTitleArea" style="display: none">
+				<div role="control" label="窗口标题" starred="true">
+					<input id="dialogTitle" class="mini-textbox"
+						bind="dataBean.dialogtitle" required="true" />
+				</div>
+			</div>
+			<div role="row" id="addressArea" style="display: none">
+				<div role="control" label="链接地址" starred="true">
+					<input id="hyperLinkAddress" bind="dataBean.hyperlinkaddress"
+						allowInput="true" class="mini-buttonedit" emptyText=""
+						onbuttonclick="selectSform();" selectOnFocus="false"
+						required="true" />
+				</div>
+			</div>
+			<div role="row" id="addressOpentypeArea" style="display: none">
+				<div role="control" label="打开方式" starred="true">
+					<div id="addressOpentype" class="mini-radiobuttonlist"
+						bind="dataBean.addressopentype"
+						data="[{id:'0',text:'新网页打开'},{id:'1',text:'Dialog弹窗'},{id:'2',text:'全屏Dialog弹窗'}]"
+						textfield="text" valuefield="id" onvaluechanged="openTypeChange()"
+						required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="dialogTypeArea" style="display: none">
+				<div role="control" label="窗口尺寸">
+					<input id="dialogType" class="mini-radiobuttonlist"
+						bind="dataBean.dialogtype" action="getDialogType"
+						onvaluechanged="dialogTypeChange()" />
+				</div>
+			</div>
+			<div role="row" id="dialogConfig" style="display: none">
+				<div role="control" label="弹窗宽度（px）" starred="true">
+					<input id="dialogWidth" class="mini-textbox"
+						vtype="int;range:100,3000" bind="dataBean.dialogwidth"
+						required="true" />
+				</div>
+				<div role="control" label="弹窗高度（px）" starred="true">
+					<input id="dialogHeigh" class="mini-textbox"
+						vtype="int;range:100,3000" bind="dataBean.dialogheigh"
+						required="true" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('displayschemeconfigaddaction', '', initCallback);
+
+		var platform = "";
+		function initCallback(data) {
+			if (data && data.type && data.type == "edit") {
+				if (data && data.columnType) {
+					columnTypeChange(data.columnType);
+				}
+				if (data && data.addressOpenType) {
+					openTypeChange(data.addressOpenType);
+				}
+
+				var name = mini.get('#hyperLinkAddress').getValue();
+				mini.get("#hyperLinkAddress").setText(name);
+			} else {
+				//控件类型默认不可编辑
+				mini.get("controlType").select(0);
+			}
+
+			//修改时动态切换显示是否自适应列宽、操作类型、链接打开方式等联动控件
+			columnTypeChange();
+			operateTypeChange();
+			openTypeChange();
+			dialogTypeChange();
+			changCustom();
+
+			if (data.tableName && data.fieldName) {
+				document.getElementById("table").style.display = "block";
+				document.getElementById("field").style.display = "block";
+				mini.get('dataTable').setText(data.tableName);
+				mini.get('dataField').setText(data.fieldName);
+				selectTableChange();
+			}
+
+			if (data.platform) {
+				platform = data.platform;
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		function selectTableChange() {
+			var tableId = mini.get("dataTable").getValue();
+			epoint.execute("dataTableValueChange", '@none', [ tableId ],
+					mcallback);
+		}
+
+		function columnTypeChange() {
+			var columnType = mini.get("columnType").getValue();
+			var isshowfield = columnType == "2";
+			var isshowiconArea = columnType == "3";
+			var isshowcolNameArea = columnType == "4";
+
+			document.getElementById("table").style.display = isshowfield ? "block"
+					: "none";
+			document.getElementById("field").style.display = isshowfield ? "block"
+					: "none";
+			document.getElementById("controlArea").style.display = isshowfield ? "block"
+					: "none";
+			document.getElementById("isAllowSortArea").style.display = isshowfield ? "block"
+					: "none";
+			document.getElementById("iconArea").style.display = isshowiconArea ? "block"
+					: "none";
+			document.getElementById("colNameArea").style.display = isshowcolNameArea ? "block"
+					: "none";
+
+			//当非字段列时，清空字段选择
+			if (!isshowfield) {
+				epoint.clear('table');
+				epoint.clear('field');
+				//epoint.clear('controlArea'); //编辑类型暂不处理
+				epoint.clear('isAllowSortArea');
+			}
+
+			//当非图标列时，清空图标选择
+			if (!isshowiconArea) {
+				epoint.clear('iconArea');
+			}
+
+			//当非自定义文字列时，清空自定义文字
+			if (!isshowcolNameArea) {
+				epoint.clear('colNameArea');
+			}
+		}
+
+		//操作类型切换
+		function operateTypeChange() {
+			var operateType = mini.get("operateType").getValue();
+			//如果是无或者删除
+			if (operateType == "0" || operateType == "2") {
+				epoint.clear('addressArea');
+				document.getElementById("addressArea").style.display = "none";
+				epoint.clear('addressOpentypeArea');
+				document.getElementById("addressOpentypeArea").style.display = "none";
+				epoint.clear('dialogTitleArea');
+				document.getElementById("dialogTitleArea").style.display = "none";
+				epoint.clear('dialogConfig');
+				document.getElementById("dialogConfig").style.display = "none";
+				epoint.clear('dialogTypeArea');
+				document.getElementById("dialogTypeArea").style.display = "none";
+				if (operateType == "2") {
+					document.getElementById("deletePromptArea").style.display = "block";
+				} else {
+					epoint.clear('deletePromptArea');
+					document.getElementById("deletePromptArea").style.display = "none";
+				}
+			} else if (operateType == "1") {
+				//如果是链接
+				document.getElementById("addressArea").style.display = "block";
+				document.getElementById("addressOpentypeArea").style.display = "block";
+				document.getElementById("dialogTitleArea").style.display = "block";
+				epoint.clear('deletePromptArea');
+				document.getElementById("deletePromptArea").style.display = "none";
+			}
+		}
+
+		//打开方式变更
+		function openTypeChange() {
+			var openType = mini.get("addressOpentype").getValue();
+			if (openType == "1") {
+				document.getElementById("dialogTypeArea").style.display = "block";
+				if (mini.get('dialogType').getValue() == ""
+						|| mini.get('dialogType').getValue() == null) {
+					//当窗口尺寸值为空的时，选择Dialog弹窗时默认给中的窗口大小
+					mini.get('dialogType').setValue('1');
+				}
+
+			} else {
+				epoint.clear('dialogTypeArea');
+				epoint.clear('dialogConfig');
+				document.getElementById("dialogTypeArea").style.display = "none";
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		//窗口尺寸变更
+		function dialogTypeChange() {
+			var dialogType = mini.get("dialogType").getValue();
+			if (dialogType == "3") {
+				document.getElementById("dialogConfig").style.display = "block";
+			} else {
+				epoint.clear('dialogConfig');
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				mini.get("dataField").setData(data.fieldslist);
+				//mini.get("dataField").select(0);
+			}
+		}
+
+		//更改选择列宽自适应配置
+		function changCustom() {
+			var isCustomValue = mini.get("isAdaptiveWidth").getValue();
+			if (isCustomValue == "true") {
+				epoint.clear('columnWidthArea');
+				document.getElementById("columnWidthArea").style.display = "none";
+			} else {
+				document.getElementById("columnWidthArea").style.display = "block";
+			}
+		}
+
+		function onDrawCell(e) {
+			var item = e.record;
+			e.cellHtml = "<i class='action-icon icon-"+item.id+"'></i><span>"
+					+ item.text + "</span>";
+
+		}
+
+		function selectSform() {
+			epoint
+					.openDialog("选择表单",
+							'frame/pages/sformdesigner/linkselect?platform='
+									+ platform, function(e) {
+								if (e != 'close') {
+									mini.get('hyperLinkAddress').setText(e);
+									mini.get('hyperLinkAddress').setValue(e);
+									mini.get('hyperLinkAddress').validate(e);
+								}
+							}, {
+								'width' : 600,
+								'height' : 550
+							});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>路由活动页面</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="btnSaveClick();" id="btnAddRecord">确认保存 </a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="活动名称" starred="true">
+					<input id="acName" class="mini-textbox"
+						bind="workflowActivity.activityName" required="true"
+						requiredErrorText="活动名称不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="分支方式">
+					<div bind="workflowActivity.splitType" class="mini-radiobuttonlist"
+						repeatItems="2" value="10" textField="text" valueField="id"
+						data="[{text:'全部分支',id:'10'},{text:'多路分支',id:'20'},
+							{text:'单一分支',id:'30'}]">
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="会合方式">
+					<div id="joinType" bind="workflowActivity.joinType"
+						class="mini-radiobuttonlist" repeatItems="2" value="10"
+						textField="text" valueField="id"
+						data="[{text:'全部会合',id:'10'},{text:'多路会合',id:'20'},
+							{text:'单一会合',id:'30'},{text:'自定义会合',id:'40'}]">
+					</div>
+				</div>
+			</div>
+			<div id="row_SplitActName" role="row">
+				<div role="control" label="对应分支点">
+					<input id="splitActivityName" bind="splitActivityName"
+						class="mini-buttonedit" emptyText="" allowInput="false"
+						onbuttonclick="selectSplitActivity" selectOnFocus="true" /> <span
+						class="text-danger" style="width: 50%">如果会合方式为多路，那么必须手动设置对应的分支节点</span>
+
+				</div>
+			</div>
+			<div id="row_JoinMethod" role="row">
+				<div role="control" label="会合判断方法">
+					<input id="joinMethodName" bind="workflowActivity.joinMethodGuid"
+						class="mini-buttonedit" onbuttonclick="selectMethod"
+						selectOnFocus="true" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="备注">
+					<input class="mini-textbox" bind="workflowActivity.note" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="活动标识">
+					<input class="mini-textbox"
+						bind="workflowActivity.activityDispName" /> <span
+						class="text-danger">(用来唯一定位到该活动,一旦设定不允许修改,与活动对象的activityDispName关联)</span>
+				</div>
+			</div>
+			<input bind="processVersionGuid" id="processVersionGuid"
+				class="mini-hidden" /><input bind="activityGuid" id="activityGuid"
+				class="mini-hidden" /><input id="splitActivityGuid"
+				bind="splitActivityGuid" class="mini-hidden" />
+		</div>
+
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activityrouterframeaction', '', initCallBack);
+
+		function initCallBack(e) {
+			if (e.splitActivityName) {
+				mini.get('splitActivityName').setText(e.splitActivityName);
+			}
+			//设置会合方式  关联的显隐
+			var joinTypeValue = mini.get("joinType").getValue();
+			if (joinTypeValue == "20") {
+				document.getElementById("row_SplitActName").style.display = "block";
+				document.getElementById("row_JoinMethod").style.display = "none";
+			} else if (joinTypeValue == "40") {
+				//选择自定义方法时
+				document.getElementById("row_SplitActName").style.display = "none";
+				document.getElementById("row_JoinMethod").style.display = "block";
+			} else {
+				document.getElementById("row_SplitActName").style.display = "none";
+				document.getElementById("row_JoinMethod").style.display = "none";
+			}
+			//处理会合方法
+			if (e.joinMethodName) {
+				mini.get("joinMethodName").setText(e.joinMethodName);
+			}
+		}
+		function btnSaveClick() {
+			if (epoint.validate()) {
+				epoint.execute('btnSaveClick', 'fui-form', closeCallback);
+			}
+		}
+
+		function setDialogValue(param) {
+			parent.dialogvalueset(param);
+		}
+
+		function updateTab() {
+			tabshow();
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'info');
+				}
+				var textValue = mini.get('acName').getValue();
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : Util.getUrlParams('MaxID'),
+					NodeType : 'Router',
+					Text : textValue
+				};
+				parent.dialogvalueset(param);
+			}
+		}
+
+		//会合方式为多路时
+		mini.parse();
+		var rbl = mini.get("joinType");
+		rbl
+				.on(
+						"valuechanged",
+						function(e) {
+							var va = this.getValue();
+							if (va == "20") {
+								document.getElementById("row_SplitActName").style.display = "block";
+								document.getElementById("row_JoinMethod").style.display = "none";
+							} else if (va == "40") {
+								document.getElementById("row_SplitActName").style.display = "none";
+								document.getElementById("row_JoinMethod").style.display = "block";
+							} else {
+								document.getElementById("row_SplitActName").style.display = "none";
+								document.getElementById("row_JoinMethod").style.display = "none";
+							}
+						});
+		//设置对应分支点
+		function selectSplitActivity() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			epoint.openDialog('选择分支节点',
+					'framemanager/workflow/design/selectactivity?processVersionGuid='
+							+ processVersionGuid + '&activityGuid='
+							+ activityGuid, addSplitActivity, {
+						'width' : 800,
+						'height' : 500
+					});
+			//todo缺返回操作
+		}
+		function addSplitActivity(data) {
+			if (data && data != 'close') {
+				var s = data.split(";");
+				mini.get("splitActivityName").setText(s[0]);
+				mini.get("splitActivityName").setValue(s[0]);
+				mini.get("splitActivityGuid").setValue(s[1]);
+
+			}
+		}
+
+		//选择会合方法
+		function selectMethod() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('选择外部方法',
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid, selectCallBack, {
+						width : 480,
+						height : 300
+					});
+		}
+		//选择会合外部方法后CallBack
+		function selectCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("joinMethodName").setValue(datas[1]);
+				mini.get("joinMethodName").setText(datas[0]);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

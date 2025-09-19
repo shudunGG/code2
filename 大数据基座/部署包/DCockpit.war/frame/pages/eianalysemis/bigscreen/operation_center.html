@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>操作中心</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script src="./js/remfit.js"></script>
+    <script>
+        SrcBoot.output([
+            './css/common.css',
+            './css/operation_center.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+
+    <!-- 页面内容区域 -->
+    <div class="fui-left">
+        <div role="body">
+            <ul class="operation-tabs">
+                <li class="operation-tab clearfix" data-type="redlight" data-text="红灯">
+                    <i class="operation-tab-icon l">
+                        <img src="./images/icon-operation-tab1.png" alt="" />
+                    </i>
+                    <span class="operation-tab-text l">红灯信息</span>
+                    <i class="operation-num-tip" id="count-redlight"></i>
+                </li>
+                <!-- <li class="operation-tab clearfix" data-type="problem" data-text="问题反馈">
+                    <i class="operation-tab-icon l">
+                        <img src="./images/icon-operation-tab2.png" alt="" />
+                    </i>
+                    <span class="operation-tab-text l">问题反馈信息</span>
+                    <i class="operation-num-tip" id="count-problem"></i>
+                </li> -->
+                <li class="operation-tab clearfix" data-type="warning" data-text="事件预警">
+                    <i class="operation-tab-icon l">
+                        <img src="./images/icon-operation-tab3.png" alt="" />
+                    </i>
+                    <span class="operation-tab-text l">指标预警信息</span>
+                    <i class="operation-num-tip" id="count-warning"></i>
+                </li>
+                <li class="operation-tab clearfix" data-type="norm">
+                    <i class="operation-tab-icon l">
+                        <img src="./images/icon-operation-tab4.png" alt="" />
+                    </i>
+                    <span class="operation-tab-text l">指标订阅信息</span>
+                    <i class="operation-num-tip" id="count-focusIndicator"></i>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="fui-right">
+        <!-- 红灯信息 -->
+        <div class="msg-content" id="msg-content">
+
+        </div>
+    </div>
+
+    <!-- 右键菜单容器 -->
+    <div id="menu-warp"></div>
+
+    <!-- 右侧表头模板 -->
+    <script type="text/html" id="right-tab-tmpl">
+        <div class="msgopera-tab-container clearfix" id="msgopera-tab-container">
+            <!-- <span class="l msgopera-tab" data-ref="unread">
+                最新反馈（<span id="msg-unread">{{lastSum}}</span>）
+            </span> -->
+            {{#isredlight}}<span class="l msgopera-tab" data-ref="started">我发起的{{curTab.text}}</span>{{/isredlight}}
+            <span class="l msgopera-tab" data-ref="accept">我接收的{{curTab.text}}</span>
+            <div class="r msg-clearall" id="msg-clearall" title="清除所有未读消息"></div>
+        </div>
+        <div class="msg-operation clearfix hidden" id="msg-operation">
+            <!-- <input class="mini-combobox l" id="state-combo" style="width:1.37rem;" textField="text" valueField="id" emptyText="请选择..."
+                nullItemText="请选择..." data="[{text: '全部状态', id: 0},{text: '已反馈', id: 1},{text: '未反馈', id: 2}]" value="{{rightState}}" onValuechanged="getMsglist"/>
+            <input class="mini-buttonedit searchbox r" id="searchbox" iconCls="icon-search" emptyText="输入指标名称搜索" style="width:2.33rem;" onValuechanged="getMsglist" text="{{keyword}}"/> -->
+            <!-- {{^iswarning}}
+            <select name="" class="state-combo" id="state-combo">
+                <option value="2">全部状态</option>
+                <option value="0">进行中</option>
+                <option value="1">已办结</option>
+            </select>
+            {{/iswarning}} -->
+            {{#isredlight}}
+            <div class="search r">
+                <input class="searchbox l" id="searchbox" autocomplete="off"  placeholder="请输入指标名称搜索"   onValuechanged="getMsglist"/>
+                <span class="confirm" id="confirm" onclick="getMsglist()"></span>  
+            </div>
+            {{/isredlight}}
+        </div>
+        <div class="msg-lists" id="msg-lists"></div>
+    </script>
+	
+	<script type="text/html" id="right-tab-tmpl1">
+        <div class="msgopera-tab-container clearfix" id="msgopera-tab-container">
+            <!-- <span class="l msgopera-tab" data-ref="unread">
+                最新反馈（<span id="msg-unread">{{lastSum}}</span>）
+            </span> -->
+            {{#isredlight}}<span class="l msgopera-tab" data-ref="started">我发起的{{curTab.text}}</span>{{/isredlight}}
+            <span class="l msgopera-tab" data-ref="accept">我发送的{{curTab.text}}</span>
+            <div class="r msg-clearall" id="msg-clearall" title="清除所有未读消息"></div>
+        </div>
+        <div class="msg-operation clearfix hidden" id="msg-operation">
+            <!-- <input class="mini-combobox l" id="state-combo" style="width:1.37rem;" textField="text" valueField="id" emptyText="请选择..."
+                nullItemText="请选择..." data="[{text: '全部状态', id: 0},{text: '已反馈', id: 1},{text: '未反馈', id: 2}]" value="{{rightState}}" onValuechanged="getMsglist"/>
+            <input class="mini-buttonedit searchbox r" id="searchbox" iconCls="icon-search" emptyText="输入指标名称搜索" style="width:2.33rem;" onValuechanged="getMsglist" text="{{keyword}}"/> -->
+            <!-- {{^iswarning}}
+            <select name="" class="state-combo" id="state-combo">
+                <option value="2">全部状态</option>
+                <option value="0">进行中</option>
+                <option value="1">已办结</option>
+            </select>
+            {{/iswarning}} -->
+            {{#isredlight}}
+            <div class="search r">
+                <input class="searchbox l" id="searchbox" autocomplete="off"  placeholder="请输入指标名称搜索"   onValuechanged="getMsglist"/>
+                <span class="confirm" id="confirm" onclick="getMsglist()"></span>  
+            </div>
+            {{/isredlight}}
+        </div>
+        <div class="msg-lists" id="msg-lists"></div>
+    </script>
+
+    <!-- 红灯信息-最新反馈模板 -->
+    <script type="text/html" id="latest-feedback-tmpl">
+        <ul class="msg-lists-ul">
+            {{#list}}
+                {{#isTime}}
+                <li class="msg-time-item">{{time}}</li>
+                {{/isTime}}
+                {{^isTime}}
+                <li class="msg-item" data-guid="{{guid}}">
+                    <div class="msg-item-head clearfix js-link" data-url="{{url}}">
+                        <span class="l name">{{normName}}</span>
+                    </div>
+                    <ul class="msg-item-info clearfix js-link" data-url="{{url}}">
+                        <li class="l">
+                            <span class="label">发起时间：</span>
+                            <span class="value">{{createTime}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">责任人：</span>
+                            <span class="value">{{launchUserName}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">红灯内容：</span>
+                            <span class="value">{{{content}}}</span>
+                        </li>
+                    </ul>
+                    <div class="msg-item-operation clearfix">
+                        <!-- <a class="mini-button l feedback-btn">反馈</a>  -->
+                        {{^isSupervise}}
+                        <a class="mini-button l supervise-btn">催办</a>
+                        {{/isSupervise}}
+                        {{#isSupervise}}
+                        <a class="mini-button l" enabled="false">催办</a>
+                        {{/isSupervise}}
+                        {{^isPriority}}
+                        <a class="mini-button l priority-btn">优先处理</a>
+                        {{/isPriority}}
+                        {{#isPriority}}
+                        <a class="mini-button l" enabled="false">优先处理</a>
+                        {{/isPriority}}
+                        <!-- <a class="lgnore-btn r" href="javascript:;" title="忽略本条消息"></a> -->
+                    </div>
+                    <!-- 反馈信息 -->
+                    <div class="feedback">
+                        <p class="feedback-title">反馈信息：</p>
+                        <textarea class="mini-textarea feedback-textarea" emptyText="请输入反馈信息"></textarea>
+                        <div class="clearfix">
+                            <a class="mini-button l affirm-feedback">反馈</a>
+                            <a class="mini-button mini-btn-info l cancel-btn">取消</a>
+                        </div>
+                    </div>
+                </li>
+                {{/isTime}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 红灯信息-我发起的红灯模板 -->
+    <script type="text/html" id="started-tmpl">
+        <ul class="msg-lists-ul">
+            {{#list}}
+                {{#isTime}}
+                <li class="msg-time-item">{{time}}</li>
+                {{/isTime}}
+                {{^isTime}}
+                <li class="msg-item {{#hasFedback}}hasfedback{{/hasFedback}}" data-guid="{{guid}}">
+                    <div class="msg-item-head clearfix js-link" data-url="{{url}}">
+                        <ul class="tag l clearfix">
+                            {{#isSupervise}}
+                            <li class="tag-item l supervise">催</li>
+                            {{/isSupervise}}
+                            {{#isPriority}}
+                            <li class="tag-item l priority">先</li>
+                            {{/isPriority}}
+                        </ul>
+                        <span class="l name">{{cockpitName}}</span>
+                    </div>
+                    <ul class="msg-item-info clearfix js-link" data-url="{{url}}">
+                        <li class="l">
+                            <span class="label">发起时间：</span>
+                            <span class="value">{{createTime}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">责任人：</span>
+                            <span class="value">{{responseUserName}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">反馈情况：</span>
+                            <span class="value">{{{feedbackText}}}</span>
+                        </li>
+                    </ul>
+                    <div class="msg-item-operation clearfix">
+                        <a class="mini-button l feedback-btn">反馈</a>
+                        <!-- 我发起的有催办和优先处理按钮 -->
+                        {{#isStarted}}
+                            {{^isSupervise}}
+                            <a class="mini-button l supervise-btn">催办</a>
+                            {{/isSupervise}}
+                            {{#isSupervise}}
+                            <a class="mini-button l" enabled="false">催办</a>
+                            {{/isSupervise}}
+                            {{^isPriority}}
+                            <a class="mini-button l priority-btn">优先处理</a>
+                            {{/isPriority}}
+                            {{#isPriority}}
+                            <a class="mini-button l" enabled="false">优先处理</a>
+                            {{/isPriority}}
+                        {{/isStarted}}
+                        <a class="lgnore-btn r" href="javascript:;" title="忽略本条消息"></a>
+                    </div>
+                    <!-- 反馈信息 -->
+                    <div class="feedback">
+                        <p class="feedback-title">反馈信息：</p>
+                        <textarea class="mini-textarea feedback-textarea" emptyText="请输入反馈信息"></textarea>
+                        <div class="clearfix">
+                            <a class="mini-button l affirm-feedback">反馈</a>
+                            <a class="mini-button mini-btn-info l cancel-btn">取消</a>
+                        </div>
+                    </div>
+                    <!-- 反馈列表详情 -->
+                    <div class="feedback-detail"></div>
+                </li>
+                {{/isTime}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 红灯信息-我发起的红灯模板 -->
+    <script type="text/html" id="redlight-tmpl">
+        <ul class="msg-lists-ul">
+            {{#list}}
+                {{#isTime}}
+                <li class="msg-time-item">{{time}}</li>
+                {{/isTime}}
+                {{^isTime}}
+                <li class="msg-item hasfedback" data-guid="{{redLightGuid}}">
+                    <div class="msg-item-head clearfix js-link" data-url="{{url}}">
+                        <span class="l name">{{cockpitName}}</span>
+                    </div>
+                    <ul class="msg-item-info clearfix js-link" data-url="{{url}}">
+                        <li class="l">
+                            <span class="label">发起时间：</span>
+                            <span class="value">{{createTime}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">责任人：</span>
+                            <span class="value">{{launchUserName}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">红灯内容：</span>
+                            <span class="value">{{{content}}}</span>
+                        </li>
+                    </ul>
+					<div class="msg-item-operation clearfix">
+                        <!-- 我发起的有催办和优先处理按钮 -->
+                            <a class="mini-button l supervise-btn">催办</a>
+                            <a class="mini-button l priority-btn" enabled="false">优先处理</a>
+                   </div>   
+                    <!-- <div class="msg-item-operation clearfix">
+                        <a class="mini-button l feedback-btn">反馈</a>
+                        <a class="lgnore-btn r" href="javascript:;" title="忽略本条消息"></a>
+                    </div> -->
+                    <!-- 反馈信息 -->
+                    <!-- <div class="feedback">
+                        <p class="feedback-title">反馈信息：</p>
+                        <textarea class="mini-textarea feedback-textarea" emptyText="请输入反馈信息"></textarea>
+                        <div class="clearfix">
+                            <a class="mini-button l affirm-feedback">反馈</a>
+                            <a class="mini-button mini-btn-info l cancel-btn">取消</a>
+                        </div>
+                    </div> -->
+                    <!-- 反馈列表详情 -->
+                    <!-- <div class="feedback-detail"></div> -->
+                </li>
+                {{/isTime}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 问题反馈列表 -->
+    <script type="text/html" id="feedback-tmpl">
+        <ul class="msg-lists-ul">
+            {{#list}}
+                {{#isTime}}
+                <li class="msg-time-item">{{time}}</li>
+                {{/isTime}}
+                {{^isTime}}
+                <li class="msg-item {{#hasFedback}}hasfedback{{/hasFedback}}" data-guid="{{guid}}">
+                    <div class="msg-item-head clearfix js-link" data-url="{{url}}">
+                        <span class="l name">{{submitUserName}}发起的反馈{{#dealOpinion}}（已处理）{{/dealOpinion}}</span>
+                    </div>
+                    <ul class="msg-item-info clearfix js-link" data-url="{{url}}">
+                        <li class="l">
+                            <span class="label">发起时间：</span>
+                            <span class="value">{{submitTime}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">反馈类型：</span>
+                            <span class="value">{{type}}</span>
+                        </li>
+                        <li class="l">
+                            <span class="label">反馈内容：</span>
+                            <span class="value">{{{feedBackInfo}}}</span>
+                        </li>
+                        {{#dealOpinion}}
+                        <li class="l">
+                            <span class="label">处理意见：</span>
+                            <span class="value">{{{dealOpinion}}}</span>
+                        </li>
+                        {{/dealOpinion}}
+                    </ul>
+                </li>
+                {{/isTime}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 预警列表 -->
+    <script type="text/html" id="warning-tmpl">
+        <ul class="msg-lists-ul">
+            {{#list}}
+                {{#isTime}}
+                <li class="msg-time-item">{{time}}</li>
+                {{/isTime}}
+                {{^isTime}}
+                <li class="msg-item {{#hasFedback}}hasfedback{{/hasFedback}}" data-guid="{{guid}}">
+                    <div class="msg-item-head clearfix js-link" data-url="{{url}}">
+                        <ul class="tag l clearfix">
+                            {{#isSupervise}}
+                            <li class="tag-item l supervise">催</li>
+                            {{/isSupervise}}
+                            {{#isPriority}}
+                            <li class="tag-item l priority">先</li>
+                            {{/isPriority}}
+                        </ul>
+                        <span class="l name">指标【{{normname}}】预警</span>
+                    </div>
+                    <ul class="msg-item-info clearfix js-link" data-url="{{url}}">
+                        <li class="l">
+                            <span class="label">发生时间：</span>
+                            <span class="value">{{warningtime}}</span>
+                        </li>
+                        <li class="l">
+                            <!-- <span class="label">指标领域：</span>
+                            <span class="value">{{normdomain}}</span> -->
+                        </li>
+                        <li class="l" style="width: 100%;">
+                            <span class="label">预警详情：</span>
+                            <span class="value">{{{warningcontent}}}</span>
+                        </li>
+                    </ul>
+                    <!-- <div class="msg-item-operation clearfix">
+                        <a class="lgnore-btn r" href="javascript:;" title="忽略本条消息"></a>
+                    </div> -->
+                </li>
+                {{/isTime}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 反馈列表模板 -->
+    <script type="text/html" id="feedback-item-tmpl">
+        <ul class="feedback-list">
+            {{#list}}
+            <li class="feedback-item" data-guid="{{feedbackGuid}}">
+                <p class="feedback-item-head">
+                    <span>{{userName}}</span>
+                    <span>{{feedbackTime}}</span>
+                    <span>反馈</span>
+                </p>
+                <p class="feedback-item-content">
+                    <span>{{{content}}}</span>
+                </p>
+            </li>
+            {{/list}}
+        </ul>
+        {{#count}}
+        <div class="feedback-more">
+            <a class="feedback-more-btn" href="javascript:;">还有{{count}}条反馈，点击查看更多</a>
+            <a class="feedback-more-btn fold" href="javascript:;">点击收起</a>
+        </div>
+        {{/count}}
+    </script>
+
+    <!-- 关注指标信息模板 -->
+    <script type="text/html" id="norm-tmpl">
+        <div class="normopera-container">
+            <!-- <div class="clearfix condition">
+                <input class="mini-combobox l" id="norm-combo" style="width:1.37rem;" textField="text" valueField="id" emptyText="请选择..."
+                 nullItemText="请选择..." data="[{text: '更新时间正序', id: 0},{text: '更新时间倒序', id: 1}]" value="0" onValuechanged="getNormoperaList"/>
+                 <input class="mini-buttonedit searchbox r" id="searchbox" iconCls="icon-search" emptyText="输入指标名称搜索" style="width:2.33rem;" onValuechanged="getNormoperaList" text="{{keyword}}"/>
+            </div> -->
+            <ul class="normopera-list clearfix" id="normopera-list">
+                
+            </ul>
+        </div>
+    </script>
+
+    <!-- 关注指标列表模板 -->
+    <script type="text/html" id="norm-list-tmpl">
+        {{#list}}
+        <li class="normopera-item l js-link" data-url="{{url}}" data-guid="{{normGuid}}">
+            <p class="title">{{normName}}</p>
+            <ul class="info">
+                <li>
+                    <span class="label">订阅时间：</span>
+                    <span class="value">{{subscribeTime}}</span>
+                </li>
+                <li>
+                    <span class="label">职责部门：</span>
+                    <span class="value" title="{{liableOuName}}">{{liableOuName}}</span>
+                </li>
+                <li>
+                    <span class="label">订阅来源：</span>
+                    <span class="value" title="{{subscribeSource}}">{{subscribeSource}}</span>
+                </li>
+            </ul>
+        </li>
+        {{/list}}
+    </script>
+
+    <script src="../../../fui/js/jsboot.js"></script>
+
+    <!-- 页面模块接口 -->
+    <script>
+        // 页面接口配置
+        var baseUrl = 'https://fe.epoint.com.cn/mock/348/';
+
+        function getRootPath(){
+            var curWwwPath = window.document.location.href;
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName
+                .substring(0, pathName.substr(1).indexOf('/') + 1);
+            return (localhostPaht + projectName);
+
+            // return 'http://zs-bigdata.epoint.com.cn/eiAnalyse_em/rest/';
+            // return 'http://localhost:8080/eiAnalyse/rest/';
+        }
+        window.pageConfig = {
+            getNewsCountUrl: baseUrl + 'getNewsCountUrl', // 获取操作中心消息数量
+            getMsgListUrl: baseUrl + 'getMsgListUrl', // 获取通用信息列表
+            getMsgDetailUrl: baseUrl + 'getMsgDetailUrl', // 获取通用信息详情
+            // getNormoperaListUrl: baseUrl + 'getNormoperaListUrl', // 获取关注指标信息列表
+            setFeedbackUrl: baseUrl + 'setFeedbackUrl', // 添加反馈 
+            //urgeUrl: baseUrl + 'urgeUrl', // 催办 
+            urgeUrl: getRootPath() + '/rest/cockpitApi/urgeRedLight',
+            //priorityUrl: baseUrl + 'priorityUrl', // 优先处理 
+            priorityUrl: getRootPath() + '/rest/cockpitApi/coordinatePriority', // 优先处理 
+            lgnoreMsgUrl: baseUrl + 'lgnoreMsgUrl', // 忽略消息 
+            followNormUrl: baseUrl + 'followNormUrl', // 关注指标 
+            likeNormUrl: baseUrl + 'likeNormUrl', // 点赞指标 
+            getRedLightListUrl: getRootPath() + '/rest/cockpitApi/getRedLightList',
+            getFeedbackListUrl: getRootPath() + '/rest/cockpit/getMyFeedbackList',
+            getWarningListUrl: getRootPath() + '/rest/cockpit/queryAllWarningResult',
+            sendRedLightFeedback: getRootPath() + '/rest/cockpitApi/redLightFeedback',
+            getRedLightDetailUrl: getRootPath() + '/rest/cockpit/getRedLightDetail',
+            getSubscribeCardList: getRootPath() + '/rest/cockpit/getMySubscribeCardList',
+
+            getNormoperaListUrl: getRootPath() + '/rest/cockpitApi/getMySubscribe',
+        };
+    </script>
+
+    <script>
+        SrcBoot.output([
+            './js/libs/layer/layer.js',
+            './js/libs/jquery.ellipsis.min.js',
+            './js/common.js',
+            './js/operation_center.js'
+        ]);
+    </script>
+    <script src="./js/util.js"></script>
+    <script src="./js/operation_center.js"></script>
+</body>
+
+</html>

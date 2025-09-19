@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>方案列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a id="btnAddRecord" class="mini-button" onclick="openAdd">新增记录</a>
+	</div>
+
+
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="schemename" width="100%">方案名称</div>
+				<div field="schemetype" data-options="{code:'方案类型'}" width="100">方案类型</div>
+				<div field="commontext" width="100">是否通用</div>
+				<div field="ordernumber" width="100">排序号</div>
+				<div width="100" renderer="onSchemeManageRender">方案管理</div>
+				<div width="50" renderer="onCopyRender">复制</div>
+				<!-- <div width="50" align="center" headerAlign="center"
+					renderer="onWarrantRender">授权</div> -->
+				<div width="50" renderer="onDeleteRenderer">删除</div>
+				<div width="50" renderer="onEditRenderer">修改</div>
+				<div field="iscommon" width="0">是否是通用</div>
+				<div field="ismyself" width="0">是否是本人</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		var schemeType = Util.getUrlParams("schemeType");
+		var tableId = Util.getUrlParams("tableId");
+		var changeRow = {};
+		var changeData = [];
+		var grid = mini.get("datagrid");
+		epoint.initPage('schemeshowlistaction');
+
+		//修改
+		function onEditRenderer(e) {
+			if (e.row.ismyself == '1') {
+				return epoint.renderCell(e, "action-icon icon-edit",
+						"openEdit", "epoint_total");
+			}
+		}
+
+		function openEdit(e) {
+			console.log(e);
+			epoint
+					.openDialog(
+							"修改",
+							"framemanager/metadata/mis/datamanage/basedataconfig/displayscheme/schemeshowedit?guid="
+									+ e.rowguid, searchData, {
+								'width' : 600,
+								'height' : 350
+							})
+		}
+
+		//复制
+		function onCopyRender(e) {
+			if (!(e.row.iscommon == '1' && e.row.ismyself != '1')) {
+				return epoint.renderCell(e, "action-icon icon-doc", "openCopy",
+						"epoint_total");
+			}
+		}
+
+		function openCopy(e) {
+			var schemeGuid = e.rowguid;
+			epoint.execute("copy", null, [ schemeGuid ], closeDialog)
+		}
+
+		//授权
+		function onWarrantRender(e) {
+			console.log(e.row.iscommon);
+			if (e.row.iscommon != '1') {
+				return epoint.renderCell(e, "action-icon icon-fix",
+						"openWarrant", "epoint_total");
+			}
+		}
+
+		function openWarrant(e) {
+			var schemeGuid = e.rowguid;
+			epoint
+					.openTopDialog(
+							'授权',
+							"framemanager/metadata/mis/datamanage/basedataconfig/displayscheme/schemeshowrightadd?schemeGuid="
+									+ schemeGuid, function(rtnData) {
+								if (rtnData != "close") {
+									var roles = rtnData.roles;
+									var users = rtnData.users;
+									epoint.execute("saveRight", null, [ roles,
+											users, schemeGuid ], closeDialog);
+								}
+							}, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		//方案管理
+		function onSchemeManageRender(e) {
+			if (!(e.row.iscommon == '1' && e.row.ismyself != '1')) {
+				return epoint.renderCell(e, "action-icon icon-gear",
+						"openManage", "epoint_total");
+			}
+		}
+
+		function openManage(e) {
+			epoint
+					.openTopDialog(
+							'方案管理',
+							"framemanager/metadata/mis/datamanage/basedataconfig/displayscheme/schemeshowinfomanage?schemeGuid="
+									+ e.rowguid + "&tableId=" + tableId,
+							searchData, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		//新增
+		function openAdd() {
+			epoint
+					.openTopDialog(
+							'新增记录',
+							"framemanager/metadata/mis/datamanage/basedataconfig/displayscheme/schemeshowadd?schemeType="
+									+ schemeType + "&tableId=" + tableId,
+							searchData, {
+								'width' : 600,
+								'height' : 350
+							});
+		}
+
+		// 绘制删除属性按钮
+		function onDeleteRenderer(e) {
+			if (!(e.row.iscommon == '1' && e.row.ismyself != '1')) {
+				return epoint.renderCell(e, "action-icon icon-remove",
+						"openDelete", "epoint_total");
+			}
+		}
+
+		//删除
+		function openDelete(e) {
+			var schemeGuid = e.rowguid;
+			epoint.execute("delete", null, [ schemeGuid ], function(result) {
+				if (result.msg) {
+					epoint.alert(result.msg, null, null, 'info');
+					searchData();
+				}
+			});
+		}
+
+		//回调
+		function closeDialog(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+				searchData();
+			}
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+		//]]>
+	</script>
+</body>
+</html>

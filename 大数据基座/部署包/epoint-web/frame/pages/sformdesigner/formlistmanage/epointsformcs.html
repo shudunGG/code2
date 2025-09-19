@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>表单信息表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+ 
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar" id="toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button mini-btn-primary" onclick="openAdd();" id="btnAddRecord">
+					打开 </a> 
+					<a class="mini-button mini-btn-primary" onclick="GenHtml();" id="btnAddRecord">
+					生成html </a> 
+				 
+			</div>
+		 
+		</div>
+ 
+
+ 
+	</div>
+		
+
+	
+	 
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		
+		// 初始化页面
+		// 初始化页面
+		epoint.initPage('filecontent', '', function(e) {
+			 
+		});
+		
+		function openAdd() {
+			var basePath = Util.getRootPath();
+			var file1 = basePath + "filecontent.action?cmd=FileOperate&content=WordForm&FormID=1" ;
+			var param = basePath + "filecontent.action;"; //第二个文件以参数的形式传入
+			//file1="D:\\相关code\\1.doc";
+			WordOperate(file1, "", param, "");//第二个文件以参数的形式传入
+		}
+
+		function WordOperate(fileName, dotName, param, execmd) {
+			try {
+				var WordApp = new ActiveXObject("Word.Application");
+				//WordApp.Application.UserAddress = param;
+				var Doc = WordApp.Documents.Open(fileName);
+				Doc.Activate();
+				if (dotName != '')
+					Doc.AttachedTemplate = dotName; //加载模板
+				Doc.UpdateStyles();
+				WordApp.Application.Visible = true;
+				if (execmd != '')
+					WordApp.Application.RDesign2un(execmd); //执行模板中的VBA函数
+			} catch (ex) {
+				alert(ex);
+			}
+		}
+		
+		function GenHtml(){
+			epoint.execute('GenHtml', '', '');
+		}
+
+		 
+	</script>
+</body>
+</html>

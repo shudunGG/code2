@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增版本</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" onclick="save" state="primary">保存</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="平台">
+						<input id="platform" class="mini-outputtext" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="版本号" starred="true">
+						<input id="versionname" bind="dataBean.versionname"
+							class="mini-textbox" required="true" requiredErrorText="版本不能为空"
+							style="width: 90%" vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="强制更新">
+						<input class="mini-checkbox switch" bind="dataBean.must"
+							truevalue="1" falsevalue="0" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<div id="tabs1" class="mini-tabs" activeIndex="0"
+							style="width: 700px; height: 500px;" plain="false">
+							<div name="tabs1" title="中间平台所在服务器">
+								<div role="control" label="安装包上传"></div>
+								<div style="position: relative; padding-left: 35px">
+									<div id="uploader" class="uc-oauploader" limitType="apk,ipa"
+										action="mobileappversionaddaction.getFileUploadModel"
+										fileNumLimit="1" onuploadfinished="OnUploadFinished"
+										auto="true" onfilesuccess="OnFileSuccess"  chunked="true" onfinishedmd5file="onfinishedmd5file"></div>
+								</div>
+								<div role="control" label="发布包URL"  starred="true">
+									<input id="url" bind="dataBean.url" class="mini-textarea"
+										style="width: 650px; height: 230px;" required="true"
+										requiredErrorText="请先上传发布包" vtype="maxLength:500"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="plisturl">
+					<div role="control" label="PList文件地址">
+						<input id="plist" class="mini-buttonedit" bind="dataBean.plisturl"
+							style="width: 90%;" onbuttonclick="getPlistUrl()"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="更新说明">
+						<input bind="dataBean.message" class="mini-textarea"
+							style="width: 90%; height: 150px;" vtype="maxLength:20000" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'frame/fui/js/epoint/uc/oauploader/oauploader.js' ]);
+	</script>
+	<script>
+		//<![CDATA[
+
+		// 初始化页面
+		epoint.initPage('mobileappversionaddaction', null, function(e) {
+			var platform = Util.getUrlParams('platform');
+			mini.get("platform").setValue(platform);
+			if (e.isIOS == false) {
+				$('#plisturl').hide();
+			}
+			if (e.plisturl) {
+				mini.get('#plist').setText(e.plisturl);
+			}
+		});
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', callback);
+			}
+		}
+
+		// 关闭操作的回调
+		function callback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					mini.showTips({
+						content : data.msg,
+						state : 'warning',
+						x : 'center',
+						y : 'center'
+					});
+				}
+			}
+		}
+
+		function OnFileSuccess() {
+
+		}
+
+		function OnUploadFinished() {
+			epoint.execute('getDownloadUrl', '', '', function(e) {
+				if (e.url) {
+					mini.get("url").setValue(Util.getRightUrl(e.url,true));
+				}
+			});
+		}
+		
+		function onfinishedmd5file(e) {
+			console.log('onfinishedmd5file');
+			epoint.execute('getDownloadUrl', '', '', function(e) {
+				if (e.url) {
+					mini.get("url").setValue(Util.getRightUrl(e.url, true));
+				}
+			});
+		}
+
+		function getPlistUrl() {
+			if (epoint.validate()) {
+				var platform = Util.getUrlParams('platform');
+				var appGuid = Util.getUrlParams('appGuid');
+				var url = mini.get('url').getValue();
+				var versionname = mini.get("versionname").getValue();
+				epoint.openDialog('',
+						"framemanager/mobile/version/mobileappversionplist?appGuid="
+								+ appGuid + "&platform=" + platform + "&url="
+								+ url + "&versionname=" + versionname, null, {
+							'width' : 480,
+							'height' : 400
+						});
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

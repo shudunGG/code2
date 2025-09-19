@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>take操作</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" iconCls="icon-addcircle" id="addbtn" onclick="save();">确定</a> 
+		<a class="mini-button" iconCls="icon-removecircle" id="cancle" onclick="epoint.closeDialog('ok')">取消</a>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div valign="top" align="center">
+						<div class="form-row">
+							<img src="../image/help.gif" />
+							<span>为什么要同步MIS表字段？</span>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div valign="top">
+						<span>如果某个活动引用了使用本Mis表的表单，那么在该活动的“表单字段权限”信息中就会记录本MIS表的字段，所以当Mis表的字段被修改后就需要同步。</span>
+					</div>
+				</div>
+				<div role="row" id="trNoChange" rendered="change">
+					<img src="../image/file.gif" />
+					<span>当前没有检测到本MIS表的字段变化</span>
+				</div>
+				<div role="row" id="trAdded" style="add">
+					<div>
+					   <span>下列字段是MIS表中新增的字段，请选择同步时采用的权限</span>
+					</div>
+				</div>
+				<div role="row">
+					<!-- 表单区域 -->
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowGuid" multiSelect="true"
+						style="width: 100%; height: 100%;" allowResize="true"
+						showPager="true" action="getDefaultModelAdd"
+						editNextOnEnterKey="true" editNextRowCell="true"
+						allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="row[1]" width="200" headerAlign="center"
+								align="left">字段名称</div>
+							<div field="row[2]" width="200" headerAlign="center"
+								align="left">字段中文名称</div>
+							<div field="row[3]" type="comboboxcolumn" headerAlign="center" width="200">
+								读写权限
+							<div property="editor" class="mini-combobox" textField="text"
+									valueField="id" data="rightLists" headerAlign="center"
+									width="100%" ></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="trDeleted">
+					<div> 
+					  <span>下列字段在MIS表中不再存在，已经完成同步删除</span>
+					</div>
+				</div>
+				<div role="row">
+					<!-- 表单区域 -->
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowGuid" multiSelect="true"
+						style="width: 100%; height: 100%;" allowResize="true"
+						showPager="true" action="getDefaultModelDel"
+						editNextOnEnterKey="true" editNextRowCell="true"
+						allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="row[0]" width="200" headerAlign="center"
+								align="left">字段名称</div>
+							<div field="row[1]" width="200" headerAlign="center"
+								align="left">字段中文名称</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="trUpdated" style="update">
+					<div>
+					   <span>下列字段的字段名或字段名称发生了变化，已经完成同步更新</span>
+					</div>
+				</div>
+				<div role="row">
+					<!-- 表单区域 -->
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowGuid" multiSelect="true"
+						style="width: 100%; height: 100%;" allowResize="true"
+						showPager="true" action="getDefaultModelUpdate"
+						editNextOnEnterKey="true" editNextRowCell="true"
+						allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="row[1]" width="200" headerAlign="center"
+								align="left">字段名称</div>
+							<div field="row[3]" width="200" headerAlign="center"
+								align="left">字段中文名称</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('mistableupdateaction');
+		
+		//var rightLists;
+
+		//var radiobox = mini.get("rightLists");
+
+		//radiobox.on("load", function(e) {
+		//	rightLists = e.sender.data;
+		//});
+		
+		function save() {
+			epoint.execute('save', '', msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {	
+				var msg = data.msg;
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alertAndClose(msg, '', null, null, 'info');
+				}else{
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

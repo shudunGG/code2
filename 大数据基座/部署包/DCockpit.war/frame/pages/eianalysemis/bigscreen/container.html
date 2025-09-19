@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>数字驾驶舱</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <!-- <link rel="stylesheet" href="./layui/css/layui.css"> -->
+    <script>
+        SrcBoot.output([
+            './js/remfit.js',
+            // './css/common.css',
+            './js/libs/swiper/swiper.min.css',
+            // './css/container.css',
+            // './css/container_blue.css'
+        ]);
+    </script>
+    <link name="custom-page-style" rel="stylesheet" href="./css/bigscreen/container.css" data-name="bigscreen" />
+    <link name="custom-page-style" rel="stylesheet" href="./css/system/container.css" data-name="system" />
+    <style type="text/css">
+        .swiper-slide {
+            text-align: center;
+        }
+        </style>
+</head>
+
+<body>
+
+    <div class="page-loading"></div>
+
+    <div class="fui-content" style="padding: 0px;">
+        <div>
+        <div class="header" style="position: relative;z-index:99;">
+            <!-- logo -->
+            <p class="l logo-con">
+                <!-- <img src="./images/logo.png" alt="" class="logo" /> -->
+                <span style="display:block;line-height:.8rem;padding-left:.3rem;color: #fff;text-shadow: 0 0 6px #20dbee;font-size: .35rem;font-weight: bold;" id="cockpitname">省大数据局驾驶舱</span>
+            </p>
+            
+            <!-- 右侧信息 -->
+            <div class="r">
+                <div class="clearfix">
+                    <div class="l info-con-line search-con">
+                        <a href="javascript:;" class="search-btn operate-ico"></a>
+                        <div class="search-wrap" id="search-wrap">
+                            <input type="text" placeholder="请输入搜索内容" autocomplete="off" id="search-input" />
+                            <ul class="search-result" id="search-result"></ul>
+                        </div>
+                    </div>
+                    <div class="l info-con-line notice-con">
+                        <a href="javascript:;" class="notice-btn operate-ico"></a>
+                        <span class="notice-num" id="notice-num">0</span>
+                    </div>
+                    <div class="l info-con-line user-con">
+                        <a href="javascript:;" class="r operate-ico quit-btn"></a>
+                        <div class="l">
+                            <p class="welcome" id="welcome"></p>
+                            <p class="datetime" id="datetime">2020-12-25 12:32:23 星期一</p>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="clearfix r">
+                    <a href="javascript:;" class="l back-cockpit"></a>
+                    <div class="l loc">
+                        <a id="mgrUrl" style="color: #34bfff; margin-top: -10px;"></a>
+                        <span class="loc-now" id="loc-now"></span>
+                        <div class="loc-whole">
+                            <ul class="loc-clarify clearfix">
+                                <li class="active">
+                                    <a href="javascript:;">请选择</a>
+                                </li>
+                            </ul>
+                            <ul class="area-list" id="loc-area"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- nav -->
+            <!-- <div class="nav l"> -->
+            <div class="nav ">
+                <div class="swiper-container swiper-nav" id="swiper-nav">
+                    <div class="swiper-wrapper" id="nav-wrapper"></div>
+                    <div class="swiper-btn swiper-prev hidden"></div>
+                    <div class="swiper-btn swiper-next hidden"></div>
+                </div>
+                <div class="nav-level clearfix hidden">
+                    <a href="javascript:;" class="l level-parent"></a>
+                    <div class="l swiper-container swiper-nav swiper-level-nav" id="swiper-sub">
+                        <div class="swiper-wrapper" id="subNavWrapper"></div>
+                        <div class="swiper-btn swiper-prev hidden sub-swiper-btn"></div>
+                        <div class="swiper-btn swiper-next hidden sub-swiper-btn"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="iframe-con">
+            <iframe src="" frameborder="0" id="iframe"></iframe>
+        </div>
+    </div>
+    </div>
+
+    <!-- 页面模块接口 -->
+    <script>
+        function getRootPath(){
+            var curWwwPath = window.document.location.href;
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName
+                .substring(0, pathName.substr(1).indexOf('/') + 1);
+            return (localhostPaht + projectName);
+
+            // return 'http://zs-bigdata.epoint.com.cn/eiAnalyse_em/rest/';
+            // return 'http://localhost:8080/eiAnalyse/rest/';
+        }
+        window.pageConfig = {
+            getCockpitInfo: getRootPath() + '/rest/cockpitApi/getCockpitInfo',
+            getNavigator: getRootPath() + '/rest/cockpitApi/getNavigator',
+            getUserInfo: getRootPath() + '/rest/cockpitApi/getUserInfo',
+            // getUserInfo: 'https://fe.epoint.com.cn/mock/348/getUserInfo', //用户信息
+            // getSearchList: 'https://fe.epoint.com.cn/mock/348/getSearchList', //搜索列表
+            getSearchList: getRootPath() + '/rest/cockpitApi/getSearchList',
+            getAreaDep2: getRootPath() + '/rest/cockpitApi/getAreaDep',
+            getAreaDep: 'https://fe.epoint.com.cn/mock/348/getAreaDep', //获取相关区域/部门名称
+            visitProject: getRootPath() + '/rest/cockpitApi/visitProject',
+            login: getRootPath() + '/frame/pages/login/login',
+        };
+    </script>
+
+    <script src="../../../fui/js/jsboot.js"></script>
+    
+    <!-- <script src="./layui/layui.js"></script> -->
+
+    <script>
+        SrcBoot.output([
+            './js/libs/swiper/swiper.jquery.min.js',
+            './js/libs/layer/layer.js',
+            './js/common.js',
+            './js/libs/handlecss.js',
+            // './js/util.js',
+            // './js/container.js'
+        ]);
+    </script>
+    <script src="./js/util.js"></script>
+    <script src="./js/container.js"></script>
+</body>
+
+</html>

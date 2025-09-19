@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>soa智能检测</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="./css/soacheck.css" />
+</head>
+
+<body>
+    <div class="soa-contain">
+        <!-- 头部 -->
+        <div class="soa-header" id="soa-header">
+            <div class="left-img-box l">
+                <img src="css/images/temp.png" alt="">
+            </div>
+            <div class="load-content">
+                <h1 class="soa-title" id="soa-title">SOA 智能检测</h1>
+                <!-- 四种状态 -->
+                <div class="soa-load-status" id="soa-load-status">
+                    <p class="soa-start hidden">尚未进行过检测，建议立即检测。</p>
+                    <div class="soa-load hidden">
+                        <div class="progress-outer">
+                            <div class="progress-enter">
+                                <div class="progress-bg" id="progress-bg"></div>
+                            </div>
+                            <!-- <span>60%</span> -->
+                        </div>
+                    </div>
+                    <div class="soa-end hidden">
+                        <i class="soa-title-icon"></i>共完成
+                        <span id="soa-total"></span> 个检测项，发现
+                        <span id="soa-error-num" class="soa-error-num"></span> 个异常。
+                    </div>
+                    <div class="soa-last hidden">
+                        <i class="soa-title-icon"></i>上次检测时间
+                        <span id="soa-time"></span> ，发现
+                        <span id="soa-last-error-num" class="soa-error-num"></span> 个异常。
+                    </div>
+                </div>
+            </div>
+            <div class="r right-btn" id="right-btn">一键检测</div>
+        </div>
+        <!-- 列表 -->
+        <div class="soa-list" id="soa-list">
+            
+        </div>
+    </div>
+    <!-- 内容模板 -->
+    <!-- <i class="item-refresh-icon" title="检测"> </i> -->
+	<script type="x-tmpl-mustache" id="soa-item-template">
+        <ul>
+            {{#list}}
+            <li class="check-item">
+                <div id="soa-{{guid}}" data-id="{{guid}}" class="item-title unselectable {{#hasProblem}}problem{{/hasProblem}} {{#status}}status-{{status}}{{/status}}">
+                    <i class="soa-icons item-icons icon-warning"></i>
+                    <p class="item-name text-ellipsis" title="{{title}}">{{title}}</p>
+                    <div class="item-status">
+                        <span class="item-status-name"></span>
+                        <span class="item-refresh-btn">检测</span>
+                        
+                        <i class="soa-icons item-arrow"></i>
+                    </div>
+                </div>
+                {{#hasProblem}}
+                <div class="item-detail">
+                    {{{detail}}}
+                </div>
+                {{/hasProblem}}
+            </li>
+            {{/list}}
+        </ul>
+    </script>
+    <script src="../../../frame/fui/js/jsboot.js"></script>
+    <script>
+        var domain = Util.getRootPath() + 'rest/soacheckaction/',
+            soaConfig = {
+                // 接口
+                checkList: domain + 'checkList?isCommondto=true', // 检测列表
+                // 超时时间
+                timeout: 5000, // 毫秒
+                isCalc: false //表格是否通过计算来均分宽度
+            }
+    </script>
+    <script src="./js/soacheck.js"></script>
+</body>
+
+</html>

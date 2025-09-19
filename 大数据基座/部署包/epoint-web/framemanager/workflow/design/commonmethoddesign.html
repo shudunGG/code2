@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>注册新方法</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%"
+				action="getTreeModal"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" id="addClose"
+				onclick="if(epoint.validate()){btnSaveClick();}">新增并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog">取消添加</a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fui-content" class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="方法说明"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="方法名称" starred="true">
+						<input id="methodName" class="mini-textbox"
+							bind="workflowMethod.methodName" required="true"
+							requiredErrorText="方法名称不能为空!" />
+					</div>
+					<div role="control" label="方法排序号">
+						<input id="orderNum" class="mini-textbox"
+							bind="workflowMethod.orderNum" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="类全路径" starred="true">
+						<input id="typeName" class="mini-textbox"
+							bind="workflowMethod.typeName" required="true"
+							requiredErrorText="类全路径不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="方法备注">
+						<input id="note" class="mini-textbox" bind="workflowMethod.note" />
+					</div>
+					<div role="control" label="返回类型">
+						<input id="returnValueType" class="mini-textbox"
+							bind="workflowMethod.returnValueType" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="方法参数列表"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="参数名称" starred="true">
+						<input id="paraName" class="mini-textbox" bind="paraName" />
+					</div>
+					<div role="control" label="排序号">
+						<input id="ordinal" class="mini-textbox" bind="ordinal"
+							vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" class="btn-group mr10">
+						<a class="mini-button" id="btnAdd" width="100px" onclick="add" state="primary">新增参数</a>
+						<a class="mini-button" state="danger" id="btnDel" width="100px"
+							onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的参数!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelected);}">删除选中</a>
+					</div>
+				</div>
+				<div role="row">
+					<div class="control-field span5">
+						<p class="text-danger">当仅配置一个参数且值为[#=ExecutionContext#]时，才可获取上下文对象</p>
+					</div>
+				</div>
+			</div>
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="mpguid" multiSelect="true" action="getDefaultModel"
+				showPager="false" style="width: 100%; height: 100%;"
+				allowResize="true" allowCellEdit="true" allowCellSelect="true"
+				allowCellValid="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center"
+						align="center">序</div>
+					<div field="mpname" width="80">
+						参数名称 <input property="editor" class="mini-textbox" minWidth="80" />
+					</div>
+					<div field="mpnamedescription" width="100" headerAlign="center"
+						align="left">
+						参数描述 <input property="editor" class="mini-textbox" minWidth="80" />
+					</div>
+					<div field="selected" type="checkboxcolumn" width="60"
+						headerAlign="center" align="center">加密</div>
+					<div field="lazyGuid" width="80" headerAlign="center"
+						align="center">类型</div>
+
+					<div field="mpvalue" width="80" headerAlign="center" align="center">
+						参数值<input id="txtMPValue" property="editor" class="mini-textbox"
+							minWidth="60" value="object.mpvalue" />
+					</div>
+					<div field="mpvaluedescription" width="100" headerAlign="center"
+						align="left">
+						参数值描述 <input property="editor" class="mini-textbox" minWidth="80" />
+					</div>
+					<div field="orderNum" width="80" headerAlign="center"
+						align="center">
+						排序号<input property="editor" class="mini-textbox" minWidth="20"
+							inputStyle="text-align:right" vtype="int;range:0,99999999" />
+					</div>
+					<div width="80" renderer="onEditRenderer" headerAlign="center"
+						align="center">相关数据</div>
+				</div>
+			</div>
+			<input id="dllPath" class="mini-hidden" bind="workflowMethod.dllPath" />
+			<input id="fromtree" class="mini-hidden" bind="fromtree" />
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('commonmethoddesignaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			if (e.node.isLeaf) {
+				//var title =e.node.text ;
+				//方法名称
+				mini.get('methodName').setValue(e.node.text);
+				//方法注解名
+				mini.get('note').setValue(e.node.titleExtra);
+				//类全路径				
+				mini.get('typeName').setValue(e.node.objectcode);
+				//返回类型
+				mini.get('returnValueType').setValue(e.node.recureMsg);
+				//参数
+				mini.get('dllPath').setValue(e.node.path);
+				//参数从树获取的标记。
+				mini.get('fromtree').setValue("1");
+				//刷新表格
+				searchData();
+
+			}
+		});
+
+		// 新增方法
+		function btnSaveClick() {
+			if (checkParam()) {
+				epoint.execute("btnSaveClick", '', closeCallback);
+			}
+		}
+
+		// 新增参数
+		function add() {
+			if (checkParaName() && checkOrdinal()) {
+				epoint.execute("add", '', callback);
+			}
+		}
+
+		//新增回调事件
+		function newCallback(data) {
+			epoint.showTips(data.msg,  {state : 'success'});
+			epoint.refresh([ "datagrid" ], '', true);
+		}
+
+		// 绘制行相关数据按钮
+		var tempRow;
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "setParValue",
+					"mpguid");
+		};
+
+		function setParValue(mpguid) {
+			tempRow = mini.get("datagrid").getSelected();
+			epoint
+					.openDialog(
+							'相关数据',
+							'framemanager/workflow/design/designhelper?mode=contextOutJar',
+							setParValueOperJS, addCallBack);
+		}
+
+		function setParValueOperJS(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				//判断是否直接选择的材料表单字段
+				if (datas.length == 2) {
+					if (datas[0].indexOf('*') == 0) {
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvalue" : datas[1]
+						});
+
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvaluedescription" : datas[0].replace('*', '')
+						});
+					} else {
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvalue" : "[#=" + datas[0] + "#]"
+						});
+
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvaluedescription" : datas[1]
+						});
+					}
+				} else if (datas.length == 3) {//自定义相关数据
+					mini.get('datagrid').updateRow(tempRow, {
+						"mpvalue" : "[#=" + datas[1] + "#]"
+					});
+
+					mini.get('datagrid').updateRow(tempRow, {
+						"mpvaluedescription" : datas[2]
+					});
+				} else if (datas.length == 4) {//材料表单字段
+					//材料表单字段[#=EPOINTFORM (FromMaterialGuid, FromMisTableID,  FromFieldName)#])
+					mini.get('datagrid').updateRow(
+							tempRow,
+							{
+								"mpvalue" : "[#=EPOINTFORM(" + datas[0] + ","
+										+ datas[1] + "," + datas[2] + ")#]"
+							});
+
+					mini.get('datagrid').updateRow(tempRow, {
+						"mpvaluedescription" : datas[3]
+					});
+				}
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content', 'fui-form' ], '', true);
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+			if (data.error) {
+				epoint.showTips(data.error, {state : 'danger'});
+			}
+		}
+		function checkParam() {
+			var inputs = document.getElementsByTagName("input");
+			for (var i = 0; i < inputs.length; i++) {
+				if (inputs[i].id.indexOf("txtMPValue") > -1) {
+					if (mini.get(inputs[i].id).getValue() == "") {
+						epoint.showTips("至少有一个方法参数值为空。你确认要以空字符串为参数吗？", {state : 'warning'});
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		function checkParaName() {
+			var input = mini.get("paraName").getValue();
+			if (input == null || input == "") {
+				epoint.showTips("参数名称不能为空！",  {state : 'warning'});
+				return false;
+			}
+			return true;
+		}
+
+		function checkOrdinal() {
+			var input = mini.get("ordinal").getValue();
+			var re = /^[0-9]*[0-9][0-9]*$/;
+			if (input == null || input == "") {
+				epoint.showTips("排序码不能为空！",  {state : 'warning'});
+				return false;
+			}
+			if (!re.test(input)) {//判断输入的是否是整数  
+				epoint.showTips("排序码必须为大于等于0的整数！",  {state : 'warning'});
+				return false;
+			}
+			return true;
+		}
+
+		// 删除参数数据
+		function deleteSelected() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				if (data.msg == "该名称已经存在") {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				} else {
+					epoint.showTips(data.msg,  {state : 'success'});
+					searchData();
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

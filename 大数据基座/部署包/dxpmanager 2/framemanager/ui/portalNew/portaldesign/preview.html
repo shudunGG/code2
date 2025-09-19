@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>门户预览</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output(['framemanager/ui/portalNew/mCustomScrollbar/jquery.mCustomScrollbar.min.css',
+            'framemanager/ui/portalNew/portaldesign/css/preview.css',
+            'framemanager/ui/portalNew/portaldesign/css/ruler.css'
+            // 'framemanager/ui/portalNew/deskmanagement/deskmanagement.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="main relative">
+        <!-- 右侧内容 -->
+        <div class="container-panel" id="container-panel">
+            <div class="painting-area" id="painting-area">
+                <div class="grid-container row-line ui-droppable" id="grid-container">
+                    <ul>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer text-center clearfix">
+        <a class="mini-button mr-5" onclick="useTemplate()">使用模板</a>
+    </div>
+
+    <!-- 存为模板 -->
+    <div id="htmlContent" class="diy-html" style="display:none;">
+        <input id="portal-name" class="portal-name" placeholder="请输入模板名称" />
+    </div>
+
+    <!-- 模板重命名 -->
+    <div id="tempRename" class="diy-html" style="display:none;">
+        <input id="temp-name" class="portal-name" placeholder="" />
+    </div>
+
+    <!-- 仓库更多-->
+    <ul id="lib-more-menu" class="more-menu">
+        <li class="menu-item" data-ref="edit">编辑</li>
+        <li class="menu-item" data-ref="create">创建副本</li>
+        <li class="menu-item text-red" data-ref="delete">删除</li>
+    </ul>
+
+    <!-- 元件（仓库） -->
+    <script type="x-tmpl-mustache" id="lib-item-tpl">
+        <ul>
+            {{#list}}
+            <li id="lib-item-{{id}}" class="lib-item drag-item{{#visible}} active{{/visible}}" data-id="{{id}}" data-title="{{title}}" data-other="{{other}}" data-url="{{url}}">
+                <i class="icon-eye" title="{{#visible}}点击隐藏{{/visible}}{{^visible}}点击显示{{/visible}}"></i>
+                <div class="lib-content text-ellipsis" title="{{title}}">
+                    {{title}}
+                </div>
+                <div class="lib-more"></div>
+            </li>
+            {{/list}}
+        </ul>
+    </script>
+    <!-- 元件（搜索仓库） -->
+    <script type="x-tmpl-mustache" id="lib-item-search-tpl">
+        <ul>
+            {{#list}}
+            {{#result}}<li id="lib-item-{{id}}" class="lib-item drag-item{{#visible}} active{{/visible}}" data-id="{{id}}" data-title="{{title}}"  data-other="{{other}}" data-url="{{url}}">
+                <i class="icon-eye" title="{{#visible}}点击隐藏{{/visible}}{{^visible}}点击显示{{/visible}}"></i>
+                <div class="lib-content text-ellipsis" title="{{title}}">
+                    {{{result}}}
+                </div>
+                <div class="lib-more"></div>
+            </li>{{/result}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 右侧移动的元件 -->
+    <script type="x-tmpl-mustache" id="element-tpl">
+        <li id="element-{{id}}" class="widget elem-item element-item {{#showHeader}} showHeader{{/showHeader}} showToolbar" 
+            {{^themeCheck}}
+            style="{{#borderColor}}border-color: {{borderColor}};{{/borderColor}}
+                {{#border}}border-width: {{border}}px;{{/border}}
+                {{#bg}}background-color: {{bg}};{{/bg}} 
+                border-style: solid;
+                {{#shadow}}box-shadow: 0 0 6px 2px {{shadow}};{{/shadow}}
+                {{#radius}}border-radius: {{radius}}px;{{/radius}}
+            " 
+            {{/themeCheck}}
+            data-id="{{id}}" 
+            data-max-start="{{maxStart}}"
+            data-max-end="{{maxEnd}}"
+            data-min-start="{{minStart}}"
+            data-min-end="{{minEnd}}"
+            data-link-open-type="{{linkOpenType}}"
+            data-theme-check="{{themeCheck}}"
+            data-border="{{border}}"
+            data-border-color="{{borderColor}}"
+            data-bg="{{bg}}"
+            data-shadow="{{shadow}}"
+            data-radius="{{radius}}"
+            data-show-header="{{showHeader}}" 
+            data-title="{{title}}" 
+            data-title-color="{{titleColor}}" 
+            data-title-bg-color="{{titleBgColor}}" 
+            data-icon="{{icon}}" 
+            data-icon-color="{{iconColor}}"
+            data-show-more-btn="{{showMoreBtn}}" 
+            data-more-url="{{moreOpenUrl}}" 
+            data-show-refresh-btn="{{showRefreshBtn}}" 
+            data-show-add-btn="{{showAddBtn}}" 
+            data-add-url="{{addUrl}}"
+            data-url="{{url}}" 
+            data-manage-url="{{manageUrl}}" 
+            data-item-num="{{itemNum}}"
+        >
+            {{#showHeader}}
+            <div class="element-header"
+                style ="
+                {{#titleColor}}color:{{titleColor}};{{/titleColor}}
+                {{#titleBgColor}}background:{{titleBgColor}};{{/titleBgColor}}
+                ">
+                <!-- {{#icon}}<i style="color: {{iconColor}}" class="title-icon modicon-{{icon}}"></i>{{/icon}} -->
+                {{#icon}}<div class="l title-icon mr-5" id="icon-set" style="background: url({{titleIcon}}) no-repeat;"></div>{{/icon}}
+                <span style="{{#icon}}padding-left: 0;{{/icon}}" class="name">{{title}}</span>
+                <div class="header-operations">
+                    {{#showAddBtn}}<span data-url="{{addUrl}}" class="icon add"></span>{{/showAddBtn}}
+                    {{#showMoreBtn}}<span data-url="{{moreUrl}}" class="icon open"></span>{{/showMoreBtn}}
+                    {{#showRefreshBtn}}<span class="icon refresh"></span>{{/showRefreshBtn}}
+                </div>
+            </div>
+            {{/showHeader}}
+            {{#hasChildColumn}}
+                {{#column}}
+                <div class="element-columns">
+                    <ul>
+                        {{#columnItems}}
+                            <li class="column-item-{{id}} element-column-item{{#default}} active{{/default}}" data-id="{{id}}" data-is-diy="{{isDiy}}" data-name="{{name}}" title="{{name}}" data-url="{{url}}" data-default="{{default}}" data-show-num="{{showNum}}">{{name}}</li>
+                        {{/columnItems}}
+                    </ul>
+                </div>
+            {{/column}}
+            {{/hasChildColumn}}
+
+            <!-- <div class="element-toolbar">
+                <span class="split"></span>
+                <span class="icon elem-icon setting" data-ref="set"></span>
+                <span class="icon elem-icon delete" data-ref="delete"></span>
+            </div> -->
+            <div class="element-body" id="element-body-{{id}}" style="{{^showHeader}}height: 100%;{{/showHeader}} {{#hasChildColumn}}height: calc(100% - 80px); {{/hasChildColumn}}">
+            </div>
+            <span class="spots spot-lt"></span>
+            <span class="spots spot-lb"></span>
+            <span class="spots spot-rt"></span>
+            <span class="spots spot-rb"></span>
+        </li>
+    </script>
+
+    <script type="x-tmpl-mustache" id="element-content-tpl">
+        <ul class="element-body-list">
+            {{#itemList}}
+            <li class="todo-item">
+                <a href="javascript:;" class="todo-item-link" title="{{title}}" data-url="{{url}}" data-id="{{id}}">{{{content}}}</a>
+                <span class="todo-item-date">{{date}}</span>
+            </li>
+            {{/itemList}}
+        </ul>
+    </script>
+    <!-- js -->
+    <script src="../../../../rest/resource/jsboot"></script>
+
+    <script>
+            SrcBoot.output([
+                './js/jquery.gridster.min.js',
+                './js/preview.js'
+            ]);
+        </script>
+    <script>
+
+        var cacheTableData = '';
+        epoint.initPage('portalpreviewaction', '@all', function (data) {
+
+            // 初始化内容
+            var tableData = data.tableData;
+            cacheTableData = tableData;
+            gridster.remove_all_widgets();
+            $.each(tableData, function (index, item) {
+                ElementManage.addElementItem(item, true);
+            });
+
+            gridster.disable();
+
+        });
+
+        function useTemplate() {
+            mini.showMessageBox({
+                title: "提示",
+                iconCls: "mini-messagebox-question",
+                buttons: ["取消", "确定"],
+                message: "当前门户页面将被模板覆盖，是否确认替换？",
+                callback: function (action) {
+                    console.log(action);
+                    if (action == '确定') {
+                        epoint.closeDialog({
+                            type: 'ok',
+                            options: {
+                                data: cacheTableData
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

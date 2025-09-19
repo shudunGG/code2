@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>控件修改</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save"
+				onclick="saveModify">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-removecircle" onclick="epoint.closeDialog();">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="控件名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.controlname"
+							required="true" requiredErrorText="控件名称不能为空!" />
+					</div>
+					<div role="control" label="控件英文名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.controlenglishname"
+							required="true" requiredErrorText="控件英文名称不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="允许字段类型">
+						<input class="mini-radiobuttonlist" action="getDataType"
+							repeatItems="5" repeatLayout="table" textField="text"
+							valueField="id" bind="dataBean.allowfieldtype" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="图标" starred="true">
+						<div id="smallIcon" class="mini-webuploader"
+							action="extensiblecontroleditaction.getFileUploadModel"
+							fileNumLimit="1" fileSingleSizeLimit="5120" limitType="png"></div>
+					</div>
+					<div role="control" label="默认值">
+						<input class="mini-textbox" bind="dataBean.defaultvalue" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum" vtype="int;range:0,99999999"
+							value="0" />
+					</div>
+					<div role="control" label="启用">
+						<input class="mini-checkbox" bind="dataBean.initiatemode" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="控件class">
+						<input autoLoad="false" id="displayID" action="getControlType"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="请选择控件class..." nullItemText="请选择控件class..."
+							bind="dataBean.controlclass" class="mini-combobox"
+							onvaluechanged="changType" />
+					</div>
+				</div>
+				<div role="row" id="infoArea">
+					<div role="control" label="控件提示信息">
+						 <input class="mini-textbox" bind="dataBean.extendfieldone" />
+					</div>
+				</div>
+				<br />
+				<div id="appearArea">
+					<div role="row">
+						<div role="control" label="组件add模板" starred="true">
+							<input id="addTemplate" class="mini-textarea" style="height: 80px" required="true" requiredErrorText="组件add模板不能为空!"/>
+							<input class="mini-hidden" id="addTemplateHiden"  bind="dataBean.template"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="组件detail模板" starred="true">
+							<input id="detailTemplate" class="mini-textarea" style="height: 80px" required="true" requiredErrorText="组件detail模板不能为空!"/>
+							<input class="mini-hidden" id="detailTemplateHiden"  bind="dataBean.extendfieldtwo"/>
+						</div>
+					</div>
+					<p>
+						<em>组件模板：</em><font color="red">注意替换的关键字为系统支持的关键字，如：" div
+							class="uc-handlecontrols" id="{{id}}"
+							action="formdesignaction.getUsableExtensibleControl"
+							bind="{{bind}}" data-options="{{data-options}}"
+							style="{{style}}"" </font>
+					</p>
+					<br />
+					<div role="row">
+						<div role="control" label="移动控件模板">
+							<input id="mobileTemplate" class="mini-textarea" style="height: 100px" />
+							<input class="mini-hidden" id="mobileTemplateHiden"  bind="dataBean.mobiletemplate"/>
+						</div>
+					</div>
+					<br />
+					<p>
+						<em>移动模板：</em><font color="red">控件class为空时，需要维护移动控件模板，模板另附说明</font>
+					</p>
+					<br />
+					<div role="row">
+						<div class="btn-group mr10" style="width: 100%">
+							<a class="mini-button" id="codeItem" onclick="addProperty();">新增属性</a>
+							<a class="mini-button" id="btnDel" iconCls="icon-minuscircle"
+								onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+								删除选定 </a>
+						</div>
+					</div>
+					<div id="datagrid" class="mini-datagrid" idField="propertyguid"
+						action="getDataGridData" sortOrder="desc" showPager="true"
+						style="height: 220px;" allowResize="true" multiSelect="true"
+						allowCellEdit="true" allowCellSelect="true"
+						editNextOnEnterKey="true" editNextRowCell="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="propertyname" width="200" headerAlign="center">
+								属性名称</div>
+							<div field="propertyenglishname" width="200" headerAlign="center">
+								属性英文名</div>
+							<div field="displaytype" width="200" align="center"
+								headerAlign="center">控件类型</div>
+							<div field="ordernum" width="100" headerAlign="center"
+								align="right">排序号</div>
+							<div width="60" align="center" headerAlign="center"
+								renderer="onEditRenderer">修改</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="controlguid">
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('extensiblecontroleditaction', '', initCallBack);
+
+		function initCallBack(data) {
+			if(data.controlclass){
+				if(data.controlclass == "textbox" || data.controlclass == "textarea"){
+					document.getElementById("infoArea").style.display = "block";
+				}else{
+					document.getElementById("infoArea").style.display = "none";
+				}
+				document.getElementById("appearArea").style.display = "none";	
+			}else{
+				document.getElementById("infoArea").style.display = "none";	
+				document.getElementById("appearArea").style.display = "block";
+			}
+			if (data.controlguid) {
+				mini.get("controlguid").setValue(data.controlguid);
+			}
+			mini.get("addTemplate").setValue(epoint.decodeUtf8(mini.get("addTemplateHiden").getValue()));
+			mini.get("detailTemplate").setValue(epoint.decodeUtf8(mini.get("detailTemplateHiden").getValue()));
+			mini.get("mobileTemplate").setValue(epoint.decodeUtf8(mini.get("mobileTemplateHiden").getValue()));
+		}
+
+		function saveModify() {
+			mini.get("addTemplateHiden").setValue(epoint.encodeUtf8(mini.get("addTemplate").getValue()));
+			mini.get("detailTemplateHiden").setValue(epoint.encodeUtf8(mini.get("detailTemplate").getValue()));
+			mini.get("mobileTemplateHiden").setValue(epoint.encodeUtf8(mini.get("mobileTemplate").getValue()));
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") > -1) {
+					epoint.alertAndClose(data.msg, '', null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, null, 'error');
+				}
+			}
+		}
+
+		// 弹出新增属性窗口
+		function addProperty() {
+			var cguid = mini.get("controlguid").getValue();
+			epoint.openDialog('新增属性',
+					"framemanager/sform/formlistmanage/controlpropertyadd?controlguid="
+							+ cguid, searchData, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改属性',
+					"framemanager/sform/formlistmanage/controlpropertyedit?propertyguid="
+							+ id, searchData, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+		// 刷新表格
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		// 删除属性数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		
+		//切换控制显隐
+		function changType() {
+			var displayName = mini.get("displayID").getValue();
+			if(!displayName){
+				document.getElementById("infoArea").style.display = "none";
+				document.getElementById("appearArea").style.display = "block";
+			}else{
+				if(displayName == "textbox" || displayName == "textarea"){
+					document.getElementById("infoArea").style.display = "block";
+				}else{
+					document.getElementById("infoArea").style.display = "none";
+				}
+				document.getElementById("appearArea").style.display = "none";
+			}
+		}
+	</script>
+</body>
+</html>

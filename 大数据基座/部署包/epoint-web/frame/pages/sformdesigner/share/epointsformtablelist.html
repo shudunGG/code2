@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>所有表单选择</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="saveSelected()">选择保存</a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" bind="searchString" emptyText="请输入表单名"
+				width="300" /><a class="mini-button ml8" state="primary"
+				iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="RowGuid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div field="isdisabled" name="isdisabled" type="checkcolumn"
+					width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="FormName" name="FormName" width="100">表单名称</div>
+				<div field="formId" name="formId" width="100">表单id</div>
+				<div field="SQLTableName" name="SQLTableName" width="100">mis表名</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('epointsformalltablelistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 保存选择表单
+		function saveSelected() {
+			grid.validate();
+			if (grid.isValid()) {
+				if (grid.getSelecteds().length == 0) {
+					epoint.alert('请选择需要配置的表单!', '', null, 'warning');
+				} else {
+					epoint.execute('saveSelected', '', closeCallback);
+				}
+			}
+		}
+
+		function closeCallback(data) {
+			if (data.message) {
+				epoint.alert(data.message, '', null, 'warning');
+			}
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		grid.on("beforeselect", function(e) {
+			if (e.record.isdisabled) {
+				// 取消后续选中
+				e.cancel = true;
+			}
+		});
+
+		grid.on("drawcell", function(e) {
+			console.log(e.record.isdisabled);
+			if (e.record.isdisabled && e.columnIndex == 0) {
+				// 取消渲染共享字段选择单选控件
+				e.cellHtml = "";
+			}
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

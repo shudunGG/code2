@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>响应转换</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10" id="add">
+			<a class="mini-button" id="addClose" onclick="addAndClose">新增并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<div class="btn-group mr10" id="edit">
+			<a class="mini-button" id="editClose" onclick="editAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+
+	<div class="fui-content">
+		<div role="accordion" id="resp">
+			<div role="head" title="响应转换"></div>
+			<div role="body">
+				<!-- 内容区域 -->
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row" id="chooseApp">
+							<div role="control" label="选择应用">
+								<input class="mini-buttonedit" style="width: 50%" id="Subscribe"
+									allowInput="false" allowInput="false"
+									onbuttonclick="onSubscribe" /> <input class="mini-hidden"
+									id="selectRespAm" bind="selectRespAm"> <input
+									class="mini-hidden" id="selectRespAmGuid"
+									bind="selectRespAmGuid">
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="移除头部参数">
+								<input class="mini-textbox " style="width: 50%"
+									id="respRemoveHeaders" bind="dataBean.respRemoveHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">移除头部参数名，例：（键）p1,p2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="移除json参数">
+								<input class="mini-buttonedit" style="width: 50%"
+									onbuttonclick="onformatJson" id="respRemoveJson"
+									showClose="true" oncloseclick="onCloseClick"
+									bind="dataBean.respRemoveJson" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">移除json中的参数名，例：（键）p1,p2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="替换头部参数">
+								<input class="mini-textbox " style="width: 50%"
+									id="respReplaceHeaders" bind="dataBean.respReplaceHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">如果头部的参数不存在，则忽略此属性；否则替换参数的值，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="替换json参数">
+								<input class="mini-textbox " style="width: 50%"
+									id="respReplaceJson" bind="dataBean.respReplaceJson" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">如果返回json中的键值不存在，则忽略此属性；否则替换参数的值，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+
+						<div role="row">
+							<div role="control" label="添加头部参数">
+								<input class="mini-textbox " style="width: 50%"
+									id="respAddHeaders" bind="dataBean.respAddHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">添加头部参数，不存在则添加，否则忽略，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+
+						<div role="row">
+							<div role="control" label="添加json参数">
+								<input class="mini-textbox " style="width: 50%" id="respAddJson"
+									bind="dataBean.respAddJson" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">如果返回json中的键值不存在，则添加；否则忽略，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+
+						<div role="row">
+							<div role="control" label="拼接头部参数">
+								<input class="mini-textbox " style="width: 50%"
+									id="respAppendHeaders" bind="dataBean.respAppendHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">拼接头部参数，不存在则添加新的头部参数，否则在原先头部参数中添加新值，例：（键:值）h1:v1,h2:v2</div>
+						</div>
+
+						<div role="row">
+							<div role="control" label="拼接json参数">
+								<input class="mini-textbox " style="width: 50%"
+									id="respAppendJson" bind="dataBean.respAppendJson" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">如果返回json中的键值不存在，则添加新的键值；否则在原先json键中添加新值，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="重命名json参数键">
+								<input class="mini-textbox " style="width: 50%"
+									id="respRenameJson" bind="dataBean.respRenameJson" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">重命名json参数键，存在则改键，否则忽略，例（老键:新键)
+								h1:v1,h2:v2</div>
+						</div>
+						<input class="mini-hidden" id="datagrid"> <input
+							class="mini-hidden" id="consumerName">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="apiguid" bind="apiguid">
+	<input class="mini-hidden" id="responsesample">
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		//保存并关闭
+		function editAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('edit', '', closeCallback);
+			}
+		}
+
+		//新增并关闭
+		function addAndClose() {
+			var name = mini.get("consumerName").getValue();
+			if (epoint.validate()) {
+				epoint.execute('add', '', name, closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, {
+						backParam : {
+							'param' : data.param,
+						}
+					}, 'success');
+				} else {
+					epoint.alert(msg, null, null, 'info');
+				}
+			}
+		}
+
+		function onSubscribe() {
+			var apiguid = mini.get("apiguid").value;
+			//用于查看是否是默认all
+			var selectrespamguid = mini.get("selectRespAmGuid").value;
+			var datagrid = mini.get("datagrid").getValue();
+			epoint.openTopDialog('选择应用',
+					"frame/pages/basic/gateway/api/apiinfo/apiauth?apiguid="
+							+ apiguid + "&flag=transformation&amguid="
+							+ selectrespamguid + "&datagrid=" + datagrid,
+					function(data) {
+						if (data.text) {
+							mini.get("Subscribe").setText(data.text);
+							mini.get("selectRespAm").setValue(data.text);
+						}
+						if (data.guid) {
+							mini.get("selectRespAmGuid").setValue(data.guid);
+						}
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		//修改参数
+		function pageLoad(data) {
+			// 初始化页面
+			epoint.initPage('resptransformationaction', null, function(data1) {
+				if (data1.method) {
+					if (data1.method == "add") {
+						$("#edit").hide();
+						mini.get("Subscribe").setText("All");
+						mini.get("selectRespAm").setValue("All");
+						mini.get("selectRespAmGuid").setValue("All");
+					}
+					if (data1.method == "edit") {
+						$("#add").hide();
+						$("#chooseApp").hide();
+					}
+				}
+
+				if (data1.apiguid) {
+					mini.get("apiguid").setValue(data1.apiguid);
+				}
+				var value = data.value;
+				if (value) {
+					mini.get("Subscribe").setText(value.consumerName);
+					mini.get("selectRespAm").setValue(value.consumerName);
+					mini.get("selectRespAmGuid").setValue(value.consumerId);
+					mini.get("respRemoveHeaders").setValue(
+							value.config.respremoveheaders);
+					mini.get("respRemoveJson").setValue(
+							value.config.respremovejson);
+					mini.get("respRemoveJson").setText(
+							value.config.respremovejson);
+
+					mini.get("respReplaceHeaders").setValue(
+							value.config.respreplaceheaders);
+					mini.get("respReplaceJson").setValue(
+							value.config.respreplacejson);
+					mini.get("respAddHeaders").setValue(
+							value.config.respaddheaders);
+					mini.get("respAddJson").setValue(value.config.respaddjson);
+
+					mini.get("respAppendHeaders").setValue(
+							value.config.respappendheaders);
+					mini.get("respAppendJson").setValue(
+							value.config.respappendjson);
+
+					mini.get("respRenameJson").setValue(
+							value.config.resprenamejson);
+				}
+			});
+
+			var datagrid = data.datagrid;
+			if (datagrid) {
+				var gridguid = "";
+				var consumerName = "";
+				for (var i = 0; i < datagrid.length; i++) {
+					if ("All" == datagrid[i].consumerName) {
+						consumerName = datagrid[i].consumerName;
+					}
+					if (i != datagrid.length - 1) {
+						gridguid += datagrid[i].consumerId + ";";
+					} else {
+						gridguid += datagrid[i].consumerId;
+					}
+				}
+				mini.get("datagrid").setValue(gridguid);
+				mini.get("consumerName").setValue(consumerName);
+			}
+
+			var responsesample = data.responsesample.value;
+			if (responsesample) {
+				mini.get("responsesample").setValue(responsesample);
+			}
+		}
+
+		//格式化json
+		function onformatJson(e) {
+			var responsesample = mini.get("responsesample").value;
+			if (responsesample == "") {
+				epoint.alert("请到基础信息页面填写响应信息！");
+			} else {
+				var btnEdit = this;
+				mini
+						.open({
+							url : "../../../../../frame/pages/basic/gateway/api/apiinfo/jsonformat/json.html",
+							showMaxButton : false,
+							title : "响应转换移除json参数",
+							width : 550,
+							height : 550,
+							onload : function() {
+								var iframe = this.getIFrameEl();
+								responsesample = epoint
+										.decodeJson(responsesample);
+								var respRemoveJson = mini.get("respRemoveJson").value;
+								setTimeout(function() {
+									// 数据从后端读到后这边复制即可
+									var config = {
+										jsonData : responsesample,
+										textData : respRemoveJson
+									};
+
+									iframe.contentWindow.setData(config);
+								}, 100);
+							},
+							ondestroy : function(action) {
+								var iframe = this.getIFrameEl();
+								var data = iframe.contentWindow.getData();
+								data = mini.clone(data);
+								//console.log(data);
+								if (data) {
+									btnEdit.setValue(data);
+									btnEdit.setText(data);
+								} else {
+									btnEdit.setValue('');
+									btnEdit.setText('');
+								}
+							}
+						});
+			}
+		}
+
+		function onCloseClick(e) {
+			var btnEdit = this;
+			btnEdit.setValue('');
+			btnEdit.setText('');
+		}
+	</script>
+</body>
+</html>

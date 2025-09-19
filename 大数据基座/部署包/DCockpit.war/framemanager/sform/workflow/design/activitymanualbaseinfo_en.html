@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Basic configuration process activities</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify" iconCls="icon-save">Confirm to save </a>
+		</div>
+	</div>
+	
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="The name of the event" starred="true">
+						<input id="activityName" bind="workflowActivity.ActivityName"
+							class="mini-textbox" required="true" requiredErrorText="The name of the eventCan't be empty" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Appendix operation permissions">
+						<input id="isAllowAddAttach" bind="isAllowAddAttach"
+							class="mini-checkbox" style="width: 20%" text=" Allowed to change" /> <input
+							id="isAllowDelAttach" bind="isAllowDelAttach"
+							class="mini-checkbox" style="width: 20%" text=" Allowed to delete" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Branch way">
+						<div id="splitType" bind="splitType" action="getTypeList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Way to meet">
+						<div id="joinType" bind="joinType" action="getTypeList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div id="row_SplitActName" role="row">
+					<div role="control" label="Corresponding branch point">
+						<input id="splitActivityName" bind="splitActivityName" class="mini-buttonedit" emptyText="" allowInput="false"
+							onbuttonclick="selectSplitActivity" selectOnFocus="true" /> 
+						<span class="text-danger" style="width: 50%">ifWay to meetMultiple road, then you must manually set the corresponding branch node</span>
+
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Many people are handled">
+						<div id="multiTransactorMode" bind="multiTransactorMode"
+							action="getHandleTypeList" class="mini-radiobuttonlist"
+							repeatItems="3" repeatLayout="table" repeatDirection="vertical"
+							textField="text" valueField="id"></div>
+
+					</div>
+				</div>
+				<div role="row">
+				    <div role="control" label="Pass rate">
+						<input id="passRate" bind="workflowActivity.passRate"
+							vtype="range:0,100" class="mini-textbox" width="50%" /> Units:%
+					</div>
+					<div role="control" label="Whether people handle lock">
+						<div id="isLockWhenMulti" bind="isLockWhenMulti" action="getYesNoList" 
+						    class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Application configuration">
+						<input id="applicationConfig"
+							bind="workflowActivity.applicationConfig" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="SMS notificationcontent">
+						<input id="smsContent" bind="workflowActivity.smsContent"
+							class="mini-textarea" style="width: 90%" /> <a
+							class="action-icon icon-mail" onclick="setSMS();"
+							style="width: 10%"></a>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">This step work items are received, to set up herecontentsendSMS notification(null is notsend)</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input id="note" bind="workflowActivity.note" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="activity Guid">
+						<input id="activityGuid" bind="workflowActivity.activityGuid" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="activitylogo">
+						<input id="activityDispName" bind="workflowActivity.activityDispName" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">(Used to only positioning to the activity,Once the setting is not allowed to change,withactivityThe object's activityDispName associated)</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Add a hidden field -->
+	<input id="processVersionGuid" bind="processVersionGuid" class="mini-hidden" />
+	<input id="splitActivityGuid" bind="splitActivityGuid" class="mini-hiddden"/>
+	<input id="handleurl" bind="handleUrl" class="mini-hidden" />
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitysformmanualbaseinfoaction', '', initCallBack);
+
+		function initCallBack(e) {
+			if (e.splitActivityName) {
+				mini.get('splitActivityName').setText(e.splitActivityName);
+			}
+			//Set up the Way to meet  associatedThe apparent concealed
+			var joinTypeValue = mini.get("joinType").getValue();
+			if (joinTypeValue == "20") {
+				document.getElementById("row_SplitActName").style.display = "block";
+			} else {
+				document.getElementById("row_SplitActName").style.display = "none";
+			}
+		}
+		
+		// The callback for the close operation
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (!data.edit) {
+					parent.updateTab();
+				}
+				var textValue = mini.get('activityName').getValue();
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : parent.Util.getUrlParams('MaxID'),
+					NodeType : 'Manual',
+					Text : textValue
+				};
+				parent.setDialogValue(param);
+				//epoint.refresh();
+			}
+		}
+
+		// The callback for the save operation
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', '', callback);
+			}
+		}
+
+		//Way to meetWhen multiple road
+		mini.parse();
+		var rbl = mini.get("joinType");
+		rbl.on(
+						"valuechanged",
+						function(e) {
+							var va = this.getValue();
+							if (va == "20") {
+								document.getElementById("row_SplitActName").style.display = "block";
+							} else {
+								document.getElementById("row_SplitActName").style.display = "none";
+							}
+						});
+		
+		//Set up the Corresponding branch point
+		function selectSplitActivity() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			epoint.openDialog('Select branch node',
+					'framemanager/workflow/design/selectactivity?processVersionGuid='
+							+ processVersionGuid + '&activityGuid='
+							+ activityGuid, addSplitActivity, {
+						'width' : 800,
+						'height' : 500
+					});
+			//todo Returns the lack of the operating
+		}
+
+		function addSplitActivity(data) {
+			if (data && data != 'close') {
+				var s = data.split(";");
+				mini.get("splitActivityName").setText(s[0]);
+				mini.get("splitActivityName").setValue(s[0]);
+				mini.get("splitActivityGuid").setValue(s[1]);
+			}
+		}
+		
+		//]]>
+	</script>
+</body>
+
+</html>

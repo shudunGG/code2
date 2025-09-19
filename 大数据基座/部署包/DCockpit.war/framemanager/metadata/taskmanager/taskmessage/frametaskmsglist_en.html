@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Task management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+		<style>
+			.link:hover {
+				cursor: pointer;
+				color: red;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd()">new task</a>
+
+				<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}">Delete the task</a>
+			</div>
+
+			<!--Help button -->
+			<a role="helper" class="mr10">precautions</a>
+		</div>
+
+		<!-- Help information area Hidden by default-->
+		<div class="fui-notice hidden">
+			<div>
+				<div style="margin: 0px auto; text-align: left; width: 750px">
+					<p>
+						The current page to start the、stop、suspended、Recovery operations are global, all that will operate the task below the trigger configuration!
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="fui-condition">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="task name">
+							<input bind="taskname"
+							class="mini-textbox" />
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDataGridData"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="50">
+						order
+					</div>
+					<div field="taskname" headerAlign="center" width="100%">
+						task name
+					</div>
+					<div field="categoryguid" width="80" headerAlign="center" data-options="{'code' : 'Framework classification task'}">
+						category
+					</div>
+					<div field="taskclassname" width="150" headerAlign="center">
+						implementation class name
+					</div>
+					<div field="executetype" width="90" headerAlign="center" align="center" renderer="onExecuteTypeRenderer">
+						implement way
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onEditRenderer">
+						edit
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onSetRenderer">
+						configuration
+					</div>
+					<div field="jobschedulestate" width="50" headerAlign="center" align="center">
+						state
+					</div>
+					<div width="100" headerAlign="center" align="center" renderer="onStartRenderer">
+						start the
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onStopRenderer">
+						stop
+					</div>
+					<div width="60" headerAlign="center" align="center" renderer="onPauseRenderer">
+						suspended
+					</div>
+					<div width="60" headerAlign="center" align="center" renderer="onResumeRenderer">
+						restore
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- configurationvariable -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("frametaskmsglistaction");
+
+			// Implement wayThe values
+			function onExecuteTypeRenderer(e) {
+				if (e.value == '0') {
+					return 'manual';
+				} else {
+					return 'automatic';
+				}
+			}
+
+			// edit
+			function onEditRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			}
+
+			function openEdit(id) {
+				epoint.openDialog('edittask', "framemanager/metadata/taskmanager/taskmessage/frametaskmsg?guid=" + id, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 350
+				});
+			}
+
+			// configuration
+			function onSetRenderer(e) {
+				return "<a class=\"link\" onclick=\"openConfig('" + e.record.rowguid + "'," + e.record.iscluster + ")\">configuration</a>";
+			}
+
+			// Start the
+			function onStartRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('startOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">Start the</a>";
+			}
+
+			// uninstall
+			function onStopRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('stopOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">stop</a>";
+			}
+
+			// suspended
+			function onPauseRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('pauseOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">suspended</a>";
+			}
+
+			// restore
+			function onResumeRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('resumeOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">restore</a>";
+			}
+			
+			function operationCallBack(e){
+				if(e.msg){
+					epoint.alert(e.msg, '', null, 'info');
+				}
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+
+			function openAdd() {
+				epoint.openDialog('The new task', "framemanager/metadata/taskmanager/taskmessage/frametaskmsg", function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 350
+				});
+			}
+
+			function openConfig(id,iscluster) {
+				var flag = "1";
+				if(!iscluster)
+					flag = "0";
+				epoint.openDialog('configurationtask', "framemanager/metadata/taskmanager/tasktrigger/frametasktriglistpage?guid=" + id + "&iscluster=" + flag, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 550
+				});
+			}
+
+			function deleteSelect() {
+				epoint.execute('deleteSelect', 'datagrid', msgcallback);
+			}
+
+			function msgcallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', '', 'success');
+					} else {
+						epoint.alert(msg, '', function(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true);
+						}, 'error');
+					}
+				}
+			}
+
+			// Search form
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

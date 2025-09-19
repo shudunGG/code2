@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>数据表结构</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	
+	<style  type="text/css">
+		.backgroundcolor{
+		   background-color : #B9F6F8;
+		}
+	</style>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save" onclick="saveAll()">保存并同步</a>
+				<a class="mini-button" id="new" iconCls="icon-addcircle" onclick="add()">新增结构</a>
+				<a class="mini-button" iconCls="icon-addcircle" id="showDialog" onclick="showAtEl();">快速新增结构</a>
+				<a class="mini-button mini-btn-danger" id="delete" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录！', '', null, 'warning');} else {deleteSelected();}">删除并同步</a>
+				<!-- <a class="mini-button" iconCls="icon-start"
+				onclick="rebuildDatabase()">同步物理表结构</a><a class="mini-button"
+				iconCls="icon-refresh" onclick="sysStruct()">获取物理表结构</a> -->
+				<a class="mini-button" iconCls="icon-refresh" id="refresh" onclick="syncField()">增量同步结构</a>
+				<a class="mini-button mini-btn-info" iconCls="icon-forward"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要导出的记录!', '', null, 'warning');} else {epoint.execute('tablestructlistaction.export','',exporttc)}">脚本导出</a>
+			</div>
+
+			<input id="database" autoLoad="false"
+			action="tablestructlistaction.getDsTypes" textField="text"
+			valueField="id" class="mini-combobox mr10" />
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				当前表<em>必须设置主键</em>，如果数据库该表已经有主键，无需设置；如果没有，请在这里勾选1个字段作为查询主键
+			</p>
+			<!-- <p>
+				按钮<em>同步物理表结构：</em>当我们数据库物理表被删除或者没有的时候，我们可以通过配置好的结构字段重新反转生成物理表
+			</p>
+			<p>
+				按钮<em>获取物理表结构：</em>如果我们的结构字段与我们的真实物理表不一致，我们可以通过这个按钮来进行差异性同步。同步的过程是读取物理表字段新增、修改、删除mis表中的字段
+			</p> -->
+		</div>
+
+		<div class="fui-condition">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2列 -->
+<!-- 					<div role="row"> -->
+<!-- 						<div role="control" label="当前数据表名称"> -->
+<!-- 							<input bind="tablestructlistaction.tableInfo.tableName" -->
+<!-- 							class="mini-outputtext" /> -->
+
+<!-- 						</div> -->
+<!-- 						<div role="control" label="SQL数据表名称"> -->
+<!-- 							<input bind="tablestructlistaction.tableInfo.sqlTableName" -->
+<!-- 							class="mini-outputtext" /> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="字段中文名称">
+							<input bind="tablestructlistaction.fieldChineseName"
+							class="mini-textbox" />
+
+						</div>
+						<div role="control" label="字段英文名">
+							<input bind="tablestructlistaction.fieldName" class="mini-textbox" />
+						</div>
+						<div role="control" label="字段级别">
+							<input autoLoad="false" data="[{'id':'','text':'不限制'},{'id':'system','text':'系统'}, {'id':'lessee','text':'租户'}]" bind="fieldLevel"
+								property="editor" class="mini-combobox" style="width: 99%" id="fieldLevel" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+
+			<div id="tableid" class="mini-hidden" bind="tableInfo.tableid"></div>
+
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="fieldid" multiSelect="true" allowResize="true"
+			style="width: 100%; height: 100%;" allowCellValid="true"
+			action="tablestructlistaction.getDataGridData" showFooter="false"
+			allowSortColumn="false" oncellbeginedit="cellBeginEdit" onbeforeselect="beforeselect">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="50">
+						序
+					</div>
+
+					<div field="fieldchinesename" headerAlign="center" width="200">
+						显示名称
+						<input property="editor" class="mini-textbox"
+						style="width: 99%" />
+					</div>
+					<div field="fieldname" title="fieldname" width="180" headerAlign="center">
+						字段名
+					</div>
+					<div field="fieldtype" width="100" headerAlign="center">
+						数据类型
+					</div>
+					<div field="fielddisplaytype" width="100" headerAlign="center">
+						显示类型
+					</div>
+					<div field="level" width="100" align="center" headerAlign="center">
+						字段级别
+					</div>
+					<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">
+						修改
+					</div>
+					<div field="ordernumingrid" width="80" headerAlign="center"
+					align="right" vtype="int;range:0,99999">
+						排序号
+						<input property="editor" class="mini-textbox" maxLength="5" vtype="int;range:0,99999"
+						style="width: 99%" inputStyle="text-align:right" />
+					</div>
+					<div type="comboboxcolumn" field="controlwidth" width="80"
+					autoShowPopup="true" headerAlign="center" align="center">
+						控件宽度
+						<input autoLoad="false" data="selectItems.controlwidth"
+						property="editor" class="mini-combobox" style="width: 99%" />
+					</div>
+					<div field="todispingrid" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">列表</div>
+					<div field="isquerycondition" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">查询</div>
+
+					<div field="uniquefield" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">索引</div>
+					<div field="isorderfield" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">排序号</div>
+					<div field="mustfill" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">必填</div>
+					<div field="dispInAdd" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">页面</div>
+					<div field="isexportexcel" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">导出</div>
+					<div field="isforeignkey" width="50" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">主键</div>
+				</div>
+			</div>
+		</div>
+	<div id="win1" class="mini-window" title="快速新增结构"
+		style="width: 800px; height: 600px;" showMaxButton="true"
+		showCollapseButton="true" showShadow="true" showToolbar="true"
+		showModal="false" allowResize="true" allowDrag="true">
+		<div property="toolbar" style="padding: 5px;">
+			<input type='button' value='保存' onclick="fastSave()"
+				style='vertical-align: middle;' />
+			<input type='button' value='删除' onclick="deleteRow()"
+				style='vertical-align: middle;' />
+		</div>
+		添加行数：<input id="rowNum" class="mini-textbox" onvaluechanged="addColumn"/>
+		<div id="datagrid2" class="mini-datagrid" multiSelect="true" sortOrder="desc" showPager="false"
+			idField="fieldid" allowCellValid="true" showFooter="false" action="tablestructlistaction.getFastAddModel">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" headerAlign="center" width="50">
+						序
+					</div>
+					<div field="fieldchinesename" width="120" headerAlign="center">
+						显示名称
+						<input property="editor" class="mini-textbox" style="width: 99%" />
+					</div>
+					<div field="fieldname" width="120" headerAlign="center">
+						字段名
+						<input property="editor" class="mini-textbox" style="width: 99%" />
+					</div>
+					<div field="fieldtype" width="120" headerAlign="center">
+						数据类型
+						<input property="editor" class="mini-combobox" data="[]"
+							allowInput="false" style="width: 99%" />
+					</div>
+					<div field="fielddisplaytype" width="120" headerAlign="center">
+						显示类型
+						<input property="editor" class="mini-combobox" data="[]"
+							allowInput="false" style="width: 99%" />
+					</div>
+				</div>
+			</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			//<![CDATA[
+            var isLesseeMode = false;
+			var isAdmin = false;
+			var isOuAdmin = false;
+			var attr = Util.getUrlParams('isSub');
+			var isSub = attr == undefined ? '' : attr;
+			//初始化页面
+			epoint.initPage("tablestructlistaction", '', initDataBase);
+
+			var grid = mini.get("datagrid");
+			//冻结前几列
+			grid.setFrozenStartColumn(0);
+			grid.setFrozenEndColumn(6);
+			
+			function initDataBase(e) {
+				mini.get("database").setValue("oracle");
+				mini.get("database").setText("Oracle");
+				
+				if(e.isLesseeMode) {
+					isLesseeMode = e.isLesseeMode;
+				}
+				if(e.isAdmin){
+					isAdmin = e.isAdmin;
+				}
+				if(e.isOuAdmin){
+					isOuAdmin = e.isOuAdmin;
+				}
+				
+				if(!isLesseeMode && isSub == "1") {
+					$('#new').hide();
+					$('#save').hide();
+					$('#delete').hide();
+					$('#refresh').hide();
+					$('#showDialog').hide();
+				}
+			}
+
+			var selectItems = {
+				'controlwidth' : [{
+					id : 2,
+					text : '双倍宽'
+				}, {
+					id : 1,
+					text : '单倍宽'
+				}]
+			};
+
+			grid.on("update", function(e) {
+				var rows = e.sender.findRows();
+				for (var i = 0; i < rows.length; i++) {
+					if (isLesseeMode) {
+						if((isOuAdmin && (!isAdmin || isSub == '1') && rows[i]['baseouguid'] == '') 
+								|| (!isOuAdmin || isSub == '') && isAdmin && rows[i]['baseouguid'] != '') {
+							grid.addRowCls(rows[i], 'backgroundcolor');
+						}
+						else {
+							grid.beginEditRow(rows[i]);	
+						}
+					}
+					else if(!isLesseeMode && isSub == '1') {
+						grid.addRowCls(rows[i], 'backgroundcolor');
+					}
+					else {
+						grid.beginEditRow(rows[i]);	
+					}
+				}
+			});
+			
+			grid.on("drawcell", function(e) {
+				if(e.columnIndex == 0 && isLesseeMode) {
+					if((e.record.baseouguid == '' && isOuAdmin && (!isAdmin || isSub == '1')) 
+							|| (e.record.baseouguid != '' && (!isOuAdmin || isSub == '') && isAdmin)) {
+						e.cellHtml = "";
+					}
+				}
+				else if(e.columnIndex == 0 && !isLesseeMode && isSub == '1') {
+					e.cellHtml = "";
+				}
+			});
+			
+			var dataTypes;
+			var displayTypes;
+		   	function showAtEl() {
+				var grid2 = mini.get('datagrid2');
+				grid2.clearRows();
+		        mini.get('rowNum').setValue('');
+		        epoint.execute('getDataList', '@none', '', function (data) {
+		        	dataTypes = data.dataTypeList;
+		        	displayTypes = data.displayTypeList;
+		        	var newRow = {};
+					grid2.addRow(newRow, 0);
+					grid2.beginEditRow(newRow);
+		        	grid2.getCellEditor(4, 0).setData(dataTypes);
+		        	grid2.getCellEditor(5, 0).setData(displayTypes);
+		        	
+		        	var win = mini.get("win1");
+			        var atEl = document.getElementById("showDialog");               
+			        win.showAtEl(atEl, {
+			            xAlign: 'Center',
+			            yAlign: 'Below'
+			        });
+	        	});
+		   	}
+		   
+		    function hideWindow() {
+		    	mini.get('datagrid2').clearRows();
+		        mini.get('rowNum').setValue('');
+		        var win = mini.get("win1");
+		        win.hide();
+		    }
+		    
+		    function fastSave() {
+		    	var grid2 = mini.get('datagrid2');
+		    	if(grid2.isValid() == false) {
+		    		var error = grid2.getCellErrors()[0];
+		    		grid2.beginEditCell(error.record, error.column);
+					return;
+		    	}
+		    	else {
+		    		epoint.execute('fastAdd', ['datagrid2'], '', function (data) {
+			        	if(data.success) {
+			        		epoint.alert(data.msg, null, function() {
+			        			hideWindow();
+			        			epoint.refresh(['datagrid']);
+			        		}, 'success');
+			        	}
+			        	else {
+			        		epoint.alert(data.msg, null, null, 'warning');
+			        	}
+		        	});
+		    	}
+		    }
+		    
+		    function deleteRow() {
+		    	var select = mini.get('datagrid2').getSelecteds();
+		    	for(var i=0;i<select.length;i++){
+		    		mini.get('datagrid2').removeRow(select[i], false);
+		    	}
+		    }
+		    
+		    function addColumn() {
+		    	var rowNum = mini.get('rowNum').getValue();
+		    	var num = parseInt(rowNum);
+		    	if(isNaN(num)) {
+		    		epoint.alert("请输入数字！");
+		    		mini.get('rowNum').setValue('');
+		    	}
+		    	for(var i=0;i<num;i++) {
+		    		var newRow = {};
+					var grid2 = mini.get('datagrid2');
+					grid2.addRow(newRow, 0);
+					grid2.beginEditRow(newRow);
+					grid2.getCellEditor(4, 0).setData(dataTypes);
+		        	grid2.getCellEditor(5, 0).setData(displayTypes);
+		    	}
+			}
+			
+			function cellBeginEdit(e) {
+				if(isLesseeMode && (e.field == 'fieldchinesename' || e.field == 'ordernumingrid' 
+						 || e.field == 'todispingrid' || e.field == 'isquerycondition'
+						 || e.field == 'uniquefield' || e.field == 'isorderfield'
+						 || e.field == 'mustfill' || e.field == 'dispInAdd'
+						 || e.field == 'isexportexcel' || e.field == 'isforeignkey')) {
+					if((isOuAdmin && (!isAdmin || isSub == '1') && e.row['baseouguid'] == '') 
+							|| ((!isOuAdmin || isSub == '') && isAdmin && e.row['baseouguid'] != '')) {
+						e.cancel = true;
+					}
+				}
+				else if(!isLesseeMode && isSub == "1") {
+					e.cancel = true;
+				}
+			};
+			
+			function beforeselect(e) {
+				if(isLesseeMode) {
+					if((isOuAdmin && (!isAdmin || isSub == '1') && e.record.baseouguid == '') 
+							|| ((!isOuAdmin || isSub == '') && isAdmin && e.record.baseouguid != '')) {
+						e.cancel = true;
+					}
+				}
+				else if(!isLesseeMode && isSub == "1") {
+					e.cancel = true;
+				}
+			}
+
+			// 绘制修改按钮
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "updateInfo", "fieldid,baseouguid");
+			};
+
+			// 修改
+			function updateInfo(e) {
+				if(isLesseeMode) {
+					if(isOuAdmin && (!isAdmin || isSub == '1') && e.baseouguid == '') {
+						epoint.alert("租户模式下，非管理员不可以修改管理员创建的字段!");
+						return;
+					}
+					if((!isOuAdmin || isSub == '') && isAdmin && e.baseouguid != ''){
+						epoint.alert("租户模式下，管理员不可以修改租户管理员创建的字段!");
+						return;
+					}
+				}
+				else if(!isLesseeMode && isSub == "1") {
+					epoint.alert("非系统管理员不可以修改管理员创建的字段!");
+					return;
+				}
+				epoint.openDialog('修改结构', 'framemanager/metadata/mis/tableinfo/tablestructadd?fieldID=' + e.fieldid + "&isSub=" + isSub, function() {
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 450
+				});
+			}
+
+			// 新增
+			function add() {
+				epoint.openDialog('添加结构', 'framemanager/metadata/mis/tableinfo/tablestructadd?tableID=' + mini.get("tableid").getValue() + "&isSub=" + isSub, function() {
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 450
+				});
+			}
+
+			// 删除结构
+			function deleteSelected() {
+				epoint.execute('tablestructlistaction.deleteSelected', ['datagrid', 'fui-form'], msgCallBack);
+			}
+
+			// 保存结构
+			function saveAll() {
+				if (epoint.validate()) {
+					epoint.execute('tablestructlistaction.saveAll', ['datagrid', 'fui-form'], msgCallBack);
+				}else{
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+				}
+			}
+
+			// 重建数据表
+// 			function rebuildDatabase() {
+// 				epoint.execute('tablestructlistaction.rebuildDatabase', 'datagrid', msgCallBack);
+// 			}
+
+			// 同步结构
+// 			function sysStruct() {
+// 				epoint.execute('tablestructlistaction.sysStruct', 'datagrid', msgCallBack);
+// 			}
+			
+			//增量同步数据
+			function syncField(){
+				epoint.execute('tablestructlistaction.syncField', '', msgCallBack);
+			}
+
+			// 导出sql语句
+			function exporttc(data) {
+				var combox = mini.get("database");
+				epoint.openDialog(combox.getText() + '脚本导出', "framemanager/metadata/mis/tableinfo/tablestructexport?tableID=" + mini.get("tableid").getValue() + "&databaseType=" + combox.getValue() + "&structID=" + data.structID + "&isSub=" + isSub, '', {
+					'width' : 1000,
+					'height' : 400
+				});
+			}
+
+			// 回掉提醒
+			function msgCallBack(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', function() {
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}, 'info');
+				}
+			}
+
+			// 表格的搜索
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form'],function(data){
+					if(mini.get("fieldLevel").getValue()==""){
+						mini.get("fieldLevel").setText("不限制");
+					}
+					
+				});
+			}
+
+			//]]>
+		</script>
+	</body>
+
+</html>

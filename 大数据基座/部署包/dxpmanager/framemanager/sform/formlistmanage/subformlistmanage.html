@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>子表列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addSubForm" iconCls="icon-save" onclick="addSubFormClick();">新增子表</a> 
+		<a class="mini-button" id="saveSubForm" iconCls="icon-addcircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要保存的记录！', '', null, null, 'warning');} else {save();}">保存子表</a>
+			<a class="mini-button mini-btn-danger" id="delSubForm" iconCls="icon-removecircle" 
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的记录！', '', null, null, 'warning');} else {del();}">删除子表</a>
+		</div>
+	</div>
+
+	<!-- div class="fui-condition"-->
+		<!-- 表单布局 -->
+		<!--div class="fui-form" id="fui-form"-->
+			<!-- div role="form"-->
+				<!-- 4列 -->
+				<!-- div role="row">
+					<div role="control" label="表单名称" starred="false">
+						<input bind="searchString" class="mini-textbox" onkeypress="searchData();"/>
+					</div>
+					<div role="control" label="表单表名" starred="false">
+						<input bind="searchString1" class="mini-textbox" onkeypress="searchData();"/>
+					</div>
+				</div-->
+			<!-- /div-->
+		<!-- /div-->
+		<!-- 搜索按钮 -->
+		<!-- a role="searcher" callback="searchData"></a>
+	</div-->
+
+	<div class="fui-content">
+	    <div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="tableID" multiSelect="true" style="width: 100%; height: 100%;" 
+			allowCellEdit="true" allowCellSelect="true" allowCellValid="true" action="getTableModal">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" headerAlign="center" width="20">序</div>
+				<div field="tableID" headerAlign="center" align="left" width="80">ID号</div>
+				<div field="tableName" headerAlign="center" align="left" width="100">数据表中文名称</div>
+				<!-- div field="sql_TableName" headerAlign="center" align="left" width="150">SQL数据表名</div-->
+				<div field="orderNum" width="50" headerAlign="center" align="right"  vtype="int;range:0,99999999">
+					排序号<input property="editor" class="mini-textbox" minWidth="50"
+						inputStyle="text-align:right" vtype="int;range:0,99999999"/>
+				</div>
+				<div width="30" headerAlign="center" align="center" renderer="edit">
+					修改</div>
+				<div width="30" headerAlign="center" align="center"
+					renderer="showDesign">设计</div>
+				<div width="30" headerAlign="center" align="center"
+					renderer="showPreview">预览</div>
+				<div width="30" headerAlign="center" align="center"
+					renderer="showVersion">版本</div>
+				<div width="30" headerAlign="center" align="center"
+					renderer="showDetail">明细</div>
+			</div>
+		</div>
+	</div>
+
+	<input bind="parentTableId" id="parentTableId" class="mini-hidden" />
+	<input class="mini-hidden" id="appGuid" bind="appGuid"/>
+	<input class="mini-hidden" id="categoryNum" bind="categoryNum"/>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('subformlistmanageaction');
+		
+		function addSubFormClick(){
+    		var tableId = mini.get("parentTableId").getValue();
+    		var appGuid = mini.get("appGuid").getValue();
+    		var categoryNum = mini.get("categoryNum").getValue();
+    		epoint.openDialog("新增子表单","framemanager/sform/formlistmanage/maintableadd?parentTableId="+tableId+"&appGuid="+appGuid+"&category="+categoryNum,
+    				addCallBack ,{
+     					'width':700,
+    			        'height':450
+    			     });
+    	}
+		
+		function save() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+		
+		function del() {
+			epoint.execute('del', 'datagrid', msgCallBack);
+		}
+		
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh(['datagrid'],'',true);
+			}
+		}
+		
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+			    epoint.alert(msg, '', function(){
+			    	epoint.refresh(['datagrid'],'',true);
+			    }, 'info');
+			}
+		}
+		
+		//修改
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "createEditDialog");
+		}
+		
+		function createEditDialog(data) {
+			var tableId = mini.get("parentTableId").getValue();
+    		var appGuid = mini.get("appGuid").getValue();
+			epoint.openDialog("修改表单","framemanager/sform/formlistmanage/maintableadd?tableId="+ data + "&parentTableId="+ tableId + "&appGuid=" + appGuid, addCallBack, {
+    			'width':700,
+    			'height':450
+    		});
+		}
+		
+		//版本
+		function showVersion(e) {
+			return epoint.renderCell(e, "action-icon icon-doc", "showVersionDialog");
+		}
+
+		function showVersionDialog(tableId) {
+			epoint.openDialog("表单版本","framemanager/sform/formlistmanage/formversiondesign?tableId=" + tableId, addCallBack);
+		}
+    	
+    	//设计
+    	function showDesign(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "showDesignDialog");
+		}
+    	
+    	function showDesignDialog(tableId) {
+			//根据tableId获取版本个数确定跳转方案
+			epoint.execute('getDesignUrl', '', [tableId], function(args) {
+				window.open("formdesign?tableId=" + tableId + "&versionId=" + args.Versionid);
+			});
+		}
+    	
+    	//预览
+		function showPreview(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "showPreviewDialog");
+		}
+
+		function showPreviewDialog(tableId) {
+			epoint.execute('getPreviewUrl', '', [tableId], showUrl);
+		}
+		
+		//明细
+		function showDetail(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "showDetailDialog");
+		}
+
+		function showDetailDialog(tableId) {
+			epoint.openDialog("记录明细", "frame/pages/epointsform/showdetaillist?tableId=" + tableId, addCallBack);
+		}
+		
+		function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl, addCallBack);
+			} else {
+				epoint.alertAndClose("当前表单没有预览页面或没有启用的版本！", '', null, null, 'warning');//edit 状态都为停用时，给提示
+			}
+		}
+		
+		//]]>
+	</script>
+</body>
+</html>

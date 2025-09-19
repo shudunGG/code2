@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The relevant data</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" onclick="addContext">new data</a> <a
+				class="mini-button" id="save" onclick="updateContext">sure to modify</a> <a
+				class="mini-button" id="close" onclick="epoint.closeDialog">cancel the change</a>
+
+
+			<!--Help button -->
+			<a role="helper" class="mr10">precautions</a>
+		</div>
+	</div>
+
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			relevant dataThe name of the<em>Don't use Chinese</em>
+		</p>
+		<p>
+			If you select the data source is<em>Direct assignment</em>,Then the data value directly to fill;If you select the data source is<em>Methods to obtain</em>,Equipped with the data values2Kind of way{1:Fill in the method name directly(Call isUserSessionThe inside of the method);2:Type the full path;Method name(External write their own classes and methods。Do not allow the pass parameters)}
+		</p>
+		<p>
+			If you select the data source is<em>Form fields</em>,So first you need to configure a form type material, and then to have the option here, related to form a field in the end
+		</p>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="relevant data name" starred="true">
+						<input class="mini-textbox" required="true"
+							requiredErrorText="The relevant dataThe name of theCan't be empty!" bind="workflowContext.fieldName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="instructions">
+						<input class="mini-textbox" bind="workflowContext.note" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="data type">
+						<input class="mini-combobox" bind="workflowContext.fieldType"
+							data="[{text:'character',id:'10'},{text:'The integer',id:'20'},{text:'Numeric types',id:'30'},{text:'Time to type',id:'40'},{text:'Boolean type',id:'50'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="data source">
+						<input id="valueSource" class="mini-combobox"
+							bind="workflowContext.valueSource"
+							data="[{text:'Direct assignment',id:'10'},{text:'Methods to obtain',id:'20'},{text:'Form fields',id:'30'}]" />
+					</div>
+				</div>
+				<div role="row" id="fieldValueRow1">
+					<div role="control" label="data values">
+						<input class="mini-textbox" bind="workflowContext.fieldValue" />
+					</div>
+				</div>
+				<div role="row" id="fieldValueRow2">
+					<div role="control" label="data values">
+						<input class="mini-textbox" bind="workflowContext.serverCode" />
+					</div>
+				</div>
+				<div role="row" id="fromMaterialGuidRow">
+					<div role="control" label="material">
+						<input id="material" class="mini-combobox"
+							bind="workflowContext.fromMaterialGuid" action="getMaterialSelect" onvaluechanged="materialChange"/>
+					</div>
+				</div>
+				<div role="row" id="fromMisTableIdRow">
+					<div role="control" label="xform">
+						<input id="table" class="mini-combobox" bind="workflowContext.fromMisTableId" action="getTableSetSelect" onvaluechanged="tableChange"/>
+					</div>
+				</div>
+				<div role="row" id="fromFieldIdRow">
+					<div role="control" label="field">
+						<input id="page" class="mini-combobox" bind="workflowContext.fromFieldId" action="getStructSelect" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+        // Initialize the page
+        epoint.initPage ('contextfieldaction', null, initCallBack);
+        
+        //Initializes the callback event
+        function initCallBack (data)
+        {
+	        inputShow (data.valueSource);
+	        if (data.type == "add")
+	        {
+		        mini.get ("add").setVisible (true);
+		        mini.get ("save").setVisible (false);
+		        mini.get ("close").setVisible (false);
+	        }
+	        else if (data.type == "edit")
+	        {
+		        mini.get ("add").setVisible (false);
+		        mini.get ("save").setVisible (true);
+		        mini.get ("close").setVisible (true);
+	        }
+	        mini.get("table").setValue(mini.get("table").getValue());
+	        mini.get("page").setValue(mini.get("page").getValue());
+        }
+
+        mini.get ("valueSource").on ("valuechanged", function (e)
+        {
+	        inputShow (e.value);
+        });
+        
+        function inputShow (value)
+        {
+	        if (value == "10")
+	        {
+		        show ("", "none", "none", "none", "none");
+	        }
+	        else if (value == "20")
+	        {
+		        show ("none", "", "none", "none", "none");
+	        }
+	        else if (value == "30")
+	        {
+		        show ("none", "none", "", "", "");
+	        }
+        }
+
+        function show (fieldValueRow1Show, fieldValueRow2Show, fromMaterialGuidRowShow, fromMisTableIdRowShow,
+                fromFieldIdRowShow)
+        {
+	        document.getElementById ("fieldValueRow1").style.display = fieldValueRow1Show;
+	        document.getElementById ("fieldValueRow2").style.display = fieldValueRow2Show;
+	        document.getElementById ("fromMaterialGuidRow").style.display = fromMaterialGuidRowShow;
+	        document.getElementById ("fromMisTableIdRow").style.display = fromMisTableIdRowShow;
+	        document.getElementById ("fromFieldIdRow").style.display = fromFieldIdRowShow;
+        }
+
+        //new
+        function addContext ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("addContext", "fui-form", function (data)
+		        {
+			        console.dir (data);
+			        if(data.flag != null && (data.flag == "1")){
+			        	epoint.alertAndClose (data.message, '', null, null, 'info');
+			        }else{
+			        	epoint.alert (data.message, '', null, 'info');
+			        }
+		        });
+	        }
+        }
+
+        //edit
+        function updateContext ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("updateContext", "fui-form", function (data)
+		        {
+		        	if(data.flag != null && (data.flag == "1")){
+			        	epoint.alertAndClose (data.message, '', null, null, 'info');
+			        }else{
+			        	epoint.alert (data.message, '', null, 'info');
+			        }
+		        });
+	        }
+        }
+        
+        function materialChange(){
+        	var material=mini.get("material").getValue(); 
+        	if(material){
+        		epoint.execute("materialValueChange",'fui-form',[material],mcallback);
+        	}
+        }
+        
+        function mcallback(data) {
+        	//epoint.refresh('table');
+            if (data) {
+            	mini.get("table").setData(data.tableSetSelect);
+            	mini.get("table").select(0);
+            	mini.get("page").setData(data.structSelect);
+            	mini.get("page").select(0);
+            }
+       }
+        
+        function tableChange(){
+        	var table=mini.get("table").getValue();
+        	if(table){
+        		epoint.execute("formValueChange",'fui-form',[table],tcallback);
+        	}
+        }
+        
+        function tcallback(data) {
+            if (data) {
+            	mini.get("page").setData(data);
+            }
+       }
+
+        //]]>
+	</script>
+
+</body>
+</html>

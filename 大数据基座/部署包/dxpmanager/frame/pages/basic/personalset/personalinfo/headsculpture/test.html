@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="./cropper.min.css">
+    <link rel="stylesheet" href="../personalinfo.css">
+</head>
+
+<body>
+    <div class="head-sculpture-container is-empty" id="head-sculpture-container">
+        <input type="file" id="inputImage" name="file" accept="image/*" style="position:absolute;top:-200px;">
+        <p class="info">最佳图片尺寸:240*240px，且图片小于5M</p>
+        <!-- 图片裁剪区域 -->
+        <div class="img-cropper">
+            <img id="head-sculpture-img">
+            <label for="inputImage" class="select-img" title="选择图片"></label>
+        </div>
+        <div class="right">
+            <span class="preview-text">预览</span>
+            <label class="change-img" for="inputImage">更换图片</label>
+            <div class="image-preview" style="width:100px;height:100px;overflow: hidden;"></div>
+            <span class="info">100*100</span>
+            <div class="image-preview" style="width:28px;height:28px;overflow: hidden;"></div>
+            <span class="info">28*28</span>
+        </div>
+        <div class="footer">
+            <span class="save btn">保存</span>
+            <span class="cancel btn">取消</span>
+        </div>
+    </div>
+
+
+    <script src="../../../../../../fui/js/lib/jquery-1.11.1.min.js"></script>
+    <script src="./cropper.min.js"></script>
+    <script src="./imagecropper.js"></script>
+    <script>
+        var $container = $('#head-sculpture-container');
+        var isInit = false;
+        var $image = $('#head-sculpture-img');
+        var $inputImage = $('#inputImage');
+        var URL = window.URL || window.webkitURL;
+        var blobURL;
+        if (URL) {
+            $inputImage.change(function () {
+                var files = this.files;
+                var file;
+
+                if (files && files.length) {
+                    file = files[0];
+
+                    if (/^image\/\w+$/.test(file.type)) {
+                        blobURL = URL.createObjectURL(file);
+                        // $image.one('built.cropper', function () {
+
+                        //     // Revoke when load complete
+                        //     URL.revokeObjectURL(blobURL);
+                        // }).cropper('reset').cropper('replace', blobURL);
+                        $image.attr('src', blobURL);
+                        $inputImage.val('');
+                        isInit = true;
+                        imgCropper.init();
+                        $container.removeClass('is-empty');
+
+                    } else {
+                        window.alert('Please choose an image file.');
+                    }
+                }
+            });
+        } else {
+            $inputImage.prop('disabled', true)
+        }
+
+        $container.on('click', '.footer > .btn', function () {
+            var $this = $(this);
+            if ($this.hasClass('save')) {
+                
+            } else if ($this.hasClass('cancel')) {
+
+            }
+        });
+    </script>
+</body>
+
+</html>

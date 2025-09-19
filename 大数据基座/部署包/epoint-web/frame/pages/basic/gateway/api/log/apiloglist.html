@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>服务日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的右侧内容 -->
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="服务名称">
+						<input class="mini-textbox" bind="dataBean.apiname" />
+					</div>
+					<div role="control" label="客户端IP">
+						<input class="mini-textbox" bind="dataBean.clientip" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="月份">
+						<input name="" id="start-time" class="mini-monthpicker"
+							format="yyyy-MM" bind="searchMonth" showTime="true"
+							showClose="true" oncloseclick="onCloseClick" />
+					</div>
+					<div role="control" label="请求消费者">
+						<input class="mini-textbox" bind="dataBean.consumer" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div width="100" field="apiname">服务名称</div>
+				<div width="150" field="startat"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">开始时间</div>
+				<div width="100" field="method">HTTP方法</div>
+				<div width="100" field="requestsize" renderer="onByteRender">请求包大小</div>
+				<div width="100" field="consumername">请求消费者</div>
+				<div width="120" field="clientip">客户端IP</div>
+				<div width="100" field="responsesize" renderer="onByteRender">返回包大小</div>
+				<div width="100" field="status">返回状态码</div>
+				<div width="100" field="forwardtime" renderer="onTimeRender">转发耗时</div>
+				<div width="100" field="requesttime" renderer="onTimeRender">请求耗时</div>
+				<div width="100" field="requesturl">访问地址</div>
+				<div width="60" renderer="onDetailRenderer">查看</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiloglistaction');
+
+		var onTimeRender = function(e) {
+			return e.value + "ms";
+		};
+
+		var onByteRender = function(e) {
+			return e.value + "字节";
+		};
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openDetail", "rowguid,startat,clientip");
+		};
+
+		// 弹出明细窗口
+		function openDetail(e) {
+			epoint.openDialog('详细信息',
+					"frame/pages/basic/gateway/api/log/apilogdetail?guid="
+							+ e.rowguid + "&clientip=" + e.clientip
+							+ "&startat=" + e.startat, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'info'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//日期关闭方法
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Select personnel</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+    <div class="fui-toolbar" id="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="saveAndClose">sure add</a>
+            <a class="mini-button" onclick="epoint.closeDialog">cancel</a>
+        </div>
+    </div>
+	<!-- content area -->
+	<div class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getTreeModel" onbeforenodeselect="beforenodeselect"
+			resultAsTree="false" showRadioButton="true">
+		</ul>
+		<div id="tree1" class="mini-treelistselect" action="getTreeModel">
+			<div headerText="Choose from record"></div>
+			<div headerText="Selected records"></div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var selectionMode = 'single'
+		//Initialization request 
+    	epoint.initPage('selectouuseraction','',initCallBack);
+		function initCallBack(e){
+			if(e.selectionMode=='single'){
+				$("#fui-toolbar").hide();
+				mini.get('tree1').setVisible(false);
+			}else{
+				mini.get('tree').setVisible(false);
+			}
+		}
+		
+		function beforenodeselect(e) {
+            //Ban on selected ckr=falsenode
+            if (e.node.ckr == false) e.cancel = true;
+        }
+		
+		function saveAndClose() {
+			var treeId = 'tree';
+            if(selectionMode!='single'){
+                treeId = 'tree1';
+            }
+            epoint.execute('userlist', treeId,saveCallback);
+    	}
+    	
+    	//callback
+    	function saveCallback(data){
+    		if (data.nameandguidlist) {
+    			epoint.closeDialog(data.nameandguidlist);
+    		}else{
+    			epoint.alert('You have not chosen any record!', '', null, 'info');
+    		}
+    	}
+		
+		//The treejsobject
+		var tree = mini.get("tree");
+		if(tree){
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				if (e.node) {
+					var id = e.node.id;
+					epoint.closeDialog(e.node.text+";"+e.node.id);
+				}
+			});
+		}
+		
+	</script>
+
+
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>工作日</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ "./workingday.css" ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar 区域 -->
+	<div class="wd-toolbar">
+		<a class="mini-button l mr10" id="sync" onclick="syncOAWorkingDay">同步OA数据</a>
+		<a class="mini-button l mr10" onclick="modifyWorkday()"
+			id="modify-btn">修改工作日</a> <a class="mini-button l "
+			onclick="editWorkTime()">修改工作时间</a>
+		<div class="wd-legend r">
+			<span class="wd-legend-item l mr20"><i class="icon workday"></i>为工作日</span>
+			<span class="wd-legend-item l mr20"><i class="icon offday"></i>为休息日</span>
+		</div>
+		<div class="wd-center" id="wd-center">
+			<span class="wd-prev-button"></span> <span class="wd-next-button r"></span>
+			<h2>2017年</h2>
+			<a class="mini-button wd-init" id="init-workday" width="100"
+				onclick="initWordDay()">初始化</a> <a class="mini-button wd-init"
+				id="reset-workday" onclick="resetWorkDay()">重置</a>
+		</div>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div class="wd-content">
+		<div class="content">
+			<div class="clearfix" id="calendar"></div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 日历模板 -->
+	<script type="x-tmpl-mustache" id="calendar-tmpl">
+        {{#datas}}
+        <div class="mini-col-4">
+            <div class="wd-widget">
+                <h3 class="wd-widget-title">{{month}}</h3>
+                <div class="wd-widget-header clearfix">
+                    <span class="wd-widget-hdtext">日</span>
+                    <span class="wd-widget-hdtext">一</span>
+                    <span class="wd-widget-hdtext">二</span>
+                    <span class="wd-widget-hdtext">三</span>
+                    <span class="wd-widget-hdtext">四</span>
+                    <span class="wd-widget-hdtext">五</span>
+                    <span class="wd-widget-hdtext">六</span>
+                </div>
+                <div class="wd-widget-body">
+                    <ul class="wd-day-items clearfix">
+                        {{#items}}
+                        <li class="wd-day-item {{#isholiday}}holiday{{/isholiday}} {{#isworkday}}workday{{/isworkday}}">
+                            {{^empty}}
+                            <div class="wd-day-block" data-date="{{date}}">
+                                <span class="date">{{day}}</span>
+                                <span class="lunar" title="{{lunar}}">{{lunar}}</span>
+                            </div>
+                            {{/empty}}
+                        </li>
+                        {{/items}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {{/datas}}
+    </script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 获取日历信息
+		var initData = "getCurrentYearWorkdayResult";
+
+		// 修改工作日
+		var modifyWorkDay = "editWorkingDay";
+
+		//获取当年
+		$(".wd-center h2").text(new Date().getFullYear() + "年");
+	</script>
+
+	<script>
+		var calendarTmpl = $("#calendar-tmpl").html();
+		var $calendar = $("#calendar");
+		var modifyBtn = mini.get("modify-btn");
+		var isAdmin;
+
+		epoint.initPage("workingdayaction", {
+			year : getCurYear()
+		}, function(data) {
+			epoint.execute('isAdmin', '', function(msg) {
+				isAdmin = !!msg;
+				if (!isAdmin) {
+					mini.get("sync").disable();
+					mini.get("modify-btn").disable();
+					mini.get("init-workday").disable();
+					mini.get("reset-workday").disable();
+				}
+				renderCalendar(data.msg);
+			});
+		});
+
+		// 渲染日历
+		function renderCalendar(data) {
+			if(data){
+
+				var calendarData = data.data;
+				var viewData = [];
+				var startDay;
+				var isInit = data.hasinit; // 是否已经初始化过
+
+				for (var i = 0, l = calendarData.length; i < l; i++) {
+					viewData.push({});
+					viewData[i].month = getChineseMonth(i + 1);
+					viewData[i].items = [];
+
+					startDay = getStartDay(calendarData[i][0].date); // 得到第一天是星期几
+
+					// 插入空对象,用来在第一天前占位。
+					for (var k = 0; k < startDay; k++) {
+						viewData[i].items.push({
+							empty : true
+						});
+					}
+
+					for (var j = 0, mlen = calendarData[i].length; j < mlen; j++) {
+						calendarData[i][j].day = parseInt(calendarData[i][j].date
+								.substr(8)); // 得到年月日中的日
+						viewData[i].items.push(calendarData[i][j]);
+					}
+				}
+
+				$calendar.empty().html(Mustache.render(calendarTmpl, {
+					"datas" : viewData
+				}));
+
+				if (isAdmin) {
+					if (isInit) {
+						mini.get("init-workday").hide();
+						mini.get("reset-workday").show();
+					} else {
+						mini.get("init-workday").show();
+						mini.get("reset-workday").hide();
+					}
+				}
+			}
+		}
+
+		// 获取日期的星期几
+		function getStartDay(dateString) {
+			dateString = dateString.replace(/-/g, '/');
+			var date = new Date(dateString);
+			var startDay = date.getDay();
+
+			return startDay;
+		}
+
+		// 月份转换中文
+		function getChineseMonth(num) {
+			var month;
+			switch (num) {
+			case 1:
+				month = "一月";
+				break;
+			case 2:
+				month = "二月";
+				break;
+			case 3:
+				month = "三月";
+				break;
+			case 4:
+				month = "四月";
+				break;
+			case 5:
+				month = "五月";
+				break;
+			case 6:
+				month = "六月";
+				break;
+			case 7:
+				month = "七月";
+				break;
+			case 8:
+				month = "八月";
+				break;
+			case 9:
+				month = "九月";
+				break;
+			case 10:
+				month = "十月";
+				break;
+			case 11:
+				month = "十一月";
+				break;
+			case 12:
+				month = "十二月";
+				break;
+			}
+
+			return month;
+		}
+
+		// 初始化工作日。
+		function initWordDay() {
+			epoint.openDialog('初始化工作日',
+					'framemanager/metadata/festival/festival?currentyear='
+							+ getCurYear(), searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 修改工作时间。
+		function editWorkTime() {
+			epoint.openDialog('修改工作时间',
+					'framemanager/metadata/workingday/workingtime?currentyear='
+							+ getCurYear(), searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		function searchData(data) {
+			epoint.execute(initData, "@none", epoint.encodeJson({
+				year : getCurYear()
+			}), function(data) {
+				renderCalendar(data.msg);
+			});
+		}
+
+		function getCurYear() {
+			var year = $(".wd-center h2").text().substr(0, 4);
+			return year;
+		}
+
+		function setCurYear(year) {
+			$(".wd-center h2").text(year + "年");
+		}
+
+		// 切换年份
+		$("#wd-center").on(
+				'click',
+				'span',
+				function(event) {
+					var $this = $(this), year, isPrev = $this
+							.hasClass('wd-prev-button'), isNext = $this
+							.hasClass('wd-next-button');
+
+					if (isPrev) { //向前1年
+						setCurYear(getCurYear() - 0 - 1);
+						year = getCurYear();
+
+						epoint.execute(initData, "@none", epoint.encodeJson({
+							year : year
+						}), function(data) {
+							renderCalendar(data.msg);
+						});
+					}
+
+					if (isNext) { // 向后1年
+						setCurYear(getCurYear() - 0 + 1);
+						year = getCurYear();
+
+						epoint.execute(initData, "@none", epoint.encodeJson({
+							year : year
+						}), function(data) {
+							renderCalendar(data.msg);
+						});
+					}
+
+					resetModifyBtn();
+				});
+
+		// 点击day
+		$calendar.on('click', '.wd-day-block', function(event) {
+			var $this = $(this), canUpdate = $calendar.hasClass('edit');
+
+			if (canUpdate) {
+				$this.toggleClass('update');
+				$this.parent().toggleClass('workday');
+			}
+		});
+
+		// 修改工作日
+		function modifyWorkday(e) {
+			var isModify = !$(modifyBtn.el).hasClass('mini-btn-primary');
+
+			if (isModify) { // 修改工作日
+				$calendar.addClass('edit');
+				modifyBtn.addCls("mini-btn-primary");
+				modifyBtn.setText("保存工作日");
+
+			} else { // 保存工作日
+				var days = getUpdateDays();
+				var year = getCurYear();
+
+				if (days.length) {
+					epoint.execute(modifyWorkDay, "@none", epoint.encodeJson({
+						year : year,
+						data : days
+					}), function(data) {
+						if (data.msg === "") { // 修改成功
+							epoint.showTips("修改成功！");
+							epoint.refresh();
+							resetModifyBtn();
+						} else { // 失败
+							epoint.alert(data.msg, '', null, 'info');
+						}
+					}, true);
+				} else {
+					// epoint.showTips("请对日期编辑！");
+					resetModifyBtn();
+				}
+			}
+		}
+
+		// 重置修改工作日按钮
+		function resetModifyBtn() {
+			$calendar.removeClass('edit');
+			modifyBtn.removeCls("mini-btn-primary");
+			modifyBtn.setText("修改工作日");
+		}
+
+		// 获取修改的days
+		function getUpdateDays() {
+			var days = [];
+			var $dayBlocks = $(".wd-day-block");
+
+			$dayBlocks.each(function(i, el) {
+				var $el = $(el);
+				if ($el.hasClass('update')) {
+					days.push({
+						date : $el.data("date"),
+						isworkday : $el.parent().hasClass('workday')
+					})
+				}
+			});
+
+			return days;
+		}
+
+		function syncOAWorkingDay() {
+			epoint.execute("syncOAWorkingDay", "@none", epoint.encodeJson({
+				year : getCurYear()
+			}), function(data) {
+				if ((data.msg + "").indexOf('请') >= 0) {
+					epoint.alert(data.msg);
+					return;
+				}
+				renderCalendar(data.msg);
+			});
+		}
+		
+		function resetWorkDay() {
+			epoint.confirm('将清空这一年的工作日,是否继续', '', reset);
+		}
+		
+		function reset() {
+			epoint.execute("resetWorkDay", '', $(".wd-center h2").text(),
+					searchData);
+		}
+	</script>
+</body>
+
+</html>

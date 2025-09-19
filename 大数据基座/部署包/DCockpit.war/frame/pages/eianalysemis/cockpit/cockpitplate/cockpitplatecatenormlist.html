@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片关联列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="action-icon icon-gear" title="分类管理" onclick="openCate()">分类管理</a>
+		</div>
+	</div>
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="mini-tree" id="tree" action="getCateTreeModel" ></div>
+	</div>
+	
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 版块标识
+		var plateguid = Util.getUrlParams("guid");
+		// 初始化页面
+		epoint.initPage('cockpitplatecatenormlistaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('CateCode').setValue(id == 'root' ? "" : id);
+			//刷新表格
+			searchData();
+		});
+
+		// 弹出卡片列表
+		function openAdd() {
+			var CateCode = mini.get("CateCode").getValue();
+			if (!CateCode || CateCode == "f9root") {
+				epoint.alert("请选择左侧分类！");
+				return;
+			}
+			epoint.openDialog('卡片列表', "frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormlist?catecode=" + CateCode, searchData, {
+				'width' : 1000,
+				'height' : 500
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function columnCallBack() {
+			epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+		}
+
+		// 分类管理
+		function openCate() {
+			epoint.openDialog('分类管理', "frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecatelist?plateguid=" + plateguid, columnCallBack, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', searchData);
+		}
+	</script>
+</body>
+</html>

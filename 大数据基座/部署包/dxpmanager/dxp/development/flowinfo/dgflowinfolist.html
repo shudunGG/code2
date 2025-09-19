@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>数据治理流程</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择分组">
+			<a class="mini-button mini-btn-primary" onclick="addGroup()">新增分组</a>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" textField="text" idField="id"
+				parentField="pid" action="dxpflowgroupaction.getTreeModel"
+				resultAsTree="false" filterMode="server">
+			</ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar"></div>
+		<!-- 条件区域 -->
+		<div class="fui-search" primaryControl="flowName" opened="false">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="流程名称">
+							<input bind="dataBean.flowName" id="flowName"
+								class="mini-textbox" />
+						</div>
+						<div role="control" label="所属节点域">
+							<input bind="nodeguid" id="nodeguid" class="mini-combobox"
+								allowInput="true" action="getNodeGuidList" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="发布状态">
+							<input bind="publishStatus" class="mini-combobox"
+								data="[{text:'未发布',id:'0'},{text:'已发布',id:'1'}]"
+								textField="text" valueField="id" />
+						</div>
+						<div role="control"></div>
+					</div>
+					<div role="row">
+						<div role="control" label="生成时间(开始)">
+							<input bind="generateBegin" id="beginDate"
+								class="mini-datepicker" onvaluechanged="onValueChanged" />
+						</div>
+						<div role="control" label="生成时间(结束)">
+							<input bind="generateEnd" id="endDate" class="mini-datepicker"
+								onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<input bind="groupGuid" id="groupGuid" class="mini-hidden" />
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 表格区域 -->
+		<div class="fui-content">
+			<form id="download_form" method="post" enctype="multipart/form-data"></form>
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" showPager="true"
+				action="getDataGridData">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">序</div>
+					<div field="flowname" width="200" headerAlign="center"
+						align="center">流程名称</div>
+					<div field="nodename" width="100" headerAlign="center"
+						align="center">所属节点域</div>
+					<div field="publishstatusname" width="100" headerAlign="center"
+						align="center">发布状态</div>
+					<div field="flowtype" visible="false">流程类型</div>
+					<div field="generatedate" width="160" headerAlign="center"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+						dateFormat="yyyy-MM-dd HH:mm:ss" align="center">生成日期</div>
+					<div field="operatedate" width="160" headerAlign="center"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+						dateFormat="yyyy-MM-dd HH:mm:ss" align="center">更新日期</div>
+					<div field="nodeguid" headerAlign="center" align="center"
+						visible="false">节点guid</div>
+					<div field="isDagChild" headerAlign="center" align="center"
+						visible="false">isDagChild</div>
+					<div field="export" width="80" headerAlign="center" align="center"
+						renderer="onExportRenderer">导出流程</div>
+					<div field="log" width="80" headerAlign="center" align="center"
+						renderer="onLogRenderer">作业日志</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpdgflowinfolistaction', '', function(data) {
+		});
+
+		var tree = mini.get('tree');
+		tree.on('beforenodeselect', function(e) {
+			if (e.node.id == 'f9root') {
+				mini.get('groupGuid').setValue('');
+			} else {
+				mini.get('groupGuid').setValue(e.node.id);
+			}
+			searchData();
+		});
+
+		var grid = mini.get('datagrid');
+		grid.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+
+		function addGroup() {
+			epoint.openDialog("新增分组", "dxp/flowinfo/flowgroupadd", function() {
+				epoint.refresh('tree');
+			}, {
+				'width' : 650,
+				'height' : 420
+			})
+		}
+
+		function moveFlow() {
+			let array = grid.getSelecteds();
+			let guidArray = [];
+			for (var i = 0; i < array.length; i++) {
+				guidArray.push(array[i].rowguid);
+			}
+			let guid = guidArray.join(",");
+			epoint.openDialog("移动集成", "dxp/flowinfo/flowgroupselect?guid="
+					+ guidArray,function(){
+				searchData();
+			}, {
+				'width' : 700,
+				'height' : 420
+			}) 
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onExportRenderer(e) {
+			if(e.row.publishstatusname==='未发布'){
+	    		return '';
+	    	}
+			return epoint.renderCell(e, "action-icon modicon-86", "exportKTR");
+		}
+
+		function exportKTR(e) {
+			var form = document.getElementById('download_form');
+			form.action = "dxpdatadeveloplistaction.action?cmd=exportKTR&flowGuid="
+					+ e;
+			form.submit();
+		}
+
+		function onValueChanged(e) {
+			var sender = e.sender;
+			if (sender.id == 'beginDate') {
+				var todate = mini.get('endDate').getValue();
+				if (todate) {
+					if (sender.value.getTime() > todate.getTime()) {
+						epoint.alert('开始时间不能大于结束时间！', '', function() {
+							epoint.clear(sender.id);
+						});
+					}
+				}
+			} else if (sender.id == 'endDate') {
+				var bedate = mini.get('beginDate').getValue();
+				if (bedate) {
+					if (sender.value.getTime() < bedate.getTime()) {
+						epoint.alert('结束时间不能小于开始时间！', '', function() {
+							epoint.clear(sender.id);
+						});
+					}
+				}
+			}
+		}
+		
+		var onLogRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-49",
+					"openLogList", "rowguid,flowname");
+		};
+
+		function openLogList(e) {
+			epoint.openDialog(e.flowname,
+					'dxp/flowinfo/dxpschedulerloglist?guid=' + e.rowguid, null,
+					{
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+	</script>
+</body>
+</html>

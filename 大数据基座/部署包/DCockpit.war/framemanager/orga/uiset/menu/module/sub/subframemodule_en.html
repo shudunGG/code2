@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>The module form</title>
+		<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<div class="page-loading"></div>
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" iconCls="icon-save" onclick="epoint.execute('addModule','',newCallback);">save and new</a>
+				<a class="mini-button" id="addClose" iconCls="icon-save" onclick="epoint.execute('addModule','',closeCallback);">save and close</a>
+				<a class="mini-button" id="save" iconCls="icon-save" onclick="epoint.execute('update','',closeCallback);">save changes</a>
+				<a class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">Shut down</a>
+			</div>
+		</div>
+
+		<!-- Content area -->
+		<div class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="The superior module">
+							<input id="parentModule" bind="parentModuleName"
+							class="mini-buttonedit" style="width:90%" onbuttonclick="selectModule" selectOnFocus="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="The name of the module" starred="true">
+							<input id="editModuleName" bind="frameModule.moduleName"
+							class="mini-textbox" required="true" style="width:90%"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="Module name of the menu">
+							<input bind="frameModule.moudleMenuName"
+							class="mini-textbox" style="width:90%"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="The module addresses">
+							<input bind="frameModule.moduleUrl"
+							class="mini-textbox" style="width:90%"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="order no">
+							<input bind="frameModule.orderNumber"
+							class="mini-textbox" style="width:90%" vType="int"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="disable">
+							<div class="mini-checkbox"
+							bind="isDisable" readOnly="false" ></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="The pop-up window">
+							<div class="mini-checkbox"
+							bind="isBlank" readOnly="false" ></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="Whether to hide in the menu">
+							<div class="mini-checkbox"
+							bind="notShowInMenu" readOnly="false" ></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="The big picture" >
+							<input id="bigIconAddress" bind="frameModule.bigIconAddress" allowInput="false"
+							class="mini-buttonedit" style="width:90%" onbuttonclick="openicon('big')" selectOnFocus="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="Small pictures">
+							<input id="smallIconAddress" bind="frameModule.smallIconAddress" allowInput="false"
+							class="mini-buttonedit" style="width:90%" onbuttonclick="openicon('small')" selectOnFocus="true" />
+						</div>
+					</div>
+				</div>
+				<input bind="oldParentModuleCode" id="oldParentModuleCode" class="mini-hidden" />
+			</div>
+		</div>
+
+		<input bind="parentModuleCode" id="parentModuleCode" class="mini-hidden" />
+		<input id="parentModuleBack" class="mini-hidden" />
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//<![CDATA[
+			// Initialize the page
+			epoint.initPage('subframemoduleaction', '', initCallBack);
+
+			//bylistPage linked to trigger when the refs
+			function initCallBack(param) {
+				mini.get("parentModule").setText(mini.get("parentModule").getValue());
+				mini.get("bigIconAddress").setText(mini.get("bigIconAddress").getValue());
+				mini.get("smallIconAddress").setText(mini.get("smallIconAddress").getValue());
+
+				//If the new
+				if (param.add) {
+					//Hide the modify button
+					mini.get('save').setVisible(false);
+				}
+				//If you change
+				else {
+					//Hide the new button
+					mini.get('addNew').setVisible(false);
+					mini.get('addClose').setVisible(false);
+				}
+			}
+
+			function selectModule(e) {
+				epoint.openDialog('chooseThe superior module', "framemanager/orga/uiset/menu/module/sub/selectsubmodule", selectModuleOperJS, {
+					'width' : 300,
+					'height' : 400
+				});
+			}
+
+			function selectModuleOperJS(rtnValue) {
+				if (rtnValue && rtnValue != 'close') {
+					var s = rtnValue.split(";");
+					if (s[0] != "") {
+						mini.get("parentModule").setText(s[0]);
+						mini.get("parentModule").setValue(s[0]);
+						mini.get("parentModuleCode").setValue(s[1] == 'undefined' ? '' : s[1]);
+					}
+				}
+			}
+
+			function openicon(type1) {
+				type = type1;
+				epoint.openDialog('chooseicon', "framemanager/orga/uiset/menu/module/selectoa8icon?type=" + type1, openiconOperJS, {
+					'width' : 1000,
+					'height' : 420
+				});
+			}
+
+			function openiconOperJS(rtnValue) {
+				if (rtnValue && rtnValue != 'close') {
+					if (type == "big") {
+						mini.get("bigIconAddress").setText(rtnValue);
+						mini.get("bigIconAddress").setValue(rtnValue);
+					} else {
+						mini.get("smallIconAddress").setText(rtnValue);
+						mini.get("smallIconAddress").setValue(rtnValue);
+					}
+				}
+			}
+
+			function newCallback(data) {
+				var parentModuleBack = mini.get("parentModuleBack");
+				var parentModule = mini.get("parentModule");
+				if (data.msg) {
+					epoint.alert(data.msg, '', null, 'info');
+					parentModuleBack.setValue(parentModule.getValue());
+					epoint.clear('fui-form');
+					parentModule.setText(parentModuleBack.getValue());
+					parentModule.setValue(parentModuleBack.getValue());
+				}
+			}
+
+			function closeCallback(data) {
+				if (data.msg) {
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

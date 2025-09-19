@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>应用中心</title>
+    <script src="../../../cssboot.js"></script>
+</head>
+
+<body>
+    <button onclick="openAppCenter()" style="width:400px;height:300px">打开</button>
+
+    <script src="../../../jsboot.js"></script>
+    <script src="../appcenter.js"></script>
+    <script>
+        var _d = new AppCenterDialog({
+            getDataUrl: 'http://fe.epoint.com.cn:8080/mock/26/themedataaction/getAppCenterApps',
+            // 相关事件
+            on: {
+                'show': function () {
+                    console.log('show');
+                },
+                'hide': function () {
+                    console.log('hide');
+                },
+                'installApp': function (ev) {
+                    var data = ev.data;
+                    alert('安装应用- ' + data.id);
+                    this._afterInstallApp(data.id);
+                },
+                'uninstallApp': function (ev) {
+                    var data = ev.data;
+                    alert('卸载应用- ' + data.id);
+                    this._afterUninstallApp(data.id);
+                }
+            }
+        });
+
+        function openAppCenter() {
+            _d.show();
+        }
+    </script>
+</body>
+
+</html>

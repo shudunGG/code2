@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>添加数据表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="add"
+			onclick="update('1')">保存修改</a> <a class="mini-button"
+			id="add" onclick="update('2')">保存并同步</a><a
+			class="mini-button" id="addCancel" 
+			onclick="epoint.closeDialog">取消修改</a>
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="表中文名称" starred="true">
+						<input class="mini-textbox"
+							bind="tablebasicinfoeditaction.tableBasicInfo.tableName"
+							required="true" requiredErrorText="表中文名称不能为空"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="SQL表名" starred="true">
+						<input id="sqlTableName"
+							bind="tablebasicinfoeditaction.tableBasicInfo.sqlTableName"
+							class="mini-textbox" emptyText="数据表名" required="true"
+							requiredErrorText="SQL表名不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input bind="tablebasicinfoeditaction.tableBasicInfo.ordernum"
+							class="mini-textbox" maxLength="8" vtype="int;range:0,99999999"/>
+					</div>
+					<div role="control" label="流程选择">
+						<input class="mini-treeselect" allowInput="true"
+							id="processSelect" emptyText="请选择流程" oncloseclick="closeClick" valueFromSelect="false" multiSelect="false" showRadioButton="true" showFolderCheckBox="false"
+							style="width: 100%;" onvaluechanged="selMainProcess" showClose="true" onbeforenodeselect="beforeprocessselect"
+							bind="tablebasicinfoeditaction.tableBasicInfo.processguid" action="selectprocessaction.getTreeModel"/>
+					</div>
+					<input class="mini-hidden" id="processName"
+							bind="tablebasicinfoeditaction.tableBasicInfo.processname" />
+				</div>
+				<div role="row" id="formSel" style="display:none;">
+						<div role="control" label="父表">
+							<input class="mini-treeselect" id="form" bind="tablebasicinfoeditaction.tableBasicInfo.parenttableid" action="getTreeModal"  multiSelect="false" showNullItem="true"
+							emptyText="请选择" nullItemText="请选择"
+							onbeforenodeselect="beforenodeselect"/>
+						</div>
+				</div>
+				<div role="row">
+					<div role="control" label="新增个性化地址">
+						<input id="addurl" class="mini-textbox"
+							bind="tablebasicinfoeditaction.tableBasicInfo.addurl" />
+					</div>
+					<div role="control" label="修改个性化地址">
+						<input id="editurl" class="mini-textbox"
+							bind="tablebasicinfoeditaction.tableBasicInfo.editurl" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="查看个性化地址">
+						<input id="detailurl" class="mini-textbox"
+							bind="tablebasicinfoeditaction.tableBasicInfo.detailurl" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('tablebasicinfoeditaction', '', function(data){
+			mini.get('processSelect').setText(
+					mini.get("processName").getValue());
+		});
+
+		// 保存并关闭
+		function update(type) {
+			if (epoint.validate()) {
+				if (type == '1') {
+					epoint.execute('tablebasicinfoeditaction.update',
+							'fui-form', [ type ], closeCallback);
+				} else {
+					epoint.confirm('修改信息会同步修改数据库中表的信息,您确定修改吗?', '', function() {
+						epoint.execute('tablebasicinfoeditaction.update',
+								'fui-form', [ type ], closeCallback);
+					});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.strScript) {
+				//if (data.strScript[0].indexOf("成功") != -1) {
+				if(data.success){
+				    epoint.closeDialog(data.strScript);
+				} else {
+					epoint.showTips(data.strScript, {state : 'danger'});
+				}
+			}
+		}
+			
+		function selMainProcess(e) {
+			var obj = e.sender
+			mini.get('processSelect').setText(obj.text);
+			mini.get('processSelect').setValue(obj.value);
+			mini.get('processName').setValue(mini.get('processSelect').getText());
+		}
+		
+		function closeClick() {
+			mini.get('processSelect').setText('');
+			mini.get('processSelect').setValue('');
+			mini.get('processName').setValue('');
+		}
+		
+		function beforenodeselect(e){
+			if(e.isLeaf == false || e.record.ckr == false || e.record.path == 'parent'){
+				e.cancel = true;
+			}
+		}
+		
+		function beforeprocessselect(e){
+			if(!e.isLeaf || e.record.path == 'parent'){
+				e.cancel = true;
+			}
+		}
+	</script>
+</body>
+
+</html>

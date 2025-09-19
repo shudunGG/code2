@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>列表指标映射配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style type="text/css" media="screen">
+.form-labels {
+	display: block;
+	-webkit-box-sizing: border-box !important;
+	-moz-box-sizing: border-box !important;
+	box-sizing: border-box !important;
+	width: 15%;
+	min-height: 26px;
+	padding-right: 5px;
+	text-align: right;
+	color: blue;
+}
+</style>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar" id="toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="saveAndClose">保存并关闭</a>
+		</div>
+		<a class="mini-button mini-btn-primary" iconCls="icon-doc" id="importResource" onclick="openSearch()">数据查看</a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="false" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="showfield" headerAlign="center" align="center" width="100">模板字段</div>
+				<div field="mapfield" headerAlign="center" align="center" width="100">映射字段
+					<input property="editor" class="mini-comboBox" data="fieldData" textField="text" idField="id" showNullItem="true" nullItemText="" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var normguid = "";
+		// 初始化页面
+		epoint.initPage('cockpitmappingconfaction', '@all', function(data) {
+			if(data.normguid){
+				normguid = data.normguid;
+			}
+			if(data.error){
+				epoint.alertAndClose(data.error);
+			}
+		});
+		
+		var fieldData;
+
+		//获取下拉框数据
+		function epoint_preload(ctrs, data) {
+			//列表中来源字段下拉框
+			if (data && data.fieldData) {
+				fieldData = data.fieldData;
+			}
+		}
+		
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'datagrid', closeCallback);
+			} 
+		}
+		
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		function openSearch() {
+			epoint.openDialog('列表指标结果', "./normlistdatalist?normguid=" + normguid, '', {
+						'width': 800,
+						'height': 500
+					});
+		}
+		
+	</script>
+</body>
+</html>

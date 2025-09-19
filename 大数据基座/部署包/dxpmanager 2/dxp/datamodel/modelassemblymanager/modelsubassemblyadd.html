@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增组件</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.id_connection_row .form-control {
+	width: 70%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog(0)">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="组件名称" starred="true" starred="true">
+						<input id="pluginname" class="mini-textbox"
+							bind="assembly.pluginName" required="true"
+							requiredErrorText="组件名称不能为空!" />
+					</div>
+					<div role="control" label="组件分组" starred="true">
+						<input class="mini-combobox" action="getGroupList" id="group"
+							multiSelect="false" bind="assembly.groupguid" required="true"
+							textField="text" valueField="id" requiredErrorText="组件分组不能为空" 
+							onvaluechanged="selectGroup"/>
+					</div>
+				</div>
+				<div role="row" >
+					<div role="control" label="组件实现类" starred="true">
+						<input id="classpath" class="mini-textbox"
+							bind="assembly.classpath" required="true"
+							requiredErrorText="组件实现类不能为空!" />
+					</div>
+					<div role="control" label="编辑页路径">
+						<input id="url" class="mini-textbox" bind="assembly.url" />
+					</div>
+				</div>
+				<div role="row" >
+					<div role="control" label="组件小图标" starred="true">
+						<input id="iconsmall" class="mini-textbox"
+							bind="assembly.iconsmall" required="true"
+							requiredErrorText="组件小图标不能为空!" />
+					</div>
+					<div role="control" label="组件图标" starred="true">
+						<input id="icon" class="mini-textbox" bind="assembly.icon"
+							required="true" requiredErrorText="组件图标不能为空!" />
+					</div>
+				</div>
+				<div role="row" >
+					<div role="control" label="最大输入连线" starred="true">
+						<input id="maxInputLinks" class="mini-textbox"
+							bind="assembly.maxInputLinks" required="true"
+							requiredErrorText="最大输入连线不能为空!" vtype="int;range:-1,100" />
+					</div>
+					<div role="control" label="排序">
+						<input id="ordernum" class="mini-textbox" bind="assembly.ordernum" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="组件简介" starred="true">
+						<input id="introduce" class="mini-textbox"
+							bind="assembly.introduce" required="true"
+							requiredErrorText="组件简介不能为空!" />
+					</div>
+					<div role="control" label="是否启用">
+						<input id="enable" class="mini-checkbox" bind="assembly.enable" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分组类别">
+						<input class="mini-combobox" action="getGroupType" id="grouptype"
+							multiSelect="false" bind="assembly.groupType" textField="text"
+							valueField="id" requiredErrorText="分组类别不能为空" />
+					</div>
+					<div role="control" label="算法模型类别" id="modeltypelab">
+						<input class="mini-combobox" action="getModelType" id="modeltype" visible="false"
+							   multiSelect="false" bind="assembly.modelType" textField="text"
+							   valueField="id" requiredErrorText="模型类别不能为空" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpmodelsubassemblyaddaction','',function(){
+			if(mini.get('group').getValue()=='3a9bbcf0-329d-4410-97c8-876b09fc0898'){
+				//智能分组显示模型类别
+				mini.get('modeltype').setVisible(true);
+				Util.form.showField('#modeltypelab');
+			}else{
+				mini.get('modeltype').setVisible(false);
+				Util.form.hideField('#modeltypelab');
+			}
+		});
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功') != -1) {
+				epoint.alertAndClose(data.msg, '', '', 'success');
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+		
+		function selectGroup(e){
+			if(e.value=='3a9bbcf0-329d-4410-97c8-876b09fc0898'){
+				mini.get('modeltype').setVisible(true);
+				Util.form.showField('#modeltypelab');
+			}
+			mini.get('grouptype').setValue("");
+	    	epoint.refresh(['group','grouptype']);
+		 }
+		
+
+	</script>
+</body>
+</html>

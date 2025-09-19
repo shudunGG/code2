@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Process version to add</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="../css/workflowicons.css?releaseNo=#{version.version}" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn" onclick="addProcessVersion()">determine</a> 
+			<a class="mini-button" iconCls="icon-removecircle" id="cancelbtn" onclick="epoint.closeDialog()">Cancel the add</a>
+		</div>
+	</div>
+	
+	<div class="fui-content">
+		<div class="fui-form"  id="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="version" starred="true">
+						<input class="mini-textbox" required="true" style="width: 100%;"
+							bind="workflowProcessVersion.version" emptyText="versionCan't be empty"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Monitor class" id="type">
+						<input class="mini-textbox" bind="workflowProcessVersion.tag" />
+					</div>
+					<div role="control" label="The author" id="showFormUrl">
+						<input class="mini-textbox" bind="workflowProcessVersion.author" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Copy the existingversion">
+						<div id="copyprocess" class="mini-combobox" bind="copyProcess" action="getAllProcessList"
+							onvaluechanged="processChange();" textField="text"
+							valueField="id" enabled="true" ></div>
+					</div>
+				</div>
+				<div role="row" id="version"  style="display: none;">
+					<div role="control" label="version">
+						<div class="mini-combobox" id="copyversion" bind="copyVersion" textField="text" valueField="id"  ></div>
+					</div>
+				</div>
+				<div role="row" id="formSel">
+				    <div role="control" label="The form"  id="type">
+					     <input id="formTree" class="mini-treeselect" bind="formUrl" action="getTreeModal"  multiSelect="false" />
+				    </div>
+			    </div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input class="mini-textarea" bind="workflowProcessVersion.note" style="width: 100%; height: 80px" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage("processversionsformaddaction");
+		
+		function addProcessVersion() {
+			if (epoint.validate()) {
+				epoint.execute('addProcessVersion', '', addComplete);
+			}
+		}
+
+		function addComplete(data) {
+			if (data) {
+				var msg = data.message;
+				if(msg != null && msg.indexOf('成功')>-1){
+					epoint.alertAndClose(data.message, '', null, null, 'success');
+				}else{
+					epoint.alert(data.message, '', '', 'warning');
+				}
+			}
+		}
+		
+		function processChange() {
+			var processId = mini.get("copyprocess").getValue();
+			if (processId != "0") {
+				epoint.execute("versionValueChange",'fui-form',[processId],tcallback);
+			}
+			isShow();
+		}
+		
+		function tcallback(data) {
+            if (data) {
+            	mini.get("copyversion").setData(data);
+            }
+        }
+		
+		function isShow(){
+			var processId = mini.get("copyprocess").getValue();
+			if (processId != "0") {
+				document.getElementById("formSel").style.display = "none";
+				document.getElementById("version").style.display = "block";
+			} else {
+				document.getElementById("formSel").style.display = "block";
+				document.getElementById("version").style.display = "none";
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

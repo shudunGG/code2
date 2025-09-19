@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新建工作</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	
+			<!-- toolbar区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="过程名称">
+							<input bind="processlistcreateinstanceaction.searchString" id="searchString"
+								class="mini-textbox" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="processGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				action="getDefaultModel" showPager="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+					<div type="indexcolumn" headerAlign="center" width="50">
+						序号
+					</div>
+					<div field="processName" width="100%" headerAlign="center" renderer="onLocationUrl">
+						名称
+						<input property="editor" class="mini-textbox" minWidth="50" />
+					</div>
+					<div field="tenantName" width="150" headerAlign="center" align="center">
+						租户标识
+					</div>
+					<div field="itemName" width="150" headerAlign="center" align="center">
+						类别
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面
+		epoint.initPage("processlistcreateinstanceaction");
+		
+		function onLocationUrl(e){
+			return ' <a class="" href="javascript:openUrl(\'' + e.row['processGuid'] + '\',\'' + e.row['status'] + '\',\'' + e.row['workflowProcessVersion'] + '\')">'+e.value+'</a>';
+		}
+		
+		function openUrl(processGuid,status,workflowProcessVersion){
+			var url = "processcreateinstance?ProcessGuid="
+				+ processGuid;
+			if (status != 10) {
+				epoint.alert("工作流未启用！", '', '', 'warning');
+			}
+			else if (workflowProcessVersion == 'false') {
+				epoint.alert("工作流版本未启用！", '', '', 'warning');
+			}
+			else{
+				epoint.openTopDialog('新建工作流程', "frame/pages/epointworkflow/client/" + url, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				});
+			}
+		}
+	
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form']);
+		}
+	</script>
+	
+	</body>
+</html>

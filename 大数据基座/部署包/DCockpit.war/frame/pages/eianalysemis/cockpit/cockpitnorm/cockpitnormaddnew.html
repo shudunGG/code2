@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>指标定义表添加</title>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<script>
+		SrcBoot.output([ './css/card_add.css' ]);
+	</script>
+	<style type="text/css">
+		b {
+			color: blue;
+		}
+
+		b.alias {
+			color: red;
+		}
+
+		.form-row>.cell {
+			width: 40%;
+		}
+
+		.form-row {
+			line-height: 32px;
+			line-height: .32rem;
+			padding: 11px 0;
+		}
+
+		.form-row>.relation {
+			width: 10%;
+		}
+
+		.form-label {
+			width: 10%;
+		}
+
+		.form-control.span2 {
+			width: 40%;
+		}
+
+		.form-control.span1 {
+			width: 23.3%;
+		}
+
+		.form-control.span5 {
+			width: 90%;
+		}
+
+		.operate-minus {
+			margin-left: 10px;
+			border: 2px solid #DDDDDD;
+			font-size: 20px;
+			cursor: pointer;
+		}
+
+		.operate-plus {
+			cursor: pointer;
+		}
+
+		.operate.text-center {
+			margin-top: 5px;
+			border: 1px dashed #DDDDDD;
+		}
+	</style>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+<div class="process">
+	<ul class="process-items clearfix">
+		<li class="process-item l finish step-item-first"><i
+				class="process-icon"></i>
+			<p class="process-title">指标定义</p></li>
+		<li class="process-item l step-item-second"><i
+				class="process-icon"></i>
+			<p class="process-title">计算规则</p></li>
+		<li class="process-item l step-item-third"><i
+				class="process-icon"></i>
+			<p class="process-title">调用测试</p></li>
+	</ul>
+</div>
+<div class="step-wrap pd-l-15 pd-r-15">
+	<!-- 基本信息 -->
+	<div class="step-first ">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="指标名称" starred="true">
+						<input id="normname" class="mini-textbox"
+							   bind="dataBean.normname" required="required"
+							   requiredErrorText="指标名称不能为空" emptyText="请填写指标名称"
+							   vtype="maxLength:100;" maxLengthErrorText="指标名称不能超过100个字符" />
+					</div>
+					<div role="control" label="指标类型" starred="true">
+						<div id="normtype" bind="dataBean.normtype"
+							 action="getNormtypeList" class="mini-combobox" textField="text"
+							 valueField="id" onvaluechanged="onTypeChanged"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标分类" starred="true">
+<!--						<input class="mini-textbox" readonly="true" bind="dataBean.normdomainName" />-->
+						<input class="mini-treeselect"
+							   action="getNormDomainSelectTreeModel" bind="dataBean.normdomain" id="normdomain"
+							   showFolderCheckBox="true" showRadioButton="true" onbeforenodeselect="beforenormdomainselect"
+							   showTreeIcon="true" textField="text" idField="id"
+							   expandOnLoad="true" required="required" showFilter="true"
+							   requiredErrorText="指标分类不能为空"/>
+					</div>
+					<div role="control" label="共享方式" starred="true">
+						<div id="sharetype" bind="dataBean.sharetype" required="required"
+							 data="[{id:0,text:'共享'},{id:1,text:'不共享'}]" class="mini-radiobuttonlist"
+							 textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标展示类型" starred="true">
+						<input id="charttype" bind="dataBean.charttype"
+							   class="mini-combobox" textField="text" valueField="value"
+							   action="getChartType" showClose="true"
+							   oncloseclick="onCloseClick" required="required" />
+					</div>
+					<div role="control" label="安全密级" >
+						<div id="safelevel" bind="dataBean.safelevel"
+							 action="getSafeLevel" class="mini-combobox" textField="text"
+							 valueField="id" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="计算方式" starred="true">
+						<div id="configtype" bind="dataBean.configtype"
+							 action="getConfigtype" class="mini-radiobuttonlist"
+							 textField="text" valueField="id" onvaluechanged="onTypeChanged"></div>
+					</div>
+					<div role="control" label="是否预警" starred="true" id="iswarning">
+						<div id="isneedwarning" name="isneedwarning"
+							bind="dataBean.isneedwarning" class="mini-checkbox switch"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否启用" starred="true">
+						<div id="status" name="status" bind="dataBean.status"
+							 class="mini-checkbox switch"></div>
+					</div>
+					<div role="control" label="是否是重要指标" starred="true">
+						<div id="needCheck" name="needCheck" bind="dataBean.needCheck"
+							 class="mini-checkbox switch"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门" starred="true">
+						<input id="liableou" class="mini-treeselect"
+							   action="getOuTreeModel" bind="dataBean.liableou"
+							   showFolderCheckBox="true" showRadioButton="true"
+							   showTreeIcon="true" textField="text" idField="id"
+							   expandOnLoad="true" required="required" showFilter="true"
+							   requiredErrorText="数据责任部门不能为空" onvaluechanged="liableOuChanged" />
+					</div>
+					<div role="control" label="责任人">
+						<input id="liablePer" class="mini-treeselect"
+							   onbeforenodeselect="beforenodeselect"
+							   action="getOuUserTreeModel" bind="dataBean.liableperson"
+							   showFolderCheckBox="true" showRadioButton="true"
+							   showTreeIcon="true" textField="text" idField="id"
+							   expandOnLoad="true" showFilter="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="维护人员" starred="true">
+						<input id="operationperson" class="mini-treeselect"
+							   onbeforenodeselect="beforenodeselect"
+							   action="getAllUserTreeModel" bind="dataBean.operationperson"
+							   showFolderCheckBox="true" showRadioButton="true"
+							   showTreeIcon="true" textField="text" idField="id"
+							   expandOnLoad="true" required="required" showFilter="true"
+							   requiredErrorText="维护人员不能为空" />
+					</div>
+					<div role="control" label="联系方式" starred="true">
+						<input id="phone" class="mini-textbox" required="required"
+							   requiredErrorText="联系方式不能为空" emptyText="请填写联系方式"
+							   bind="dataBean.phone" onvalidation="onPhoneValidation" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="单位">
+						<input id="unit" class="mini-textbox" bind="dataBean.unit"
+							   vtype="maxLength:50;" maxLengthErrorText="单位不能超过50个字符" />
+					</div>
+					<div role="control" label="排序号" starred="true">
+						<input id="ordernum" class="mini-textbox"
+							   bind="dataBean.ordernum" vtype="int;range:0,99999;"
+							   emptyText="请填写排序号" inputStyle="text-align:left;" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="业务逻辑说明">
+						<input id="businessexplain" class="mini-textarea" bind="dataBean.businessexplain"
+							   emptyText="请填写业务逻辑说明" vtype="maxLength:1000;"
+							   maxLengthErrorText="业务逻辑说明不能超过1000个字符" />
+					</div>
+					<div role="control" label="指标来源依据">
+						<input id="normSourceBasis" class="mini-textarea" bind="dataBean.normSourceBasis"
+							   emptyText="请填写指标来源依据" vtype="maxLength:1000;"
+							   maxLengthErrorText="指标来源依据不能超过1000个字符" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input id="remark" class="mini-textarea" bind="dataBean.remark"
+							   emptyText="请填写备注" vtype="maxLength:1000;"
+							   maxLengthErrorText="备注不能超过1000个字符" />
+					</div>
+				</div>
+				<input class="mini-hidden" id="rowguid" bind="dataBean.rowguid" />
+				<input class="mini-hidden" id="xxljobid" bind="dataBean.xxljobid" />
+			</div>
+		</div>
+	</div>
+	<div class="step-second hidden">
+		<div class="fui-form" id="fui-form1">
+			<div role="form">
+				<div role="row" id="datasource">
+					<div role="control" label="数据资源库" starred="true">
+						<input id="datasourceid" class="mini-combobox" textField="text"
+							   required="true" bind="dataBean.datasourceid" valueField="id"
+							   action="getDataSourceList" emptyText="请选择" allowInput="true"
+							   onvaluechanged="datasourceChanged" />
+					</div>
+					<input bind="dataBean.flowguid" id="flowguid" class="mini-hidden" />
+					<input bind="dataBean.flowJdbcUrl" id="flowJdbcUrl" class="mini-hidden" />
+				</div>
+				<!-- <div role="row" id="prestodatasource" style="display: none;">
+					<div role="control" label="来源库" starred="true">
+						<input id="datasourceidps" class="mini-combobox" textField="text"
+							   bind="dataBean.psdatasourceid" required="true" valueField="id"
+							   action="getPsDataSourceList" emptyText="请选择"
+							   onvaluechanged="datasourceChanged" />
+					</div>
+					
+				</div> -->
+				<div role="row" id="backtomodeldiv">
+					<div role="control" id="dxppagebutton">
+						<div class="btn-group">
+							<div class="mini-button l" onclick="openModelSql()">打开配置页面</div>
+						</div>
+					</div>
+					<div role="control" >
+						<div class="btn-group">
+							<div class="mini-button r" onclick="openSqlDemo()">示例代码</div>
+						</div>
+					</div>
+					<div class="mini-hidden" id="customtype" bind="customtype"></div>
+					<div class="mini-hidden" id="modelsql" bind="modelsql"></div>
+				</div>
+				<div role="row" id="generatesqldiv">
+					<div role="control">
+						<div class="mini-textarea" id="generatesql" bind="generatesql"
+							 style="height: 400px;"></div>
+						<div class="mini-textarea" id="generatesqlhide" style="display: none;" bind = "dataBean.generatesqlhide"></div>
+					</div>
+				</div>
+				<div role="row" class="data" id="data">
+					<div role="control" label="数据资源表" starred="true">
+						<input id="datatableguid" class="mini-combobox" textField="text"
+							   bind="dataBean.datatableguid" required="true" valueField="id"
+							   action="getTableBasicList" emptyText="请选择" allowInput="true"
+							   onvaluechanged="loadData" />
+					</div>
+					<div role="control" label="数据字段" starred="true">
+						<input id="datafieldguid" name="datafieldguid"
+							   class="mini-combobox" textField="text" required="true"
+							   bind="dataBean.datafieldnameen" valueField="id" allowInput="true"
+							   action="getFieldList" emptyText="请选择" onblur="checkSortColumn"
+							   onfocus="checkDataTableGuid" />
+					</div>
+				</div>
+				<div class="dim">
+					<input id="dimdatasourceid" class="mini-hidden"
+						   bind="dataBean.dimdatasourceid" />
+					<div role="row">
+						<div role="control" label="维度字段" starred="true">
+							<input id="dimfieldguid" name="dimfieldguid" multiSelect="true"
+								   onvaluechanged="addGrid2Row" class="mini-combobox"
+								   textField="text" valueField="id" action="getFieldList"
+								   emptyText="请选择" onfocus="checkDataTableGuid" allowInput="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="维度表">
+							<input id="dimtableguid" class="mini-combobox" textField="text"
+								   bind="dataBean.dimtableguid" valueField="id"
+								   action="getDimtableBasicList" emptyText="请选择" showclose="true"
+								   oncloseclick="onClearDimtableguid" onvaluechanged="loadData2"
+								   allowInput="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="维度值字段">
+							<input id="dimvalue" name="dimvalue" class="mini-combobox"
+								   textField="text" valueField="id" action="getFieldList2"
+								   emptyText="请选择" onfocus="checkDimTableGuid" allowInput="true" />
+						</div>
+						<div role="control" label="显示字段">
+							<input id="dimtext" name="dimtext" class="mini-combobox"
+								   textField="text" valueField="id" bind="dataBean.dimfieldnameen"
+								   action="getFieldList2" emptyText="请选择"
+								   onfocus="checkDimTableGuid" allowInput="true" />
+						</div>
+					</div>
+					<div role="row" id="dimGridDiv">
+						<div role="control" label="维度过滤条件">
+							<div style="border: 1px solid #ccc;">
+								<div id="datagrid2" action="getRelatelistModel"
+									 class="mini-datagrid" style="width: 100%; height: 250px;"
+									 allowResize="true" idField="id" emptyText="维度过滤条件为空"
+									 showEmptyText="true" oncellbeginedit="OnCellBeginEdit2"
+									 showPager="false">
+									<div property="columns">
+										<div field="DataFieldNameEN" displayField="DataFieldName"
+											 width="150" align="center" headerAlign="center">
+											维度字段 <input property="editor" class="mini-outputtext"
+														valueField="value" textField="text" style="width: 100%;"
+														required="true" requiredErrorText="数据表字段不能为空"
+														emptyText="请选择" allowInput="true">
+										</div>
+										<!--ComboBox：本地数据-->
+
+										<div field="DimFilterFieldNameEN"
+											 displayField="DimFilterFieldName" width="150" align="center"
+											 headerAlign="center">
+											维表过滤字段 <input property="editor" class="mini-combobox"
+														  valueField="value" textField="text" style="width: 100%;"
+														  emptyText="请选择" allowInput="true">
+										</div>
+										<div field="DimFilterRelateType" width="50" align="center"
+											 headerAlign="center">
+											组合方式 <input property="editor" class="mini-outputtext"
+														name="DimFilterType" value="="
+														style="width: 100%; text-align: center;" />
+										</div>
+										<div field="DimFilterValue" width="150" align="center"
+											 headerAlign="center">
+											维表过滤值 <input property="editor" class="mini-textbox"
+														 valueField="value" textField="text" style="width: 100%;"
+														 emptyText="请填写过滤值" allowInput="true">
+										</div>
+										<div visible="false" field="DimFieldNameEN"></div>
+										<div visible="false" field="RelateType"></div>
+										<div name="action" width="60" headerAlign="center"
+											 align="center" renderer="onActionRenderer2"
+											 cellStyle="padding:0;">操作</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="jhlx">
+					<div role="control" label="聚合类型" starred="true">
+						<input class="mini-combobox" action="groupbytypeModel"
+							   id="groupbytype" bind="dataBean.groupbytype" textField="text"
+							   valueField="id" emptyText="请选择" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row" class="data" id="tjgz">
+					<div role="control" label="条件规则">
+						<div style="border: 1px solid #ccc;">
+							<div id="datagrid1" action="getFilterlistModel"
+								 class="mini-datagrid" style="width: 100%; height: 250px;"
+								 allowResize="true" idField="id"
+								 emptyText="过滤条件为空，<a href='javascript:newRow()' style='color:blue;text-decoration:underline;'>增加一条</a>"
+								 showEmptyText="true" oncellbeginedit="OnCellBeginEdit"
+								 showPager="false">
+								<div property="columns">
+									<div field="DataFieldNameEN" displayField="DataFieldNameCN"
+										 width="150" align="center" headerAlign="center">
+										数据表字段 <input property="editor" class="mini-combobox"
+													 valueField="value" textField="text" style="width: 100%;"
+													 required="true" requiredErrorText="数据表字段不能为空"
+													 allowInput="true" emptyText="请选择"
+													 onvaluechanged="onDataFieldGuidValueChanged">
+									</div>
+									<!--ComboBox：本地数据-->
+									<div field="FilterType" width="50" align="center"
+										 headerAlign="center">
+										过滤条件 <input property="editor" class="mini-combobox"
+													style="width: 100%;" data="fConditonDatas" required="true"
+													requiredErrorText="过滤条件不能为空" emptyText="请选择" />
+									</div>
+									<div field="FilterValue" displayField="FilterValueNameCN"
+										 width="150" align="center" headerAlign="center"
+										 name="FilterValue">
+										过滤值 <input property="editor" class="mini-combobox"
+												   valueField="value" textField="text" style="width: 100%;"
+												   required="true" requiredErrorText="过滤值不能为空"
+												   allowInput="true" emptyText="请选择">
+									</div>
+									<div name="action" width="120" headerAlign="center"
+										 align="center" renderer="onActionRenderer"
+										 cellStyle="padding:0;">操作</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="timeDiv">
+					<div role="control" label="时间字段" id="">
+						<input id="timefieldguid" name="timefieldguid"
+							   class="mini-combobox" valueField="id" textField="text"
+							   bind="dataBean.timefieldnameen" action="getTimeFieldList"
+							   emptyText="请选择" onvaluechanged="ontimefieldvaluechanged"
+							   oncloseclick="onCloseClick" showclose="true" allowInput="true" />
+					</div>
+					<div role="control" label="时间窗口" starred="true" id="timewindowCon">
+						<div class="mini-radiobuttonlist" action="timewindowModel"
+							 id="timewindow" bind="dataBean.timewindow"
+							 onvaluechanged="onTimewindowChanged"></div>
+					</div>
+				</div>
+				<div role="row" id="timeDiv1">
+					<div role="control" label="统计周期">
+						<input id="statisticsCycle" name="statisticsCycle"
+							   class="mini-combobox" valueField="id" textField="text"
+							   bind="dataBean.statisticsCycle" action="getStatisticsCycleList"
+							   emptyText="请选择" onvaluechanged="onStatisticsCycleChanged"
+							   oncloseclick="onCloseClick" showclose="true" />
+					</div>
+					<div role="control" label="是否累加" starred="true" id="isCumsumCon">
+						<div class="mini-radiobuttonlist" id="isCumsum"
+							 bind="dataBean.isCumsum"
+							 data="[{text:'是',id:'1'},{text:'否',id:'0'}]" textField="text"
+							 valueField="id"></div>
+					</div>
+				</div>
+				<div role="row" id="resCount">
+					<div role="control" label="结果数量">
+						<input id="resultCount" name="resultCount" class="mini-textbox"
+							   bind="dataBean.resultCount" vtype="int;range:1,50;"
+							   onvaluechanged="onResultCountChanged" />
+					</div>
+					<div role="control" label="排序方式" starred="true" id="sortOrderCon">
+						<div class="mini-radiobuttonlist" action="getSortOrderList"
+							 id="sortOrder" bind="dataBean.sortOrder"></div>
+					</div>
+				</div>
+				<div role="row" id="sortColumn">
+					<div role="control" label="排序字段" starred="true">
+						<input class="mini-combobox" action="getSortColumnList"
+							   required="required" requiredErrorText="排序字段不能为空"
+							   bind="dataBean.sortColumn" id="sortColumnText" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div class="tags" style="display: none;">
+					<div role="row">
+						<div role="control" label="来源主体" starred="true">
+							<input id="entityguid" name="entityguid"
+								   onvaluechanged="entityChanged" class="mini-combobox"
+								   textField="text" valueField="id" action="getEntityList"
+								   emptyText="请选择" allowInput="true" bind="dataBean.entityalias" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="来源标签" starred="true">
+							<input id="datatag" name="datatag" class="mini-combobox"
+								   textField="text" valueField="id" action="getTagList"
+								   emptyText="请选择" allowInput="true" bind="dataBean.tagalias" />
+						</div>
+					</div>
+					<div role="row" id="tagdim">
+						<div role="control" label="维度标签" starred="true">
+							<input id="dimtag" name="dimtag" multiSelect="true"
+								   class="mini-combobox" textField="text" valueField="id"
+								   action="getTagList" emptyText="请选择" allowInput="true"
+								   bind="dataBean.dimtagalias" />
+						</div>
+					</div>
+					<div role="row" class="data">
+						<div role="control" label="过滤条件">
+							<div style="border: 1px solid #ccc;">
+								<div id="datagrid3" action="getFilterlistModel"
+									 class="mini-datagrid" style="width: 100%; height: 250px;"
+									 allowResize="true" idField="id"
+									 emptyText="过滤条件为空，<a href='javascript:newRow3()' style='color:blue;text-decoration:underline;'>增加一条</a>"
+									 showEmptyText="true" oncellbeginedit="OnCellBeginEdit3"
+									 showPager="false">
+									<div property="columns">
+										<div field="DataFieldNameEN" displayField="DataFieldNameCN"
+											 width="150" align="center" headerAlign="center">
+											标签字段 <input property="editor" class="mini-combobox"
+														valueField="value" textField="text" style="width: 100%;"
+														required="true" requiredErrorText="标签字段不能为空"
+														allowInput="true" emptyText="请选择"
+														onvaluechanged="onDataTagValueChanged">
+										</div>
+										<!--ComboBox：本地数据-->
+										<div field="FilterType" width="50" align="center"
+											 headerAlign="center">
+											过滤条件 <input property="editor" class="mini-combobox"
+														style="width: 100%;" data="fConditonDatas" required="true"
+														requiredErrorText="过滤条件不能为空" emptyText="请选择" />
+										</div>
+										<div field="FilterValue" displayField="FilterValueNameCN"
+											 width="150" align="center" headerAlign="center"
+											 name="FilterValue">
+											过滤值 <input property="editor" class="mini-textbox"
+													   valueField="value" textField="text" style="width: 100%;"
+													   required="true" requiredErrorText="过滤值不能为空"
+													   allowInput="true">
+										</div>
+										<div name="action" width="120" headerAlign="center"
+											 align="center" renderer="onActionRenderer3"
+											 cellStyle="padding:0;">操作</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="结果数量">
+							<input id="tagresultCount" name="resultCount"
+								   class="mini-textbox" bind="dataBean.tagResultCount"
+								   vtype="int;range:1,50;" onvaluechanged="tagResultCountChanged" />
+						</div>
+						<div role="control" label="排序方式" id="tagSortOrderCon">
+							<div class="mini-radiobuttonlist" action="getSortOrderList"
+								 id="tagsortOrder" bind="dataBean.tagSortOrder" value="asc"></div>
+						</div>
+					</div>
+					<div role="row" id="tagSortColumn">
+						<div role="control" label="排序字段">
+							<input class="mini-combobox" action="getTagList"
+								   bind="dataBean.tagSortColumn" id="tagsortColumnText" />
+						</div>
+						<div role="control"></div>
+					</div>
+				</div>
+				<div class="APIType" id="APIType">
+					<div role="row">
+						<div role="control" label="API">
+							<input id="API" class="mini-buttonedit"
+								   onbuttonclick="onAPISelected();" allowInput="false"
+								   required="required" requiredErrorText="API不能为空"
+								   bind="dataBean.apiguid" />
+						</div>
+						<div id="APIInfo" style="display: none;">
+							<input id="apiurl" /><input id="requestType" /><input
+								id="apiguid" />
+						</div>
+					</div>
+					<div role="row">
+						<div class="form-label">参数:</div>
+						<div class="form-control span2">
+								<pre id="params" class="ace_editor"
+									 style="width: 100%; height: 200px; border: 1px solid #9e9e9e;"></pre>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="是否数据过滤" starred="true">
+							<div id="isapifilter" name="isapifilter"
+								 bind="dataBean.isapifilter" class="mini-checkbox switch"></div>
+						</div>
+						<div class="form-label">过滤器:</div>
+						<div class="form-control span2">
+								<pre id="resultFilter" class="ace_editor"
+									 style="width: 100%; height: 200px; border: 1px solid #9e9e9e;"></pre>
+						</div>
+						<div id="resultScipt">
+							<script>
+								function initFilter() {
+
+								}
+							</script>
+						</div>
+					</div>
+					<div class="form-row" id="hyperbutton">
+						<div class="form-control span3">
+							<a class="mini-button" onClick="callApi()"
+							   style="float: right; width: 100px">调用服务</a>
+						</div>
+						<!--  <div class="form-control span3">
+                            <a class="mini-button" onClick="applyFilter"
+                                style="float: right; width: 128px">结果过滤</a>
+                        </div>  -->
+					</div>
+					<div role="row" style="position: relative;">
+						<div class="form-label">结果:</div>
+						<div class="form-control span2">
+								<pre id="apiResult" class="ace_editor"
+									 style="width: 100%; height: 330px; border: 1px solid #9e9e9e;"></pre>
+						</div>
+						<div class="form-label">映射:</div>
+						<div class="form-control span2">
+							<div id="matchgrid" class="mini-datagrid" showpager="false"
+								 allowCellEdit="true" allowCellSelect="true">
+								<div property="columns">
+									<div field="fieldname" displayfield="fielddisplayname"
+										 width="120" headerAlign="center" align="center"
+										 readOnly="true">预置字段</div>
+									<div field="matchname" width="120" headerAlign="center"
+										 align="center">
+										结果字段<input property="editor" class="mini-textbox"
+												   valueField="value" textField="text" style="width: 100%;"
+												   emptyText="请填写过滤值" allowInput="true">
+									</div>
+									<div field="status" width="120" headerAlign="center"
+										 align="center" readOnly="true">匹配状态</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="row">
+						<div class="form-label">请求头json：</div>
+						<div class="form-control span2">
+							<input id="headers" class="mini-textbox" bind="dataBean.headers"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="step-third hidden">
+		<div class="fui-form" id="fui-form2">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="API">
+						<input id="testapi" class="mini-textbox" readOnly="true"
+							   bind="testapiurl" />
+					</div>
+				</div>
+				<div role="row" id="rightConf">
+					<div role="control" label="权限控制">
+						<input id="rightControl" name="rightControl"
+							   class="mini-radiobuttonlist" bind="dataBean.rightControl"
+							   data="[{text:'是',id:'1'},{text:'否',id:'0'}]" textField="text"
+							   valueField="id" onvaluechanged="onRightControlChanged" />
+					</div>
+					<div role="control" label="权限控制字段" starred="true"
+						 id="rightControlFieldCon">
+						<div class="mini-combobox" action="getFieldList"
+							 required="required" requiredErrorText="权限控制字段不能为空"
+							 id="rightControlField" bind="dataBean.rightControlFieldNameEn"></div>
+					</div>
+				</div>
+				<div class="fui-block" style="padding-left:132px">
+					<div class="fui-block-hd">输入参数</div>
+					<div role="control" label="返回结果">
+						<div class="mini-outputtext" bind="dataBean.inputparam"
+							 style="height: 100px;width: 100%"></div>
+					</div>
+<!--					<div class="fui-block-bd">-->
+<!--						<div id="datagrid" action="getDataGridData" class="mini-datagrid"-->
+<!--							 style="width: 100%; height: 180px;" allowResize="true"-->
+<!--							 idField="id" showEmptyText="true" showPager="false"-->
+<!--							 allowCellEdit="true" allowCellSelect="true">-->
+<!--							<div property="columns">-->
+<!--								<div field="paramname" displayField="paramname" width="150"-->
+<!--									 align="center" headerAlign="center">参数名称</div>-->
+<!--								<div field="paramtype" width="80" align="center"-->
+<!--									 headerAlign="center">字段类型</div>-->
+<!--								<div field="isneed" width="80" align="center"-->
+<!--									 headerAlign="center">必填</div>-->
+<!--								<div field="paramvalue" displayField="paramvalue" width="150"-->
+<!--									 align="center" headerAlign="center" name="paramvalue">-->
+<!--									值 <input property="editor" class="mini-textbox"-->
+<!--											 style="width: 99%" />-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+					<div class="fui-block-hd">测试结果</div>
+					<div class="fui-block-bd">
+						<div class="btn-group">
+							<a class="mini-button mini-btn-primary" onclick="getNormData()">开始测试</a>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="返回结果">
+						<div class="mini-textarea" id="testapiresult"
+							 style="height: 100px"></div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+<div class="step-footer pd-l-15 pd-r-15">
+	<div class="footer-first text-center ">
+		<a class="mini-button" onclick="saveBasicInfo">暂存</a> <a
+			class="mini-button mini-btn-primary first-next">下一步</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+	<div class="footer-second text-center hidden">
+		<a class="mini-button" onclick="saveRuleInfo">保存</a> <a
+			class="mini-button second-prev">上一步</a> <a
+			class="mini-button mini-btn-primary second-next">下一步</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+	<div class="footer-third text-center hidden">
+		<a class="mini-button mini-btn-primary" onclick="saveThridStep">保存</a><a
+			class="mini-button third-prev">上一步</a> <a class="mini-button"
+													  onclick="epoint.closeDialog">取消</a>
+		<!-- <a class="mini-button">保存</a> -->
+
+	</div>
+
+</div>
+
+
+<!-- 请修改相对路径 -->
+<script src="../../../../../rest/resource/jsboot"></script>
+<script src="../../../../../epointdemo/js/beautify.min.js"></script>
+<script src="./js/ace.js"></script>
+<script src="./js/util.js"></script>
+<!-- <script src="./js/cockpitnormadd.js"></script> -->
+<script>
+	var grid = mini.get("datagrid1");
+	var grid2 = mini.get('datagrid2');
+	var grid3 = mini.get("datagrid3");
+	var matchinfo;
+	var maxDimNum;
+    var normdomainGuid;
+	var dxpresturl;
+	var time_;
+	var dxpsql = '';
+	epoint.initPage(
+		'cockpitnormaddnewaction',
+		null,
+		function(data) {
+			maxDimNum = data.maxDimNum;
+			var type = mini.get('normtype').getValue();
+			var configtype = mini.get('configtype').getValue();
+			if (data.isAdmin != true) {
+				mini.get('liableou').disable();
+			}
+			if (data.liableOuName) {
+				mini.get('liableou').setText(data.liableOuName);
+			}
+			if (data.operationpersonname) {
+				mini.get("operationperson").setText(
+						data.operationpersonname);
+			}
+			typeChanged('init');
+			var timefieldguid = mini.get('timefieldguid')
+					.getValue();
+			if (timefieldguid) {
+				Util.form.showField('#timewindowCon');
+				$('#timeDiv1').show();
+				var statisticsCycle = mini.get(
+						"statisticsCycle").getValue();
+				if (statisticsCycle) {
+					Util.form.showField('#statisticsCycle');
+					Util.form.showField('#isCumsumCon');
+				} else {
+					Util.form.hideField('#isCumsumCon');
+				}
+			}
+			var rightControl = mini.get('rightControl')
+					.getValue();
+			if (rightControl == '1') {
+				Util.form.showField('#rightControlFieldCon');
+			} else {
+				Util.form.hideField('#rightControlFieldCon');
+			}
+			var resultCount = mini.get('resultCount')
+					.getValue();
+			if (resultCount) {
+				Util.form.showField('#sortOrderCon');
+				if (mini.get("normtype").getValue() == "4") {
+					$('#sortColumn').show();
+				}
+			} else {
+				Util.form.hideField('#sortOrderCon');
+				$('#sortColumn').hide();
+			}
+			if (data.operationpersonname) {
+				mini.get("operationperson").setText(
+						data.operationpersonname);
+			}
+			var grid2data = mini.get("datagrid2").getData();
+			if (grid2data.length > 0) {
+				var value = "", text = "";
+				for (var i = 0; i < grid2data.length; i++) {
+					value += "," + grid2data[i].DataFieldNameEN;
+					text += "," + grid2data[i].DataFieldName;
+				}
+				mini.get('dimfieldguid').setValue(
+						value.substring(1));
+				mini.get('dimfieldguid').setText(
+						text.substring(1));
+				if (grid2data[0].DimFieldNameEN) {
+					mini.get('dimvalue').setValue(
+							grid2data[0].DimFieldNameEN);
+					mini.get('dimvalue').setText(
+							grid2data[0].DimFieldName);
+				}
+			}
+			if (configtype == "3") {
+				ajaxParamsEditor.setValue(js_beautify(data.apiparams));
+				ajaxFilterEditor.setValue(data.apifilter);
+				ajaxResultEditor.setValue(js_beautify(data.apiresult));
+				if (data.matchtext) {
+					matchinfo = data.matchtext;
+					var matchgrid = mini.get("matchgrid");
+					var matchtext = JSON.parse(data.matchtext);
+					for (var i = 0; i < matchgrid.getData().length; i++) {
+						var row = matchgrid.getRow(i);
+						if (matchtext[row.fieldname]) {
+							matchgrid.updateRow(
+								row,
+								{
+									matchname : matchtext[row.fieldname]
+								});
+							matchgrid.updateRow(row, {
+								status : "匹配成功"
+							});
+						}
+					}
+				}
+				epoint.execute("getApiInfo", "@none",
+						data.apiguid, loadApiInfo);
+				mini.get("headers").setValue(data.headers);
+			}
+			var customtype = mini.get('customtype').getValue();
+			if (customtype == '2') {
+				$("#prestodatasource").hide();
+				$("#generatesqldiv").show();
+				$("#backtomodeldiv").show();
+				$("#datasource").show();
+			}
+			var flowguid = mini.get('flowguid').getValue();
+			if (flowguid) {
+				dxpresturl = data.dxpresturl;
+				Util.form.showField('#dxppagebutton');
+				ispresto="1";
+				if(data.gensql){
+					dxpsql = data.gensql;
+				}
+			}
+			else{
+				Util.form.hideField('#dxppagebutton');
+			}
+			
+        	mini.get('normdomain').setText(data.normdomainName);
+	        // 指标分类对应的部门guid
+        	normdomainGuid = data.normdomainGuid;
+		});
+
+	var $stepItemFirst = $('.step-item-first'), $stepItemSecond = $('.step-item-second'), $stepItemThird = $('.step-item-third'), $stepItemLast = $('.step-item-last');
+	function saveBasicInfo() {
+		if (epoint.validate()) {
+			epoint.execute('saveBasicInfo', [ 'fui-form' ], function(data) {
+				if (data.rowguid) {
+					mini.get('rowguid').setValue(data.rowguid);
+				}
+				if (data.xxljobid) {
+					mini.get('xxljobid').setValue(data.xxljobid);
+				}
+				epoint.alert(data.msg, '', null, null, 'info');
+			});
+		}
+	}
+	// 判断校验数据资源库内容
+	mini.get("datasourceid").on("blur", function (e) {
+		var datasourceId = mini.get("datasourceid").getSelected();
+		if(!datasourceId){
+			mini.alert("请选择下拉选项中有效的数据资源库信息！");
+			mini.get("datasourceid").setValue("");
+		}
+	});
+	
+	function saveThridStep() {
+		if (!epoint.validate()) {
+			return;
+		}
+		var type = mini.get('normtype').getValue();
+		var configtype = mini.get('configtype').getValue();
+		var griddata = grid.getData();
+		var dataStr = JSON.stringify(griddata);
+		var griddata2 = grid2.getData();
+		var dataStr2 = JSON.stringify(griddata2);
+		var griddata3 = grid3.getData();
+		var dataStr3 = JSON.stringify(griddata3);
+		
+		if (configtype == '6' && ispresto=="1") {
+			var flowguid = mini.get('flowguid').getValue();
+			var generatesqlhide = mini.get('generatesqlhide').getValue(); 
+			console.log("flowguid===" + flowguid);
+			epoint.execute('getPrestoSql', '', flowguid, function(sql) {
+				if(generatesqlhide != sql){
+					epoint.alert("修改模型后，未同步sql，无法保存，请点击sql输入框进行同步sql操作！");
+				}
+				else{
+					epoint.execute('saveRuleInfo', [ 'fui-form',
+						'fui-form1' ], [ dataStr, dataStr2, dataStr3,
+						"", "", "", "", "" ], saveCallback);
+				}
+			});
+		}
+		else{
+			// api类型
+			if (configtype == "3") {
+				var matchArray = mini.get("matchgrid").getData();
+				var matchMap = "{";
+				for (var i = 0; i < matchArray.length; i++) {
+					if (type == "1"
+							&& matchArray[i].fieldname == "fieldcount"
+							&& matchArray[i].status == "未匹配") {
+						epoint.alert("单值指标需要匹配指标值");
+						return;
+					}
+					if (type == "2"
+							&& matchArray[i].fieldname == "fielddim"
+							&& matchArray[i].status == "未匹配") {
+						epoint.alert("多值指标至少需要匹配一个维度字段");
+						return;
+					}
+					if (matchArray[i].status == "匹配成功") {
+						matchMap += "\"" + matchArray[i].fieldname
+								+ "\":\"" + matchArray[i].matchname + "\",";
+					}
+				}
+				matchMap = matchMap.length = 1 ? "{" : matchMap.substring(0, matchMap.length - 1);
+				matchMap += "}"
+				matchMap = JSON.parse(matchMap);
+
+				if (ace.edit("params").getValue() == null
+						|| ace.edit("params").getValue() == "") {
+					epoint.alert("未填写参数");
+					return;
+				}
+				// 保证格式
+				// document.getElementById("matchtext1").innerHTML != "匹配成功"
+				// 重做
+				mini.get("dimtableguid").setValue(null);
+				mini.get("dimfieldguid").setValue(null);
+				mini.get("groupbytype").setValue(null);
+				mini.get("timefieldguid").setValue(null);
+				mini.get("timewindow").setValue(null);
+				mini.get("statisticsCycle").setValue(null);
+				mini.get("isCumsum").setValue(null);
+				epoint.execute('saveRuleInfo', [ 'fui-form', 'fui-form1',
+					'fui-form2' ], [
+					"",
+					"",
+					"",
+					JSON.stringify(eval("(" + ajaxParamsEditor.getValue() + ")")),
+					ajaxFilterEditor.getValue(),
+					matchMap ? matchMap : "",
+					ajaxResultEditor.getValue() == "" ? "" : JSON.stringify(eval("(" + ajaxResultEditor.getValue() + ")"))
+					], saveCallback);
+			} else {
+				if ("1" == type || "4" == type) {
+					mini.get("dimtableguid").setValue(null);
+					mini.get("dimfieldguid").setValue(null);
+
+				}
+				if ("4" == type) {
+					mini.get("groupbytype").setValue(null);
+					mini.get("timefieldguid").setValue(null);
+					mini.get("timewindow").setValue(null);
+					mini.get("statisticsCycle").setValue(null);
+					mini.get("isCumsum").setValue(null);
+				}
+				if ("1" == configtype
+						&& ("2" == type && griddata2.length < 1)) {
+					epoint.alert("组合字段未设置完全");
+				} else {
+					epoint.execute('saveRuleInfo', [ 'fui-form',
+								'fui-form1', 'fui-form2' ], [ dataStr,
+								dataStr2, dataStr3, "", "", "", "", "" ],
+								saveCallback);
+				}
+			}
+		}
+	}
+
+	function saveRuleInfo() {
+		if (epoint.validate()) {
+			var type = mini.get('normtype').getValue();
+			var configtype = mini.get('configtype').getValue();
+			var griddata = grid.getData();
+			var dataStr = JSON.stringify(griddata);
+			var griddata2 = grid2.getData();
+			var dataStr2 = JSON.stringify(griddata2);
+			var griddata3 = grid3.getData();
+			var dataStr3 = JSON.stringify(griddata3);
+			
+			if (configtype == '6' && ispresto=="1") {
+				var flowguid = mini.get('flowguid').getValue();
+				var generatesqlhide = mini.get('generatesqlhide').getValue(); 
+				console.log("flowguid===" + flowguid);
+				epoint.execute('getPrestoSql', '', flowguid, function(sql) {
+					if(generatesqlhide != sql){
+						epoint.alert("修改模型后，未同步sql，无法保存，请点击sql输入框进行同步sql操作！");
+					}
+					else{
+						epoint.execute('saveRuleInfo', [ 'fui-form',
+							'fui-form1' ], [ dataStr, dataStr2, dataStr3,
+							"", "", "", "", "" ], closeCallback);
+					}
+				});
+			}
+			else{
+				// api类型
+				if (configtype == "3") {
+					var matchArray = mini.get("matchgrid").getData();
+					var matchMap = "{";
+					for (var i = 0; i < matchArray.length; i++) {
+						if (type == "1"
+								&& matchArray[i].fieldname == "fieldcount"
+								&& matchArray[i].status == "未匹配") {
+							epoint.alert("单值指标需要匹配指标值");
+							return;
+						}
+						if (type == "2"
+								&& matchArray[i].fieldname == "fielddim"
+								&& matchArray[i].status == "未匹配") {
+							epoint.alert("多值指标至少需要匹配一个维度字段");
+							return;
+						}
+						if (matchArray[i].status == "匹配成功") {
+							matchMap += "\"" + matchArray[i].fieldname
+									+ "\":\"" + matchArray[i].matchname + "\",";
+						}
+					}
+					matchMap = matchMap.length = 1 ? "{" : matchMap.substring(0, matchMap.length - 1);
+					matchMap += "}"
+					matchMap = JSON.parse(matchMap);
+	
+					if (ace.edit("params").getValue() == null
+							|| ace.edit("params").getValue() == "") {
+						epoint.alert("未填写参数");
+						return;
+					}
+					// 保证格式
+					// document.getElementById("matchtext1").innerHTML != "匹配成功"
+					// 重做
+					mini.get("dimtableguid").setValue(null);
+					mini.get("dimfieldguid").setValue(null);
+					mini.get("groupbytype").setValue(null);
+					mini.get("timefieldguid").setValue(null);
+					mini.get("timewindow").setValue(null);
+					mini.get("statisticsCycle").setValue(null);
+					mini.get("isCumsum").setValue(null);
+					epoint.execute(
+						'saveRuleInfo',
+						[ 'fui-form', 'fui-form1' ],
+						[
+							"",
+							"",
+							"",
+							JSON.stringify(eval("(" + ajaxParamsEditor.getValue() + ")")),
+							ajaxFilterEditor.getValue(),
+							matchMap ? matchMap : "",
+							ajaxResultEditor.getValue() == "" ? "" : JSON.stringify(eval("(" + ajaxResultEditor.getValue() + ")"))
+							], closeCallback);
+				} else {
+					if ("1" == type || "4" == type) {
+						mini.get("dimtableguid").setValue(null);
+						mini.get("dimfieldguid").setValue(null);
+	
+					}
+					if ("4" == type) {
+						mini.get("groupbytype").setValue(null);
+						mini.get("timefieldguid").setValue(null);
+						mini.get("timewindow").setValue(null);
+						mini.get("statisticsCycle").setValue(null);
+						mini.get("isCumsum").setValue(null);
+					}
+					if ("1" == configtype
+							&& ("2" == type && griddata2.length < 1)) {
+						epoint.alert("组合字段未设置完全");
+					} else {
+						epoint.execute('saveRuleInfo', [ 'fui-form',
+							'fui-form1' ], [ dataStr, dataStr2, dataStr3,
+							"", "", "", "", "" ], closeCallback);
+					}
+				}
+			}
+
+		}
+	}
+
+	function saveCallback(data) {
+		if (data.rowguid) {
+			mini.get('rowguid').setValue(data.rowguid);
+		}
+		if (data.xxljobid) {
+			mini.get('xxljobid').setValue(data.xxljobid);
+		}
+		if (data.error) {
+			epoint.alert(data.error, '', null, null, 'error');
+		} else {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, null, 'info');
+			}
+		}
+	}
+	
+	function closeCallback(data) {
+		if (data.rowguid) {
+			mini.get('rowguid').setValue(data.rowguid);
+		}
+		if (data.xxljobid) {
+			mini.get('xxljobid').setValue(data.xxljobid);
+		}
+		if (data.error) {
+			epoint.alert(data.error, '', null, null, 'error');
+		} else {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+	}
+
+	$('body').on('click', '.first-next', function() {
+		showStepTwo()
+	}).on('click', '.second-next', function() {
+		showStepThree();
+	}).on('click', '.second-prev', function() {
+		// 上一步
+		showStepOne();
+	}).on('click', '.third-prev', function() {
+		// 高级设置的上一步
+		showStepTwo();
+	});
+
+	function showStepOne() {
+		$stepItemFirst.addClass('active').removeClass('complete');
+		$stepItemSecond.removeClass('active complete');
+		$stepItemThird.removeClass('active complete');
+		$('.footer-first').removeClass('hidden').siblings().addClass(
+				'hidden');
+		$('.step-first').removeClass('hidden').siblings()
+				.addClass('hidden');
+	}
+
+	function showStepTwo() {
+		if (epoint.validate()) {
+			$stepItemFirst.removeClass('active').addClass('complete');
+			$stepItemSecond.addClass('active').removeClass('complete');
+			$stepItemThird.removeClass('active complete');
+			$('.step-second').removeClass('hidden').siblings().addClass(
+					'hidden');
+			$('.footer-second').removeClass('hidden').siblings().addClass(
+					'hidden');
+		}
+	}
+
+	function showStepThree() {
+		if (epoint.validate()) {
+			$stepItemFirst.removeClass('active').addClass('complete');
+			$stepItemSecond.addClass('active').addClass('complete');
+			$stepItemThird.addClass('active').removeClass('complete');
+			$('.step-third').removeClass('hidden').siblings()
+					.addClass('hidden');
+			$('.footer-third').removeClass('hidden').siblings().addClass(
+					'hidden');
+		}
+		
+	}
+
+	function beforenodeselect(e) {
+		// 禁止选中 ckr=false节点
+		if (e.node.ckr == false) {
+			e.cancel = true;
+		}
+	}
+
+	function beforenormdomainselect(e) {
+		// 禁止选中type = ou节点
+		if (e.node.type == "ou") {
+			e.cancel = true;
+		}
+	}
+
+	function onTypeChanged(e) {
+		var datafieldguid = mini.get('datafieldguid').getValue();
+		if (datafieldguid) {
+			mini.get('datafieldguid').setValue(null);
+		}
+		typeChanged(e);
+	}
+
+	function typeChanged(e) {
+		
+		var type = mini.get('normtype').getValue();
+		var configtype = mini.get('configtype').getValue();
+		
+		if (e != 'init') {
+			//切换指标类型时候，置空
+			grid.clearRows();
+			grid2.clearRows();
+			mini.get('timefieldguid').setValue("");
+			mini.get('timewindow').setValue("");
+			mini.get('resultCount').setValue("");
+			mini.get('rightControl').setValue("0");
+			mini.get('rightControlField').setValue("");
+			mini.get('statisticsCycle').setValue("");
+		}
+		if(type == "4" || type == "5"){
+			Util.form.hideField("#iswarning");
+		}
+		else{
+			Util.form.showField("#iswarning");
+		}
+		// 维度来源
+		if (configtype == '1') {
+			$(".tags").hide();
+			$("#data").show();
+			$("#datasource").show();
+			$("#tjgz").show();
+			$("#resCount").show();
+			$("#rightConf").show();
+			$("#jhlx").show();
+			$("#APIType").hide();
+			$("#prestodatasource").hide();
+			$("#generatesqldiv").hide();
+			$("#backtomodeldiv").hide();
+			//to do 根据字段是否有值判断显示
+			if (type == '1') {//单值指标
+				//$("#data").show();
+				//$("#wdzd").hide();
+				$("#dimGridDiv").hide();
+				$("#jgsl").hide();
+				$("#timeDiv").show();
+				Util.form.hideField('#timewindowCon');
+				$("#timeDiv1").hide();
+				Util.form.hideField('#isCumsumCon');
+				//Util.form.hideField('#statisticsCycle');
+				Util.form.hideField("#sortOrderCon");
+				Util.form.hideField("#rightControlFieldCon");
+				$("#sortColumn").hide();
+				mini.get("datafieldguid").setMultiSelect(false);
+				$("#prestodatasource").hide();
+				$(".dim").hide();
+			}
+			if (type == '2') {
+				//$("#wdzd").show();
+				$("#dimGridDiv").show();
+				$("#jgsl").hide();
+				$("#timeDiv").show();
+				Util.form.hideField('#timewindowCon');
+				$("#timeDiv1").hide();
+				Util.form.hideField('#isCumsumCon');
+				//Util.form.hideField('#statisticsCycle');
+				Util.form.hideField("#sortOrderCon");
+				Util.form.hideField("#rightControlFieldCon");
+				$("#sortColumn").hide();
+				mini.get("datafieldguid").setMultiSelect(false);
+				$("#prestodatasource").hide();
+				$(".dim").show();
+			}
+			if (type == '4') {//列表指标
+				//$("#wdzd").hide();
+				$("#dimGridDiv").hide();
+				$("#jgsl").show();
+				$("#jhlx").hide();
+				$("#timeDiv").hide();
+				$("#timeDiv1").hide();
+				Util.form.hideField("#sortOrderCon");
+				Util.form.hideField("#rightControlFieldCon");
+				$("#sortColumn").show();
+				mini.get("datafieldguid").setMultiSelect(true);
+				$("#prestodatasource").hide();
+				$(".dim").hide();
+			}
+		}
+		if (configtype == '5') {//标签类型
+			//$("#wdzd").hide();
+			$("#dimGridDiv").hide();
+			$("#jgsl").hide();
+			$("#timeDiv").hide();
+			Util.form.hideField('#timewindowCon');
+			$("#timeDiv1").hide();
+			Util.form.hideField('#isCumsumCon');
+			Util.form.hideField('#statisticsCycle');
+			Util.form.hideField("#sortOrderCon");
+			Util.form.hideField("#rightControlFieldCon");
+			$("#sortColumn").hide();
+			$("#datasource").hide();
+			$("#data").hide();
+			$("#dimGridDiv").hide();
+			$("#tjgz").hide();
+			$("#resCount").hide();
+			$("#rightConf").hide();
+			$(".tags").show();
+			$('#tagSortColumn').hide();
+			Util.form.hideField("#tagSortOrderCon");
+			$("#prestodatasource").hide();
+			$(".dim").hide();
+			$("#APIType").hide();
+			Util.form.hideField("#jhlx");
+			Util.form.hideField("#tagSortOrderCon");
+			var resultCount = mini.get("tagresultCount").getValue();
+			if ("1" == type) {
+				$("#tagdim").hide();
+				$("#tagSortColumn").hide();
+				Util.form.showField("#jhlx");
+				if (resultCount) {
+					Util.form.showField("#tagSortOrderCon");
+				}
+			} else if ("2" == type) {
+				$("#tagdim").show();
+				$("#tagSortColumn").hide();
+				Util.form.showField("#jhlx");
+				if (resultCount) {
+					Util.form.showField("#tagSortOrderCon");
+				}
+			} else if ("4" == type) {
+				$("#tagdim").hide();
+				Util.form.hideField("#jhlx");
+				mini.get("datatag").setMultiSelect(true);
+				if (resultCount) {
+					Util.form.showField("#tagSortOrderCon");
+					$("#tagSortColumn").show();
+				}
+			}
+			$("#prestodatasource").hide();
+			$("#generatesqldiv").hide();
+			$("#backtomodeldiv").hide();
+		}
+		if (type == '5') {
+			mini.get('configtype').setValue('6');
+			mini.get('configtype').setEnabled(false);
+		}
+		else{
+			mini.get('configtype').setEnabled(true);
+		}
+		configtype = mini.get('configtype').getValue();
+		console.log(configtype);
+		if (configtype == '6') {//高级
+			$("#dimGridDiv").hide();
+			$("#jgsl").hide();
+			$("#timeDiv").hide();
+			Util.form.hideField('#timewindowCon');
+			$("#timeDiv1").hide();
+			Util.form.hideField('#isCumsumCon');
+			Util.form.hideField('#statisticsCycle');
+			Util.form.hideField("#sortOrderCon");
+			Util.form.hideField("#rightControlFieldCon");
+			$("#sortColumn").hide();
+			$("#data").hide();
+			$("#dimGridDiv").hide();
+			$("#tjgz").hide();
+			$("#resCount").hide();
+			$("#rightConf").hide();
+			$(".tags").hide();
+			$('#tagSortColumn').hide();
+			Util.form.hideField("#tagSortOrderCon");
+			$(".tags").hide();
+			$("#jhlx").hide();
+			$(".dim").hide();
+			$("#APIType").hide();
+			$("#").hide();
+			$("#prestodatasource").hide();
+			$("#generatesqldiv").show();
+			$("#backtomodeldiv").show();
+			$('#datasource').show();
+		}
+		if (configtype == '3') {
+			$("#dimGridDiv").hide();
+			$("#jgsl").hide();
+			$("#timeDiv").hide();
+			Util.form.hideField('#timewindowCon');
+			$("#timeDiv1").hide();
+			Util.form.hideField('#isCumsumCon');
+			Util.form.hideField('#statisticsCycle');
+			Util.form.hideField("#sortOrderCon");
+			Util.form.hideField("#rightControlFieldCon");
+			$("#sortColumn").hide();
+			$("#datasource").hide();
+			$("#data").hide();
+			$("#dimGridDiv").hide();
+			$("#tjgz").hide();
+			$("#resCount").hide();
+			$("#rightConf").hide();
+			$(".tags").hide();
+			$('#tagSortColumn').hide();
+			Util.form.hideField("#tagSortOrderCon");
+			$(".tags").hide();
+			$("#jhlx").hide();
+			$("#prestodatasource").hide();
+			$(".dim").hide();
+			$("#APIType").show();
+			initMatchGrid();
+			if (matchinfo) {
+				var matchgrid = mini.get("matchgrid");
+				var matchtext = JSON.parse(matchinfo);
+				for (var i = 0; i < matchgrid.getData().length; i++) {
+					var row = matchgrid.getRow(i);
+					if (matchtext[row.fieldname]) {
+						matchgrid.updateRow(row, {
+							matchname : matchtext[row.fieldname]
+						});
+						matchgrid.updateRow(row, {
+							status : "匹配成功"
+						});
+					}
+				}
+			}
+			$("#prestodatasource").hide();
+			$("#generatesqldiv").hide();
+			$("#backtomodeldiv").hide();
+		}
+	}
+	var ispresto = "0";
+	function datasourceChanged(e) {
+		// 如果是kylin指标，不需要控制其他控件的显隐
+		/* if (lastDatasourceValue == 5) {
+            return;
+        } */
+		var configtype = mini.get('configtype').getValue();
+		if (configtype == '6') {
+			//控制显隐
+			//控制判断是否为presto数据源，控制建模图标显隐
+			var datasourceid = mini.get("datasourceid").getValue();
+			epoint.execute('isPresto', '', [datasourceid], function(data) {
+				if(data.isopen){
+					if(data.isopen == '1'){
+						Util.form.showField('#dxppagebutton');
+						ispresto = "1";
+					}
+					else{
+						ispresto = "0";
+					}
+				}
+				else{
+					Util.form.hideField('#dxppagebutton');
+					ispresto = "0";
+				}
+			});
+			mini.get("generatesql").setValue('');
+			dxpsql = '';
+		} else {
+			var datasourceid = mini.get("datasourceid").getValue();
+			if (datasourceid) {
+				mini.get("dimdatasourceid").setValue(datasourceid);
+			}
+			grid.clearRows();
+			grid2.clearRows();
+			mini.get('datatableguid').setValue("");
+			mini.get('datafieldguid').setValue("");
+			mini.get('timefieldguid').setValue("");
+			epoint.refresh([ 'datasourceid', 'datatableguid' ]);
+			mini.get('dimtableguid').setValue("");
+			mini.get('dimfieldguid').setValue("");
+			epoint.refresh([ 'dimdatasourceid', 'dimtableguid' ]);
+		}
+	}
+
+	function loadData(e) {
+		mini.get('datafieldguid').setValue("");
+		mini.get('timefieldguid').setValue("");
+		mini.get('dimfieldguid').setValue("");
+		var datatableGuid = mini.get("datatableguid").getSelected();
+		if(!datatableGuid){
+			mini.alert("请选择下拉选项中有效的数据资源表信息！");
+			mini.get("datatableguid").setValue("");
+			return;
+		}
+		epoint.refresh([ 'datasourceid', 'datafieldguid', 'datatableguid',
+			'dimfieldguid', 'timefieldguid', 'rightControlField' ]);
+		grid.clearRows();
+		grid.reload();
+		grid2.clearRows();
+		grid2.reload();
+	}
+
+	function adddimconf() {
+		var row = {
+			DataFieldNameEN : dimfields[i],
+			DataFieldName : dimfieldnames[i]
+		};
+		grid2.addRow(row, i);
+	}
+
+	function getTable() {
+		return mini.get('datatableguid').getValue();
+	}
+
+	function newRow() {
+		if (!getTable()) {
+			epoint.alert('请配置数据来源！', '', null, 'warning');
+			return;
+		}
+
+		if (!epoint.validate()) {
+			return;
+		}
+		if (epoint.validate()) {
+			grid.commitEdit();
+		}
+		var row = {};
+		grid.addRow(row, 0);
+		grid.cancelEdit();
+		grid.beginEditRow(row);
+	}
+
+	var haspop = false;
+	function checkDataTableGuid() {
+		if (!haspop && !getTable()) {
+			epoint.alert('请配置数据来源！', '', null, 'warning');
+			haspop = true;
+			return;
+		}
+		haspop = false;
+	}
+
+	function checkSortColumn() {
+		var normtype = mini.get("normtype").getValue();
+		var datafieldGuid = mini.get("datafieldguid").getSelected();
+		if(!datafieldGuid){
+			mini.alert("请选择下拉选项中有效的数据字段信息！");
+			mini.get("datafieldguid").setValue("");
+			return;
+		}
+		if ("4" == normtype) {
+			console.log(mini.get('datafieldguid').getValue());
+			mini.get("sortColumnText").setValue(null);
+			epoint.refresh([ 'datasourceid', 'datafieldguid',
+				'datatableguid', 'sortColumn' ]);
+		}
+	}
+
+	function OnCellBeginEdit(e) {
+		var grid = e.sender;
+		var field = e.field;
+		var editor = e.editor;
+		var record = e.record;
+		if (field == "DataFieldNameEN") {
+			var tableid = mini.get('datatableguid').getValue();
+			var url = "cockpitnormaddnewaction.action?cmd=getFields&tableid="
+					+ tableid;
+			editor.setUrl(url);
+		}
+		if (field == "FilterValue") {
+			var tableid = mini.get('datatableguid').getValue();
+			var DataFieldGuid = record.DataFieldGuid;
+			if (!DataFieldGuid || DataFieldGuid == undefined) {
+				DataFieldGuid = '';
+			}
+			var url = "cockpitnormaddnewaction.action?cmd=getFieldValues&tableid="
+					+ tableid + "&DataFieldGuid=" + DataFieldGuid;
+			editor.setUrl(url);
+		}
+	}
+
+	function onDataFieldGuidValueChanged(e) {
+		var combo = e.sender;
+		var row = grid.getEditorOwnerRow(combo);
+		var editor = grid.getCellEditor("FilterValue", row);
+		var id = combo.getValue();
+		var tableid = mini.get('datatableguid').getValue();
+		var url = "cockpitnormaddnewaction.action?cmd=getFieldValues&tableid="
+				+ tableid + "&DataFieldGuid=" + id;
+		editor.setUrl(url);
+		editor.setValue("");
+	}
+
+	function onActionRenderer(e) {
+		var grid = e.sender;
+		var record = e.record;
+		var uid = record._uid;
+		var rowIndex = e.rowIndex;
+
+		var s = '<a class="New_Button" href="javascript:newRow()" style="color:blue;text-decoration:underline;">新增</a>'
+				+ '&nbsp;&nbsp;<a class="Edit_Button" href="javascript:editRow(\''
+				+ uid
+				+ '\')" style="color:green;text-decoration:underline;">编辑</a>'
+				+ '&nbsp;&nbsp;<a class="Delete_Button" href="javascript:delRow(\''
+				+ uid
+				+ '\')" style="color:red;text-decoration:underline;">删除</a>';
+
+		if (grid.isEditingRow(record)) {
+			s = '<a class="Update_Button" href="javascript:updateRow(\''
+					+ uid
+					+ '\')" style="color:green;text-decoration:underline;">更新</a>'
+					+ '&nbsp;&nbsp;<a class="Cancel_Button" href="javascript:cancelRow(\''
+					+ uid
+					+ '\')" style="color:red;text-decoration:underline;">删除</a>'
+		}
+		return s;
+	}
+
+	var fConditonDatas = [ {
+		id : '=',
+		text : '='
+	}, {
+		id : '!=',
+		text : '!='
+	}, {
+		id : '<=',
+		text : '<='
+	}, {
+		id : '>=',
+		text : '>='
+	}, {
+		id : '<',
+		text : '<'
+	}, {
+		id : '>',
+		text : '>'
+	} ];
+
+	function editRow(row_uid) {
+		var row = grid.getRowByUID(row_uid);
+		if (row) {
+			grid.cancelEdit();
+			grid.beginEditRow(row);
+		}
+	}
+
+	function editRow2(row_uid) {
+		var dimtable = mini.get('dimtableguid').getValue();
+		var dimvalue = mini.get('dimvalue').getValue();
+		var dimtext = mini.get('dimtext').getValue();
+		if (!dimtable || !dimvalue || !dimtext) {
+			epoint.alert('请配置维度信息！', '', null, 'warning');
+			return;
+		}
+		var row = grid2.getRowByUID(row_uid);
+		if (row) {
+			grid2.updateRow(row, {
+				DimFilterRelateType : "="
+			});
+			grid2.cancelEdit();
+			grid2.beginEditRow(row);
+		}
+	}
+
+	function cancelRow(row_uid) {
+		var row = grid.getRowByUID(row_uid);
+		grid.removeRow(row, true);
+	}
+
+	function cancelRow2(row_uid) {
+		var row = grid2.getRowByUID(row_uid);
+		grid2.cancelEdit();
+		grid2.updateRow(row, {
+			DimFilterRelateType : ""
+		});
+	}
+
+	function delRow(row_uid) {
+		var row = grid.getRowByUID(row_uid);
+		grid.removeRow(row, true);
+	}
+
+	function delRow2(row_uid) {
+		var row = grid2.getRowByUID(row_uid);
+		grid2.removeRow(row, true);
+	}
+
+	function updateRow(row_uid) {
+		var row = grid.getRowByUID(row_uid);
+		if (epoint.validate()) {
+			grid.commitEdit();
+		}
+	}
+
+	function updateRow2(row_uid) {
+		var row = grid2.getRowByUID(row_uid);
+		var dimvalue = mini.get('dimvalue').getValue();
+		var DataFieldName = row.DataFieldName;
+		var DimFilterFieldNameEN = grid2.getCellEditor(grid2.getColumn(1),
+				row).getValue();
+		var DimFilterValue = grid2.getCellEditor(grid2.getColumn(3), row)
+				.getValue();
+		if (DimFilterFieldNameEN && DimFilterValue) {// 验证
+			grid2.commitEdit();
+			grid2.updateRow(row, {
+				DimFilterRelateType : "=",
+				DimFieldNameEN : dimvalue,
+				RelateType : "=",
+				DataFieldName : DataFieldName
+			});
+		} else {
+			epoint.alert("维表过滤字段/值未配置");
+		}
+	}
+
+	// 时间字段值改变事件
+	function ontimefieldvaluechanged(e) {
+		if (e.value) {
+			Util.form.showField('#timewindowCon');
+			$("#timeDiv1").show();
+			Util.form.showField('#statisticsCycle');
+			mini.get('timewindow').setValue("4");
+		} else {
+			Util.form.hideField('#timewindowCon');
+			$("#timeDiv1").hide();
+			Util.form.hideField('#statisticsCycle');
+			mini.get('timewindow').setValue("");
+			mini.get('statisticsCycle').setValue("");
+		}
+	}
+
+	function onTimewindowChanged(e) {
+		var statisticsCycle = mini.get('statisticsCycle').getValue();
+		if (statisticsCycle == 5) {
+			statisticsCycle = 3;
+		}
+		if (statisticsCycle == 6) {
+			statisticsCycle = 2;
+		}
+		if (statisticsCycle == 7) {
+			statisticsCycle = 1.5;
+		}
+		if (statisticsCycle == 8) {
+			statisticsCycle = 1.5;
+		}
+		if (statisticsCycle == 9) {
+			statisticsCycle = 1;
+		}
+		if (e.value && statisticsCycle && statisticsCycle > e.value) {
+			mini.get('timewindow').setValue("4");
+			epoint.alert('统计周期的时间跨度不可小于时间窗口的时间跨度！', '', null, 'warning');
+			return;
+		}
+	}
+
+	function onStatisticsCycleChanged(e) {
+		if (e.value) {
+			var timewindow = mini.get('timewindow').getValue();
+			if (e.value == 5) {
+				e.value = 3;
+			}
+			if (e.value == 6) {
+				e.value = 2;
+			}
+			if (e.value == 7) {
+				e.value = 1.5;
+			}
+			if (e.value == 8) {
+				e.value = 1.5;
+			}
+			if (e.value == 9) {
+				e.value = 1;
+			}
+			if (timewindow && timewindow < e.value) {
+				mini.get('statisticsCycle').setValue('');
+				Util.form.hideField("#isCumsumCon");
+				mini.get('isCumsum').setValue("");
+				epoint
+						.alert('统计周期的时间跨度不可小于时间窗口的时间跨度！', '', null,
+								'warning');
+				return;
+			}
+			Util.form.showField("#isCumsumCon");
+			mini.get('isCumsum').setValue("0");
+		} else {
+			Util.form.hideField("#isCumsumCon");
+			mini.get('isCumsum').setValue("");
+		}
+	}
+
+	// 点击关闭按钮
+	function onCloseClick(e) {
+		var obj = e.sender;
+		obj.setText("");
+		obj.setValue("");
+		ontimefieldvaluechanged(mini.get('timefieldguid'));
+		onStatisticsCycleChanged(mini.get('statisticsCycle'));
+	}
+
+	function onResultCountChanged(e) {
+		if (e.value) {
+			Util.form.showField("#sortOrderCon");
+			if (mini.get("normtype").getValue() == "4") {
+				$('#sortColumn').show();
+
+			}
+			mini.get('sortOrder').setValue("desc");
+		} else {
+			Util.form.hideField("#sortOrderCon");
+			$('#sortColumn').hide();
+			mini.get('sortOrder').setValue("");
+		}
+		//mini.get('resultCount2').setValue(e.value);
+	}
+
+	function onRightControlChanged(e) {
+		if (e.value == '1') {
+			Util.form.showField("#rightControlFieldCon");
+		} else {
+			Util.form.hideField("#rightControlFieldCon");
+		}
+	}
+
+	// 绑定加减号点击事件
+	$('#plus').on('click', '', function() {
+		if (!getTable()) {
+			epoint.alert('请配置数据来源！', '', null, 'warning');
+			return;
+		}
+
+		if (!epoint.validate()) {
+			return;
+		}
+		if (epoint.validate()) {
+			grid2.commitEdit();
+		}
+		var row = {};
+		grid2.addRow(row, 0);
+		grid2.cancelEdit();
+		grid2.beginEditRow(row);
+	});
+
+	function newRow2() {
+		if (!getTable()) {
+			epoint.alert('请配置数据来源！', '', null, 'warning');
+			return;
+		}
+
+		if (!epoint.validate()) {
+			return;
+		}
+		if (epoint.validate()) {
+			grid2.commitEdit();
+		}
+		var row = {};
+		grid2.addRow(row, 0);
+		grid2.cancelEdit();
+		grid2.beginEditRow(row);
+	}
+
+	function OnCellBeginEdit2(e) {
+		var field = e.field;
+		var editor = e.editor;
+		if (field == "DimFilterFieldNameEN") {
+			var tableid2 = mini.get('dimtableguid').getValue();
+			var url2 = "cockpitnormaddaction.action?cmd=getFields2&tableid2="
+					+ tableid2;
+			editor.setUrl(url2);
+		}
+	}
+
+	function onActionRenderer2(e) {
+		var grid = e.sender;
+		var record = e.record;
+		var uid = record._uid;
+		var rowIndex = e.rowIndex;
+		/* 			var dimFilterFieldGuid = record.DimFilterFieldGuid ? record.DimFilterFieldGuid
+         : ''; */
+		var dimFilterValue = record.DimFilterValue ? record.DimFilterValue
+				: '';
+
+		var s = '<a class="Edit_Button" href="javascript:editRow2(\''
+				+ uid
+				+ '\')" style="color:green;text-decoration:underline;">编辑</a>';
+
+		if (grid.isEditingRow(record)) {
+			s = '<a class="Update_Button" href="javascript:updateRow2(\''
+					+ uid
+					+ '\')" style="color:green;text-decoration:underline;">更新</a>'
+					+ '&nbsp;&nbsp;<a class="Delete_Button" href="javascript:cancelRow2(\''
+					+ uid
+					+ '\')" style="color:red;text-decoration:underline;">取消</a>';
+		}
+		return s;
+	}
+
+	function tagResultCountChanged(e) {
+		if (e.value) {
+			Util.form.showField("#tagSortOrderCon");
+			var type = mini.get('normtype').getValue();
+			if (type == "4") {
+				$("#tagSortColumn").show();
+			}
+			mini.get('tagsortOrder').setValue("desc");
+		} else {
+			Util.form.hideField("#tagSortOrderCon");
+			$("#tagSortColumn").hide();
+			mini.get('tagsortOrder').setValue("");
+		}
+	}
+	
+	//var ischange = "0";
+	
+	function openModelSql() {
+		var generatesql = mini.get('generatesql').getValue();
+		var generatesqlhide = mini.get('generatesqlhide').getValue();
+		var flowguid = mini.get('flowguid').getValue();
+		if(flowguid != '' && (generatesql != generatesqlhide)){
+			epoint.alert("sql已修改，无法在打开配置页面！");
+			return;
+		}
+		if (!epoint.validate('normname')) {
+			return;
+		}
+		//ischange = "1";
+		//time_ = window.setInterval(lx,5000);
+		var datasourceid = mini.get('datasourceid').getValue();
+		if (datasourceid) {
+			epoint.execute(
+				'getFlowGuid',
+				[ 'fui-form', 'fui-form1' ],
+				'',
+				function(data) {
+					console.log(data);
+					if(data.error){
+						epoint.alert(data.error);
+					}
+					else{
+						if (data.msg) {
+							epoint.alert(data.msg);
+						}
+						if (data.flowGuid) {
+							mini.get('flowguid').setValue(data.flowGuid);
+							mini.get('flowJdbcUrl').setValue(data.jdbcUrl);
+							if (data.dxpRestUrl) {
+								dxpRestUrl = data.dxpRestUrl;
+								window.open(dxpRestUrl
+									+ "/dxp/datamodel/modelflow/eia_model?flowGuid="
+									+ data.flowGuid); 
+							}
+							else {
+							}
+						} else {
+							epoint.alert('flowguid生成出错！');
+						}
+					}
+				});
+		} 
+		/* else {
+			epoint.alert('请选择来源库！');
+		} */
+	}
+
+	function addGrid2Row() {
+		var dims = mini.get("dimfieldguid").getSelecteds();
+		if (dims.length > maxDimNum) {
+			epoint.alert("维度字段最多可设置" + maxDimNum + "个");
+			mini.get('dimfieldguid').setValue("");
+			mini.get('dimfieldguid').setValue("");
+			grid2.clearRows();
+			return;
+		}
+		var dimfields = mini.get('dimfieldguid').getValue().split(",");
+		var dimfieldnames = mini.get('dimfieldguid').getText().split(",");
+		if (dimfields == null || dimfields[0] == "") {
+			return;
+		}
+		grid2.clearRows();
+		for (var i = 0; i < dimfields.length; i++) {
+			var row = {
+				DataFieldNameEN : dimfields[i],
+				DataFieldName : dimfieldnames[i]
+			};
+			grid2.addRow(row, i);
+		}
+	}
+
+	function onClearDimtableguid() {
+		mini.get("dimtableguid").setValue("");
+	}
+
+	function loadData2(e) {
+		epoint.refresh([ 'dimdatasourceid', 'dimtableguid', 'dimvalue',
+			'dimtext' ]);
+	}
+	function getTableDim() {
+		return mini.get('dimtableguid').getValue();
+	}
+	function checkDimTableGuid() {
+		if (!getTableDim()) {
+			epoint.alert('请配置维度来源！', '', null, 'warning');
+			return;
+		}
+	}
+	
+	function customChange() {
+		$("#prestodatasource").hide();
+		$("#generatesqldiv").show();
+		$("#backtomodeldiv").show();
+		var flowguid = mini.get('flowguid').getValue();
+		epoint.execute('getPrestoSql', '', flowguid, function(sql) {
+			mini.get('generatesql').setValue(sql);
+			mini.get('modelsql').setValue(sql);
+		});
+		$('#datasource').show();
+		if (mini.get('datasourceid').getValue()) {
+			mini.get(datasourceid).setValue(
+					mini.get('datasourceid').getValue());
+		}
+	}
+
+	function backtomodel() {
+		if (mini.get('modelsql').getValue()
+				&& mini.get('modelsql').getValue() != mini.get(
+						'generatesql').getValue()) {
+			epoint.alert("手动修改sql后，无法返回拖拽页！");
+			mini.get('customtype').setValue('2');
+		} else {
+			epoint.openDialog(dxpresturl
+				+ "/dxp/datamodel/modelflow/eia_model?flowGuid="
+				+ flowguid);
+			mini.get('customtype').setValue('4');
+		}
+
+	}
+
+	// api类型
+	// 初始化超文本框
+	var ajaxParamsEditor = ace.edit("params");
+	ajaxParamsEditor.setTheme('ace/theme/xcode');
+	ajaxParamsEditor.getSession().setMode("ace/mode/json");
+	ajaxParamsEditor.setFontSize(14);
+	var ajaxFilterEditor = ace.edit("resultFilter");
+	ajaxFilterEditor.setTheme('ace/theme/xcode');
+	ajaxFilterEditor.setFontSize(14);
+	ajaxFilterEditor.getSession().setMode("ace/mode/javascript");
+	ajaxFilterEditor.setValue("//result = result.result;");
+	var ajaxResultEditor = ace.edit("apiResult");
+	ajaxResultEditor.setTheme('ace/theme/xcode');
+	ajaxResultEditor.getSession().setMode("ace/mode/json");
+	ajaxResultEditor.setFontSize(14);
+	function onAPISelected() {
+		epoint
+				.openDialog(
+						"选择服务",
+						'frame/pages/eianalysemis/cockpit/cockpitapi/cockpitapiselect',
+						function(data) {
+							if (data != "close") {
+								epoint.execute("getApiInfo", '@none', data,
+										loadApiInfo);
+							}
+						}, {
+							'width' : 1280,
+							'height' : 800
+						});
+	}
+	var apiurl = "";
+	var requestType = "";
+	var contentType = "";
+	function loadApiInfo(data) {
+		data = JSON.parse(data);
+		text = data.name + ', ' + data.url;
+		mini.get("API").setValue(data.id);
+		mini.get("API").setText(text);
+		apiurl = data.url;
+		requestType = data.requestType;
+		contentType = data.contentType;
+	}
+	// 调用服务，如果是结果过滤调用的，调用完后执行过滤器。
+	function callApi() {
+		var filter = mini.get('isapifilter').getValue();
+		requestType = requestType == '1' ? 'get' : 'post';
+		if (requestType == 'get') {
+			data = {};
+		} else {
+			data = JSON.stringify(eval('(' + ajaxParamsEditor.getValue()
+					+ ')'));
+		}
+		var apiguid = mini.get("API").getValue();
+		// 走后台调用
+		// if (contentType == '0') {
+		// 	data = "params=" + data;
+		// }
+		epoint.execute(
+			"callApi",
+			[ 'fui-form1' ],
+			[ apiguid, data ],
+			function(data) {
+				if (data.error) {
+					epoint.alert(data.error);
+				} else {
+					epoint.alert(data.msg);
+					editor = ace.edit("apiResult");
+					editor.setValue(js_beautify(data.result));
+					if (filter == 'true') {
+						var t = ace.edit("resultFilter")
+								.getValue();
+						t = "function initFilter(){"
+								+ "var res = ace.edit('apiResult').getValue();"
+								+ "if (res == '') {return;}"
+								+ "var result = JSON.parse(res);"
+								+ t
+								+ "\n"
+								+ "ace.edit('apiResult').setValue(js_beautify(JSON.stringify(result)));}";
+						var el = document
+								.createElement("script");
+						var result = document
+								.getElementById("resultScipt");
+						el.innerHTML = t;
+						for (var i = 0; i < result.childNodes.length; i++) {
+							result
+									.removeChild(result.childNodes[0]);
+						}
+						result.appendChild(el);
+						initFilter();
+					}
+				}
+			});
+	}
+	function initMatchGrid() {
+		var matchgrid = mini.get("matchgrid");
+		matchgrid.clearRows();
+		var rows = [ {
+			fieldname : "fieldcount",
+			fielddisplayname : "指标值",
+			status : "未匹配"
+		}, {
+			fieldname : "fielddim",
+			fielddisplayname : "维度1",
+			status : "未匹配"
+		}, {
+			fieldname : "fielddim2",
+			fielddisplayname : "维度2",
+			status : "未匹配"
+		}, {
+			fieldname : "fielddim3",
+			fielddisplayname : "维度3",
+			status : "未匹配"
+		}, {
+			fieldname : "fielddim4",
+			fielddisplayname : "维度4",
+			status : "未匹配"
+		}, {
+			fieldname : "fielddim5",
+			fielddisplayname : "维度5",
+			status : "未匹配"
+		}, {
+			fieldname : "fieldtimewindow",
+			fielddisplayname : "时间窗口",
+			status : "未匹配"
+		}, ];
+		var normType = mini.get("normtype").getValue();
+		if (normType == "4") {
+			return;
+		}
+		for (var i = 0; i < 7; i++) {
+			if (i > maxDimNum && i != 6) {
+				continue;
+			}
+			matchgrid.addRow(rows[i], i);
+			if (i == 0 && normType == "1") {
+				i = 5;
+			}
+		}
+		matchgrid.on("cellendedit", function(e) {
+			var result = ace.edit("apiResult").getValue();
+			if (result != null && result != "") {
+				result = JSON.parse(result)[0];
+			}
+			var row = e.row;
+			matchgrid.updateRow(row, {
+				status : result.hasOwnProperty(e.value) ? "匹配成功" : "未匹配"
+			})
+		});
+	}
+	function entityChanged(e) {
+		mini.get('datatag').setValue("");
+		mini.get('dimtag').setValue("");
+		grid3.clearRows();
+		epoint.refresh([ 'entityguid', 'datatag', 'dimtag',
+			'tagsortColumnText' ]);
+	}
+
+	function OnCellBeginEdit3(e) {
+		var grid = e.sender;
+		var field = e.field;
+		var editor = e.editor;
+		var record = e.record;
+		if (field == "DataFieldNameEN") {
+			var entityGuid = mini.get('entityguid').getValue();
+			var url = "cockpitnormaddnewaction.action?cmd=getTagList&entityGuid="
+					+ entityGuid;
+			editor.setUrl(url);
+		}
+	}
+
+	function onDataTagValueChanged(e) {
+		var combo = e.sender;
+		var row = grid3.getEditorOwnerRow(combo);
+		var editor = grid3.getCellEditor("FilterValue", row);
+		var id = combo.getValue();
+		var tableid = mini.get('datatableguid').getValue();
+		editor.setValue("");
+	}
+	function newRow3() {
+		var entityguid = mini.get('entityguid').getValue();
+		if (!entityguid) {
+			epoint.alert('请配置主体！', '', null, 'warning');
+			return;
+		}
+		if (epoint.validate()) {
+			grid3.commitEdit();
+		}
+		var row = {};
+		grid3.addRow(row, 0);
+		grid3.cancelEdit();
+		grid3.beginEditRow(row);
+	}
+	function onActionRenderer3(e) {
+		var grid = e.sender;
+		var record = e.record;
+		var uid = record._uid;
+		var rowIndex = e.rowIndex;
+
+		var s = '<a class="New_Button" href="javascript:newRow3()" style="color:blue;text-decoration:underline;">新增</a>'
+				+ '&nbsp;&nbsp;<a class="Edit_Button" href="javascript:editRow3(\''
+				+ uid
+				+ '\')" style="color:green;text-decoration:underline;">编辑</a>'
+				+ '&nbsp;&nbsp;<a class="Delete_Button" href="javascript:delRow3(\''
+				+ uid
+				+ '\')" style="color:red;text-decoration:underline;">删除</a>';
+
+		if (grid3.isEditingRow(record)) {
+			s = '<a class="Update_Button" href="javascript:updateRow3(\''
+					+ uid
+					+ '\')" style="color:green;text-decoration:underline;">更新</a>'
+					+ '&nbsp;&nbsp;<a class="Cancel_Button" href="javascript:cancelRow3(\''
+					+ uid
+					+ '\')" style="color:red;text-decoration:underline;">删除</a>'
+		}
+		return s;
+	}
+
+	function editRow3(row_uid) {
+		var row = grid3.getRowByUID(row_uid);
+		if (row) {
+			grid3.cancelEdit();
+			grid3.beginEditRow(row);
+		}
+	}
+
+	function cancelRow3(row_uid) {
+		var row = grid3.getRowByUID(row_uid);
+		grid3.removeRow(row, true);
+
+	}
+
+	function delRow3(row_uid) {
+		var row = grid3.getRowByUID(row_uid);
+		grid3.removeRow(row, true);
+	}
+
+	function updateRow3(row_uid) {
+		var row = grid3.getRowByUID(row_uid);
+		grid3.commitEdit();
+	}
+
+	function getNormData() {
+		epoint.execute("getNormData", "@none", '', function(data) {
+			if(data.error){
+				epoint.alert(data.error);
+			}
+			else{
+				mini.get('testapiresult').setValue(data.result);
+			}
+			
+		});
+	}
+
+	// 打开示例页面
+	function openSqlDemo() {
+		epoint
+				.openDialog(
+						'SQL示例',
+						"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormsqldemo",
+						null, {
+							'width' : 1000,
+							'height' : 800
+						});
+	}
+
+	function onPhoneValidation(e) {
+		if (e.value != ''
+				&& !(/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/
+						.test(e.value))) {
+			e.errorText = "联系电话格式不正确";
+			e.isValid = false;
+		}
+	}
+
+	function liableOuChanged() {
+		var ouGuid = mini.get('liableou').getValue();
+		if (ouGuid) {
+			epoint.refresh([ 'liableou', 'liablePer', 'normdomain' ], function(data) {
+				var normdomainValue = mini.get('normdomain').getValue();
+				if (normdomainValue && normdomainGuid != ouGuid) {
+					mini.get('normdomain').setValue('');
+					mini.get('normdomain').setText('');
+				}
+				var liabuserGuid = mini.get('liablePer').getValue();
+				if (liabuserGuid) {
+					mini.get('liablePer').setValue('');
+					mini.get('liablePer').setText('');
+				}
+			});
+		}
+	}
+
+	var outree = mini.get('liableou');
+	outree.on('beforenodeselect', function(obj) {
+		if (obj.node.ckr == true) {
+			obj.cancel = false;
+		} else {
+			obj.cancel = true;
+		}
+	});
+	
+	
+	$('#generatesql').on('click', function(e) {
+		var generatesql = mini.get('generatesql').getValue();
+		var generatesqlhide = mini.get('generatesqlhide').getValue();
+		var flowguid = mini.get('flowguid').getValue();
+		if (mini.get('configtype').getValue() == '6' && ispresto=="1" && (generatesqlhide == '' || (generatesqlhide != '' && generatesql == generatesqlhide))) {
+			epoint.execute('getPrestoSql', '', flowguid, function(sql) {
+				if(sql != ''){
+					mini.get('generatesql').setValue(sql);
+					mini.get('generatesqlhide').setValue(sql);
+				}
+			});
+		}
+	}); 
+	
+	/* function lx(){
+		if (mini.get('configtype').getValue() == '6' && ispresto=="1") {
+			var flowguid = mini.get('flowguid').getValue();
+			var generatesql = mini.get('generatesql').getValue();
+			if (flowguid && ischange == "1") {
+				epoint.execute('getPrestoSql', '', flowguid, function(sql) {
+					if(sql != ''){
+						dxpsql = sql;
+						mini.get('generatesql').setValue(sql);
+						ischange = "0";
+					}
+				});
+			}
+		}
+	} */
+</script>
+</body>
+</html>

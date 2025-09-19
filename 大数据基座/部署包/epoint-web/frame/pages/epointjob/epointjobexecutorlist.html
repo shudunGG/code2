@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>调度平台执行器列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="addExec">新增执行器</a> <a
+			class="mini-button" onclick="refreshExec">刷新执行器</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10" showtype="tooltip">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>暂无描述</p>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="执行器名称">
+						<input bind="appName" class="mini-textbox" />
+					</div>
+					<div role="control" label="执行器描述">
+						<input bind="title" class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="appName" multiSelect="false"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="false" allowCellEdit="false" showPager="true"
+			action="getDataGridData" allowCellSelect="false">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left" headeralign="left">序</div>
+				<div field="appName" width="280" align="left" headeralign="left">名称</div>
+				<div field="title" width="100%" align="left" headeralign="left">描述</div>
+				<div field="addressList" width="280" renderer="onStatusRenderer" align="left" headeralign="left">执行器地址</div>
+				<div field="addressType" width="100" align="left" headeralign="left"
+					renderer="onAddressTypeRenderer">注册方式</div>
+				<div field="order" headeralign="left" align="left" width="60">排序</div>
+				<div width="60" renderer="onEditRenderer" align="left" headeralign="left">修改</div>
+				<div width="60" renderer="onDelRenderer" align="left" headeralign="left">删除</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobexecutorlistaction', '@all', function(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'info'});
+			}
+		});
+
+		// 绘制行删除按钮
+		var onDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"deleteExec", "appName");
+		};
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editExec",
+					"appName");
+		};
+
+		// 新增执行器
+		function addExec() {
+			epoint.openDialog('新增执行器',
+					'frame/pages/epointjob/epointjobexecutoradd', callBack, {
+						'width' : 600,
+						'height' : 500
+					});
+		}
+
+		// 编辑执行器
+		function editExec(appName) {
+			epoint.openDialog('编辑执行器',
+					'frame/pages/epointjob/epointjobexecutoradd?appName='
+							+ appName, callBack, {
+						'width' : 600,
+						'height' : 500
+					});
+		}
+
+		// 删除一行数据
+		function deleteExec(guid) {
+			// 弹出确认框
+			epoint.confirm("确定要将本执行器删除吗?", '', function() {
+				epoint.execute("del", '', [ guid ], function(data) {
+					if (data.msg) {
+						epoint.showTips(data.msg, {state : 'success'});
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		// 回调方法
+		function callBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param,{state : 'info'});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 注册方式渲染
+		function onAddressTypeRenderer(e) {
+			if (e.row.addressType == 0) {
+				return "自动注册";
+			} else {
+				return "手动注册";
+			}
+		}
+
+		// 刷新执行器
+		function refreshExec() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], "", true);
+		}
+	</script>
+</body>
+</html>

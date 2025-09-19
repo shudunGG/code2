@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Process activities form permissions to modify</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="save" iconCls="icon-addcircle">Save Settings</a>
+		</div>
+		<p class="text-special mr10">Name of the form:<div bind="misTableName" id="misTableName" class="mini-output" ></div></p>
+
+		<div class="btn-group mr10 r">
+		    <a class="mini-button" onclick="alldefault">All of the default</a>
+			<a class="mini-button" onclick="allreadonly">All read-only</a> 
+			<a class="mini-button" onclick="allreadwrite">All read and write</a> 
+			<a class="mini-button" onclick="allnessary">All required</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div class="mini-radiobuttonlist hidden" textField="text"
+			valueField="id" id="rightLists" action="getRightList" ></div>
+		<!-- The form area -->
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDefaultModel" editNextOnEnterKey="true"
+			editNextRowCell="true" allowCellSelect="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">
+					order
+				</div>
+				<div field="fieldName" width="200" headerAlign="center" align="left">The field names</div>
+				<div field="fieldChineseName" width="200" headerAlign="center"
+					align="left">The field name in Chinese</div>
+				<div field="accessRight" type="comboboxcolumn" headerAlign="center"
+					width="200">
+					Field permissions
+					<div property="editor" class="mini-combobox" textField="text"
+						valueField="id" data="rightLists" headerAlign="center"
+						width="100%" ></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitymanualfieldaccesseditaction');
+
+		var rightLists;
+
+		var radiobox = mini.get("rightLists");
+
+		radiobox.on("load", function(e) {
+			rightLists = e.sender.data;
+		});
+
+		// Table object
+		var grid = mini.get("datagrid");
+
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//callback
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+		// Search for tables
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-content'],'',true);
+		}
+		//save
+		function save() {
+			epoint.execute("save", "", callback);
+		}
+		//The refresh
+		function refresh() {
+			searchData();
+		}
+		//All of the default
+		function alldefault() {
+			right="0";
+			epoint.execute("saveAll", "",[right],refresh);
+		}
+		//All read-only
+		function allreadonly() {
+			right="10";
+			epoint.execute("saveAll", "",[right],refresh);
+		}
+		//All can write
+		function allreadwrite() {
+			right="20";
+			epoint.execute("saveAll", "",[right],refresh);	}
+		//All required
+		function allnessary() {
+			right="40";
+			epoint.execute("saveAll", "",[right],refresh);}
+
+		//]]>
+	</script>
+</body>
+
+</html>

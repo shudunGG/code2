@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>es输出</title>
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+
+<style>
+body, html {
+    overflow: auto !important; 
+}
+</style>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="ES地址" starred="true">
+					<input class="mini-textbox" required="true" id="esAddress" bind="esAddress"
+						name="esAddress"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="ES用户名" >
+					<input class="mini-textbox"  id="esUsername" bind="esUsername"
+						name="esUsername" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="ES密码">
+					<input class="mini-textbox" id="esPassword" bind="esPassword"
+						name="esPassword" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="选择索引" style="width: 40%">
+					<input id="tableName" name="tableName" class="mini-combobox"
+						bind="tableName" allowInput="true" showClose="true"
+						textField="text" valueField="id" />
+				</div>
+				<div role="control" style="width: 5%">
+					<a class="mini-button mini-btn-primary" id="save"
+						onclick="refreshIndex">刷新</a>
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="提交记录数量">
+					<input id="commitSize" name="commitSize" class="mini-textbox" />
+				</div>
+			</div>
+		</div>
+
+		<input id="columnLinkList" name="columnLinkList" bind="columnLinkList"
+			class="mini-hidden">
+	</div>
+
+	<div class="fui-toolbar" id="btns" style="padding-top: 1px">
+		<div class="btn-group mr10">
+			<a id="fieldmap" class="mini-button mini-btn-primary"
+				onclick="addFieldMap" style="margin-left: 20px">字段映射</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content" style="padding-top: 1px; " >
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			multiSelect="true" allowCellValid="true" allowCellEdit="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			action="getDataGridData" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true" >
+			<div property="columns">
+				<!-- 				<div type="checkcolumn" width="55"></div> -->
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="targetField" headerAlign="center" width="200"
+					align="center">字段名称
+					<input field="targetfield" property="editor" class="mini-textbox"
+						emptyText="请输入目标字段名称..."  maxLength="50"
+						style="width: 100%" />
+				</div>
+				<div field="sourceField" headerAlign="center" align="center"
+					vtype="required" width="200" maxLength="8">源字段
+					<input field="sourcefield" property="editor" class="mini-textbox"
+						emptyText="请输入源字段名称..."  maxLength="50"
+						style="width: 100%" />
+				</div>
+				<div type="checkboxcolumn" field="isPk" trueValue="true"
+					falseValue="false" width="60" headerAlign="center">主键</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var tableList = mini.get('tableName');
+		var stepNameForm = mini.get('stepName');
+		var columnLinkList = mini.get('columnLinkList');
+		var datagrid = mini.get("datagrid");
+		var nodeData;
+		var nodeInfo;
+		var transGuid;
+		var columnTemp;
+		var hasPk;
+
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			form.setData(nodeData);
+			var obj = Util.getUrlParams();
+			transGuid = obj.transGuid;
+			//初始化字段映射表单
+			columnTemp = nodeData.columnLinkList;
+			console.log(columnTemp);
+			epoint.initPage('epointwritetoesaction?nodeInfoKey=' + data.key,{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+	
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			if(!nodeData.commitSize){
+				mini.get('commitSize').setValue(100);
+			}
+			epoint.execute("getFrontTableList", '', '', function(data) {
+				tableList.setData(data);
+				var nodeName = nodeData.stepname;
+				if(!nodeName){
+					stepNameForm.setValue(nodeInfo.name);
+				}
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		// 弹出字段映射窗口
+		function addFieldMap(sysGuid) {
+			onlySave();
+			var esAddress = mini.get("esAddress").value;
+			var esUsername = mini.get("esUsername").value;
+			var esPassword = mini.get("esPassword").value;
+			var tableName = mini.get("tableName").value;
+			var cloumnlink = columnLinkList.value;
+			localStorage.setItem("cloumnlink",cloumnlink);
+			epoint.openDialog('字段映射',
+					'dxp/development/transassembly/epointwritetoesfieldmap?sysGuid='
+							+ sysGuid + "&nodeInfoKey=" + nodeInfo.key
+							+ "&transGuid=" + transGuid + "&esAddress=" + esAddress 
+							+ "&esUsername=" + esUsername + "&esPassword=" + esPassword 
+							+ "&tableName=" + tableName,
+					addCallBack, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		function addCallBack(param) {
+			if (param) {
+				//columnList
+				if (param != "close") {
+					columnTemp = param;
+					columnLinkList.setValue(param);
+					mini.get('datagrid').load({
+						'columnTableData' : columnTemp
+					});
+				}
+
+			}
+		}
+
+		// 关闭操作的回调
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function onlySave() {
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '', [ nodeInfo,nodeForm ], function(msg) {
+				});
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+			//重新给隐藏域赋值
+			setGridData();
+			if(!hasPk){
+				epoint.alert('创建失败，请至少选择一个主键。', '', null, 'warning');
+				return;
+			}
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '', [ nodeInfo, nodeForm ], function(msg) {
+					if (msg == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+		
+		function setGridData() {
+			var datas = datagrid.getData();
+			var columnLink = [];
+			for (var i = 0; i < datas.length; i++) {
+				if(datas[i].isPk){
+					hasPk = true;
+				}
+				columnLink.push({
+					"sourceField" : datas[i].sourceField,
+					"targetField" : datas[i].targetField,
+					"isPk" : datas[i].isPk,
+					"sourceType" : datas[i].sourceType,
+					"targetType" : datas[i].targetType,
+					"isTime" : datas[i].isTime,
+					"isUpdate" : datas[i].isUpdate,
+				});
+			}
+			mini.get('columnLinkList').setValue(JSON.stringify(columnLink));
+		}
+		
+
+		var dataSource = mini.get('dataSource'),
+		tableName = mini.get('tableName');
+		
+	    tableName.on('closeclick',function(e){
+	    	tableName.setValue("");
+	    });
+	    
+		function refreshIndex(){
+	    	tableName.setValue("");
+	    	epoint.execute("getFrontTableList", '', '', function(data) {
+				tableList.setData(data);
+			});
+	    
+		}
+		
+	</script>
+</body>
+
+</html>

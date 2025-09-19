@@ -1,0 +1,194 @@
+.design-control {
+  text-align: left;
+  & ~ & {
+    margin-top: 2px;
+  }
+  cursor: default;
+  position: relative;
+  // height: 26px;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 100%;
+  overflow: hidden;
+  &.highlight {
+      box-shadow: 0 0 6px 0 rgba(226, 169, 40, 0.8);
+  }
+  &.selected {
+    box-shadow: 0 0 6px rgba(cornflowerblue, 0.3);
+  }
+  &.textarea,
+  &.textbox,
+  &.output,
+  &.radiobuttonlist,
+  &.checkboxlist,
+  &.subtable {
+    .design-control-icon {
+      display: none;
+    }
+  }
+  &.selected &-remove {
+    display: block;
+  }
+  &-remove {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+    background: url('../assets/images/design/remove.png') center no-repeat;
+    border-radius: 50%;
+    text-align: center;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  &-icon {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    display: block;
+    width: 20px;
+    height: 20px;
+    background: url('../assets/images/left/control.png') center no-repeat;
+    @each $icon in date, dates, drop, macro, person, tree, upload {
+      &.#{$icon} {
+        background-image: url('../assets/images/control/#{$icon}-p.png');
+      }
+    }
+  }
+
+  &-holder {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 4px;
+    line-height: 24px;
+    border: 1px solid #ddd;
+
+    &.textbox {
+      line-height: 24px;
+      height: 26px;
+      &:focus {
+        outline: none;
+        cursor: default;
+      }
+    }
+    &.label {
+      border-color: transparent;
+      padding-right: 8px;
+      position: relative;
+      &.required:after {
+        position: absolute;
+        right: -2px;
+        display: block;
+        font-size: 16px;
+        width: 8px;
+        top: 50%;
+        margin-top: -8px;
+        height: 16px;
+        line-height: 16px;
+        content: '*';
+        color: red;
+      }
+    }
+    &.title {
+      border: none;
+      margin: 0;
+      height: auto;
+      line-height: 1;
+    }
+    &.output {
+      border: none;
+      vertical-align: top;
+    }
+    &.sub-table {
+      display: table;
+      // 此处不能 fixed 否则动态调整列时 显示不对
+      table-layout: auto;
+      border-collapse: collapse;
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 0;
+        line-height: 36px;
+        // overflow: hidden;
+        position: relative;
+        &.frozen:after {
+          content: "";
+          display: block;
+          border-right: 2px solid red;
+          width: 0;
+          position: absolute;
+          right: -2px;
+          top: -1px;
+          bottom: -1px;
+          opacity: 0.6;
+        }
+      }
+
+      thead th {
+        height: 38px;
+        line-height: 36px;
+      }
+      .checkcolumn-icon {
+        background: url('../assets/images/placeholder/checkbox.png') center no-repeat;
+        display: inline-block;
+        vertical-align: middle;
+        width: 16px;
+        height: 16px;
+      }
+      .action-btn {
+        margin-left: 10px;
+      }
+    }
+    // 一些样式的覆盖
+    .el-checkbox-group {
+      display: inline-block;
+      line-height: 1;
+      vertical-align: middle;
+      font-size: 0;
+    }
+    // 单选 多选组
+    &.checkboxlist,
+    &.radiobuttonlist {
+      border-color: transparent;
+      text-align: left;
+      // 遮住控件来禁用
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+      }
+      .el-checkbox,
+      .el-radio {
+        margin-right: 10px;
+      }
+
+      .el-radio__label,
+      .el-checkbox__label {
+        padding-left: 4px;
+      }
+
+      // 水平排列
+      &.horizontal {
+        .el-radio-group,
+        .el-checkbox-group {
+          white-space: nowrap;
+        }
+      }
+      // 垂直布局
+      &.vertical {
+        .el-checkbox,
+        .el-radio {
+          display: block;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+	select count(*) from frame_config where CONFIGNAME='hasRight'

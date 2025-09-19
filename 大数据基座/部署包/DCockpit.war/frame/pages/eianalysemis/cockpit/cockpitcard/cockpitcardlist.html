@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片定义表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style>
+.content {
+	position: absolute;
+	z-index: 19999;
+}
+
+.dropdown li a {
+	ursor: pointer;
+	display: block;
+	height: 20px;
+	line-height: 20px;
+	color: #3d3b4f !important;
+	background: #ffffff !important;
+	padding-left: 5px;
+}
+
+.dropdown {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 120px;
+	height: 25px;
+	z-index: 19999;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="指标分类"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getNormDomainTreeModel"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+
+		<div class="fui-toolbar">
+			<div id="operate" class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增卡片</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteData);}">删除选定
+				</a>
+			</div>
+			<div id="plate" class="btn-group mr10" style="display: none;">
+				<a class="mini-button" iconCls="icon-addcircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要关联的记录!');} else {epoint.confirm('确认要关联吗?','',relate);}">关联选定
+				</a>
+			</div>
+		</div>
+
+		<!-- 新增搜索区域 -->
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="卡片名称">
+							<input id="search_CardName" class="mini-textbox"
+								bind="dataBean.CardName" />
+						</div>
+						<div role="control" label="专班名称">
+							<input id="search_specialclassguid" class="mini-combobox"
+								action="getSpecialClassModel" bind="dataBean.specialclassguid"
+								showClose="true" oncloseclick="onCloseClick" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="normDomain"
+					bind="dataBean.normDomain" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="normDomainName" headerAlign="center" align="center"
+						width="80">指标分类</div>
+					<div field="CardName" headerAlign="center" align="center">卡片名称</div>
+					<div field="specialclassname" headerAlign="center" align="center">专班名称</div>
+					<div field="normCount" headerAlign="center" align="center">卡片下指标数量</div>
+					<div field="OrderNum" headerAlign="center" align="center">排序号</div>
+					<!-- 操作列 -->
+					<div width="100" align="center" headerAlign="center"
+						renderer="onActionRenderer">操作</div>
+					<div field="normDomain" visible="false"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 版块卡片关联
+		var categuid = Util.getUrlParams("categuid");
+
+		var grid = mini.get('datagrid');
+
+		// 初始化页面
+		epoint.initPage('cockpitcardlistaction', null, function(data) {
+			// 版块卡片关联
+			if (categuid) {
+				grid.hideColumn('operate');
+				$('#operate').css("display", "none");
+				$('#plate').css("display", "block");
+			}
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var normDomain = mini.get("normDomain").getValue();
+			if (!normDomain) {
+				epoint.alert("未选择指标分类！");
+				return;
+			}
+			if (normDomain == "f9root") {
+				epoint.alert("未选择指标分类！");
+				return;
+			}
+			epoint.openDialog('新增卡片',
+					"frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardadd?normDomain="
+							+ normDomain, searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(e) {
+			epoint.openDialog('修改卡片',
+					"frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardadd?guid="
+							+ e, searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 弹出关联指标窗口
+		function openNormRelate(rowguid, normdomain) {
+			epoint.openDialog('已关联的指标',
+					"frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardnormlist?cardguid="
+							+ rowguid + "&normDomain=" + normdomain,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 版块卡片关联
+		function relate() {
+			epoint.execute("relate", '', closeCallback);
+		}
+
+		function generateCode(e) {
+			epoint.execute("generateCode", '', e.rowguid, closeCallback);
+		}
+
+		function previewCode(e) {
+			epoint.openDialog('预览返回代码',
+					"frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcarddetail?guid="
+							+ e, searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', '', '', 'info');
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function deleteData() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('normDomain').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		// 卡片授权
+		function cardAuthorize(e) {
+			epoint.openDialog("卡片授权",
+					'frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardauthorize?guid='
+							+ e, authorizeCallBack, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function authorizeCallBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		var onActionRenderer = function(e) {
+			return "<a id='moreOperation' class='action-icon icon-gear' style='cursor:pointer' role='fire' rowguid='" + e.row.rowguid + "' normDomain='" + e.row.normDomain + "' ></a>"
+		};
+
+		var isInMenu = false;
+		mini
+				.get("datagrid")
+				.on(
+						"update",
+						function(e) {
+							$("a[role='fire']")
+									.each(
+											function(i) {
+												var $eventNode = $(this)
+														.parent();
+												var rowguid = $(this).attr(
+														"rowguid");
+												var normDomain = $(this).attr(
+														"normDomain");
+												var buttonHtml = generateButtonHtml(
+														rowguid, normDomain);
+												var dropDownHtml = " <div id='dropdownwrapper'  class='content' id='contentWrapper'>"
+												dropDownHtml += "<ul class='dropdown'>";
+												dropDownHtml += "<li>";
+												dropDownHtml += buttonHtml;
+												dropDownHtml += "</li>"
+												dropDownHtml += "</ul></div>";
+												$eventNode
+														.on(
+																"click",
+																function(e) {
+																	var $cell = $eventNode
+																			.parent();
+																	$(
+																			"#dropdownwrapper")
+																			.remove();
+																	$(
+																			dropDownHtml)
+																			.appendTo(
+																					"body");
+																	$(
+																			"#dropdownwrapper")
+																			.show();
+																	var len = dropDownHtml
+																			.split('<li').length;
+																	$(
+																			"#dropdownwrapper")
+																			.css(
+																					"left",
+																					$cell
+																							.offset().left);
+																	if ($cell
+																			.offset().top
+																			+ len
+																			* 20 > $(
+																			"#datagrid")
+																			.height()) {
+																		$(
+																				"#dropdownwrapper")
+																				.css(
+																						"top",
+																						$cell
+																								.offset().top
+																								- len
+																								* 20
+																								+ $cell
+																										.height());
+																	} else {
+																		$(
+																				"#dropdownwrapper")
+																				.css(
+																						"top",
+																						$cell
+																								.offset().top
+																								+ $cell
+																										.height());
+																	}
+
+																	isInMenu = true;
+																	timedCheck();
+																});
+												$eventNode.on("mouseenter",
+														function(e) {
+															isInMenu = true;
+														})
+												$eventNode.on("mouseleave",
+														function(e) {
+															isInMenu = false;
+														})
+											});
+						});
+
+		function generateButtonHtml(rowguid, normDomain) {
+			var buttonRowHtml = "";
+			buttonRowHtml += "<li><a class='action-icon icon-edit' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openEdit('"
+					+ rowguid + "')\">修改</a></li>";
+			buttonRowHtml += "<li><a class='action-icon icon-gear' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openNormRelate('"
+					+ rowguid + "','" + normDomain + "')\">关联指标</a></li>";
+			buttonRowHtml += "<li><a class='action-icon icon-start' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"generateCode('"
+					+ rowguid + "')\">生成返回代码</a></li>";
+			buttonRowHtml += "<li><a class='action-icon icon-search' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"previewCode('"
+					+ rowguid + "')\">预览返回代码</a></li>";
+			buttonRowHtml += "<li><a class='action-icon icon-doc' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"cardAuthorize('"
+					+ rowguid + "')\">卡片授权</a></li>";
+			return buttonRowHtml;
+		}
+
+		function timedCheck() {
+			if (!isInMenu) {
+				clearTimeout(t);
+				$("#dropdownwrapper").hide();
+				$("#dropdownwrapper").remove();
+			} else {
+				t = setTimeout("timedCheck()", 1000)
+			}
+		}
+
+		$('body').on("mouseenter", "#dropdownwrapper", function(e) {
+			isInMenu = true;
+		})
+
+		$('body').on("mouseleave", "#dropdownwrapper", function(e) {
+			isInMenu = false;
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>行筛选</title>
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css' ]);
+</script>
+<link rel="stylesheet" href="css/tablefilter.css" />
+
+</head>
+
+<style>
+body, html {
+    overflow: auto !important; 
+}
+</style>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox" vtype="maxLength:20"
+						required="true" emptyText="请输入步骤名称" requiredErrorText="步骤名称不能为空"/>
+				</div>
+			</div>
+			<input id="columnTableData" name="columnTableData" 
+				class="mini-hidden"> 
+		</div>
+	</div>
+	<div class="fui-toolbar" id="btns" style="padding-top: 1px;margin:0 auto">
+		<div class="btn-group mr10 " style="position: absolute;margin-left:10%">
+<!-- 			<a class="mini-button mini-btn-primary"
+				onclick="addkeyfield"
+				style="margin-left: 20px">添加条件</a><a id="deletekeyfield"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除条件</a> -->
+			</div></div>
+	<!-- 内容区域 -->
+	<div class="mini-fit" style="padding-top: 1px">
+	
+		<div class="fui-content">
+			<div id="form1" class="fui-form" style="width: 90%">
+				<div role="form" id="form2">
+					<div role="row">
+						<div role="control" label="筛选条件"></div>
+					</div>
+					<div class="filter-data" id="filter-data"></div>
+				</div>
+			</div>
+		</div>
+	
+		<!-- <div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="id" multiSelect="true" allowCellValid="true"
+			allowCellEdit="true"
+			style="width: 90%; height: 100%;margin:0 auto"
+			allowResize="true" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="45"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="leftcon" headerAlign="center" align="center"
+					width="80"  type="comboboxcolumn" >
+					左连接<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." data="[{'text':'','id':''},{'text':'(','id':'('}]" textField="text" 
+						valueField="id"  style="width: 100%" />
+				</div>
+				<div field="leftfield" headerAlign="center" align="center"
+					width="120" maxLength="8"  type="comboboxcolumn">
+					字段<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." data="sourceFieldList" textField="text" required="true"
+						valueField="id"  style="width: 100%" />
+				</div>
+				<div field="function" headerAlign="center" align="center"
+					width="120" maxLength="8"  type="comboboxcolumn">
+					比较符<input property="editor" class="mini-combobox"
+						emptyText="请选择比较符..." data="compareTypeList" textField="text" required="true"
+						valueField="id"  style="width: 100%" />
+				</div>
+				<div field="rightfield" headerAlign="center" align="center"
+					width="120" maxLength="8"  type="comboboxcolumn">
+					匹配字段<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." data="sourceFieldList" textField="text" 
+						valueField="id"  style="width: 100%" />
+				</div>
+				<div field="filtervalue" headerAlign="center" align="center"
+					width="120" maxLength="8">
+					匹配值<input property="editor" class="mini-textbox" style="width: 100%" />
+				</div>
+				<div field="rightcon" headerAlign="center" align="center"
+					width="80" maxLength="8"  type="comboboxcolumn">
+					右连接<input property="editor" class="mini-combobox"
+						emptyText="请选择右连接..." data="rightConList" textField="text" 
+						valueField="id"  style="width: 100%" />
+				</div>
+			</div>
+		</div> -->
+	</div>
+	
+	<script type="x-tmpl-mustache" id="filter-template">
+        <li class="filter-item">
+            {{^first}}
+            <div class="ext_select">
+                <input class="mini-combobox filter-relate-select" showNullItem="false"
+                    data="[{id: 1,name: '并'},{id: 2,name: '或'}]"
+                    valueFromSelect value="{{relateVal}}"
+                    textField="name" valueField="id" allowInput="true" />
+            </div>
+            {{/first}}
+
+            <div class="clearfix">
+                <div class="l mr-10 filter-category">
+                    <input width="200px" name="category" id="pinputds" class="mini-combobox filter-category-select" showNullItem="false"
+                        valueFromSelect value="{{categoryVal}}" onvaluechanged="fieldchange"  requiredErrorText="筛选字段不能为空"
+                        textField="text" valueField="id" allowInput="true" required="true" />
+                </div>
+                <div class="l mr-10 filter-operate">
+                    <input width="180px" onvaluechanged="valueChange" class="mini-combobox filter-operate-select" showNullItem="false"
+                        data="[{id: 1,name: '日期范围'},{id: 2,name: '包含'},{id: 3,name: '不包含'},{id: 4,name: '起始包含'},{id: 5,name: '结尾包含'},{id: 6,name: '起始不包含'},{id: 7,name: '结尾不包含'},{id: 8,name: '空值'},{id: 9,name: '非空值'},{id: 10,name: '等于'},{id: 11,name: '小于'},{id: 12,name: '大于'},{id: 13,name: '小于等于'},{id: 14,name: '大于等于'},{id: 15,name: '不等于'},{id: 16,name: '包含(字段)'},{id: 17,name: '不包含(字段)'},{id: 18,name: '起始包含(字段)'},{id: 19,name: '结尾包含(字段)'},{id: 20,name: '起始不包含(字段)'},{id: 21,name: '结尾不包含(字段)'},{id: 22,name: '等于(字段)'},{id: 26,name: '小于(字段)'},{id: 27,name: '大于(字段)'},{id: 25,name: '小于等于(字段)'},{id: 24,name: '大于等于(字段)'},{id: 23,name: '不等于(字段)'},{id: 28,name: '正则匹配'}]"
+                        valueFromSelect value="{{operateVal}}" requiredErrorText="筛选方式不能为空"
+                        textField="name" valueField="id" allowInput="true" required="true" />
+                </div>
+                <div class="l mr-10 filter-time {{^showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{#showFilterField}}hidden{{/showFilterField}}">
+                        <input id="starttime" width="200px" name="time" class="mini-datepicker mr-10 begin-time" format="yyyy-MM-dd HH:mm:ss" showTime="true" timeFormat="yyyy-MM-dd HH:mm:ss" value="{{beginTime}}" allowInput="false" onValuechanged="validateDate(this)"/>
+                        <input id="endtime" width="200px" name="time" class="mini-datepicker end-time" format="yyyy-MM-dd HH:mm:ss" showTime="true" timeFormat="yyyy-MM-dd HH:mm:ss" value="{{endTime}}" allowInput="false" onValuechanged="validateDate(this)"/>
+                    
+                </div>
+				
+                <div class=" mr-10 filter-value {{#showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{#showFilterField}}hidden{{/showFilterField}}  {{#showFilterRegex}}hidden{{/showFilterRegex}} l">
+                    <input name="" class="mini-textbox filter-value-input" value="{{filterVal}}" />
+                </div>
+				<div class="l mr-10 filter-dropdown {{#showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{^showFilterField}}hidden{{/showFilterField}}" >
+                    <input width="200px" name="filterField" id="pinputds1" class="mini-combobox filter-dropdown-select" showNullItem="false"  allowInput="false"
+                        valueFromSelect value="{{filterField}}"
+                        textField="text" valueField="id" allowInput="true" required="true" />
+                </div>
+                <div class="l mr-10 filter-regex {{#showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{^showFilterRegex}}hidden{{/showFilterRegex}}" >
+                    <input width="200px" name="filterRegex" id="filterRegex" class="mini-combobox filter-regex-select" showNullItem="false"  allowInput="false"
+                        valueFromSelect value="{{filterRegex}}" data="[{id: 1,text: '身份证'},{id: 2,text: '电话号码'}]"
+                        textField="text" valueField="id" allowInput="true" required="true" />
+                </div>
+                <div class="filter-icon l">
+                    <a class="action-icon  {{#first}}filter-item-add icon-addcircle{{/first}} {{^first}}filter-item-min icon-minuscircle{{/first}}"></a>
+                </div>
+            </div>
+        </li>
+    </script>
+
+	<script type="x-tmpl-mustache" id="filter-ul-template">
+        <ul class="filter-box">
+            {{^first}}
+            <li class="filter-box-relate">
+                <div class="box_ext_select">
+                    <input class="mini-combobox filter-relate-select" showNullItem="false"
+                        data="[{id: 1,name: '并'},{id: 2,name: '或'}]"
+                        valueFromSelect value="{{relate}}"
+                        textField="name" valueField="id" allowInput="true" />
+                    
+                </div>
+            </li>
+            {{/first}}
+
+            {{{filterItem}}}
+            
+            
+            <li class="filter-add">
+                <div class="filter-icon l">
+                    <a class="action-icon {{#first}}filter-box-add icon-addcircle{{/first}} {{^first}}filter-box-min icon-minuscircle{{/first}}"></a>
+                </div>
+            </li>
+            
+        </ul>
+           
+    </script>
+    
+    
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script src="js/tablefilterindex.js"></script>
+	
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var tableList = mini.get('tableName');
+		var stepNameForm = mini.get('stepName');
+		//var datagrid = mini.get("datagrid");
+		var nodeData;
+		var nodeInfo;
+		var transGuid;
+		var columnTemp;
+		var rightConList;
+		var compareTypeList;
+		var sourceFieldList;
+		//datagrid.load();
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+		
+		function pageLoad() {
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			form.setData(nodeData);
+			if(nodeData.columnTableData){
+				//喧染所有表格
+				initHtml(eval('(' + nodeData.columnTableData + ')'));
+				mini.parse();
+			}
+			epoint.initPage('modelfilterrowsaction?stepId=' + nodeInfo.key,{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+	
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+			if (e.operatorList) {
+				rightConList = e.rightConList;
+			}
+			if (e.compareTypeList) {
+				compareTypeList = e.compareTypeList;
+			}
+			if (e.sourceFieldList) {
+				sourceFieldList = e.sourceFieldList;
+			}
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			
+			for(var i=0;i<mini.getsByName("category").length;i++){
+				mini.getsByName("category")[i].setData(sourceFieldList);
+			}
+			for(var i=0;i<mini.getsByName("filterField").length;i++){
+				mini.getsByName("filterField")[i].setData(sourceFieldList);
+			}
+		}
+		
+		//保存修改
+ 		function saveModify() {
+ 			mini.get('columnTableData').setValue(confirm());
+ 			if (epoint.validate('@all', true)) {
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			} 
+			
+		} 
+		
+		function chgds(src, rel) {
+			var ds = mini.get('p' + src).getValue();
+			epoint.execute("getTable", null, [ ds ], function(ret) {
+				var relslst = rel.split(',');
+				for (var i = 0; i < relslst.length; i++) {
+					mini.get('p' + relslst[i]).setData(ret);
+					//alert(mini.get('p' + relslst[i]).getAtt(""));
+				}
+			});
+		}
+
+		function chgtbl(src, rel) {
+			var tbl = mini.get('p' + src).getValue();
+			epoint.execute("getColumn", null, [ tbl ], function(ret) {
+				var relslst = rel.split(',');
+				for (var i = 0; i < relslst.length; i++) {
+					mini.get('p' + relslst[i]).setData(ret);
+				}
+			});
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function getSelectDataBy(ids) {
+			var allSelect = [ {
+				id : 1,
+				name : '日期范围'
+			}, {
+				id : 2,
+				name : '包含'
+			}, {
+				id : 3,
+				name : '不包含'
+			}, {
+				id : 4,
+				name : '起始包含'
+			}, {
+				id : 5,
+				name : '结尾包含'
+			}, {
+				id : 6,
+				name : '起始不包含'
+			}, {
+				id : 7,
+				name : '结尾不包含'
+			}, {
+				id : 8,
+				name : '空值'
+			}, {
+				id : 9,
+				name : '非空值'
+			}, {
+				id : 10,
+				name : '等于'
+			}, {
+				id : 11,
+				name : '小于'
+			}, {
+				id : 12,
+				name : '大于'
+			}, {
+				id : 13,
+				name : '小于等于'
+			}, {
+				id : 14,
+				name : '大于等于'
+			}, {
+				id : 15,
+				name : '不等于'
+			}, {
+				id : 16,
+				name : '包含(字段)'
+			}, {
+				id : 17,
+				name : '不包含(字段)'
+			}, {
+				id : 18,
+				name : '起始包含(字段)'
+			}, {
+				id : 19,
+				name : '结尾包含(字段)'
+			}, {
+				id : 20,
+				name : '起始不包含(字段)'
+			}, {
+				id : 21,
+				name : '结尾不包含(字段)'
+			}, {
+				id : 22,
+				name : '等于(字段)'
+			}, {
+				id : 26,
+				name : '小于(字段)'
+			}, {
+				id : 27,
+				name : '大于(字段)'
+			}, {
+				id : 25,
+				name : '小于等于(字段)'
+			}, {
+				id : 24,
+				name : '大于等于(字段)'
+			}, {
+				id : 23,
+				name : '不等于(字段)'
+			} ,{
+				id: 28,
+				name: '正则匹配'
+			}];
+			for (var i = allSelect.length - 1; i >= 0; i--) {
+				var id = allSelect[i].id;
+				if (ids && contains(ids, id)) {
+					allSelect.remove(allSelect[i]);
+				}
+			}
+			return allSelect;
+		}
+
+		function contains(arr, obj) {
+			var i = arr.length;
+			while (i--) {
+				if (arr[i] === obj) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		function fieldchange(e) {
+			var stype = e.selected.type.toLowerCase();
+			var data = JSON.stringify(getSelectDataBy(null));
+			//字符串类型
+			if (stype == "string" || stype == "nvarchar2" || stype == "varchar"
+					|| stype == "nvarchar"|| stype == "text" || stype.indexOf("字符串") != -1) {
+				data = JSON.stringify(getSelectDataBy(new Array(1, 13, 14,
+						24, 25, 26, 27)));
+			} else if (stype == "date" || stype == "datetime"
+					|| stype == "timestamp" || stype.indexOf("日期型") != -1) {
+				data = JSON.stringify(getSelectDataBy(new Array(2,3,4,5,6,7,16,17,18,19,20,21,28)));
+			} else if (stype == "numeric" || stype == "bigint"
+					|| stype == "int" || stype == "decimal"
+					|| stype == "double" || stype == "float"
+					|| stype.indexOf("数值") != -1 || stype == "integer") {
+				data = JSON.stringify(getSelectDataBy(new Array(0,1,28)));
+			}
+			var $parent = $(e.sender.el).parent().siblings('.filter-operate');
+			var $time = mini.byClass('filter-operate-select', $parent);
+			mini.get($time).setData(data);
+		}
+
+		function validateDate(e) {
+			var start = mini.get("starttime");
+			var end = mini.get("endtime");
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.alert("起始时间不能大于终止时间!", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("终止时间不能小于起始时间!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+
+
+
+
+
+
+
+	</script>
+</body>
+
+</html>

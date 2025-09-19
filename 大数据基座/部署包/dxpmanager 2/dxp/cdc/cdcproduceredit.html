@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>CDC监听任务修改</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+
+<body style="overflow: auto;">
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"onclick="save" >保存并关闭</a>
+			<a class="mini-button mini-btn-primary" onclick="window.history.back()">关闭</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<!-- 页面内容区域 -->
+		<div id="form" class="fui-form" style="padding-top: 1px">
+			<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false">
+				<div name="tabs1" title="一般" id="ttttt">
+					<div role="row">
+						<div role="control" label="任务名称" starred="true">
+							<input bind="flowName" class="mini-textbox" vtype="maxLength:50" 
+								required="true" requiredErrorText="任务名称不能为空" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="所属节点" starred="true">
+							<input id="nodeGuid" bind="nodeGuid"
+								class="mini-combobox" required="true" onvaluechanged="nodeSelect"
+								requiredErrorText="所属节点不能为空" action="getNodeGuidList"
+								/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据源类型" starred="true">
+							<input id="dsType" bind="datasourceType"  
+								class="mini-combobox" required="true"  onvaluechanged="typeSelect"
+								requiredErrorText="数据源类型不能为空" action="getFromDSType"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="topic名称" starred="true">
+							<input bind="topicName" class="mini-textbox" vtype="english;maxLength:100" 
+								required="true" requiredErrorText="topic名称不能为空" readOnly="true"/>
+						</div>
+					</div>
+<!-- 					<div role="row">
+						<div role="control" label="数据源" starred="true">
+							<input id="fromds" action="getFromDSList" required="true"
+								 bind="fromDs"
+								class="mini-combobox main-input" showClose="true"
+								requiredErrorText="数据源不能为空" />
+						</div>
+					</div> -->
+					
+					<div role="accordion" opened="true">
+						<div role="head" title="高级设置"></div>
+						<div role="body">
+							<div role="row" id="advancedsetting-01">
+								<div role="control" label="结果集大小">
+									<input id="rowset" class="mini-textbox"
+										requiredErrorText="结果集大小不能为空" bind="rowset" vtype="int;range:1,100000" />
+								</div>
+								<div role="control" label="运行内存大小(M)">
+									<input id="memory" class="mini-textbox" bind="memory"
+										vtype="int;range:1,2048" />
+								</div>
+							</div>
+							<!-- <div role="row" id="advancedsetting-02">
+								<div role="control" label="批量提交数" >
+									<input id="commitSize" class="mini-textbox"
+										bind="commitSize" vtype="int;range:1,100000" />
+								</div>
+								<div role="control" label="定时提交周期（毫秒）">
+									<input id="commitInterval" class="mini-textbox" bind="commitInterval"
+										vtype="int;range:1,100000" />
+								</div>
+							</div> -->
+						</div>
+					</div>
+	<!-- 	 		<div class="fui-condition" style="width: 75%;">
+					<div class="fui-form" id="fui-form">
+						<div id="cform" role="form">
+							<div role="row">
+								<div role="control" label="源字段" style="width: 30%;">
+									<input id="sourceField" class="mini-textbox" style="margin-left: -10px;"/>
+								</div>
+								<div role="control" label="目标字段" style="width: 35%;padding-lefte:20px">
+									<input id="targetField" class="mini-textbox" style="margin-left: -10px;"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<a role="searcher" callback="searchPrimaryKey"></a>
+				</div> -->
+				
+				<input id="tableLinkData" name="tableLinkData" bind="tableLinkData" class="mini-hidden"> 
+				<input id="tblink" name="tblink" bind="tblink" class="mini-hidden"> 
+				
+				<table style="height: 40%;margin-top:20px">
+					<tr>
+						<td>
+							<div id="grid1" class="mini-datagrid"
+								style="width: 100%; height: 100%; margin-top: 0px; margin-left: 15px;"
+								multiSelect="false" resultAsData="true" showPager="false"
+								action="getDsGridData">
+								<div property="columns">
+									<div type="checkcolumn"></div>
+									<div header="数据源" field="dsname"></div>
+									<div header="DSIS" field="dsid" visible="false"></div>
+								</div>
+							</div>
+						</td>
+						<td style="width: 60px; margin-left: 10px; text-align: center;">
+							<input type="button" value=">" onclick="adds()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+							type="button" value=">>" onclick="addAll()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+							type="button" value="&lt;&lt;" onclick="removeAll()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+							type="button" value="&lt;" onclick="removes()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br />
+						</td>
+						<td>
+							<div id="grid2" class="mini-datagrid"
+								style="width: 100%; height: 361px; margin-left: 30px; margin-top: 0px"
+								multiSelect="true" showPager="false" allowCellEdit="true"
+								allowCellSelect="true">
+								<div property="columns">
+									<div type="checkcolumn"></div>
+									<div header="已选数据源" field="dsname">
+										<input id="dsname" name="dsname" class="mini-textbox"
+											bind="dsname" />
+									</div>
+								</div>
+							</div> <input type="button" value="Up" onclick="upItem()"
+							style="width: 55px; margin-left: 30px; margin-top: 30px;" /> <input
+							type="button" value="Down" onclick="downItem()" style="width: 55px;" />
+						</td>
+						<td style="width: 50px; text-align: center; vertical-align: bottom">
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div name="tabs2" title="选择监听表">
+				<div id="dslinkDatagrid" name="dslinkDatagrid" class="mini-datagrid"
+						idField="id" multiSelect="false" allowCellValid="true"
+						allowCellEdit="true"
+						style="width: 100%; height: 300px; margin-left: 10px;"
+						allowResize="true" showPager="false" allowCellSelect="true"
+						editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+						<div type="checkcolumn" width="20"></div>
+						<div type="indexcolumn" width="20" headerAlign="center">序</div>
+						<div header="数据源" field="dsname">
+							<input id="dsname" name="dsname" class="mini-textbox"
+								bind="dsname" />
+						</div>
+					</div>
+				</div>
+				<div class="fui-toolbar" id="btns"
+					style="padding-top: 1px; border-bottom: none;">
+					<div class="btn-group mr10" style="width: 50%;">
+						<a class="mini-button mini-btn-primary" onclick="add">添加</a>
+						<a class="mini-button mini-btn-danger"
+							onclick="if(mini.get('table-datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+						<a class="mini-button mini-btn-primary" onclick="updateFieldMap">编辑监听表</a>
+					</div>
+				</div>
+	
+				<!-- 内容区域 -->
+				<div class="fui-content" style="padding-top: 1px">
+					<table style="height: 100%;">
+						<tr>
+							<td>
+								<div id="table-datagrid" name="table-datagrid" class="mini-datagrid"
+									idField="id" multiSelect="true" allowCellValid="true"
+									allowCellEdit="true" style="width: 100%; height: 100%;"
+									allowResize="true" showPager="false" allowCellSelect="true"
+									editNextOnEnterKey="true" editNextRowCell="true"
+									action="getDataGridColumnModel">
+									<div property="columns">
+										<div type="checkcolumn" width="30"></div>
+										<div type="indexcolumn" width="40" headerAlign="center">序</div>
+										<div field="tablename" headerAlign="center" align="center"
+											vtype="required" type="comboboxcolumn">
+											表名<input id="tablenameList" name="test" property="editor" class="mini-combobox"
+												emptyText="请选择来源表..." textField="text" data="tablenameList"
+												valueField="id" style="width: 100%" />
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var grid1 = mini.get("grid1");
+		var grid2 = mini.get("grid2");
+		var tablegrid = mini.get("table-datagrid");
+		var dslinkDatagrid = mini.get('dslinkDatagrid');
+		var tableLinkData = mini.get('tableLinkData');
+		var tableLinkDataValue;
+		var tablenameList;
+		var lastDs = "";
+		
+		var node = mini.get('nodeGuid');
+		var dsType = mini.get('dsType');
+		var producer = mini.get('producerGuid');
+		var isShowFields = false;
+
+		epoint.initPage('dxpcdcproducereditaction','',function(data){
+			initCallBack(data);
+		});
+		
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			console.log(e.tableLinkData);
+			if(e.tableLinkData){
+				tableLinkData.setValue(e.tableLinkData);
+				tableLinkDataValue = e.tableLinkData;
+				var tbList = JSON.parse(e.tableLinkData);
+				for(var i=0;i<tbList.length;i++){
+					var items = grid1.findRow(function(row){
+					    if(row.dsname == tbList[i].dsname) return true;
+					});
+					var items3 = {
+						"dsname" : tbList[i].dsname,
+						"dsid" : tbList[i].dsid
+					};
+					if(!isShowFields){
+						grid1.removeRow(items);
+					}
+					var items4 = clone(items3);
+					grid2.addRow(items3, 0);
+					dslinkDatagrid.addRow(items4,0);
+				}
+			}
+			console.log('tablelinkDataValue:'+tableLinkDataValue);
+		}
+
+		function clearGrid() {
+			grid2.clearRows();
+			mini.get('keyTableData').setValue('');
+			mini.get('columnTableData').setValue('');
+		}
+
+		function setGridData() {
+			//[{"dsname":"","dsid":"","tableLink":["",""]}]
+			var lastdsname = lastDs.split(';')[0];
+			var lastdsid = lastDs.split(';')[1];
+			var tableData = tablegrid.getData();
+			if(tableData.length == []){
+				return;
+			}
+			var tblinkdata = tableLinkData.getValue();
+			var array = [];
+			if(tblinkdata != '[]' && tblinkdata != ''){
+				array = JSON.parse(tblinkdata);
+				for(var i=0;i<array.length;i++){
+					if(array[i].dsname == lastdsname){
+						array.splice(i, 1);
+						break;
+					}
+				}
+			}
+			var tableLink = [];
+			for(var i=0;i<tableData.length;i++){
+				tableLink.push(tableData[i].tablename);	
+			}
+			array.push({
+				"dsname" : lastdsname,
+				"dsid" : lastdsid,
+				"tableLink": tableLink,
+			});
+			tableLinkData.setValue(JSON.stringify(array));
+			tableLinkDataValue=JSON.stringify(array);
+		}
+		
+		function add() {
+			var newRow = {};
+			tablegrid.addRow(newRow, 0);
+			mini.get("tablenameList").setData(tablenameList);
+			//tablegrid.getCellEditor(2, 0).setData(fieldList);
+		}
+
+		//删除选中
+		function deleteSelected() {
+			tablegrid.removeRows(tablegrid.getSelecteds(), false);
+			//setGridData();
+		}
+		
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				if (epoint.validate()) {
+					epoint.execute('add', '@all', function(data) {
+		        		if(data.msg.indexOf('成功')!=-1||data.msg.indexOf('流程异常')!=-1){
+		        			epoint.alert(data.msg,'',function(){
+		        				window.history.back();
+		        			});
+		        		}else{
+		        			epoint.alert(data.msg);
+		        		}
+		        	});
+				}
+			}
+		}
+
+		function adds() {
+			//获取源字段中数据并解析
+			var items = grid1.getSelecteds();
+			if (items.length == 1) {
+				var items3 = {
+					"dsname" : items[0].dsname,
+					"dsid" : items[0].dsid
+				};
+				if(!isShowFields){
+					grid1.removeRows(items);
+				}
+				var items4 = clone(items3);
+				grid2.addRow(items3, 0);
+				dslinkDatagrid.addRow(items4,0);
+			} else {
+				epoint.alert("请选择来源表或目标表", '', null, 'warning');
+			}
+		}
+
+		function removeAll() {
+			var items3 = grid2.getData();
+			var items4 = dslinkDatagrid.getData();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			dslinkDatagrid.removeRows(items4);
+			grid1.load();
+			grid2.load();
+			tablegrid.load();
+			epoint.refresh(['grid1','form'],'');
+			tableLinkDataValue = '';
+		}
+
+		function addAll() {
+			var items = grid1.getData();
+			var length1 = Object.keys(items).length;
+			var count = 0;
+			for (var i = 0; i < length1; i++) {
+				count++;
+				var res1 = [];
+				res1.push(items[i]);
+				var items3 = {
+					"dsname" : res1[0].dsname,
+					"dsid" : res1[0].dsid
+				}
+				if(!isShowFields){
+					grid1.removeRows(res1);
+				}
+				var items4 = clone(items3);
+				grid2.addRow(items3, 0);
+				dslinkDatagrid.addRow(items4,0);
+			}
+			if (count == 0) {
+				epoint.alert("没有匹配的表", '', null, 'warning');
+			}
+		}
+
+		function removes() {
+			var items3 = grid2.getSelecteds();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			
+			console.log(length);
+			for (var i = 0; i < length; i++) {
+				var items = grid1.getData();
+				var length1 = Object.keys(items).length;
+				var flag1 = true;
+				var flag2 = true;
+				for (var j = 0; j < length1; j++) {
+					if(items[j].dsname.toLowerCase() == items3[i].dsname.toLowerCase()){
+						flag1 = false;
+					}
+				}
+				if(flag1){
+					grid1.addRow(items3[i]);
+				}
+				// 移除表关联信息
+				var items4 = dslinkDatagrid.findRows(function(row){
+				    if(row.dsname == items3[i].dsname) return true;
+				});
+				dslinkDatagrid.removeRow(items4[0]);
+				var array = JSON.parse(tableLinkDataValue);
+				for(var i=0;i<array.length;i++){
+					if(array[i].dsname == items4[0].dsname){
+						array.splice(i, 1);
+						break;
+					}
+				}
+				tableLinkDataValue = JSON.stringify(array);
+			}
+		}
+
+		function upItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveUp(items);
+		}
+		
+		function downItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveDown(items);
+		}
+		
+		//搜索源，目标
+		/* function searchPrimaryKey() {
+			var sourceField = mini.get("sourceField").getValue();
+			if (sourceField != "") {
+				var items = grid1.getData();
+				var j = 0;
+				for (var i = 0; i < items.length; i++) {
+					var fromField = items[i].sourceField;
+					var sourceFieldReg = null;
+					sourceFieldReg = new RegExp(sourceField, "i");
+					if (sourceFieldReg.test(fromField)) {
+						grid1.moveRow(
+								grid1.getRow(i), j);
+						j++;
+					}
+				}
+			}
+			var targetField = mini.get("targetField").getValue();
+			if (targetField != "") {
+				var items2 = grid11.getData();
+				var j = 0;
+				for (var i = 0; i < items2.length; i++) {
+					var toField = items2[i].targetField;
+					var targetFieldReg = null;
+					targetFieldReg = new RegExp(targetField, "i");
+					if (targetFieldReg.test(toField)) {
+						grid11.moveRow(
+								grid11.getRow(i), j);
+						j++;
+					}
+				}
+			}
+		} */
+		
+
+		function clone(Obj){
+			var buf;
+			if(Obj instanceof Array){
+				buf=[];
+				var i=Obj.length;
+				while(i--){
+					buf[i]=clone(Obj[i]);
+				}
+				return buf;
+			}
+			else if(Obj instanceof Object){
+				buf={};
+				for(var k in Obj){
+					buf[k]=clone(Obj[k]);
+				}
+				return buf;
+			}else{
+				return Obj;
+			}
+		}
+		
+		dslinkDatagrid.on('rowclick', function(e) {
+			//[{"dsname":"","dsid":"","tableLink":["",""]}]
+			var dsname = e.record.dsname;
+			var dsid = e.record.dsid;
+			//缓存选中字段
+			var array = [];
+			var tblinkdata = tableLinkDataValue;
+			if(tableLinkDataValue != '[]' && tableLinkDataValue!='' && tableLinkDataValue!=null){
+				array = JSON.parse(tableLinkDataValue);
+			}
+			if(lastDs != '' ){
+				var tableData = tablegrid.getData();
+				if(tableLinkDataValue != '[]' && tableLinkDataValue!='' && tableLinkDataValue!=null){
+					for(var i=0;i<array.length;i++){
+						if(array[i].dsname == lastDs.split(';')[0]){
+							array.splice(i, 1);
+							break;
+						}
+					}
+				}
+				var tableLink = [];
+				for(var i=0;i<tableData.length;i++){
+					tableLink.push(tableData[i].tablename);	
+				}
+
+				array.push({
+					"dsname" : lastDs.split(';')[0],
+					"dsid" : lastDs.split(';')[1],
+					"tableLink": tableLink,
+				});
+			}
+			console.log(array);
+			tableLinkData.setValue(JSON.stringify(array));
+			tableLinkDataValue = JSON.stringify(array);
+			
+			lastDs = dsname+";"+dsid;
+			mini.get('tblink').setValue(lastDs);
+			epoint.execute('getOwnTables',['tblink','table-datagrid'], '' ,function(data){
+				tablenameList = data.tablelist;
+				tablegrid.setData(null);
+ 				//渲染选中字段
+				if(array != '[]'){
+					for(var i=0;i<array.length;i++){
+						if(array[i].dsname == dsname){
+							if(mini.get("tablenameList") != undefined){
+								mini.get("tablenameList").setData(tablenameList);
+							}
+							var tableList = JSON.parse(array[i].tableLink);
+							console.log('tableList');
+							console.log(tableList);
+  							for(var j=0;j<tableList.length;j++){
+								var newRow = {
+									"tablename":tableList[j],
+								};
+								console.log('addrow');
+								console.log(newRow);
+								tablegrid.addRow(newRow, 0);
+							}
+  							mini.get("tablenameList").setData(tablenameList);
+							break;
+						}
+					}	
+				} 
+			});
+		});
+    	 
+		
+  	   // 选择节点
+        function nodeSelect(e){
+        	node.setValue(e.value);
+        	var items3 = grid2.getData();
+			var items4 = dslinkDatagrid.getData();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			dslinkDatagrid.removeRows(items4);
+			grid1.load();
+			grid2.load();
+			tablegrid.load();
+			tableLinkDataValue = '';
+        	epoint.refresh(['nodeGuid','dsType','grid1','grid2','form'],'', true);
+        
+        }
+        
+     	// 选择数据源类型
+        function typeSelect(e){
+        	dsType.setValue(e.value);
+        	var items3 = grid2.getData();
+			var items4 = dslinkDatagrid.getData();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			dslinkDatagrid.removeRows(items4);
+			grid1.load();
+			grid2.load();
+			tablegrid.load();
+			tableLinkDataValue = '';
+        	epoint.refresh(['nodeGuid','dsType','grid1','grid2','form'],'', true);
+        }
+     	
+        /*自定义vtype*/
+        mini.VTypes["englishErrorText"] = "请输入英文、点（.）、横杠（-）、下划线（_）";
+        mini.VTypes["english"] = function (v) {
+            var re = new RegExp("^[a-zA-Z\_\.\-]+$");
+            if (re.test(v)) return true;
+            return false;
+        }
+        
+        function updateFieldMap(sysGuid) {
+        	var tblinkVal = mini.get('tblink').getValue();
+			var tableLinkList = tablegrid.getData();
+			localStorage.setItem("tablelink",JSON.stringify(tableLinkList));
+			epoint.openDialog('选择监听表',
+					'./cdcproducertablemap?tblink=' + tblinkVal, function(data) {
+						if (data != 'close') {
+							tablegrid.load({
+								'columnTableData' : data
+							});
+						}
+					}, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+        
+	</script>
+</body>
+
+</html>

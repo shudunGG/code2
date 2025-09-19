@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>预警展示</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="故障资源">
+						<input id="loginid" class="mini-textbox" bind="subjectName" />
+					</div>
+					<div role="control" label="发生时间">
+						<input name="dateFrom" id="starttime" bind="starttime"
+							class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" format="yyyy-MM-dd HH:mm:ss"
+							 showTime="true"
+							showClearButton="true" /> <span
+							style="width: 12%; text-align: center">至</span> <input
+							name="endtime" id="endtime" class="mini-datepicker"
+							onValuechanged="validateDate(this)" style="width: 44%;"
+							format="yyyy-MM-dd HH:mm:ss" bind="endtime"
+							 showTime="true"
+							showClearButton="true" />
+					</div>
+				</div>
+				<div role="row">
+				   <div role="control" label="资源类型">
+						<input id="subjectType" class="mini-textbox" bind="subjectType" />
+				   </div>
+				   <div role="control" label="状态">
+						<input id="status" class="mini-radiobuttonlist" bind="status" 
+						data="[{text:'所有',id:''},{text:'未处理',id:'0'},{text:'已处理',id:'1'}]" textField="text"
+							valueField="id" />
+				   </div>
+				
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData">
+				<div property="columns">
+					<div width="8" type="checkcolumn"></div>
+					<div type="indexcolumn" width="8" headerAlign="center">序</div>
+					<div field="subjectname" headerAlign="center" align="center"
+						width="30">故障资源</div>
+					<div field="subjecttype" headerAlign="center" align="center" width="30">资源类型</div>
+					<div field="recordtime" headerAlign="center" align="center" width="40" 
+					     data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">发生时间</div>
+					<div field="rulename" headerAlign="center" align="center" width="30">规则名称</div>
+					<div field="messagetype" headerAlign="center" align="center" width="30">通知方式</div>
+					<div field="targetusers" headerAlign="center" align="center" width="30">通知对象</div>
+					<div field="status" headerAlign="center" align="center" width="30" renderer="onColorRenderer">状态</div>
+					<div headerAlign="center" align="center" width="30"
+						renderer="onOperationRenderer">处理</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('alertinfolistaction');
+		
+		//绘制操作列
+		var onOperationRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "handleAlertRule",
+					"rowguid");
+		};
+		
+		// 弹出修改窗口
+		function handleAlertRule(rowguid) {
+			var url = 'frame/pages/basic/gateway/api/apiinfo/handlealertrule?rowguid='+rowguid;
+			epoint.openDialog("处理", url, searchData, {
+				'width' : 700,
+				'height' : 400
+			});
+		}
+
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid','fui-form']);
+		}
+		
+		function onColorRenderer(e) {
+			var status = e.row.status;
+			if ("未处理" == status) {
+				e.cellStyle = " color:red;";
+				return status;
+			}
+			else {
+				e.cellStyle = " color:green;";
+				return status;
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Process agent</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<!-- Wait for the tooltip -->
+		<div class="page-loading"></div>
+
+		<!-- Button area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="addCommission">add</a><a
+				class="mini-button" iconCls="icon-minuscircle" onclick="deleteCommission">delete selected</a>
+			</div>
+		</div>
+
+		<!-- Content area -->
+		<div class="fui-content">
+
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="commissionGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+
+				<div property="columns">
+					<div type="checkcolumn" width="35"></div>
+					<div type="indexcolumn" width="35" headerAlign="center">
+						order
+					</div>
+					<div field="commissionUserName"  width="100%" headerAlign="center">
+						agent
+					</div>
+					<div field="authorization" width="90"  headerAlign="center" align="center">
+						authorization method
+					</div>
+					<div field="fromdate" width="150" headerAlign="center" align="center">
+						start time
+					</div>
+					<div field="todate" width="150" headerAlign="center" align="center">
+						end time
+					</div>
+					<div field="show" width="150" headerAlign="center" align="center">
+						to-do two-way display
+					</div>
+					<div field="showindone" width="105" headerAlign="center" align="center">
+						visible
+					</div>
+					<div field="showperson" width="145" style="min-width:120px" headerAlign="center" align="center">
+						operater displays as the actual operater 
+					</div>
+					<div width="90" align="center" headerAlign="center"
+					renderer="onEditRenderer">
+						edit
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("mycommissionlistaction");
+
+			
+			//The new setting
+			function addCommission() {
+				epoint.openDialog("new agent",
+						'frame/pages/basic/commission/mycommission', searchData, {
+							'width' : 1000,
+							'height' : 550
+						});
+			}
+			//edit settings
+			function editCommission(commissionGuid) {
+				epoint.openDialog("edit the agent",
+						'frame/pages/basic/commission/mycommission?commissionGuid='
+								+ commissionGuid, searchData, {
+									'width' : 1000,
+									'height' : 550
+						});
+			}
+			//Apply colours to a drawingeditbutton
+			function onEditRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "editCommission", "commissionGuid");
+			}
+
+			//delete selected
+			function deleteCommission() {
+				var datagrid = mini.get('datagrid');
+				var ids = datagrid.getSelectedIds();
+				if (ids.length > 0) {
+					epoint.confirm("determinedelete selectedRecord?", "", function(action) {
+						epoint.execute("deleteCommission", "", [ids.join(',')], function(data) {
+							if (data.msg) {
+								epoint.alert(data.msg, null, null, 'info');
+								epoint.refresh(["datagrid"], '', true);
+							}
+						});
+					});
+				} else {
+					mini.alert("Please choose to delete records!", null, null, 'warning');
+				}
+			}
+
+			//]]>
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>脚本更新</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+	<div id="form">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<div style="float:left;margin-left:10px">框架版本：</div>
+				<div style="float:left">
+					<input id="versionList" autoLoad="false"
+						onvaluechanged="refreshData" bind="updatelistaction.version"
+						action="getVersionList" textField="text" valueField="id"
+						class="mini-combobox mr10" />
+				</div>
+			</div>
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				<em>当前项目的版本号即默认选中的框架版本</em>
+			</p>
+			<p>
+				<em>整个脚本更新功能依托的还是我们框架docs目录下面的脚本更新说明文件，当你觉得使用在线更新麻烦或者有问题时，可以去脚本文件中手动copy执行。</em>
+			</p>
+			<p>
+				<em>更新状态、执行次数是针对你脚本更新文件里面每天后面(1)这个数字来的，一般你刚更新完框架，这个肯定是没有的，也就是显示未更新，执行次数0。当你点击执行更新时，会自动变成对应次数。</em>
+			</p>
+			<p>
+				<em>当你执行更新报错时，可以查看下错误信息，可能脚本已经执行过了。但是更新状态还会显示未更新，执行次数也是0。因为这个状态仅仅依靠的是解析脚本文件而已，所以不必太较真。</em>
+			</p>
+		</div>
+		
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="filename" style="width: 100%; height: 100%;" allowResize="true" 
+				showPager="false" action="updatelistaction.getLogListData">
+				<div property="columns">
+					<div field="date" width="150" align="center" headerAlign="center" >
+						日期
+					</div>
+					<div field="status" width="150" align="center" headerAlign="center" >
+						更新状态
+					</div>
+					<div field="count" width="80" align="center" headerAlign="center" >
+						执行次数
+					</div>
+					<div field="desc" align="left" headerAlign="center"  width="100%">
+						脚本描述
+					</div>
+					<div field="looktext" width="80" align="center" headerAlign="center" renderer="onLookTextRenderer">
+						查看脚本
+					</div>
+					<div field="execute" width="80" align="center" headerAlign="center" renderer="onExecuteRenderer">
+						执行更新
+					</div>
+				</div>
+				<input name="rowId" id="rowId" class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+			//初始化页面
+			epoint.initPage('updatelistaction');
+			
+			var grid = mini.get("datagrid");
+			grid.on("load", function(){
+				grid.mergeColumns(["date"]);
+			});
+			/* function onLoad(e){
+				var grid = e.sender;
+ 	            grid.mergeColumns(["date"]);
+			} */
+			
+			// 执行更新
+			function onExecuteRenderer(e){
+				var date=e.row['date'];
+				return "<a  style=\"cursor:pointer;\" class=\"action-icon icon-start\" onclick=\"executeScript('"+date+"')\" ></a>";
+			};
+			
+			// 查看脚本
+			function onLookTextRenderer(e){
+				// 查看日期
+				var date=e.row['date'];
+				return "<a  style=\"cursor:pointer;\" class=\"action-icon icon-search\" onclick=\"lookScript('"+date+"')\" ></a>";
+			};
+			
+			// 执行脚本
+			function executeScript(date){
+				epoint.execute("executeUpdate", null, [date], function(res){
+					epoint.alert(res.msg, null, null, 'info');
+				});
+			};
+			
+			// 查看脚本
+			function lookScript(date){
+				epoint.openDialog(date + '查看脚本',
+						'mis/base/sqlupdate/lookscript?date=' + date, '', {
+							'width' : 1000,
+							'height' : 400
+						});
+			};
+			
+			// 刷新表格
+			function refreshData(){
+				epoint.refresh(['versionList', 'datagrid']);
+			};
+			
+		//]]>
+	</script>
+</body>
+
+</html>

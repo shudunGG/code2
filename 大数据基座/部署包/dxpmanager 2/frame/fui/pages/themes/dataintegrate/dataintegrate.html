@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>新点数据集成开发平台</title>
+    <script src="../../../js/cssboot.js"></script>    
+</head>
+
+<body>
+    <!-- 头部 -->
+    <div id="header-container" class="header-container clearfix">
+        <div id="menu-trigger" class="menu-trigger l"></div>
+        <!-- 标题 -->
+        <div class="title l ver-inner-md font-0">
+            <img id="dxpmanger-logo" src="../datamanager/images/logo.png" class="logo ver-md" />
+            <span id="dxpmanger-logoname" class="title-txt ver-md">新点数据集成开发平台</span>
+        </div>
+        <!-- quick btn -->
+        <div class="header-actions-area">
+            <!-- actions -->
+            <div class="header-action-btns l clearfix" id="header-action-btns">
+                <span class="header-action-btn remind " data-ref="msgRemind">
+                    <i class="remind-num hidden header-action-btn-tip"></i>
+                </span>
+               <!--  <span class="header-action-btn chart " data-ref="msgEMsg">
+                    <i class="emsg-num hidden header-action-btn-tip"></i>
+                </span> -->
+            </div>
+            <!-- user -->
+            <div class="user-info" id="user-info">
+                <div class="user-info-summary ver-inner-md font-0">
+                    <img src="./images/header/user-portrait.png" alt="" class="user-portrait ver-md">
+                </div>
+                <div id="user-action-panel" class="user-action-panel">
+                    <div class="user-action-panel-inner">
+                        <div class="user-info-detail" id="user-info-detail">
+                            <img src="./images/header/user-portrait.png" alt="" class="user-portrait">
+                            <span class="user-name"></span>
+                            <span class="user-dept"></span>
+                        </div>
+                        <ul class="user-action-list">
+                            <li class="user-action-item person-info" data-id="person-info-setting"
+                                id="person-info-setting" data-name="个人信息维护" title="个人信息维护"
+                                data-url="frame/pages/basic/personalset/personalinfo/personalinfo">个人信息维护
+                            </li>
+                         <!--    <li class="user-action-item role-change hidden" data-id="user-role-change" data-name="兼职切换"
+                                title="兼职切换">兼职切换</li> -->
+                            <!-- 此处扩展时添加 li 即可 -->
+                            <!-- <li class="user-action-item css样式类需定义图标" title="显示的名字"  url="要打开的链接地址" data-opentype="打开方式 tabsnav/dialog/blank之一" data-id="一个标识，请勿重复，可以不配置自动生成生成" script="如果打开一个链接不能满足需求，可以在此配置一段js脚本，将在点击时执行，配置url后此项无效" >显示的名字</li> -->
+                            <!-- 扩展demo -->
+                            <li class="user-action-item logout" title="注销登录">注销登录</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="top-menu" class="top-menu clearfix hidden">
+        	<div id="top-menu-inner" class="top-menu-inner"></div>
+        </div>
+        
+    </div>
+
+    <!-- 右侧滑动弹窗 -->
+    <div id="msg-panel" class="msg-panel hidden">
+        <!-- 消息 -->
+        <div id="msgRemind" class="msg-panel-detail ">
+            <h2 class="msg-panel-head">消 &nbsp; 息
+                <i class="msg-panel-hide"></i>
+            </h2>
+            <div class="msg-panel-content">
+            </div>
+        </div>
+        <!-- E讯 -->
+        <div id="msgEMsg" class="msg-panel-detail">
+            <h2 class="msg-panel-head tab">
+                <span class="panel-hd-tab active">E讯提醒</span>
+                <span class="panel-hd-tab hidden" data-ref="online-user">
+                    在线人员(<span class="online-user-num">0</span>)
+                </span>
+                <i class="msg-panel-hide"></i>
+            </h2>
+            <div class="msg-panel-content">
+                <ul class="emsg-recent-list empty"></ul>
+                <iframe id="online-user" class="emsg-online-user hidden" width="100%" height="100%" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div class="main left-none" id="main">
+        <div class="left-nav" id="left-menu">
+            <span class="left-nav-trigger"></span>
+            <div class="left-nav-container">
+
+            </div>
+        </div>
+        <div class="main-content relative">
+            <div class="main-content-inner">
+                <!-- iframe 容器 -->
+                <div class="main-content-ifr-wrap" id="main-ifr-wrap">
+                    <iframe class="tab-content" id="main-iframe" height="100%" width="100%" frameborder="0" scrolling="no"></iframe>
+                </div>
+            </div>
+            <div class="cover-wrap" id="cover-wrap"></div>
+        </div>
+    </div>
+
+    <!-- 声音提示 js动态添加IE加载iframe 非IE使用audio -->
+    <div id="msg-sound"></div>
+
+    <script id="topmenu-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="top-menu-itembox l" style="width: {{width}}">
+            <div id="top-menu-{{code}}" class="top-menu-item" data-id="{{code}}" data-name="{{name}}" data-hassub="{{hasSub}}" data-url="{{url}}" data-opentype="{{openType}}">
+                <span class="top-menu-icon {{icon}} text-center box-inline"></span>
+                <span class="top-menu-txt text-center box-inline text-ellipsis">{{name}}</span>
+            </div>
+        </div>
+        {{/list}}
+    </script>
+
+    <script src="../../../js/jsboot.js"></script>
+    <script>
+        var getDataUrl = 'themedataaction';
+        var homeUrl = 'dxp/dataintegration/general';
+        var UserSettins = {
+			logout : function() {
+				Util.getSafeLocation().href = Util
+						.getRightUrl('rest/logout?isCommondto=true');
+			},
+			// 兼职切换处理函数
+			changeRole : function(userGuid) {
+				// 未做提醒 逻辑需要自己实现
+				// 参数为后端返回的userGuid
+				var url = "frame/orga/user/switchparttime?userguid=" + userGuid;
+				epoint.openDialog("账号选择", url, function(result) {
+					if (result == 'success') {
+						Util.getSafeLocation().reload();
+					}
+				}, {
+					'width' : 850,
+					'height' : 350
+				});
+			}
+		};
+        // 消息提醒tip配置
+        var RemindTipsCfg = {
+            timeout: 60 * 1000, // 自动关闭时间 单位毫秒 0 不自动关闭
+            show: true // 是否启用
+        };
+        // 消息中心配置
+		var MsgCenterConfig = {
+			"typeListUrl" : epoint.dealRestfulUrl(getDataUrl
+					+ '/getTypeListUrl'), // 类型接口
+			"msglistUrl" : epoint.dealRestfulUrl(getDataUrl + '/getMsglistUrl'), // 右侧列表接口
+			"markToReadUrl" : epoint.dealRestfulUrl(getDataUrl
+					+ '/markToReadUrl'), // 标记为已读接口，多个用逗号隔开
+			"deleteUrl" : epoint.dealRestfulUrl(getDataUrl + '/deleteUrl'), // 删除接口, 类型为all表示删除所有，不然直接传id，多个逗号隔开
+			"msgTipsUrl" : epoint.dealRestfulUrl(getDataUrl + '/getMsgTipsUrl')
+		// 消息提醒接口，返回各个类别的数据和总数
+		}
+
+        //消息中心高级设置
+		var MsgCenterSetting = {
+			getMessageSettingUrl : epoint
+					.dealRestfulUrl('mypagesettingaction/getMessageSetting'), // 获取参数数据
+			saveMessageSettingUrl : epoint
+					.dealRestfulUrl('mypagesettingaction/saveMessageSetting')
+		//保存 
+		}
+    </script>
+    <script>
+        SrcBoot.output([
+            'frame/fui/js/widgets/classifysearch/classifysearch.js',
+            'frame/fui/js/widgets/tabsnav/tabsnav.js',
+            'frame/fui/js/widgets/msgcenter/msgcenter.js', 
+            './dataintegrate.js'
+        ]);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	information_schema.tables WHERE	TABLE_SCHEMA = DATABASE ( ) AND table_name = 'cockpit_warningrule_compute_relation'

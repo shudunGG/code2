@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>表合并</title>
+<script src="../../../frame/fui/js/cssboot.js" type="text/javascript"></script>
+<script type="text/javascript">
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+<body >
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="addbtn" onclick="save">保存修改</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" vtype="maxLength:20" requiredErrorText="步骤名称不能为空"/>
+				</div>
+			</div>
+			<div role="row" style="display:none">
+				<div role="control" label="输入步骤1" starred="true">
+					<input id="leftStepName" name="leftStepName" class="mini-combobox"
+						required="true" emptyText="请选择输入步骤" action="getPreStep"
+						style="width: 100%" textField="text" valueField="id" />
+				</div>
+				<div role="control" label="输入步骤2" starred="true">
+					<input id="rightStepName" name="rightStepName" class="mini-combobox"
+						required="true" emptyText="请选择输入步骤" action="getPreStep"
+						style="width: 100%" textField="text" valueField="id" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="是否去重">
+					<div id="distinct" name="distinct" class="mini-checkbox"></div>
+				</div>
+			</div>
+			<input id="dataTable1" name="dataTable1" 
+				class="mini-hidden"> 
+		</div>
+	</div>
+	<div class="fui-toolbar" style="padding-top: 1px">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary"
+				onclick="addFieldMap"
+				style="margin-left: 20px">自动匹配</a><a class="mini-button mini-btn-primary"
+				onclick="addkeyfield"
+				style="margin-left: 20px">添加字段</a><a id="deletekeyfield"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除</a>
+		</div>
+	</div>
+	<div class="mini-fit" style="padding-top: 5px">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="id" multiSelect="true" allowCellValid="true"
+			allowCellEdit="true" style="width: 100%; height: 100%;" oncellvalidation="onCellValidation"
+			allowResize="true" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" action="getDataGridData" allowMoveColumn="false">
+			<div property="columns">
+				<div type="checkcolumn" width="55"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="sourceField" name="sourceField" headerAlign="center" align="center"
+					 width="200" maxLength="8" type="comboboxcolumn" >
+					<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." textField="text"
+						valueField="id" inputStyle="text-align:center"
+						style="width: 100%" />
+				</div>
+				<div field="targetField" name="targetField" headerAlign="center" align="center"
+					vtype="required" width="200" maxLength="8" type="comboboxcolumn" >
+					<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." textField="text"
+						valueField="id" inputStyle="text-align:center"
+						style="width: 100%" />
+				</div>
+				<div field="otherName1" headerAlign="center" align="center"
+					 width="200" maxLength="8"  >
+					别名<input property="editor" class="mini-textbox"
+						emptyText="请填写字段别名..."/>
+				</div>
+				<div width="90" headerAlign="center" align="center"
+					field="chinesename">
+					字段中文名称<input property="editor" class="mini-textbox"
+						style="width: 100%;" inputStyle="text-align:left"
+						required="true" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js" type="text/javascript"></script>
+</body>
+<script type="text/javascript">
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var grid = mini.get("datagrid");
+		var columnLinkList = mini.get('dataTable1');
+		var flowGuid=Util.getUrlParams('flowGuid');
+		var leftfields,rightfields;
+
+
+		//解决下拉框不展示的问题
+		  function epoint_preload(ctrs,data) {
+			mini.get("datagrid").getCellEditor(2,0).setData(data.leftfields);
+			mini.get("datagrid").getCellEditor(3,0).setData(data.rightfields);
+        }
+		
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+		
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('modeltableunionaction?stepId=' + nodeInfo.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			leftfields=e.leftfields;
+			rightfields=e.rightfields
+			mini.get("datagrid").getCellEditor(2,0).setData(leftfields);
+			mini.get("datagrid").getCellEditor(3,0).setData(rightfields);
+			grid.updateColumn("sourceField", {
+				header : e.leftstepname
+			});
+			grid.updateColumn("targetField", {
+				header : e.rightstepname
+			});
+			mini.get('rightStepName').setValue(e.rightstepid);
+			mini.get('leftStepName').setValue(e.leftstepid);
+		}
+		
+		//新增关键字段
+		function addkeyfield() {
+			var newRow = {};
+			grid.addRow(newRow, 'last');
+
+		}
+		
+		//删除选中
+		function deleteSelected() {
+			grid.removeRows(grid.getSelecteds(), false);
+			setGridData();
+		}
+		
+		function setGridData(){
+			var datas = grid.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"sourceField" : row.sourceField,
+					"targetField" : row.targetField,
+					"otherName1" : row.otherName1,
+					"chinesename" : row.chinesename
+				});
+			}
+			mini.get('dataTable1').setValue(JSON.stringify(array));
+		}
+
+		function getLeftFieldType(fieldName){
+			for(var i=0;i<leftfields.length;i++){
+				var leftfieldname=leftfields[i].id;
+				if(fieldName==leftfieldname){
+					return leftfields[i].type;
+				}
+			}
+		}
+
+		function getRightFieldType(fieldName){
+			for(var i=0;i<rightfields.length;i++){
+				var rightfieldname=rightfields[i].id;
+				if(fieldName==rightfieldname){
+					return rightfields[i].type;
+				}
+			}
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			if(grid.getData().length == 0){
+				epoint.alert('匹配字段不能为空！');
+				return;
+			}
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				epoint.alert(error.errorText);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				var datas = grid.getData();
+				for(var i=0;i<datas.length;i++){
+					var leftType=getLeftFieldType(datas[i].sourceField);
+					var targetType=getRightFieldType(datas[i].targetField);
+               	  if(leftType!=targetType){
+                      epoint.alert('字段'+datas[i].sourceField+'('+leftType+')和字段'+datas[i].targetField+'('+targetType+')的字段类型不同');
+                      return;
+                  }
+				}
+
+
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute('save', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+		
+		function OnCellBeginEdit(e) {
+			var grid = e.sender;
+			var record = e.record;
+			var field = e.field, value = e.value;
+			var editor = e.editor;
+			if (field == "sourceField") {
+				if(editor.getData().length==0){
+					var stepId=mini.get('leftStepName').getValue();
+					epoint.execute('getPreFieldsBySetpId','',stepId,function(data){
+						editor.setData(data);
+					});
+				}
+			}else if (field == "targetField") {
+				if(editor.getData().length==0){
+					var stepId=mini.get('rightStepName').getValue();
+					epoint.execute('getPreFieldsBySetpId','',stepId,function(data){
+						editor.setData(data);
+					});
+				}
+			}
+		}
+
+		function onCloseClick(e){
+			e.sender.setText('');
+			e.sender.setValue('');
+		}
+
+		// 弹出字段映射窗口
+		function addFieldMap(sysGuid) {
+			if (epoint.validate()) {
+				var leftstepid=mini.get('leftStepName').getValue();
+				var rightstepid=mini.get('rightStepName').getValue();
+				var cloumnlink = columnLinkList.value;
+				localStorage.setItem("cloumnlink",cloumnlink);
+				epoint.openDialog('字段映射',
+						'./tableunionfieldmap?leftstepid=' +leftstepid
+								+ "&rightstepid=" + rightstepid + "&flowGuid=" + flowGuid,
+						addCallBack, {
+							'width' : 1000,
+							'height' : 620
+						});
+			}
+		}
+
+		function addCallBack(param) {
+			if (param) {
+				//columnList
+				if (param != "close") {
+					columnTemp = param;
+					var array = [];
+					var datas=epoint.decodeJson(param);
+					for (var i = 0; i < datas.length; i++) {
+						var row = datas[i];
+						array.push({
+							"sourceField" : row.sourceField,
+							"targetField" : row.targetField,
+							"otherName1" :row.targetField,
+							"chinesename" : row.targetChineseName
+						});
+					}
+					columnLinkList.setValue(JSON.stringify(array));
+					grid.setData(epoint.decodeJson(array));
+				}
+
+			}
+		}
+
+
+		
+		function onCellValidation(e){
+			console.log(e);
+		if (e.field == "otherName1") {
+			if (e.value == ''||!e.value) {
+				e.errorText = $.trim(e.column.header)+"不能为空!";
+				e.isValid = false;
+				return;
+			}
+			var retainedFields = ['like','as'];
+			if(retainedFields.indexOf(e.value) != -1){
+				e.errorText = "别名不能为数据库保留字："+retainedFields;
+				e.isValid = false;
+				return;
+			}
+			var reg =  new RegExp("^[a-zA-Z][a-zA-Z0-9_]*$");
+			var v = reg.test(e.value);
+			if (!v) {
+				e.errorText = "别名必须以字母开头，英文、数字、下划线作为字段组合名称!";
+				e.isValid = false;
+			}
+		}else if(e.field == "sourceField" || e.field == "targetField"){
+			if (e.value == ''||!e.value) {
+				e.errorText = $.trim(e.column.header)+"不能为空!";
+				e.isValid = false;
+			}
+		}
+	}
+	</script>
+
+</html>

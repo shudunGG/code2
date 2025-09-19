@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>指标圈阅详情</title>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+<!-- toolbar区域 -->
+
+<!-- 内容区域 -->
+<div class="fui-content">
+	<div id="fui-form" class="fui-form" style="width: 90%">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="圈阅说明">
+					<div class="mini-textarea" bind="dataBean.notes" id="notes"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="圈阅者">
+					<div class="mini-outputtext" bind="dataBean.createusername"></div>
+				</div>
+				<div role="control" label="圈阅时间">
+					<div class="mini-outputtext" bind="dataBean.operatedate"
+						 data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="接收人">
+					<div class="mini-outputtext" bind="dataBean.receiveusername"></div>
+				</div>
+				<div role="control" label="接收时间">
+					<div class="mini-outputtext" bind="dataBean.receivedate"
+						 data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="圈阅图片">
+					<div id="uploader3" class="mini-webuploader" pickerText="上传附件"
+						 action="getAttachModel" showDefaultUI="true" onload="onload"
+						 limitType="jpg,png" auto="true" fileNumLimit="5"
+						 fileSizeLimit="10000k"></div>
+					<div class="img-view" id="picture" style="display: none;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="fui-toolbar-bottom text-center">
+	<div class="btn-group mr10"
+		 style="float: none; display: inline-block;">
+		<a class="mini-button mini-btn-primary" onclick="edit()" id="edit">编辑</a>
+		<a class="mini-button mini-btn-primary" onclick="save()" id="save">保存</a> <a
+			class="mini-button mini-btn-danger" onclick="cancelnotes">撤销</a><a
+			class="mini-button" onclick="epoint.closeDialog(0)">取消</a>
+	</div>
+</div>
+
+<!-- 请修改相对路径 -->
+<script src="../../../../../rest/resource/jsboot"></script>
+
+<script>
+	var type = "";
+	// 初始化页面
+	epoint.initPage('cockpitnormnotesdetailaction', null, function(data) {
+		$(".mini-uploader-btns").css("display", "none");
+		type = Util.getUrlParams('type');
+		if(type == 'edit'){
+			$('#edit').hide();
+			mini.get('notes').enable();
+		}
+		if(type == 'detail'){
+			$('#save').hide();
+			mini.get('notes').disable();
+		}
+		if (data.obj) {
+			showPicture(data.obj);
+		}
+	});
+
+	function cancelnotes() {
+		epoint.execute("cancelnotes", '', callback);
+	}
+
+	function callback(data) {
+		if (data.msg) {
+			epoint.alertAndClose(data.msg, '', '', 'info');
+		}
+	}
+
+	function edit() {
+		mini.get('notes').enable();
+		$('#save').show();
+		$('#edit').hide();
+	}
+
+	function save(){
+		epoint.execute("save", '', callback);
+	}
+
+	//展示图标
+	function showPicture(tb) {
+		$(".mini-uploader-list").empty();
+		$("#picture").show();
+		$("#picture").html('<img id="tb" src="" width="120px" height="120px" alt="图标" />');
+		$("#tb").attr("src", tb.picture);
+	}
+</script>
+</body>
+</html>

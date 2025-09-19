@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>表输出</title>
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+
+<style>
+body, html {
+    overflow: auto !important; 
+}
+</style>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="选择数据表">
+					<input id="tableName" name="tableName" class="mini-combobox"
+						bind="tableName" allowInput="true" showClose="true" action="getTableList"
+						style="width: 100%" textField="text" valueField="id" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="是否删除原目标表">
+					<input id="isDel" name="isDel" class="mini-checkbox" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var tableList = mini.get('tableName');
+		var stepNameForm = mini.get('stepName');
+		var columnLinkList = mini.get('columnLinkList');
+		var datagrid = mini.get("datagrid");
+		var nodeData;
+		var nodeInfo;
+		var transGuid;
+		var columnTemp;
+
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			form.setData(nodeData);
+			var obj = Util.getUrlParams();
+			transGuid = obj.transGuid;
+			//初始化字段映射表单
+			columnTemp = nodeData.columnLinkList;
+			epoint.initPage('hivetableoutputaction',{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+	
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		// 弹出字段映射窗口
+		function addFieldMap(sysGuid) {
+			onlySave();
+			var dataSource = mini.get("dataSource").value;
+			var tableName = mini.get("tableName").value;
+			
+			epoint.openDialog('字段映射',
+					'dxp/development/transassembly/tableoutputfieldmap?sysGuid='
+							+ sysGuid + "&nodeInfoKey=" + nodeInfo.key
+							+ "&transGuid=" + transGuid + "&dataSource=" + dataSource + "&tableName=" + tableName,
+					addCallBack, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		function addCallBack(param) {
+			if (param) {
+				//columnList
+				if (param != "close") {
+					columnTemp = param;
+					columnLinkList.setValue(param);
+					mini.get('datagrid').load({
+						'columnTableData' : columnTemp
+					});
+				}
+
+			}
+		}
+
+		// 关闭操作的回调
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function onlySave() {
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '', [ nodeInfo,nodeForm ], function(msg) {
+				});
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '', [ nodeInfo, nodeForm ], function(msg) {
+					if (msg == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+		
+		function setGridData() {
+			var datas = datagrid.getData();
+			var columnLink = [];
+			for (var i = 0; i < datas.length; i++) {
+				columnLink.push({
+					"sourceField" : datas[i].sourceField,
+					"targetField" : datas[i].targetField,
+					"isPk" : datas[i].isPK,
+					"sourceType" : datas[i].sourceType,
+					"targetType" : datas[i].targetType,
+					"isTime" : datas[i].isTime,
+					"isUpdate" : datas[i].isUpdate,
+				});
+			}
+			mini.get('columnLinkList').setValue(JSON.stringify(columnLink));
+		}
+
+	</script>
+</body>
+
+</html>

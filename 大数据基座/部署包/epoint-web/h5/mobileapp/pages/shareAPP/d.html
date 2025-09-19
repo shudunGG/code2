@@ -1,0 +1,163 @@
+<!--
+        作者：吴松泽
+        创建时间：2018-05-24 14:05:04
+        版本： [1.0, 2018/5/24]
+        版权： 江苏国泰新点软件有限公司
+        描述：分享页面
+-->
+<!doctype html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>下载</title>
+<!-- H5页面窗口自动调整到设备宽度，并控制用户缩放页面 -->
+<meta name="viewport"
+	content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+<!-- IOS中禁用将数字识别为电话号码/忽略Android平台中对邮箱地址的识别 -->
+<meta name="format-detection" content="telephone=no, email=no" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/mui.min.css" />
+<link rel="stylesheet" href="css/download.css" />
+</head>
+
+<body>
+	<!--提示框-->
+	<div class="em-tip">
+		<div class="em-tip-left"></div>
+		<div class="em-tip-right">
+			<img src="img/img_icon_arrow.jpg" />
+		</div>
+	</div>
+	<div class="mui-content"></div>
+
+	<!-- 页面模板-->
+	<script type="text/x-templ-mustache" id="templ">
+        <div class="em-mask">
+        </div>
+
+        <div class="modal fade addmodel in" id="inhouseTip" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title font-16">"未受信任的企业级开发者"的解决办法</h4>
+                    </div>
+                    <div class="modal-body">
+                        <section>
+                            <div style="padding:0 20px 20px;color:#333;">
+                                <p>因苹果公司的政策原因，在iOS系统中首次安装企业版应用时会出现"未受信任的企业级开发者"提示</p>
+                            </div>
+                            <div style="padding:0 10px 20px;margin-bottom: 50px;">
+                                <img class="img-responsive center-block mt-20 mb-20" src="./img/resovelFlow1_cn.png" style="width:80%;">
+                                <br>
+                                <h4 class="font-16">解决办法如下（以iOS11系统为例）：</h4>
+                                <li style="list-style:none;color:#333;">1、在手机中打开设置功能，选择"通用"</li>
+                                <img class="img-responsive center-block mt-20 mb-20" src="./img/resovelFlow2_cn.png" style="width:80%;">
+                                <li style="list-style:none;color:#333;">2、在通用中，选择"描述文件与设备管理"功能</li>
+                                <img class="img-responsive center-block mt-20 mb-20" src="./img/resovelFlow3_cn.png" style="width:80%;">
+                                <li style="list-style:none;color:#333;">3、在描述文件与设备管理中的企业级应用分类中，选择要安装的企业应用的文件名称（与打开时的提示一致），点击进入</li>
+                                <img class="img-responsive center-block mt-20 mb-20" src="./img/resovelFlow4_cn.png" style="width:80%;">
+                                <li style="list-style:none;color:#333;">4、进入企业签名页面后，确认企业签名中的公司名称与应用名称后，点击信任"企业签名公司名称"</li>
+                                <img class="img-responsive center-block mt-20 mb-20" src="./img/resovelFlow5_cn.png" style="width:80%;">
+                                <img class="img-responsive center-block mt-20 mb-20" src="./img/resovelFlow6_cn.png" style="width:80%;">
+                                <li style="list-style:none;color:#333;">5、回到桌面，重新打开应用即可使用</li>
+                                <br>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="modal-footer" style="margin-top:0px">
+                        <a data-dismiss="modal" href="javascript:void(0)" class="btn btn-u btn-u btn-u-default" id="cancle">关闭</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--顶部背景-->
+        <div class="em-top-bg"></div>
+        <!--logo-->
+        <div class="em-content">
+            <div class="span12">
+                <a data-toggle="modal" id="inhouseClick" href="javascript:void(0)" style="color: #1abc9c;">
+                    <i class="fa fa-hand-o-right" aria-hidden="true" style="padding-right:5px;"></i>"未受信任的企业级开发者"的解决办法</a>
+            </div>
+            <div class="em-content-div">
+                <div class="em-logo">
+                    <img src="{{logo}}" width="100" height="100" />
+                </div>
+                <div class="em-android">
+                    <h2>
+                        <img id="androidIcon" src="{{sysicon}}" width="22" height="24" alt="" />&nbsp;
+                        <img id="iosIcon" src="img/img_icon_ios.png" width="22" height="24" alt="" />&nbsp;{{name}}</h2>
+                </div>
+                <div class="em-version">
+                    版本：&nbsp;
+                    <span>{{version}}
+                        <span class="mui-hidden">(build 18)</span>
+                    </span>&nbsp;&nbsp;&nbsp;&nbsp;大小：&nbsp;
+                    <span>{{size}}</span>&nbsp;MB
+                </div>
+                <div class="em-time">更新时间：
+                    <span>{{updateDate}}</span>&nbsp;</div>
+                <div class="em-erweima">
+                    <div id="qrcode" style="margin:10px"></div>
+                </div>
+
+                <div class="em-btn-content">
+                    <button type="button" downloadUrl="{{downloadUrl}}" class="mui-btn mui-btn-blue em-btn" id="install">点击安装</button>
+                </div>
+                <div class="loading"></div>
+                <div id="showtext">正在安装，请按 Home 键在桌面查看</div>
+                <div class="em-scan">或者用手机扫描二维码安装</div>
+                <!--下划线-->
+                <div class="row row1 mui-hidden"></div>
+                <!--历史版本-->
+                <div class="em-version-content mui-hidden">
+                    <div class="em-desc">
+                        <h2>历史版本</h2>
+                    </div>
+                    <table class="em-table">
+                        <tbody>
+                            <tr>
+                                <td>1.0.0 (build 17)</td>
+                                <td>2018-04-04</td>
+                            </tr>
+                            <tr>
+                                <td>1.0.0 (build 17)</td>
+                                <td>2018-04-04</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="em-more">查看更多</div>
+                </div>
+            </div>
+        </div>
+        <!--copyright-->
+        <div class="em-copyright">
+            <div>
+                <span>新点软件有限公司版权所有&nbsp;</span>
+                <!--<span class="mui-hidden">&nbsp;免责声明&nbsp;</span>|
+					<span class="mui-hidden">举报</span>-->
+            </div>
+            <div class="mui-hidden">
+                <img src="img/language_chinese.png" />
+                <span>中文</span>&nbsp;&nbsp;
+                <img src="img/language_english.png" />
+                <span>英文</span>
+            </div>
+        </div>
+    </script>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../../../frame/pages/login/js/jquery.qrcode.min.js"></script>
+
+	<script>
+		var rootUrl = Util.getRootPath();
+	</script>
+	<script type="text/javascript" src="js/mui.js"></script>
+	<script type="text/javascript" src="js/mustache.min.js"></script>
+	<script type="text/javascript" src="js/downloadUtil.js"></script>
+	<script type="text/javascript" src="js/download.js"></script>
+</body>
+
+</html>

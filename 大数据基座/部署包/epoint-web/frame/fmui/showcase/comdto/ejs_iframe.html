@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>首页</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <script>
+        document.write(
+            "<script src='../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>"
+        );
+    </script>
+    <style>
+        .mui-bar-nav~.mui-content {
+            padding-top: 0px;
+            margin-top: 44px;
+        }
+
+        .mui-focusin>.mui-bar-nav,
+        .mui-focusin>.mui-bar-header-secondary {
+            position: fixed;
+        }
+
+        .ejs-tab {
+            border: 1px solid #3c80e6;
+            border-radius: 20px;
+            width: 100px;
+        }
+
+        .ejs-tab0 {
+            margin-right: -12px;
+        }
+
+        .ejs-tab1 {
+            margin-left: -12px;
+        }
+
+        .ejs-tab-active {
+            background: #3c80e6;
+            color: #fff;
+            z-index: 9;
+        }
+
+        #ejs-f9-header {
+            width: 375px;
+            position: relative;
+            padding-right: 0px;
+        }
+
+        #ejs-f9-iframe #ejs-f9-header .ejs-right-a-0,
+        #ejs-f9-iframe #ejs-f9-header .ejs-right-a-1 {
+            font-size: 14px;
+            line-height: 44px;
+            color: #007aff;
+            min-width: 44px;
+            min-height: 44px;
+            background-size: auto 35px;
+            background-position: 50%, 50%;
+            background-repeat: no-repeat;
+            z-index: 9;
+            position: relative;
+            text-align: center;
+        }
+
+        #ejs-f9-iframe #ejs-f9-header .ejs-right-a-1 {
+            margin-right: 10px;
+        }
+
+        #ejs-f9-iframe .ejs-multi {
+            display: flex;
+            justify-content: center;
+            height: 44px;
+            align-items: center;
+        }
+    </style>
+    <style>
+        #ejs-f9-iframe {
+            position: relative;
+            height: 100vh;
+            width: 375px;
+            margin: 0 auto;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            bottom: 0;
+            top: 0px;
+            left: 0;
+            right: 0;
+            border: 0;
+        }
+    </style>
+
+<body id="ejs-f9-iframe">
+
+    <script>
+        document.write(
+            "<script src='../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>"
+        );
+    </script>
+    <script>
+        Util.loadJs([
+        ], function () {
+            configReady();
+        });
+        // 页面初始化新建iframe
+        function configReady() {
+            var pageUrl = Util.getExtraDataByKey('pageurl') || '';
+
+            var iframe = document.createElement('iframe');
+            iframe.src = window.atob(pageUrl);
+            document.body.appendChild(iframe);
+        }
+        var pageGuid = []
+        // 打开页面新建iframe
+        function appendIframe(src, cb) {
+            var iframe = document.createElement('iframe');
+            iframe.src = src;
+            var id = 'ejs' + Util.uuid({
+                len: 10,
+                type: 'noline'
+            }).replace(/-/g, '_');
+            iframe.id = id
+            // 将新增的iframe的id保存
+            pageGuid.push(iframe.id);
+            document.body.appendChild(iframe);
+
+            // 根据id命名成功回调函数，关闭页面时调用
+            if (cb) {
+                window[id] = function (a) {
+                    cb(a)
+                }
+            }
+
+        }
+        // 删除最上层iframe
+        function delIframe(opt) {
+            // 构造成功回调参数
+            var resultData = opt && opt.resultData ? JSON.stringify({
+                resultData: opt.resultData
+            }) : '';
+            // 触发关闭页面成功回调
+            opt && opt.success && opt.success()
+
+            // 读取最后加入的iframe的id
+            var funcName = pageGuid.slice(-1)[0];
+
+            // 触发打开页面时id生成的函数
+            if (opt && typeof window[funcName] == 'function') {
+                eval(funcName + '(' + resultData + ')')
+            }
+
+            var iframe = document.getElementById(funcName);
+
+            //把iframe指向空白页面，这样可以释放大部分内存。
+            iframe.src = 'about:blank';
+
+            try {
+                iframe.contentWindow.document.write('');
+                iframe.contentWindow.document.clear();
+            } catch (e) { }
+            // 剔除掉最后一个iframe id
+            pageGuid.splice(-1)[0];
+            //把iframe从页面移除
+            iframe.parentNode.removeChild(iframe);
+        }
+    </script>
+
+</body>
+
+</html>

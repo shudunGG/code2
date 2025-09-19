@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>共享配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="add();"
+			id="btnAddRecord"> 新增共享分类 </a> <a class="mini-button"
+			onclick="saveAll()">保存修改</a><a id="btnDel" class="mini-button"
+			state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('该共享分类下所有配置都会删除，确认要删除吗?','',deleteSelected);}">
+			删除选定 </a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" bind="searchString" emptyText="请输入共享分类名称"
+				width="300" /><a class="mini-button ml8" state="primary"
+				iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10" showtype="tooltip">注意事项</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>先保存配置的共享分类，在进行其他配置！</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="sharename" name="sharename" width="200">
+					共享名称<input property="editor" class="mini-textbox"
+						inputStyle="text-align:left" style="width: 100%;" required="true" />
+				</div>
+				<div width="40" renderer="onFieldConfigRenderer">配置字段</div>
+				<div width="40" renderer="onTableConfigRenderer">配置表单</div>
+				<div field="ordernumber" width="40" vtype="int;range:0,99999999"
+					allowSort="true">
+					排序 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:left"
+						style="width: 100%;" />
+				</div>
+				<div width="40" renderer="onDesignerRenderer">设计</div>
+				<div width="40" renderer="onsearchRenderer">预览</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('epointsformshareconfiglistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 新增配置
+		function add() {
+			var newRow = {};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditCell(newRow, "sharename");
+		}
+
+		// 保存
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			var data = grid.getChanges();
+			epoint.execute('saveAll', '', data, msgCallBack);
+		}
+
+		// 删除数据
+		function deleteSelected() {
+			epoint.execute('deleteSelected', '', function(data) {
+				epoint.refresh([ 'datagrid' ], '', true);
+				if (data.msg) {
+					epoint.showTips(data.msg,  {state : 'success'});
+				}
+			});
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg,  {state : 'success'});
+					epoint.refresh([ 'datagrid' ], '', true);
+				} else {
+					epoint.showTips(msg,  {state : 'warning'});
+				}
+			}
+		}
+
+		// 字段配置按钮
+		var onFieldConfigRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"fieldConfigModule", "rowguid");
+		};
+
+		// 弹出字段配置模块窗口
+		function fieldConfigModule(id) {
+			epoint.openDialog('共享字段配置',
+					"frame/pages/sformdesigner/share/epointsformfieldconfiglist?guid="
+							+ id, "", {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+
+		// 设计按钮
+		var onDesignerRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"DesignerModule", "rowguid");
+		}
+
+		// 弹出设计模块窗口
+		function DesignerModule(shareguid) {
+			epoint
+					.openDialog(
+							'设计',
+							"frame/pages/sformdesigner/multitablerelation/epointsformtablerelationadd?shareguid="
+									+ shareguid, addCallBack, {
+								'width' : 800,
+								'height' : 500
+							});
+		}
+
+		// 配置表单按钮
+		var onTableConfigRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"tableConfigModule", "rowguid");
+		}
+
+		// 弹出配置表单模块窗口
+		function tableConfigModule(id) {
+			epoint.openDialog('表单配置',
+					"frame/pages/sformdesigner/share/epointsformtableconfiglist?guid="
+							+ id, "", {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//设计多表合一回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param,  {state : 'success'});
+				}
+			}
+		}
+
+		var onsearchRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openShowList", "rowguid");
+		}
+		function openShowList(id) {
+			epoint
+					.openDialog(
+							'大表预览',
+							"frame/pages/sformdesigner/multitablerelation/epointsformtablerelationlist?shareGuid="
+									+ id, searchData, {
+								'width' : 1000,
+								'height' : 800
+							});
+		};
+	</script>
+</body>
+</html>

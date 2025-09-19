@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Select personnel</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">sure add</a>
+			<a class="mini-button" onclick="epoint.closeDialog">shut down</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div id="tabstreeselect" class="mini-tabstreeselect" width="100%" filterMode="server"
+						action="getTreeOuModel" loadWhenChecked="true" showBorder="true" onbeforenodecheck="beforenodecheck">
+						<div tabText="current department" tabKey="tab1"></div>
+						<div tabText="current units" tabKey="tab2"></div>
+						<div tabText="group" tabKey="tab3"></div>
+						<div tabText="All person" tabKey="tab4"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		//Initialization request 
+		function pageLoad(data) {
+			//初始化请求
+			if (data) {
+				epoint.initPage('selectuseraction', {
+					userGuid : data.userGuid
+				});
+			} else {
+				epoint.initPage('selectuseraction');
+			}
+		}
+		
+		function beforenodecheck(e) {
+            //禁止选中 ckr=false节点
+            if (e.node.ckr == false){
+            	e.cancel = true;
+            }
+        }
+
+		function saveAndClose() {
+			var selectNodes = mini.get('tabstreeselect').getSelectedNodes();
+			var length = selectNodes.length;
+			if (length > 0) {
+				var userList = "";
+				var guidList = "";
+				for (var i = 0; i < length; i++) {
+					var node = selectNodes[i];
+					userList += node.text;
+					if((i+1)!=length){
+						userList += ";";
+					}
+					guidList += node.value;
+					if((i+1)!=length){
+						guidList += ";";
+					}
+					
+				}
+				epoint.closeDialog(guidList + "_SPLIT_" + userList);
+			} else {
+				epoint.alert('You have not chosen any personnel records!', '', null, 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

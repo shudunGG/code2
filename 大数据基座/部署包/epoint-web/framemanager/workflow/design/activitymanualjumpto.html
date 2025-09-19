@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程变迁和跳转配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="addTransition">新增变迁</a>
+		<a class="mini-button" onclick="saveOrder">修改排序</a> <a
+			class="mini-button" state="danger" onclick="deleteTransition">删除选中</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input id="processVersionGuid" bind="processVersionGuid"
+			class="mini-hidden" /><input id="activityGuid" bind="activityGuid"
+			class="mini-hidden" />
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="transitionGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true" action="getDataGridData" showPager="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="transitionName" width="200">跳转名称</div>
+				<div field="transitionDispName" width="200">显示名称</div>
+				<div field="orderNum" width="80">
+					排序号<input property="editor" class="mini-textbox"
+						inputStyle="text-align:right" vtype="int;range:0,99999999" />
+				</div>
+				<div field="actActivityName" width="200">目标活动名称</div>
+				<div field="condition" width="100%">条件</div>
+				<div width="60" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activityamanualjumptoaction');
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增变迁
+		function addTransition() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			var url = 'framemanager/workflow/design/activitymanualjumptoselectactivity?activityGuid='
+					+ activityGuid
+					+ '&mode=jump&processVersionGuid='
+					+ processVersionGuid;
+			epoint.openDialog("新增变迁", url, callback, {
+				'width' : 800,
+				'height' : 500
+			});
+		}
+		//删除选中行
+		function deleteTransition() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("deleteSelect", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", '', null, 'warning');
+			}
+		}
+		// 保存排序
+		function saveOrder() {
+			epoint.execute('saveOrder', 'datagrid', callback);
+		}
+
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"openEditWindow");
+		}
+
+		function openEditWindow(transitionGuid) {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			epoint.openDialog('修改变迁配置',
+					"framemanager/workflow/design/activitytransitionframe?transitionGuid="
+							+ transitionGuid + "&mode=jump&processVersionGuid="
+							+ processVersionGuid, searchData, {
+						'width' : 1000
+					});
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

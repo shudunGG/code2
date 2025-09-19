@@ -1,0 +1,300 @@
+﻿﻿﻿﻿2018/4/23
+--扩展控件信息表extendfieldtwo字段修改长度  --季立霞
+alter table epointsform_extensible_control modify column extendfieldtwo varchar(500);
+
+2018/3/23
+-- 基础信息表添加表控件英文字段创建方式字段，manual手动，其余是自动  --季立霞
+alter table epointsform_table_basicinfo add ctrlencreatetype varchar(12);
+
+
+框架版本9.3.2(2017/5/26)
+
+2017/05/24
+--流程配置 新增流程代理人--刘飞龙
+alter table FRAME_COMMISSIONSET_HANDLE MODIFY row_id INT UNSIGNED AUTO_INCREMENT;
+
+2017/5/23
+--消息类型表新增typeurl字段--樊志君
+alter table MESSAGES_TYPE add typeurl varchar(200);
+
+2017/5/10
+-- 统一消息日志表增加字段--樊志君
+alter table MESSAGES_LOG add remark varchar(200);
+
+2017/5/8
+--工作项表   工作项新增处理人ouguid--盛佳
+alter table workflow_workitem add ouguid nvarchar(50);
+alter table workflow_workitem_history add ouguid nvarchar(50);
+--消息表   待办新增移动端标识--盛佳
+alter table messages_center add mobilehandletype nvarchar(50);
+alter table messages_center add mobilemessagetag nvarchar(50);
+alter table messages_center add mobilehandleurl nvarchar(500);
+alter table messages_center_histroy add mobilehandletype nvarchar(50);
+alter table messages_center_histroy add mobilemessagetag nvarchar(50);
+alter table messages_center_histroy add mobilehandleurl nvarchar(500);
+
+2017/5/2
+-- 统一消息渠道表增加字段--樊志君
+alter table MESSAGES_CHANNEL add inituserfield varchar(50);
+alter table MESSAGES_CHANNEL add initusertable varchar(50);
+
+2017/4/28
+-- 统一消息相关
+-- 消息渠道表
+create table MESSAGES_CHANNEL
+(
+  rowguid           VARCHAR(50),
+  channelid         VARCHAR(50),
+  channelname       VARCHAR(50),
+  isenabletableback int,
+  ordernumber       int,
+  channelapiurl     VARCHAR(500),
+  channelapiparam   VARCHAR(500),
+  channelimpclass   VARCHAR(500),
+  backapiurl     VARCHAR(500),
+  backapiparam   VARCHAR(500)
+);
+alter table MESSAGES_CHANNEL add primary key (rowguid);
+
+-- 消息表
+create table MESSAGES_MESSAGE
+(
+  messageguid       VARCHAR(50),
+  typeguid          VARCHAR(50),
+  fromuserid        VARCHAR(50),
+  fromusername      VARCHAR(50),
+  targetuserid      VARCHAR(50),
+  targetusername    VARCHAR(50),
+  sendtime          datetime,
+  readtime          datetime,
+  title             VARCHAR(500),
+  messagecontent    VARCHAR(2000),
+  linkurl           VARCHAR(2000),
+  clientidentifier  VARCHAR(200),
+  clientidentifier2 VARCHAR(200),
+  clientidentifier3 VARCHAR(200),
+  appkey            VARCHAR(50),
+  urgencylevel      int,
+  status            int
+);
+alter table MESSAGES_MESSAGE add primary key (messageguid);
+
+-- 消息历史表
+create table MESSAGES_MESSAGEHISTORY
+(
+  messageguid       VARCHAR(50) not null,
+  typeguid          VARCHAR(50),
+  fromuserid        VARCHAR(50),
+  fromusername      VARCHAR(50),
+  targetuserid      VARCHAR(50),
+  targetusername    VARCHAR(50),
+  sendtime          datetime,
+  readtime          datetime,
+  title             VARCHAR(500),
+  messagecontent    VARCHAR(2000),
+  linkurl           VARCHAR(2000),
+  clientidentifier  VARCHAR(200),
+  clientidentifier2 VARCHAR(200),
+  clientidentifier3 VARCHAR(200),
+  appkey            VARCHAR(50),
+  urgencylevel      int,
+  status            int
+);
+alter table MESSAGES_MESSAGEHISTORY add primary key (MESSAGEGUID);
+
+-- 个人自定义发送规则表
+create table MESSAGES_PERSONALRULE
+(
+  rowguid     VARCHAR(50),
+  userid      VARCHAR(50),
+  channelguid VARCHAR(50),
+  typeguid    VARCHAR(50)
+);
+alter table MESSAGES_PERSONALRULE add primary key (rowguid);
+
+-- 发送规则表
+create table MESSAGES_RULE
+(
+  rowguid         VARCHAR(50),
+  channelguid     VARCHAR(50),
+  typeguid        VARCHAR(50),
+  messagetemplate VARCHAR(2000),
+  contentlength    int,
+  isenable        int
+);
+alter table MESSAGES_RULE add primary key (rowguid);
+
+-- 消息类型表
+create table MESSAGES_TYPE
+(
+  rowguid     VARCHAR(50),
+  typeid      VARCHAR(50),
+  typename    VARCHAR(50),
+  ordernumber int,
+  smallicon   VARCHAR(50),
+  bigicon     VARCHAR(50)
+);
+alter table MESSAGES_TYPE add primary key (rowguid);
+
+-- 消息用户表
+create table MESSAGES_USER
+(
+  rowguid         VARCHAR(50),
+  userid          VARCHAR(50),
+  username        VARCHAR(50),
+  channelid       VARCHAR(50),
+  userchanneldata VARCHAR(500),
+  adddatetime     datetime,
+  lastupdatetime  datetime
+);
+alter table MESSAGES_USER add primary key (rowguid);
+
+-- 消息待发表
+create table MESSAGES_WAITSEND
+(
+  messageguid  VARCHAR(50),
+  waitsendtime datetime,
+  jsondata     text,
+  retrycount   int
+);
+alter table MESSAGES_WAITSEND add primary key (messageguid);
+
+-- 消息日志表
+create table MESSAGES_LOG
+(
+  rowguid         VARCHAR(50),
+  fromuserid      VARCHAR(50),
+  fromusername    VARCHAR(50),
+  targetuserid    VARCHAR(50),
+  targetusername  VARCHAR(50),
+  typeguid        VARCHAR(50),
+  channelguid     VARCHAR(50),
+  sendtime        datetime,
+  waitsendtime    datetime,
+  retriedcount    int,
+  remindcontent   VARCHAR(2000),
+  status          int
+);
+alter table MESSAGES_LOG add primary key (rowguid);
+
+框架版本9.3.1(2017/4/1)
+
+2017/3/16
+--分库分表增加源数据源字段
+alter table FRAME_SHARDING add sourcedb int;
+
+2017/3/15
+--增加外部方法结果表 by 季晓伟
+create table workflow_method_result (
+  workitemguid varchar(100) not null,
+  jsonresult text,
+  pviguid varchar(100) default null,
+  note varchar(500) default null,
+  operatedate datetime default null,
+  primary key (workitemguid)
+)
+
+2017/3/14
+--mis table_basicinfo 增加isenableoutds 是否启用联机数据源
+alter table table_basicinfo add isenableoutds int;
+
+2017/3/13
+--工作流新增锁定机制   by 盛佳
+alter table workflow_pvi add lockstatus int;
+--服务表新增模块url字段
+alter table FRAME_SERVICE add relationurl nvarchar(200);
+
+2017/3/8
+/*新增物理表Frame_Log(框架日志)*/
+CREATE TABLE  IF NOT EXISTS FRAME_LOG(BELONGXIAQUCODE NVARCHAR(50) NULL,OPERATEUSERNAME NVARCHAR(50) NULL,OPERATEDATE datetime NULL,ROW_ID Float(10) NULL,YEARFLAG NVARCHAR(4) NULL,ROWGUID NVARCHAR(50) NOT NULL PRIMARY KEY,THREADNAME NVARCHAR(100) NULL,EVENTLEVEL NVARCHAR(50) NULL,REQUESTFILENAME NVARCHAR(100) NULL,LINE_NO NVARCHAR(50) NULL,FROMIP NVARCHAR(50) NULL,LOGINID NVARCHAR(50) NULL,USERGUID NVARCHAR(50) NULL,USERNAME NVARCHAR(50) NULL,PAGEPATH NVARCHAR(200) NULL,BUTTONNAME NVARCHAR(50) NULL,PAGEPARAMS NVARCHAR(200) NULL,OPERATOR_TYPE NVARCHAR(50) NULL,METHODNAME NVARCHAR(50) NULL,SUBSYSTEM_TYPE NVARCHAR(50) NULL,OPERATECONTENT NVARCHAR(500) NULL,OPERATECONTENTBEFORE NVARCHAR(500) NULL,OPERATETABLE NVARCHAR(50) NULL,BASEOUGUID NVARCHAR(50) NULL,OUGUID NVARCHAR(50) NULL,MACADDRESS NVARCHAR(50) NULL,RECORDDATE datetime NULL,USERDISPLAYNAME NVARCHAR(50) NULL,MODULEGUID NVARCHAR(50) NULL,MODULECODE NVARCHAR(50) NULL,MODULENAME NVARCHAR(50) NULL,MODULEURL NVARCHAR(200) NULL,SERVICENAME NVARCHAR(50) NULL,SERVICEMETHODNAME NVARCHAR(50) NULL,PROCESSTYPE NVARCHAR(50) NULL,ATTACHGUID NVARCHAR(50) NULL,CONTENT NVARCHAR(500) NULL,LOGTYPE NVARCHAR(50) NULL);
+
+/*添加数据表frame_log_appender(frame_log_appender)*/
+CREATE TABLE  IF NOT EXISTS FRAME_LOG_APPENDER(BELONGXIAQUCODE NVARCHAR(50) NULL,OPERATEUSERNAME NVARCHAR(50) NULL,OPERATEDATE datetime NULL,ROW_ID Float(10) NULL,YEARFLAG NVARCHAR(4) NULL,ROWGUID NVARCHAR(50) NOT NULL PRIMARY KEY,APPENDERNAME NVARCHAR(50) NULL,APPENDERCLASS NVARCHAR(100) NULL,FILEPATH NVARCHAR(100) NULL,CONVERSIONPATTERN NVARCHAR(100) NULL,DSNAME NVARCHAR(100) NULL,EXPORTTYPE NVARCHAR(50) NULL);
+
+/*添加数据表FRAME_LOG_LEVEL(Frame_log_level)*/
+CREATE TABLE  IF NOT EXISTS FRAME_LOG_LEVEL(LEVELGUID NVARCHAR(50) NOT NULL PRIMARY KEY,ROW_ID Float(38) NULL,LOGNAME NVARCHAR(100) NULL,LOGLEVEL NVARCHAR(5) NULL,GENERATEDATE datetime NULL,ISWORKING Float(38) NULL,DESCRIPTION NVARCHAR(500) NULL,APPENDERREF NVARCHAR(500) NULL);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('ac6a59ca-cab5-4e9b-bf94-6c3eb0e64071', null, 'root', 'INFO', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, '默认日志', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4,e8532548-68ef-4dce-b8e8-d4da8bb72f0a');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('2568fa2c-224a-4e00-9ae7-1e6256ea13bb', null, 'druid.sql.Statement', 'INFO', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, 'sql日志控制器', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('34a06368-ee6b-4ffb-8b01-900c9dd8dd37', null, 'com.epoint.workflow.bizlogic', 'INFO', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, '工作流日志控制器', '385e0e6d-bcb7-4b48-8813-2c1ee1c005c5');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('6180f1bc-93ac-48d8-89c7-e9d6eb5f88f7', null, 'com.epoint.frame.util.ButtonLog', 'ERROR', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, '按钮点击日志控制器', '5ea007c8-bb1d-475d-b5cb-e8834396bc9f');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('8d45f69a-b696-48c1-b9c5-1c94b7c14f26', null, 'com.epoint.clustered.session', 'ERROR', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, '集群session日志控制器', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('2b3a044e-4d07-4bae-9dd7-841531b8a13f', null, 'com.epoint.frame.security', 'INFO', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, '安全日志控制器', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('ce676da2-bcb7-4c55-a94d-3f503a7ce996', null, 'org.springframework.web.servlet.resource', 'ERROR', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, 'springmvc的html页面等资源处理的日志控制器', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4,e8532548-68ef-4dce-b8e8-d4da8bb72f0a');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('ca400c34-dc7f-4a14-be8f-9680c9a5b0f7', null, 'org.springframework.web.servlet.mvc.method.annotation', 'DEBUG', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, 'springmvc的rest接口日志控制器', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4,e8532548-68ef-4dce-b8e8-d4da8bb72f0a');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('d33b392d-63ea-422b-8a83-4ef992c98536', null, 'com.epoint.oauth2.core.memory.SSOEhCacheManager', 'ERROR', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, 'oauth2缓存管理', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4,e8532548-68ef-4dce-b8e8-d4da8bb72f0a');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('123e03c2-0d81-4cc7-8519-2938fd036bbe', null, 'org.hibernate', 'INFO', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('343f6e5c-76f1-4ea1-bbd2-79daf8d56c70', null, 'org.mongodb.driver', 'ERROR', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, 'MongoDB日志', '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4');
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('034696a9-5acf-4d90-b4fb-eeff666402db', null, 'org.hibernate.SQL', 'INFO', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('0036f963-89e8-411b-85f3-87f9e8b9a30d', null, 'org.hibernate.type', 'INFO', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('263b4f8c-d74d-4e83-bc5f-e8bb7eb6ed09', null, 'org.hibernate.loader', 'INFO', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('9022ad84-4e81-489e-b225-fcce7e59dc54', null, 'org.hibernate.cache', 'INFO', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('8772dbe3-132c-4249-a249-9842a95cf015', null, 'druid.sql', 'ERROR', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('3b627b05-7a31-4892-97bf-89ff4f74f75b', null, 'druid.sql.DataSource', 'ERROR', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('366b1bdd-f8e0-404c-83fe-e6d98fad8519', null, 'druid.sql.Connection', 'ERROR', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('5f7f5e6c-a448-4de9-b4cf-9ae59722c280', null, 'druid.sql.ResultSet', 'ERROR', null, 1, null, null);
+
+insert into frame_log_level (LEVELGUID, ROW_ID, LOGNAME, LOGLEVEL, GENERATEDATE, ISWORKING, DESCRIPTION, APPENDERREF)
+values ('7aad888d-600e-4c80-a579-c7e35907a2a1', null, 'com.epoint.basic.controller.sysconf.opinion', 'ERROR', str_to_date('07-03-2017 13:42:50', '%d-%m-%Y %H:%i:%s'), 1, null, '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4,bb4d7bb5-d3a1-46da-85ff-5b15fa5890a1,a3bd19a2-fd05-4f37-84ee-c22ebd83bd47,e8532548-68ef-4dce-b8e8-d4da8bb72f0a');
+
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('06-03-2017 09:32:43', '%d-%m-%Y %H:%i:%s'), null, null, '1c1c02ed-1c3c-4415-b2ec-0a8ae87774a4', 'CONSOLE', 'com.epoint.basic.test.FrameConsoleAppender', null, '%d %-5p %c{2} - %m%n', null, 'console');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 15:37:49', '%d-%m-%Y %H:%i:%s'), null, null, 'bb4d7bb5-d3a1-46da-85ff-5b15fa5890a1', 'DBAppender', 'com.epoint.basic.test.FrameJDBCAppender', null, null, 'test', 'db');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 15:37:54', '%d-%m-%Y %H:%i:%s'), null, null, 'a3bd19a2-fd05-4f37-84ee-c22ebd83bd47', 'MongoDBAppender', 'com.epoint.basic.test.FrameMongoDBAppender', null, null, 'mongo', 'mongodb');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 14:50:05', '%d-%m-%Y %H:%i:%s'), null, null, 'e8532548-68ef-4dce-b8e8-d4da8bb72f0a', 'FILE', 'com.epoint.core.utils.log.EpointDailyRollingFileAppender', 'log/bcss.log', '%d %-5p %c{2} - ☆FrameLog:%m%n', null, 'file');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 14:50:32', '%d-%m-%Y %H:%i:%s'), null, null, '47572a12-e40a-4511-918e-0a14ac21b173', 'SECURITY_LOG', 'com.epoint.core.utils.log.EpointDailyRollingFileAppender', 'log/security.log', '%d☆ %t☆ [%-5p]☆(%F,%L) ☆ ☆FrameLog:%m%n', null, 'file');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 14:50:50', '%d-%m-%Y %H:%i:%s'), null, null, '5ea007c8-bb1d-475d-b5cb-e8834396bc9f', 'BUTTON_LOG', 'com.epoint.core.utils.log.EpointDailyRollingFileAppender', 'log/button.log', '%d %t [%-5p] (%F,%L) - ☆FrameLog:%m%n', null, 'file');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 14:51:18', '%d-%m-%Y %H:%i:%s'), null, null, '385e0e6d-bcb7-4b48-8813-2c1ee1c005c5', 'WORKFLOW_LOG', 'com.epoint.core.utils.log.EpointDailyRollingFileAppender', 'log/workflow.log', '%d %t [%-5p] (%F,%L) - ☆FrameLog:%m%n', null, 'file');
+
+insert into frame_log_appender (BELONGXIAQUCODE, OPERATEUSERNAME, OPERATEDATE, ROW_ID, YEARFLAG, ROWGUID, APPENDERNAME, APPENDERCLASS, FILEPATH, CONVERSIONPATTERN, DSNAME, EXPORTTYPE)
+values (null, '系统admin', str_to_date('02-03-2017 14:51:36', '%d-%m-%Y %H:%i:%s'), null, null, '2590bf57-14d4-4104-b634-1b4e211cf46d', 'WORKFLOW_METHOD_LOG', 'com.epoint.core.utils.log.EpointDailyRollingFileAppender', 'log/workflowmethod.log', '%d %t [%-5p] (%F,%L) - ☆FrameLog:%m%n', null, 'file');

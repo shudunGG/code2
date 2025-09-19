@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程材料新增</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew"
+				iconCls="icon-save">确定新增</a> <a class="mini-button"
+				onclick="epoint.closeDialog" iconCls="icon-removecircle">取消添加</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="名称" starred="true">
+					<input id="materialName" class="mini-textbox"
+						bind="wfpvMaterial.materialName" required="true"
+						requiredErrorText="名称不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="类型">
+					<input id="materialtype" bind="wfpvMaterial.type"
+						data="[{text:'表单',id:'10'},
+							{text:'附件',id:'20'},{text:'活动检查表单',id:'15'}]"
+						textField="text" valueField="id" class="mini-radiobuttonlist" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="应用程序自定义标记">
+					<input id="applicationConfig" bind="wfpvMaterial.clientTag"
+						class="mini-textarea" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="备注">
+					<input id="note" bind="wfpvMaterial.note" class="mini-textarea" />
+				</div>
+			</div>
+			<div role="row" id="isShowInGrid" style="display: none">
+				<div role="control" label="是否在通用列表中显示">
+					<input id="isShowInGrid" bind="wfpvMaterial.isShowInGrid"
+						data="[{text:'是',id:'10'},
+							{text:'否',id:'20'}]"
+						textField="text" repeatItems="2" valueField="id"
+						class="mini-radiobuttonlist" />
+				</div>
+			</div>
+			<div role="row" id="template">
+				<div role="control" label="空白模板">
+					<div id="file" class="mini-webuploader"
+						action="processmaterialaddaction.getFileUploadModel"
+						fileNumLimit="1" fileSingleSizeLimit="5120"
+						limitType="doc,docx,txt,rar,zip,jpg,jpeg,pdf,xls,xlsx,gif,bmp,png"></div>
+				</div>
+			</div>
+			<div role="row" id="submitStyle" style="display: none">
+				<div role="control" label="提交方式">
+					<input id="submitType" bind="wfpvMaterial.submitType"
+						data="[{text:'提交电子文件',id:'10'},
+							{text:'提交纸质文件',id:'20'}, {text:'提交电子文件或提交纸质文件',id:'35'}, {text:'同时提交电子文件和提交纸质文件',id:'40'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row" id="formAddress" style="display: block">
+				<div role="control" label="选择在线表单">
+					<div class="mini-buttonedit" id="searchform"
+						onbuttonclick="selformlist" selectOnFocus="true"
+						multiSelect="false" style="width: 90%"></div>
+				</div>
+			</div>
+			<div role="row" id="formAddressUrl" style="display: block">
+				<div role="control" label="表单访问地址">
+					<input id="pageUrlReadAndWrite" style="width: 90%"
+						bind="wfpvMaterial.pageUrlReadAndWrite" class="mini-buttonedit"
+						emptyText="选择表单访问地址" onbuttonclick="selPage" selectOnFocus="true" />
+					<a class="action-icon icon-addcirclefilled"
+						onclick="setParValue();" style="width: 10%"></a>
+				</div>
+			</div>
+			<div role="row" id="trOnlyRead">
+				<div role="control" label="只读页面" style="display: block">
+					<input id="pageUrlRead" class="mini-textbox"
+						bind="wfpvMaterial.pageUrlRead" />
+				</div>
+			</div>
+			<div role="row" id="trMisTable" style="display: block">
+				<div role="control" label="表单对应的MIS表" style="display: block"
+					starred="true">
+					<input id="selectedTableName" bind="tableName"
+						class="mini-buttonedit" emptyText="选择表单对应的MIS表"
+						onbuttonclick="selMisTable" selectOnFocus="true" required="true"
+						requiredErrorText="表单对应的MIS表不能为空!" />
+				</div>
+			</div>
+			<div role="row" style="display: none">
+				<div role="control" label="是否自动初始化MIS表">
+					<input id="isInitMisTable" bind="wfpvMaterial.isInitMisTable"
+						data="[{text:'是',id:'10'},
+							{text:'否',id:'20'}]"
+						textField="text" repeatItems="2" valueField="id"
+						class="mini-radiobuttonlist" />
+				</div>
+			</div>
+			<div role="row" id="deleteRecord" style="display: block">
+				<div role="control" label="删除">
+					<div bind="isdelMisWhenDel" class="mini-checkbox">删除流程实例时删除MIS表记录</div>
+				</div>
+			</div>
+			<div role="row" id="formMobileAddress" style="display: block">
+				<div role="control" label="移动端表单访问地址">
+					<input id="pageMobileUrlReadAndWrite" style="width: 90%"
+						bind="wfpvMaterial.mobilePageUrl_ReadAndWrite"
+						class="mini-textbox" /> <a
+						class="action-icon icon-addcirclefilled"
+						onclick="setParMobileValue();" style="width: 10%"></a>
+				</div>
+			</div>
+			<div role="row" id="trOnlyMobileRead">
+				<div role="control" label="移动端表单只读页面" style="display: block">
+					<input id="pageMobileUrlRead" class="mini-textbox"
+						bind="wfpvMaterial.mobilePageUrl_Read" />
+				</div>
+			</div>
+			<div role="row" style="display: none;">
+				<input id="tableName" bind="tableName" class="mini-textbox" /> <input
+					id="tableGuid" bind="tableGuid" class="mini-textbox" />
+			</div>
+		</div>
+	</div>
+
+	<input bind="wfpvMaterial.processVersionGuid" id="processVersionGuid"
+		class="mini-hidden" />
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		var isLessee = Util.getUrlParams('isLessee');
+		
+		epoint.initPage('processmaterialaddaction', '', initCallBack);
+
+		function initCallBack() {
+			var val = mini.get("materialtype").getValue();
+			var uploader = mini.get('file');
+			// 避免上传控件未初始化完就隐藏
+			uploader.getUploaderPromise(function() {
+				inputShow(val);
+			});
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addMaterial', '', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		mini.get("materialtype").on("valuechanged", function(e) {
+			inputShow(e.value);
+		});
+
+		function inputShow(value) {
+			if (value == "10" || value == "15") {
+				document.getElementById("formAddress").style.display = 'block';
+				document.getElementById("trOnlyRead").style.display = 'block';
+				document.getElementById("deleteRecord").style.display = 'block';
+				document.getElementById("trMisTable").style.display = 'block';
+				document.getElementById("formAddressUrl").style.display = 'block';
+				document.getElementById("formMobileAddress").style.display = 'block';
+				document.getElementById("trOnlyMobileRead").style.display = 'block';
+
+				document.getElementById("isShowInGrid").style.display = 'none';
+				document.getElementById("template").style.display = 'none';
+				document.getElementById("submitStyle").style.display = 'none';
+			} else if (value == "20") {
+				document.getElementById("formAddress").style.display = 'none';
+				document.getElementById("trOnlyRead").style.display = 'none';
+				document.getElementById("deleteRecord").style.display = 'none';
+				document.getElementById("trMisTable").style.display = 'none';
+				document.getElementById("formAddressUrl").style.display = 'none';
+				document.getElementById("formMobileAddress").style.display = 'none';
+				document.getElementById("trOnlyMobileRead").style.display = 'none';
+
+				document.getElementById("isShowInGrid").style.display = 'block';
+				document.getElementById("template").style.display = 'block';
+				document.getElementById("submitStyle").style.display = 'block';
+			}
+		}
+
+		function selMisTable() {
+			epoint.openDialog('选择表单对应的MIS表',
+					'framemanager/workflow/manage/mistabletree?selecteditems='
+							+ mini.get("tableGuid").getValue(), ReturnMis, {
+						'width' : 600
+					});
+
+		}
+		function ReturnMis(rtnValue) {
+			if (rtnValue && rtnValue != "close") {
+				var s = rtnValue.split(".");
+				mini.get("selectedTableName").setValue(s[0]);
+				mini.get("selectedTableName").setText(s[0]);
+				mini.get("tableName").setValue(s[0]);
+				mini.get("tableGuid").setValue(s[1]);
+			}
+		}
+
+		function selPage() {
+			epoint
+					.openDialog(
+							'选择表单访问地址',
+							'framemanager/workflow/design/designhelper?mode=activityPage&type=material',
+							ReturnselPage, {
+								'width' : 700
+							});
+		}
+
+		function ReturnselPage(rtnValue) {
+			if (rtnValue && rtnValue != "close") {
+				mini.get("pageUrlReadAndWrite").setValue(rtnValue);
+				mini.get("pageUrlReadAndWrite").setText(rtnValue);
+			}
+		}
+
+		function setParValue() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('选择相关数据',
+					'framemanager/workflow/design/designhelper?mode=context&processVersionGuid='
+							+ processVersionGuid, setParValueOperJS, {
+						'width' : 600
+					});
+		}
+
+		function setParValueOperJS(data) {
+			if (data && data != "close") {
+				var s = mini.get("pageUrlReadAndWrite").getText() + "[#="
+						+ data.split(';')[1] + "#]";
+				mini.get("pageUrlReadAndWrite").setValue(s);
+				mini.get("pageUrlReadAndWrite").setText(s);
+			}
+		}
+
+		function setParMobileValue() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('选择相关数据',
+					'framemanager/workflow/design/designhelper?mode=context&processVersionGuid='
+							+ processVersionGuid, setParMobileValueOperJS, {
+						'width' : 600
+					});
+		}
+
+		function setParMobileValueOperJS(data) {
+			if (data && data != "close") {
+				var s = mini.get("pageMobileUrlReadAndWrite").getValue()
+						+ "[#=" + data.split(';')[1] + "#]";
+				mini.get("pageMobileUrlReadAndWrite").setValue(s);
+			}
+		}
+
+		//打开选择在线表单
+		function selformlist() {
+			epoint.openDialog('选择在线表单',
+					'frame/pages/sformdesigner/sformselect?isLessee='+isLessee, ReturnForm, {
+						'width' : 600
+					});
+		}
+		//返回的在线表单的数据
+		function ReturnForm(rtnValue) {
+			if (rtnValue && rtnValue != "close") {
+				var s = rtnValue.split(";");
+				mini.get("tableGuid").setValue(s[0]);
+				mini.get("selectedTableName").setValue(s[1]);
+				mini.get("selectedTableName").setText(s[1]);
+				mini.get("tableName").setValue(s[1]);
+				mini.get('pageUrlReadAndWrite').setValue(s[2]);
+				mini.get('pageUrlReadAndWrite').setText(s[2]);
+				mini.get('pageUrlRead').setValue(s[3]);
+				mini.get('pageUrlRead').setText(s[3]);
+				mini.get('searchform').setText(s[4])
+				mini.get('pageMobileUrlReadAndWrite').setValue(s[5]);
+				mini.get('pageMobileUrlReadAndWrite').setText(s[6]);
+				mini.get('pageMobileUrlRead').setValue(s[6]);
+				mini.get('pageMobileUrlRead').setText(s[6]);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>
+

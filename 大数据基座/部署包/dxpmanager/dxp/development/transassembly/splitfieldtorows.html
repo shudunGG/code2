@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>去除重复记录</title>
+<script src="../../../frame/fui/js/cssboot.js" type="text/javascript"></script>
+<script type="text/javascript">
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+<body style="overflow: auto;">
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="addbtn" onclick="save">保存修改</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" />
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="要拆分的字段">
+					<input id="splitField" name="splitField" class="mini-combobox"
+						allowInput="true" showClose="true" style="width: 100%"
+						textField="text" valueField="id" action="getPreFields" />
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="分割符">
+					<input id="delimiter" name="delimiter" class="mini-textbox" />
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="分隔符是一个正则表达式">
+					<div name="isDelimiterRegex" class="mini-checkbox"></div>
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="新字段名">
+					<input id="newFieldname" name="newFieldname" class="mini-textbox" />
+				</div>
+			</div>
+
+			<div class="mini-panel mini-panel-info" title="附加字段" width="auto"
+				showCollapseButton="true" showCloseButton="true">
+				<div role="row">
+					<div role="control" label="输出中包括行号">
+						<div id="includeRowNumber" name="includeRowNumber" class="mini-checkbox" onvaluechanged="onValueChanged"></div>
+					</div>
+					<div role="control" label="行号字段">
+						<input id="rowNumberField" name="rowNumberField"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control"></div>
+					<div role="control" label="对接收到的每一行重置行号？">
+						<div id="resetRowNumber" name="resetRowNumber"
+							class="mini-checkbox"></div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+
+
+	<script src="../../../frame/fui/js/jsboot.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var delimiter = mini.get('delimiter');
+		var resetRowNumber = mini.get('resetRowNumber');
+		var includeRowNumber = mini.get('includeRowNumber');
+		var rowNumberField = mini.get('rowNumberField');
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+
+			epoint.initPage('splitfieldtorowsaction?stepId=' + nodeInfo.key,
+					'', initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			if (!nodeData) {
+				delimiter.setValue(";");
+				resetRowNumber.setChecked(!resetRowNumber.getChecked());
+			}
+			onValueChanged();
+		}
+		
+		
+		function onValueChanged() {
+			if(includeRowNumber.getValue()=="true") {
+				resetRowNumber.enable();
+				rowNumberField.enable();
+			}
+			if(includeRowNumber.getValue()=="false") {
+				resetRowNumber.disable();
+				rowNumberField.disable();
+			}
+        }
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				var nodeForm = getForm();
+				epoint.execute('save', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+	</script>
+</body>
+
+</html>

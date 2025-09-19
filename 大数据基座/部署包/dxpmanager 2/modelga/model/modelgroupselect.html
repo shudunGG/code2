@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>移动分组</title>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+    <style>
+        .tree {
+            height: 250px;
+            overflow: auto;
+            border-style: solid;
+            border-width: thin;
+            border-color: #bdbec1;
+        }
+    </style>
+</head>
+<body>
+<div class="page-loading"></div>
+<div class="fui-content">
+    <div role="form">
+        <div id="form" class="fui-form">
+            <div role="form">
+                <div role="row">
+                    <div role="control" label="选择目标分组" class="tree">
+                        <ul id="tree" class="mini-tree" action="getTreeModel"
+                            style="width: 400px; padding: 8px;" showRadioButton="true"
+                            showFolderCheckBox="true" showTreeIcon="true" textField="text"
+                            idField="id">
+                        </ul>
+                    </div>
+                </div>
+                <input class="mini-hidden" bind="groupGuid" id="groupGuid">
+            </div>
+            <div class="btn-group" style="margin: 0 auto; width: 25%;">
+                <a class="mini-button mr10" onclick="save()">确定</a>
+                <a class="mini-button" onclick="close()">关闭</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../rest/resource/jsboot"></script>
+<script>
+    epoint.initPage('dxpmodelgroupaction');
+
+    var tree = mini.get('tree');
+
+    tree.on('beforenodeselect', function (e) {
+        mini.get('groupGuid').setValue(e.node.id);
+    });
+
+    function save() {
+        epoint.execute('moveFlow', 'form', function (data) {
+            if(data.msg){
+                 epoint.alert(data.msg, '提示', null, null, 'warning');
+            }else{
+                 epoint.alertAndClose('移动成功', '提示', null, null, 'success');
+            }
+        });
+    }
+
+    function close() {
+        epoint.closeDialog();
+    }
+</script>
+</body>
+</html>

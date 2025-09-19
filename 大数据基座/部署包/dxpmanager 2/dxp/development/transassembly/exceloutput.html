@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a> 
+		</div>
+		<!--帮助按钮 -->
+	</div>
+	
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+	  <div>
+	    <div style="margin: 0px auto; text-align: left; width: 750px">
+	    </div>
+	  </div>
+	</div>
+
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepname" name="stepName" class="mini-textbox"  vtype="maxLength:20"
+					required="true" emptyText="请输入步骤名称" style="width: 85%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="文件名称" starred="true">
+				<input id="filename" name="fileName" class="mini-textbox"  vtype="maxLength:200"
+					required="true" style="width: 85%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="创建父目录" >
+				<div id="isCreateParent" name="isCreateParent" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="启动时不创建文件" >
+				<div id="isCreateFile" name="isCreateFile" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="扩展" >
+				<input id="expand" name="expand" class="mini-textbox"  vtype="maxLength:200"
+					required="true" style="width: 85%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="在文件名中包含步骤号码?" >
+				<div id="isContainStepNum" name="isContainStepNum" class="mini-checkbox"></div>
+			</div>
+			<div role="control" label="在文件名中包含日期?" >
+				<div id="isContainDate" name="isContainDate" class="mini-checkbox"></div>
+			</div>
+			<div role="control" label="在文件名中包含时间?" >
+				<div id="isContainTime" name="isContainTime" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="指定日期格式" >
+				<div id="isDateFormat" name="isDateFormat" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="日期时间格式" >
+				<input id="dateformat" name="dateformat"  class="mini-combobox"
+						 style="width: 85%" 
+						textField="text" valueField="id" action="getSelectFormatDate" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="结果中添加文件名" >
+				<div id="isAddFileName" name="isAddFileName" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="追加" >
+				<div id="append" name="append" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="头" >
+				<div id="head" name="head" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="脚" >
+				<div id="foot" name="foot" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="编码" >
+					<input id="encode" name="encode"  class="mini-combobox"
+						 style="width: 85%" 
+						textField="text" valueField="id" action="getEncodings" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="拆分...每一行" >
+				<input id="splitEvery" name="splitEvery" class="mini-textbox"  vtype="maxLength:200"
+					 style="width: 85%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="工作表名称" >
+				<input id="sheetName" name="sheetName" class="mini-textbox"  vtype="maxLength:200"
+					 style="width: 85%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="自动调整列大小" >
+				<div id="autosizecolumns" name="autosizecolumns" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="保留NULL值" >
+				<div id="isIgnoreNull" name="isIgnoreNull" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="保护工作表？" >
+				<div id="protectSheet" name="protectSheet" class="mini-checkbox"></div>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="密码" >
+				<input id="password" name="password" class="mini-textbox"  vtype="maxLength:200"
+					value="0" style="width: 85%" />
+			</div>
+		</div>
+		<!-- 保存页面数据 -->
+		<input id="tableData" name="tableData" class="mini-textbox hidden">
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="" style="padding-top: 1px;padding-bottom:2px;">
+		<div class="btn-group">
+			<a  id= "addButton" class="mini-button mini-btn-primary" onclick="add" 
+				style="margin-left: 20px">新增字段</a>
+				<a id="deletetype"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+		</div>
+	</div>
+	<div class="fui-content" style="padding-top: 1px">
+		<!-- 保存页面数据 -->
+		<input id="fieldtypeselect" class="mini-combobox hidden"
+			action="getTypeSelectItem" /> 
+		<input id="fieldselect" class="mini-combobox hidden"
+			action="getFieldList" /> <input
+			id="fielddateformat" class="mini-combobox hidden"
+			action="getSelectFormatDate" maxLength="50" style="width: 100%" /> <input
+			id="fieldnumberformat" class="mini-combobox hidden"
+			action="getSelectFormatNumber" maxLength="50" style="width: 100%" />
+		<input id="fieldstringformat" class="mini-combobox hidden"
+			action="getSelectFormatString" maxLength="50" style="width: 100%" />
+		<input id="nodeInfo" bind="nodeInfo" class="mini-textbox hidden">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			multiSelect="true" allowCellValid="true" oncellcommitedit="OnCellCommitEdit" oncellbeginedit="OnCellBeginEdit"
+			allowCellEdit="true" style="margin:auto;height:100%" 
+			allowResize="true" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true" action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="55"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="name" headerAlign="center" width="150"
+					align="left">
+					字段名称<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." data="fields" textField="text" required="true"
+						valueField="text"  style="width: 100%" />
+				</div>
+				<div field="type" headerAlign="center" width="150" align="left">
+					类型<input property="editor" class="mini-combobox"
+						emptyText="请选择类型..." data="fieldtype" textField="text"
+						valueField="text" style="width: 100%" />
+				</div>
+				<div field="format" headerAlign="center" width="150" align="left">
+					格式<input property="editor"
+						class="mini-combobox" textField="text" valueField="text"
+						bind="fieldformat" maxLength="50" style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var grid = mini.get("datagrid");
+		var stepNameForm = mini.get('stepname');
+		var isDateFormat = mini.get('isDateFormat');
+		var isContainDate = mini.get('isContainDate');
+		var isContainTime = mini.get('isContainTime');
+		var dateformat = mini.get('dateformat');
+
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('exceloutputaction?nodeInfoKey=' + nodeInfo.key,
+					{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+					initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			console.log(nodeData);
+			var nodeName = nodeData.stepname;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			if(!nodeData){
+				//设置一些默认值
+				mini.get('filename').setValue("file");
+				mini.get('expand').setValue("xls");
+				mini.get('encode').setValue("UTF-8");
+				mini.get('splitEvery').setValue("0");
+				mini.get('head').setValue(true);
+				mini.get('sheetName').setValue("Sheet1");
+
+				dateformat.setEnabled(false);
+			}else {
+				if(nodeData.isDateFormat=="true"){ 
+					dateformat.setEnabled(true);
+					isContainDate.setEnabled(false);
+					isContainTime.setEnabled(false);
+					isContainDate.setValue(false);
+					isContainTime.setValue(false);
+				}else{
+					dateformat.setEnabled(false);
+					isContainDate.setEnabled(true);
+					isContainTime.setEnabled(true);
+				}
+			}
+		}
+
+		isDateFormat.on('valuechanged',function(data){
+			if(data.value=="true"){
+				dateformat.setEnabled(true);
+				isContainDate.setEnabled(false);
+				isContainTime.setEnabled(false);
+				isContainDate.setValue(false);
+				isContainTime.setValue(false);
+			}else{
+				dateformat.setEnabled(false);
+				isContainDate.setEnabled(true);
+				isContainTime.setEnabled(true);
+			}
+		});
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+			};
+            var length = grid.getData().length;
+			grid.addRow(newRow, length);
+
+			grid.beginEditRow(newRow);
+		}
+		
+		//表格下拉框内容
+		var fieldtype;
+		var combox_fieldtype = mini.get("fieldtypeselect");
+		combox_fieldtype.on("load", function(e) {
+			fieldtype = e.sender.data;
+		});
+		var fields;
+		var combox_field = mini.get("fieldselect");
+		combox_field.on("load", function(e) {
+			fields = e.sender.data;
+		});
+		grid.reload();
+		
+		//删除选中
+		function deleteSelected() {
+			grid.removeRows(grid.getSelecteds(), false);
+			setGridData();
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute('saveAll', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+
+		function setGridData() {
+			var datas = grid.getData();
+			console.log(datas);
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"name" : row.name,
+					"rename" : row.rename,
+					"contentType":row.contentType,
+					"type" : row.type,
+					"format":row.format,
+					"length":row.length,
+					"precision":row.precision,
+					"currency":row.currency,
+					"decimalSystem":row.decimalSystem,
+					"group":row.group,
+					"empty":row.empty
+				});
+			}
+			mini.get('tableData').setValue(JSON.stringify(array));
+		}
+
+		
+		//类型与格式联动配置
+		var fieldnumberformat;
+		var fielddateformat;
+		var fieldstringformat;
+		var combox_fieldnumberformat = mini.get("fieldnumberformat");
+		var combox_fielddateformat = mini.get("fielddateformat");
+		var combox_fieldstringformat = mini.get("fieldstringformat");
+
+		combox_fieldnumberformat.on("load", function(e) {
+			fieldnumberformat = e.sender.data;
+		});
+		combox_fielddateformat.on("load", function(e) {
+			fielddateformat = e.sender.data;
+		});
+		combox_fieldstringformat.on("load", function(e) {
+			fieldstringformat = e.sender.data;
+		});
+
+		function OnCellCommitEdit(e) {
+			var grid = e.sender;
+			var record = e.record;
+			var field = e.field, value = e.value;
+			if (field == "type") {
+				grid.updateRow(record, {
+					format : ""
+				});
+			}
+		}
+
+		function OnCellBeginEdit(e) {
+			var grid = e.sender;
+			var record = e.record;
+			var field = e.field, value = e.value;
+			var editor = e.editor;
+			if (field == "format") {
+				var type = record.type;
+				if ("BigNumber" == type || "Integer" == type
+						|| "Number" == type) {
+					editor.setData(combox_fieldnumberformat.getData());
+				} else if ("Date" == type) {
+					editor.setData(combox_fielddateformat.getData());
+				} else if ("String" == type) {
+					editor.setData(combox_fieldstringformat.getData());
+				} else {
+					editor.setData();
+				}
+			}
+		}
+		
+		
+	</script>
+</body>
+
+</html>

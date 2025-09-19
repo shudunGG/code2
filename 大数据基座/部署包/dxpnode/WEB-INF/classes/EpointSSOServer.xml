@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 授权服务端本地数据源配置 -->
+<!-- 配置的时候需要区分用户参与授权和非用户参与授权，我们目前提供了3种授权方式：
+		1.code授权模式：用户参与授权模式，即客户端应用在申请授权时需要经过本服务端的登录页面、授权确认页面，全部通过后即获取授权成功。
+		2.password授权模式：用户参与授权模式，即客户端应用在申请授权的时候不需要经过本服务端的登录页面、授权确认页面，而是将用户信息直接传递过来，本服务端校验成功后即授权成功。
+		3.client授权模式：非用户参与授权模式，即客户端应用只传递应用的id和secret，本服务端校验成功后即授权成功。
+		
+		特别注意： 1.scope只会在用户参与授权时起作用, 比如<scope-wrapper>中的配置，<service-wrapper>中<scope-id>的配置，在非用户参与授权下删掉也没关系。
+			   2.应用订阅只会在非用户参与授权时起作用， 比如<client-wrapper>中<subscriptions>的配置，在用户参与授权下删掉也没关系。
+			   3.<service-wrapper>中配置了某个service后，代表这个service将会收到保护，保护规则如下：
+			   		1) 在用户参与授权时，客户端往往会申请<scope-wrapper>中某一个scope权限范围，我们会将service中配置的<scope-id>与客户端申请的scope-id进行比较，如果一致，则客户端可以调用该service
+			   		2) 在非用户参与授权时，我们需要为客户端订阅service，即配置<subscriptions>, 然后该客户端端才能调用相应的服务
+			   		3) 未在<service-wrapper>中配置的服务是完全公开的
+			   		4) 为了方便订阅服务，我们提供了一个简单配置去订阅所有服务：
+			   			<subscriptions>*</subscriptions>, 只要替换下面的<subscriptions>的配置即可
+			   4.我们在配置serviced	的url时，可以使用通配符：
+			   		a. ?：匹配一个字符，如"/admin?"将匹配/admin1，但不匹配/admin或/admin/2.
+					b. *：匹配零个或多个字符串，如/admin*将匹配/admin、/admin123，但不匹配/admin/1.
+					c. **：匹配路径中的零个或多个路径，如/admin/**将匹配/admin/a或/admin/a/b.
+-->
+<sso-config>
+	<!-- 权限范围, 非用户参与授权可以忽略 -->
+	<scope-wrapper>
+		<scope>
+			<!-- 权限范围标识 -->
+			<scope-id>demo</scope-id>
+			<!-- 权限范围显示名称 -->
+			<scope-name>获取用户基本信息</scope-name>
+		</scope>
+	</scope-wrapper>
+	
+	<!-- 应用管理 -->
+	<client-wrapper>
+		<client>
+			<!-- 应用标识 -->
+			<client-id>demoClient</client-id>
+			<!-- 应用密码 -->
+			<client-secret>demoSecret</client-secret>
+			<!-- 应用回掉地址 -->
+			<callback-url>http://localhost:8070/Demo/index</callback-url>
+			<!-- 应用订阅的服务, 用户参与授权可以忽略 -->
+			<subscriptions>
+				<!-- 服务标识 -->
+				<service-id>demoService</service-id>
+			</subscriptions>
+			<!-- 订阅所有服务示例：<subscriptions>*</subscriptions> -->
+		</client>
+	</client-wrapper>
+		
+	<!-- 服务管理 -->
+	<service-wrapper>
+		<service>
+			<!-- 服务标识 -->
+			<service-id>demoService</service-id>
+			<!-- 服务绝对路径，一般我们都是配置rest接口 -->
+			<service-url><!-- http://localhost:8070/epoint-web/rest/** --></service-url>
+			<!-- 用户参与授权时，应用调用服务需要的权限范围 -->
+			<scope-id>demo</scope-id>
+		</service>
+	</service-wrapper>
+</sso-config>

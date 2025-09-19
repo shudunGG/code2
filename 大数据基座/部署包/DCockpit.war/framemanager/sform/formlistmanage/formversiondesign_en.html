@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Form design version</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+		    <a class="mini-button" iconCls="icon-copy"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Select the record you want to copy!', '', null, 'warning');} else {copyVersion();}">Copy version</a>
+			<a class="mini-button" iconCls="icon-removecircle" id="delForm"
+				onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('Select the record you want to delete!', '', null, 'warning');} else {del();}">Delete selected</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="version" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" headerAlign="center" width="20">order num</div>
+				<div field="version" headerAlign="center" align="left" width="50">version number</div>
+				<div width="60" headerAlign="center" align="center"
+					renderer="changeImage">status</div>
+				<div width="30" headerAlign="center" align="center"
+					renderer="showDesign">design</div>
+				<div width="30" headerAlign="center" align="center"
+					renderer="showPreview">preview</div>
+
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="tableId" name="tableId" bind="tableId" />
+	<script type="text/javascript">var miniLocal='en_US.js';</script>
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!--configuration variables-->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("formversiondesignaction");
+
+		//Design
+		function showDesign(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"showDesignDialog");
+		}
+
+		function showDesignDialog(version) {
+			var tableId = mini.get("tableId").getValue();
+			window.open("formdesign?tableId=" + tableId + "&versionId=" + version);		
+		}
+		// delete
+		function del() {
+			epoint.execute('del', 'datagrid', msgCallBack);
+		}
+
+		// Table search
+		function searchData() {
+			epoint.refresh([ 'datagrid' ],'',true);
+		}
+
+		// Status icon
+		function changeImage(e) {
+			if (e.row.enabled == 10) {
+				return epoint.renderCell(e, "action-icon icon-start",
+						"changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause",
+						"changeStatus");
+			}
+		}
+		function changeStatus(e) {
+			epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+		}
+		//Preview
+    	function showPreview(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "showPreviewDialog");
+		}
+		
+    	function showPreviewDialog(version){
+    		epoint.execute('getPreviewUrl', '', [version], showUrl);
+    	}
+    	
+    	function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("form preview", args.previewUrl, addCallBack);
+			} else {
+				epoint.alertAndClose("current form does not exit preview page", '', null, null, 'warning');
+			}
+		}
+    	
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (msg.indexOf("成功") == -1) {
+					epoint.alert(msg, '', '', 'warning');
+				} else {
+					epoint.alert(msg, '', searchData(), 'success');
+				}
+			}
+		}
+		
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		
+		//copy version
+		function copyVersion() {
+			epoint.execute('copyVersion', 'datagrid', msgCallBack);
+		}
+		//]]>
+	</script>
+</body>
+</html>

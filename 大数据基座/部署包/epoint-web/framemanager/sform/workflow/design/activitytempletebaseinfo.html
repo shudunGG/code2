@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="editBtn" onclick="saveActivity">确认保存 </a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="启用本模版">
+						<div bind="enable" class="mini-checkbox">只有启用后，新增人工活动才会采用模版的设置。</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动名称">
+						<input id="acName" bind="workflowActivity.activityName" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动图片">
+						<input id="acPic" bind="workflowActivity.terminateConditionGuid" class="mini-textbox" />
+					</div>
+				</div>
+					<div role="row">
+					<div role="control" label="附件操作权限">
+						<input id="isAllowAddAttach" bind="isAllowAddAttach"
+							class="mini-checkbox" style="width: 13%" text=" 允许修改" /> <input
+							id="isAllowDelAttach" bind="isAllowDelAttach"
+							class="mini-checkbox" style="width: 13%" text=" 允许删除" /> <input
+							id="isAllowDowAttach" bind="isAllowDownAttach"
+							class="mini-checkbox" style="width: 13%" text="允许下载" />
+							 <input
+							id="isAllowEditAttach" bind="isAllowEditAttach"
+							class="mini-checkbox" style="width: 13%" text="允许编辑" />
+							 <input
+							id="isAllowViewAttach" bind="isAllowViewAttach"
+							class="mini-checkbox" style="width: 13%" text="允许预览" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分支方式">
+						<div id="splitType" bind="workflowActivity.splitType" class="mini-radiobuttonlist"
+							action="getTypeList" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="多人处理方式">
+						<div id="multiTransactorMode"
+							bind="workflowActivity.multiTransactorMode"
+							action="getHandleTypeList" class="mini-radiobuttonlist"
+							repeatItems="3" repeatLayout="table" repeatDirection="vertical"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="多人处理是否锁定">
+						<div id="isLockWhenMulti" bind="isLockWhenMulti"
+							action="getYesNoList" class="mini-radiobuttonlist" onvaluechanged="selectChange(this.value)"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row" id="lockTime"  style="display: none">
+				   <div role="control" label="锁定时间">
+						<input id="lockTimeWhenMultiTransactor" bind="workflowActivity.lockTimeWhenMultiTransactor" style="width:120px;" value="1" vtype="int;min:1" 
+							class="mini-textbox" />分钟(输入大于等于1的正整数),如果此项值维护了默认走多人手写签批锁定控制；不维护默认原来的锁定逻辑
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="短信通知内容">
+						<input id="generateId" bind="workflowActivity.smsContent"
+							class="mini-textarea" style="width: 90%" /> <a
+							class="action-icon icon-mail" onclick="setSMS();"
+							style="width: 10%"></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitytempletebaseinfoaction', '', initCallBack);
+		
+		function initCallBack(e) {
+			//初始化的时候如果是锁定的，把时间填写控件显示
+			var isLockWhenMulti= mini.get("isLockWhenMulti").getValue();
+			if(isLockWhenMulti == "true"){
+				document.getElementById("lockTime").style.display = "block";
+			}else{
+				document.getElementById("lockTime").style.display = "none";
+			}
+		}
+
+		// 保存操作的回调
+		function saveActivity() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', '', callback);
+			}
+		}
+		
+		// 关闭操作的回调
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (!data.edit) {
+					parent.updateTab();
+				}
+				var textValue = mini.get('activityName').getValue();
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : parent.Util.getUrlParams('MaxID'),
+					NodeType : 'Manual',
+					Text : textValue
+				};
+				parent.setDialogValue(param);
+				//epoint.refresh();
+			}
+		}
+		
+		//设置短信
+		function setSMS() {
+			var sms = "您收到了一项标题为“[#=工作项名称#]”的待办事宜，请及时办理。";
+			mini.get('generateId').setValue(sms);
+		}
+		
+		//多人处理锁定切换，填写锁定时间控件显隐控制
+		function selectChange(value){
+			if(value == "true"){
+				document.getElementById("lockTime").style.display = "block";
+			}else{
+				document.getElementById("lockTime").style.display = "none";
+			}
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

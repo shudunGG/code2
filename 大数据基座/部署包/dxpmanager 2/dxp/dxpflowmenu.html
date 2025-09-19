@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>集成节点</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="form" class="fui-form" style="padding-top: 1px"
+			action="getDataGridData">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节点版本">
+						<input id="nodeVersion" class="mini-outputtext" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="流程总数">
+						<input id="flowCount" name="flowCount" class="mini-outputtext"
+							bind="flowCount" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="false"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<!-- <div type="checkcolumn" width="40" headerAlign="center"></div> -->
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="flowname" width="150" headerAlign="center"
+					align="center">流程名称</div>
+				<div field="startTime" width="60" headerAlign="center"
+					align="center" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}">执行开始时间</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../frame/fui/js/jsboot.js"></script>
+	<script>
+		Util.ajax({
+		 	type: "POST", 
+	     	contentType:"application/json;charset=utf-8", 
+	     	url: "getversion.action?cmd=getVersion", 
+	     	dataType: "text", 
+	     	success: function(res) {
+	     		var data = JSON.parse(res);
+	    	 	if (data.custom) {
+	         		$("#nodeVersion").text(data.custom);
+	         	}
+	    	}
+		});
+	
+		// 初始化页面
+		epoint.initPage('dxpflowmenuaction', '', inid);		
+		
+		function inid(msg) {
+			if (msg.msg == "fail") {
+				epoint.alert("请先到管理端注册节点服务!", '', null, 'warning');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'form' ]);
+		}
+
+		function callback(data) {
+			searchData();
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			} else {
+				epoint.alert("删除失败");
+			}
+		}
+	</script>
+</body>
+</html>

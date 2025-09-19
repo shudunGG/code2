@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标批注列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="cancelnotes"
+				onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要撤销的记录!');} else {epoint.confirm('确认要撤销吗?','',cancelnotes);}">
+				撤销所选</a>
+		</div>
+	</div>
+
+	<!-- search区域 -->
+	<div class="fui-search" opened="false" primaryControl="search_notes">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="圈阅说明">
+						<input id="search_notes" class="mini-textbox"
+							bind="dataBean.notes" />
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="false">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="40" headerAlign="center"
+					Align="center">序</div>
+				<div field="notes" headerAlign="center" width="100" Align="center"
+					renderer="onNameRenderer">圈阅说明</div>
+				<div field="createusername" headerAlign="center" width="60"
+					Align="center">圈阅者</div>
+				<div field="operatedate" headerAlign="center" Align="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm'}"
+					dateFormat="yyyy-MM-dd HH:mm" width="80">圈阅时间</div>
+				<div field="receiveusername" headerAlign="center" Align="center"
+					width="60">接收人</div>
+				<div field="receivedate" headerAlign="center" align="center"
+					width="80" data-options="{'format':'yyyy-MM-dd HH:mm'}"
+					dateFormat="yyyy-MM-dd HH:mm">接收时间</div>
+				<div field="statuss" headerAlign="center" width="60" Align="center">状态</div>
+				<div type="actioncolumn" headerAlign="center" align="center"
+					renderer="onDetailRenderer" width="60"></div>
+			</div>
+		</div>
+
+
+		<!-- 请修改相对路径 -->
+		<script src="../../../../../rest/resource/jsboot"></script>
+		<script>
+			//<![CDATA[
+			var grid = mini.get("datagrid");
+
+			// 初始化页面
+			epoint.initPage('cockpitnormnoteslistaction', null, function(data) {
+				if (mini.get('datagrid').getSelecteds().length === 0) {
+					buttonDisable();
+				}
+
+			});
+
+			// 表格的搜索
+			function searchData() {
+				epoint.refresh([ 'datagrid', 'fui-form' ]);
+			}
+
+			grid.on('selectionchanged', function(e) {
+				if (e.selecteds.length > 0) {
+					buttonEnable();
+				} else {
+					buttonDisable();
+				}
+			});
+
+			function buttonEnable() {
+				mini.get('cancelnotes').enable();
+			}
+
+			function buttonDisable() {
+				mini.get('cancelnotes').disable();
+			}
+
+			function onDetailRenderer(e) {
+				var title = "";
+				title += '<span type="action" style=\"color:blue\" onclick="edit(\''
+						+ e.row.rowguid + '\')">编辑圈阅说明</span>' + '&nbsp&nbsp';
+
+				title += '<span type="action" style=\"color:red\" onclick="cancelnotes1()">撤销</span>'
+						+ '&nbsp&nbsp';
+				return title;
+			}
+
+			function cancelnotes() {
+				epoint.execute("cancelnotes", '', callback);
+			}
+
+			function cancelnotes1() {
+				if (mini.get('datagrid').getSelecteds() == 0) {
+					epoint.alert('请选择要撤销的记录!');
+				} else {
+					epoint.confirm('确认要撤销吗?', '', cancelnotes);
+				}
+			}
+			function callback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', searchData, 'info');
+				}
+			}
+
+			function edit(e) {
+				epoint.openDialog('编辑圈阅', "./cockpitnormnotesdetail?guid=" + e
+						+ '&type=edit', searchData, {
+					'width' : 850,
+					'height' : 400
+				});
+			}
+
+			function onNameRenderer(e) {
+				var title = e.row.notes;
+				title = '<a href="javascript:openDetail(\'' + e.record.rowguid
+						+ '\')" style="color:blue;text-decoration:underline;">'
+						+ title + '</a>';
+				return title;
+			}
+			function openDetail(guid) {
+				epoint.openDialog('详细信息', "./cockpitnormnotesdetail?guid="
+						+ guid + '&type=detail', searchData, {
+					'width' : 850,
+					'height' : 400
+				});
+			}
+
+			//]]>
+		</script>
+</body>
+</html>

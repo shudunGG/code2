@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>公告列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+        .btn-in-column{margin-right:5px;}
+        .btn-in-column-text{margin-left:5px;margin-right:5px;}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	
+	<div class="fui-left">
+		<div role="head" title="选择问题分类"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%"
+				textField="text" idField="id" parentField="pid"
+				action="getTreeModel" filterMode="server" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a id="addFaq" class="mini-button" onclick="addFaq">创建常见问题</a>
+			</div>
+		</div>
+		
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="状态">
+							<div id="search_faqStatus" class="mini-combobox" style="width:150px;"
+							textField="text" valueField="id" bind="faqStatus" showClose="true"
+						    data="[{id:'1',text:'发布'},{id:'2',text:'未发布'}]" onkeyenter="searchData();" oncloseclick="onCloseClick"></div>
+						</div>
+						<div role="control" label="标题">
+							<input id="search_faqTitle" class="mini-textbox"
+								bind="faqTitle" onkeyenter="searchData();" />
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="leftTreeNodeCode" id="leftTreeNodeCode"
+						class="mini-hidden" />
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		
+		
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="newsGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData">
+				<div property="columns">
+					<div type="indexcolumn" width="50" headerAlign="center">序</div>
+					<div field="title" headerAlign="center" width="250">题干</div>
+					<div field="isReleased" headerAlign="center" align="center" width="100" renderer="onStatusRender">状态</div>
+					<div field="creatorName" headerAlign="center" align="center" width="100">作者</div>
+					<div field="gmtCreateTime" headerAlign="center" renderer="onTimeRender"
+						align="center" width="150">创建时间</div>
+					<div name="operation" headerAlign="center" renderer="onOperationRender"
+					align="center" width="200">操作</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		                      
+		//初始化页面
+		epoint.initPage('faqlistaction');
+		
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			if (e.node) {
+				var id = e.node.id;
+				//将左侧树点击的节点id放到隐藏域中
+				mini.get('leftTreeNodeCode').setValue(
+						id == 'f9root' ? "" : id);
+			}
+			//刷新表格
+			searchData();
+		});
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 格式化时间列
+		function onTimeRender(e) {
+			
+			var time = e.value;
+			
+			time = new Date(time);
+			
+			// 格式化时间
+			var year = time.getFullYear();
+			var month = time.getMonth() + 1;
+			month = fixZero(month);
+			var date = time.getDate();
+			date = fixZero(date);
+			var hours = time.getHours();
+			hours = fixZero(hours);
+			var minutes = time.getMinutes();
+			minutes = fixZero(minutes);
+			var seconds = time.getSeconds();
+			seconds = fixZero(seconds);
+			
+			return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+		}
+
+		function fixZero(data){
+			if (data < 10) {
+				data = '0' + data;
+			}
+			return data;
+		}
+		
+		// 常见问题状态格式化
+		function onStatusRender(e){
+			var status = e.value;
+			
+			var statusText = '';
+			if (status == 1) {
+				statusText = '已发布';
+			} else if (status == 2) {
+				statusText = '未发布';
+			}
+			return statusText;
+		}
+		
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form']);
+		}
+
+		// 绘制操作按钮
+		function onOperationRender(e) {
+			var newsGuid = e.row['newsGuid'];
+			var faqStatus = e.row['isReleased'];
+			
+			// 发布
+			var releaseHtml = '<a class="mini-button btn-in-column" id="btnRelease" onclick="releaseFaq(\'' + newsGuid + '\');"><div class="btn-in-column-text">发布</div></a>';
+			// 撤回
+			var withdrawHtml = '<a class="mini-button mini-btn-warning btn-in-column" id="btnWithdraw" onclick="withdrawFaq(\'' + newsGuid + '\');"><div class="btn-in-column-text">撤回</div></a>';
+			// 删除
+			var deleteHtml = '<a class="mini-button mini-btn-danger btn-in-column" id="btnDelete" onclick="deleteFaq(\'' + newsGuid + '\');"><div class="btn-in-column-text">删除</div></a>'
+			// 查看详情
+			var forDetailHtml = '<a class="mini-button btn-in-column" id="btnDetail" onclick="toDetail(\'' + newsGuid + '\');"><div class="btn-in-column-text">查看详情</div></a>';
+		
+			var renderHtml = '<div>';
+			if (faqStatus == 1) {
+				// 发布状态
+				renderHtml += withdrawHtml;
+			} else if (faqStatus == 2) {
+				// 未发布状态
+				renderHtml += releaseHtml;
+			}
+			renderHtml += deleteHtml + forDetailHtml + '</div>';
+			return renderHtml;
+		}	
+		
+		// 创建常见问题
+		function addFaq() {
+			epoint.openDialog("创建常见问题", 'framemanager/orga/openplatform/faq/faqadd', detailCallBack, {'width': 1000, 'height': 580});
+		}
+		
+		// 发布常见问题
+		function releaseFaq(faqGuid){
+			epoint.execute('releaseFaq', '', [faqGuid], dealFaqCallBack);
+		}
+		
+		// 撤回常见问题
+		function withdrawFaq(faqGuid){
+			epoint.execute('withdrawFaq', '', [faqGuid], dealFaqCallBack);
+		}
+		
+		// 删除常见问题
+		function deleteFaq(faqGuid){
+			epoint.execute('deleteFaq', '', [faqGuid], dealFaqCallBack);
+		}
+		
+		// 常见问题操作回调函数
+		function dealFaqCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		// 查看详情
+		function toDetail(faqGuid){
+			epoint.openDialog("常见问题详情", 'framemanager/orga/openplatform/faq/faqdetail?faqGuid=' + faqGuid, detailCallBack, {'width': 1000, 'height': 580});
+		}
+
+		// 查看详情回调
+		function detailCallBack(param) {
+	        if (param) {
+	        	epoint.refresh(['datagrid', 'fui-form'],'',true);
+	        }
+	    }
+		//]]>
+	</script>
+
+
+</body>
+</html>

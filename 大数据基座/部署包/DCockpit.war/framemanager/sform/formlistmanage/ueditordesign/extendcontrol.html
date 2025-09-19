@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>扩展控件测试</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+    <![endif]-->
+    <!--[if lte IE 7]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+    <![endif]-->
+    <link rel="stylesheet" href="leipi.style.css">
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+
+
+</head>
+
+<body>
+    <h2>扩展控件测试</h2>
+    <div class="content">
+        <table class="table table-bordered table-striped table-hover">
+            <tr>
+                <th><span>控件名称</span><span class="label label-important">*</span></th>
+                <th><span>默认值</span> </th>
+            </tr>
+            <tr>
+                <td><input type="text" id="orgname" placeholder="必填项"></td>
+                <td><input type="text" id="orgvalue" placeholder="无则不填"></td>
+            </tr>
+            <tr>
+                <th><span>数据类型</span> </th>
+                <th><span>对齐方式</span> </th>
+            </tr>
+            <tr>
+                <td>
+                    <select id="orgtype">
+                <option value="text">普通文本</option>
+                <option value="email">邮箱地址</option>
+                <option value="int">整数</option>
+                <option value="float">小数</option>
+                <option value="idcard">身份证号码</option>
+            </select>
+                </td>
+                <td>
+                    <select id="orgalign">
+                <option value="left" >左对齐</option>
+                <option value="center">居中对齐</option>
+                <option value="right">右对齐</option>
+            </select>
+                </td>
+            </tr>
+            <tr>
+                <th><span>&nbsp;&nbsp;&nbsp;&nbsp;长&nbsp;&nbsp;X&nbsp;&nbsp;宽&nbsp;&nbsp;&nbsp;&&nbsp;&nbsp;&nbsp;字体大小</span> </th>
+                <th><span>可见性</span> </th>
+            </tr>
+            <tr>
+                <td>
+                    <input id="orgwidth" type="text" value="150" class="input-small span1" placeholder="auto" /> X
+                    <input id="orgheight" type="text" value="" class="input-small span1" placeholder="auto" /> &
+                    <input id="orgfontsize" type="text" value="" class="input-small span1" placeholder="auto" /> px
+
+                </td>
+                <td>
+                    <label class="checkbox inline"><input id="orghide" type="checkbox"/> 隐藏 </label>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+    <!-- 必须引入此JavaScript 用以在此页面直接获取dialog实例！ -->
+    <script>
+		SrcBoot.output([ 'frame/fui/js/lib/ueditor/dialogs/internal.js' ]);
+	</script>
+    <script type="text/javascript">
+        function createElement(type, name) {
+            var element = null;
+            try {
+                element = document.createElement('<' + type + ' name="' + name + '">');
+            } catch (e) {}
+            if (element == null) {
+                element = document.createElement(type);
+                element.name = name;
+            }
+            return element;
+        }
+    </script>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        console.log('dialog', dialog);
+        console.log(dialog.iframeUrl);
+        console.log('当前扩展控件为', location.search);
+
+        // 根据url中的参数 为创建的扩展控件新增一个属性 
+        var controltype = Util.getUrlParams('controlType');
+        //  当前扩展控件对应的ueditor 执行的命令
+        var currControlCmd = dialog.name;
+    </script>
+    <script type="text/javascript">
+        // oNode为编辑器中目标控件
+        var oNode = null,
+            // thePlugins表示当前为扩展控件
+            thePlugins = 'exControl';
+
+        window.onload = function() {
+            // 如果编辑器中存在这个目标控件 则代表当前为编辑 将dom上属性读出写入页面中的输入框
+            // $G('orgvalue') 即为document.getElementById
+            if (UE.plugins[thePlugins].editdom) {
+                oNode = UE.plugins[thePlugins].editdom;
+                var gValue = oNode.getAttribute('value') || '',
+                    gTitle = oNode.getAttribute('title') || '';
+
+                gValue = gValue.replace(/&quot;/g, "\"");
+                gTitle = gTitle.replace(/&quot;/g, "\"");
+
+                var gHidden = oNode.getAttribute('orghide') || '',
+                    gFontSize = oNode.getAttribute('orgfontsize') || '',
+                    gAlign = oNode.getAttribute('orgalign') || '',
+                    gWidth = oNode.getAttribute('orgwidth') || '',
+                    gHeight = oNode.getAttribute('orgheight') || '',
+                    gType = oNode.getAttribute('orgtype') || '';
+
+
+                $G('orgvalue').value = gValue;
+                $G('orgname').value = gTitle;
+                if (gHidden == '1') {
+                    $G('orghide').checked = true;
+                }
+                $G('orgfontsize').value = gFontSize;
+                $G('orgwidth').value = gWidth;
+                $G('orgheight').value = gHeight;
+                $G('orgalign').value = gAlign;
+                $G('orgtype').value = gType;
+            }
+        }
+        dialog.oncancel = function() {
+            if (UE.plugins[thePlugins].editdom) {
+                delete UE.plugins[thePlugins].editdom;
+            }
+        };
+        dialog.onok = function() {
+            if ($G('orgname').value == '') {
+                alert('请输入控件名称');
+                return false;
+            }
+            var gValue = $G('orgvalue').value.replace(/\"/g, "&quot;"),
+                gTitle = $G('orgname').value.replace(/\"/g, "&quot;"),
+                gFontSize = $G('orgfontsize').value,
+                gAlign = $G('orgalign').value,
+                gWidth = $G('orgwidth').value,
+                gHeight = $G('orgheight').value,
+                gType = $G('orgtype').value;
+
+            if (!oNode) {
+                try {
+                    oNode = createElement('input', 'leipiNewField');
+                    oNode.setAttribute('type', 'text');
+                    oNode.setAttribute('title', gTitle);
+                    oNode.setAttribute('value', gValue);
+                    oNode.setAttribute('name', 'leipiNewField');
+                    oNode.setAttribute('controltype', thePlugins);
+                    if ($G('orghide').checked) {
+                        oNode.setAttribute('orghide', 1);
+                    } else {
+                        oNode.setAttribute('orghide', 0);
+                    }
+                    if (gFontSize != '') {
+                        oNode.style.fontSize = gFontSize + 'px';
+                        //style += 'font-size:' + gFontSize + 'px;';
+                        oNode.setAttribute('orgfontsize', gFontSize);
+                    }
+                    if (gAlign != '') {
+                        //style += 'text-align:' + gAlign + ';';
+                        oNode.style.textAlign = gAlign;
+                        oNode.setAttribute('orgalign', gAlign);
+                    }
+                    if (gWidth != '') {
+                        oNode.style.width = gWidth + 'px';
+                        //style += 'width:' + gWidth + 'px;';
+                        oNode.setAttribute('orgwidth', gWidth);
+                    }
+                    if (gHeight != '') {
+                        oNode.style.height = gHeight + 'px';
+                        //style += 'height:' + gHeight + 'px;';
+                        oNode.setAttribute('orgheight', gHeight);
+                    }
+                    if (gType != '') {
+                        oNode.setAttribute('orgtype', gType);
+                    }
+                    //oNode.setAttribute('style',style );
+                    //oNode.style.cssText=style;//ie7
+
+                    // 记录此扩展控件的类型 和执行的cmd 必须的
+                    oNode.setAttribute('exControlType', controltype);
+                    oNode.setAttribute('excmd', currControlCmd);
+
+                    // 插入到编辑器
+                    editor.execCommand('insertHtml', oNode.outerHTML);
+                } catch (e) {
+                    throw e;
+                }
+            } else {
+
+                oNode.setAttribute('title', gTitle);
+                oNode.setAttribute('value', $G('orgvalue').value);
+                if ($G('orghide').checked) {
+                    oNode.setAttribute('orghide', 1);
+                } else {
+                    oNode.setAttribute('orghide', 0);
+                }
+                if (gFontSize != '') {
+                    oNode.style.fontSize = gFontSize + 'px';
+                    oNode.setAttribute('orgfontsize', gFontSize);
+                } else {
+                    oNode.style.fontSize = '';
+                    oNode.setAttribute('orgfontsize', '');
+                }
+                if (gAlign != '') {
+                    oNode.style.textAlign = gAlign;
+                    oNode.setAttribute('orgalign', gAlign);
+                } else {
+                    oNode.setAttribute('orgalign', '');
+                }
+                if (gWidth != '') {
+                    oNode.style.width = gWidth + 'px';
+                    oNode.setAttribute('orgwidth', gWidth);
+                } else {
+                    oNode.style.width = '';
+                    oNode.setAttribute('orgwidth', '');
+                }
+                if (gHeight != '') {
+                    oNode.style.height = gHeight + 'px';
+                    oNode.setAttribute('orgheight', gHeight);
+                } else {
+                    oNode.style.height = '';
+                    oNode.setAttribute('orgheight', '');
+                }
+                if (gType != '') {
+                    oNode.setAttribute('orgtype', gType);
+                } else {
+                    oNode.setAttribute('orgtype', '');
+                }
+                delete UE.plugins[thePlugins].editdom;
+            }
+        };
+    </script>
+</body>
+
+</html>

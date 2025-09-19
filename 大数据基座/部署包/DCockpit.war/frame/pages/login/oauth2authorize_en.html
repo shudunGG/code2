@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The candidate points unified authentication authorization page</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../fui/js/cssboot.js"></script>
+</head>
+
+<body style="text-align: center">
+	<h3>The candidate points unified authentication authorization page</h3>
+	<hr />
+	<ul>
+		<li><a style="cursor: pointer;" onclick="confimAuthorize()">Confirm authorization</a></li>
+		<li id="scopes"></li>
+	</ul>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		var scopes = Util.getUrlParams("scope");
+		$("#scopes").html("Scope of authorization:" + " " + epoint.decodeUtf8(scopes));
+
+		function confimAuthorize() {
+			$.ajax({
+				type : 'POST',
+				url : Util.getRightUrl("rest/oauth2/authorizeconfirm"),
+				success : function(data) {
+					var dataJson = eval('(' + data + ')');
+					// The returneddataFormat:{'url':'After a successful jump address'}
+					window.location.href = dataJson.url;
+				},
+				error : function(e) {
+					alert(e.status);
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

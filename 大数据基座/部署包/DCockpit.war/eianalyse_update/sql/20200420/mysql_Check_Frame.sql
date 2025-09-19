@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where TABLE_SCHEMA=DATABASE() and TABLE_NAME='eia_jobruninfo' and COLUMN_NAME='livysessionId'

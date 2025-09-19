@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	portrait_tags_api_response_params where rowguid='67370a32-fa89-40d0-94dd-9eece307c2d6'

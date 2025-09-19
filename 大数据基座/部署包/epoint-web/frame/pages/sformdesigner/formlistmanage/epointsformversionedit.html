@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>表单版本配置修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="表单模版">
+						<div class="mini-combobox" repeatItems="2" id="templateguid"
+							bind="dataBean.templateguid" textField="text" valueField="id"
+							allowInput="true" value="0" action="gettableid" enabled="false"></div>
+					</div>	
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="预览地址">
+						<input class="mini-textbox" bind="dataBean.previewurl" />
+					</div>
+				</div> -->
+
+			</div>
+		</div>
+	</div>
+
+    <!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('epointsformversioneditaction', '', function(data) {
+
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+				    epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(msg, {state : 'warning'});
+				}
+			}
+		}
+	</script>
+</body>
+</html>

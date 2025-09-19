@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>数据源管理</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+    <script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<div class="page-loading"></div>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <div class="btn-group mr10">
+        <a class="mini-button" iconCls="icon-addcircle" onclick="add()">新增数据源</a>
+        <a class="mini-button" iconCls="icon-minuscircle" onclick="del()">删除数据源</a>
+        <a class="mini-button" iconCls="icon-save" onclick="saveAll()">保存修改</a>
+    </div>
+</div>
+
+<div class="fui-condition">
+    <!-- 表单布局 -->
+    <div class="fui-form" id="fui-form">
+        <div role="form">
+            <!-- 2列 -->
+            <div role="row">
+                <div role="control" label="数据源名称">
+                    <input bind="dataSource.dsname" id="dsName" class="mini-textbox"/>
+                </div>
+                <div role="control" label="数据源类型" starred="false">
+                    <input name="dsType" showNullItem="true" nullItemText="请选择..." bind="dataSource.dsType"
+                           allowInput="true" emptyText="请选择..."
+                           action="getDsTypes" autoLoad="false" class="mini-combobox" id="dsType"
+                           onValueChanged="selectedDsTypeChanged"/>
+                </div>
+                <div bind="dataSource.isopen" id="isopen" visible=""></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索按钮 -->
+    <a role="searcher" callback="searchData"></a>
+</div>
+<div class="fui-content">
+    <div id="datagrid" class="mini-datagrid" sortOrder="desc" sortField="ordernumber" idField="dsid" multiSelect="true"
+         style="width: 100%; height: 100%;" allowResize="true"
+         action="getDataGridData" showPager="true" allowCellEdit="true" allowCellValid="true" allowCellSelect="true"
+         editNextOnEnterKey="true"
+         editNextRowCell="true">
+        <div property="columns">
+            <div type="checkcolumn" width="10"></div>
+
+            <div type="indexcolumn" headerAlign="center" width="10">序</div>
+
+            <div field="dsname" width="80" headerAlign="center">数据源名称</div>
+            <!-- <div field="connectionString" headerAlign="center">连接字符串</div> -->
+            <div field="loginuser" width="25" headerAlign="center" align="center">登录用户</div>
+            <div field="belongOuName" width="25" headerAlign="center" align="center">所属部门</div>
+            <!-- <div field="loginpwd" width="25" headerAlign="center" align="center">登录密码</div> -->
+            <div field="ordernumber" width="20" headerAlign="center" align="center" vtype="int;range:0,99999"
+                 allowSort="true">
+                排序号 <input property="editor" class="mini-textbox" style="width: 99%"/>
+            </div>
+            <div field="dsType" width="25" headerAlign="center" align="center">数据源类型</div>
+            <div field="isopen" headerAlign="center" align="center" width="40" renderer="changeImage">是否公开</div>
+            <div width="15" align="center" headerAlign="center" renderer="onOuInvokeRenderer">授权</div>
+            <div width="15" align="center" headerAlign="center" renderer="onEditRenderer">修改</div>
+            <div width="15" headerAlign="center" align="center" renderer="onCopyRenderer">复制</div>
+            <div width="15" headerAlign="center" align="center" renderer="onDetailRenderer">详情</div>
+            <div visible="false" field="isOu"></div>
+        </div>
+    </div>
+
+</div>
+<script src="../../../fui/js/jsboot.js"></script>
+
+<!-- 配置变量 -->
+<script>
+    //<![CDATA[
+    // 初始化页面
+    var grid = mini.get("datagrid");
+    epoint.initPage('eiadatasourcelistaction', null, function (ret) {
+    });
+
+    // 绘制修改按钮
+    var onEditRenderer = function (e) {
+        if (e.record.isOu || e.record.isAdmin) {
+            return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+        }
+    };
+
+    // 绘制复制按钮
+    var onCopyRenderer = function (e) {
+        return epoint.renderCell(e, "action-icon icon-copy", "copyItems");
+    };
+
+    var onOuInvokeRenderer = function (e) {
+        if (e.record.isOu || e.record.isAdmin) {
+            return epoint.renderCell(e, "action-icon icon-gear", "setOuInvoke");
+        }
+    }
+
+    var onDetailRenderer = function (e) {
+        return epoint.renderCell(e, "action-icon icon-search", "openDetail");
+    }
+
+    function openDetail(dsid) {
+        epoint.openDialog('数据源详情', "./datasourcedetail?dsid=" + dsid, callBack, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    // 部门授权
+    function setOuInvoke(e) {
+        epoint.openDialog('部门授权', "frame/pages/eianalysemis/datasource/datasourceouinvoke?dsid=" + e, callBack, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    // 弹出新增窗口
+    function add() {
+        epoint.openDialog('新增数据源', 'frame/pages/eianalysemis/datasource/datasource', callBack, {
+            'width': 1000,
+            'height': 450
+        });
+    }
+
+    // 弹出修改窗口
+    function editItems(dsid) {
+        epoint.openDialog("修改数据源", 'frame/pages/eianalysemis/datasource/datasource?dsid=' + dsid, callBack, {
+            'width': 1000,
+            'height': 450
+        });
+    }
+
+    // 弹出复制窗口
+    function copyItems(dsid) {
+        epoint.openDialog("复制数据源", 'frame/pages/eianalysemis/datasource/datasource?dsid=' + dsid + "&extGoal=copy", callBack, {
+            'width': 1000,
+            'height': 450
+        });
+    }
+
+    // 加密
+    function lock() {
+        epoint.execute('encrypt', 'pwd', function (data) {
+            mini.get('pwd').setValue(data.msg);
+        });
+    }
+
+    //删除
+    function del() {
+        if (mini.get('datagrid').getSelecteds().length == 0) {
+            epoint.alert('请选择想要删除的数据源！', '', null, 'warning');
+        } else {
+            epoint.confirm('确认要删除吗', '删除确认', function () {
+                deleteItems();
+            }, function () {
+                return;
+            });
+        }
+    }
+
+    // 删除选中行
+    function deleteItems() {
+        epoint.execute('deleteSelect', '', msgcallBack);
+    }
+
+    // 回掉提醒
+    function msgcallBack(data) {
+        if (data.msg) {
+            epoint.alert(data.msg, '', function () {
+                epoint.refresh(['datagrid', 'fui-form'], '', true);
+            }, 'info');
+        }
+    }
+
+    // 回调刷新
+    function callBack(param) {
+        if (param) {
+            epoint.refresh(['datagrid', 'fui-form'], '', true);
+        }
+    }
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid', 'fui-form']);
+    }
+
+    // 保存信息
+    function saveAll() {
+        if (mini.get('datagrid').isValid()) {
+            epoint.execute('eiadatasourcelistaction.saveAll', ['datagrid', 'fui-form'], msgcallBack);
+        } else {
+            epoint.alert('排序号必须是整数并且长度不允许超过5位!', '', null, 'warning');
+        }
+    }
+
+    function selectedDsTypeChanged(e) {
+        setSelectedDsType(e.value);
+    }
+
+    function setSelectedDsType(selectedDsType) {
+        mini.get("dsType").setValue(selectedDsType);
+    }
+
+    // 是否公开
+    var changeImage = function (e) {
+        if (e.record.isOu || e.record.isAdmin) {
+            if (e.row.isopen == 'true') {
+                return "<img src='images/switch_true.png' title='点击不公开' style='cursor:pointer;' onclick='changeStatus(\"" + e.row.dsid + "\",\"" + e.row.isopen + "\");' />";
+            } else {
+                return "<img src='images/switch_false.png' title='点击公开' style='cursor:pointer;' onclick='changeStatus(\"" + e.row.dsid + "\",\"" + e.row.isopen + "\");' />";
+            }
+        }
+    };
+
+    function changeStatus(id,isopen) {
+        epoint.confirm('确认修改公开状态？', '确认', function () {
+            epoint.execute("changeStatus", "", [id,isopen], msgcallBack);
+        });
+    }
+
+    //]]>
+</script>
+</body>
+
+</html>

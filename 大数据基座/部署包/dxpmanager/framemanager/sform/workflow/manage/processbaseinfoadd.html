@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>过程添加</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn" onclick="addProcess()">确定新增</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="过程名称" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="workflowProcess.processName" emptyText="过程名称不能为空"
+							style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" id="type" label="类别">
+						<input class="mini-buttonedit" id="className" selectOnFocus="true" emptyText=""
+							bind="itemName" style="width: 100%;" onbuttonclick="showSelect" />
+					</div>
+				</div>
+				<div role="row" id="formSel">
+						<div role="control" label="表单" starred="true">
+							<input class="mini-treeselect" id="form" bind="formUrl" action="getTreeModal"  multiSelect="false" required="true" onbeforenodeselect="beforenodeselect"/>
+						</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否启用">
+						<input class="mini-checkbox" bind="isStart" />
+					</div>
+					<div role="control" label="是否允许被监听">
+						<input class="mini-checkbox" bind="isAllowListener" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input id="orderNum" class="mini-textbox" bind="workflowProcess.orderNum" 
+						     vtype="int;range:0,99999999"/>
+					</div>
+					<div role="control" label="开启自定义流程">
+						<input class="mini-checkbox" bind="custom" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="开启自由流程">
+						<input class="mini-checkbox" bind="freedom" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textarea" bind="workflowProcess.note" style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<input bind="workflowProcess.classId" id="classId" class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		//初始化页面
+		epoint.initPage("processsformlistaddaction", '', initAdd);
+		
+		function initAdd(e) {
+			if (e) {
+				mini.get("className").setValue(e.name);
+				mini.get("className").setText(e.name);
+			}
+		}
+
+		var processVersionGuid;
+		var clickByNext = false;
+		var currentFlow;
+
+		function showSelect(e) {
+			epoint.openDialog('选择所属类别',
+					'framemanager/sform/workflow/manage/selectItemcode',
+					showSelectOperJS, {
+						'width' : 300,
+						'height' : 550
+					});
+		}
+
+		function addProcess() {
+			if (epoint.validate()) {
+				epoint.execute('addProcess', '', addComplete);
+			}
+		}
+
+		function showSelectOperJS(data) {
+			if (data && data != 'close') {
+				var codeItem = data.split(";")[1];
+				var codeName = data.split(";")[0]
+				mini.get('className').setValue(codeName);
+				mini.get('className').setText(codeName);
+				mini.get('classId').setValue(codeItem);
+			}
+		}
+
+		function addComplete(data) {
+			if (data) {
+				var message = data.msg;
+				if(data.flag != null && (data.flag == "1")){
+					var msg = message.split('#');
+					processVersionGuid = msg[1];
+					if(data.errorflag != null && (data.errorflag == "1")){
+						epoint.alert(processVersionGuid, '', '', 'warning');
+					}else{
+						//新增成功时disable掉按钮
+						mini.get('addbtn').disable();
+						epoint.alertAndClose(msg[0], null, null, 'success');
+					}
+				}else{
+					epoint.alert(message, '', '', 'warning');
+				}
+			}
+		}
+		
+		function beforenodeselect(e){
+			console.log(e);
+			if(e.isLeaf == false || e.record.ckr == false || e.record.path == 'parent' || e.record.noClick == true){
+				e.cancel = true;
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

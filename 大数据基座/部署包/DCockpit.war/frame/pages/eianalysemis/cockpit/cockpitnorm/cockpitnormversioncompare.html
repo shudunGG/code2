@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>指标版本对比</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar" id="fui-toolbar">
+		<div style="padding-left: 2%;">
+			<span></span><input id="combo1" bind="rowGuid" class="mini-combobox"
+				style="width: 250px;" textField="text" valueField="id"
+				ondrawcell="onDrawCellLeft" onvaluechanged="onvaluechangeleft"
+				onitemclick="itemclickleft" emptyText="请选择要对比的版本" /> <a
+				id="result1" class="mini-button" iconCls="icon-search"
+				onclick="openResult1()">查看执行结果</a>
+		</div>
+		<div style="padding-left: 18%;">
+			<span></span><input id="combo2" bind="rowGuid2" class="mini-combobox"
+				style="width: 250px;" textField="text" valueField="id"
+				ondrawcell="onDrawCellRight" onvaluechanged="onvaluechangeright"
+				onitemclick="itemclickright" emptyText="请选择要对比的版本" /> <a
+				id="result2" class="mini-button hidden" iconCls="icon-search"
+				onclick="openResult2()">查看执行结果</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div style="width: 49%; height: 100%; float: left;">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="rowGuid" showPager="false"
+				style="width: 90%; height: 90%; margin-left: 24px; margin-top: 30px;"
+				allowCellValid="true" allowCellEdit="true" action="getDataGridData"
+				showFooter="false" allowSortColumn="false" allowCellSelect="true"
+				allowCellWrap="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" headerAlign="center" width="40">序</div>
+					<div field="attribute" headerAlign="center"
+						vtype="required;maxLength:50">字段</div>
+					<div field="value" width="300" headerAlign="center"
+						renderer="onValueRenderer2">值</div>
+				</div>
+			</div>
+		</div>
+		<div
+			style="width: 49%; height: 100%; float: left; border-left: solid 1px; margin-left: 10px; background: url(../../images/version-compare.png) no-repeat center center;">
+			<div id="datagrid2" style="display: none" class="mini-datagrid"
+				sortOrder="desc" idField="rowGuid" showPager="false"
+				allowCellValid="true" allowCellEdit="true" allowCellWrap="true"
+				action="getPreDataGridData" showFooter="false"
+				allowSortColumn="false" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns"
+					style="width: 90%; height: 90%; margin-left: 60px; margin-top: 30px;">
+					<div type="indexcolumn" headerAlign="center" width="40">序</div>
+					<div field="attribute" headerAlign="center"
+						vtype="required;maxLength:50">字段</div>
+					<div field="value" width="300" headerAlign="center"
+						renderer="onValueRenderer">值</div>
+					<div field="isChanged" visible="false"></div>
+					<div field="isNew" visible="false"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<!-- 配置变量 -->
+	<script>
+		//初始化页面
+		var changes = "";
+		var comboData = [];
+		var versionchoice = [];
+		epoint.initPage("cockpitnormversioncompareaction", null,
+				function(data) {
+					versionchoice = data.versionChoice;
+					mini.parse();
+					mini_combo1.setData(JSON.parse(JSON
+							.stringify(versionchoice)));
+					mini_combo2.setData(JSON.parse(JSON
+							.stringify(versionchoice)));
+				});
+
+		var mini_combo1 = mini.get('combo1'), mini_combo2 = mini.get('combo2');
+
+		//渲染值，把不同的值颜色改成红色，其余值改成蓝色
+		var onValueRenderer = function(e) {
+			if (e.row.isChanged == "true") {
+				e.cellStyle = "color:red;";
+			} else if (e.row.isNew == "true") {
+				e.cellStyle = "color:blue;";
+			}
+			return e.value;
+		}
+
+		// 刷新
+		function searchData2() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onDrawCellLeft(e) {
+			var item = e.record, field = e.field, value = e.value;
+			//组织HTML设置给cellHtml
+			if (item.id == mini_combo2.getValue()) {
+				item.unseleced = true;
+				e.cellHtml = '<span style="color:#bcbcbc;">' + value
+						+ '</span>';
+			} else {
+				item.unseleced = false;
+				e.cellHtml = '<span style="color:#333;">' + value + '</span>';
+			}
+		}
+
+		function onDrawCellRight(e) {
+
+			var item = e.record, field = e.field, value = e.value;
+			//组织HTML设置给cellHtml
+			if (item.id == mini_combo1.getValue()) {
+				item.unseleced = true;
+				e.cellHtml = '<span style="color:#bcbcbc;">' + value
+						+ '</span>';
+			} else {
+				item.unseleced = false;
+				e.cellHtml = '<span style="color:#333;">' + value + '</span>';
+			}
+		}
+
+		function itemclickleft(e) {
+			if (e.item.unseleced) {
+				mini.alert('请选择不同的版本');
+				mini_combo1.deselectAll();
+			}
+		}
+
+		function itemclickright(e) {
+			if (e.item.unseleced) {
+				mini.alert('请选择不同的版本');
+				mini_combo2.deselectAll();
+			}
+		}
+
+		function onvaluechangeleft(e) {
+			if (e.value && e.value != mini_combo2.getValue()) {
+				mini_combo2.setData(JSON.parse(JSON.stringify(versionchoice)))
+				if (!mini_combo2.getValue()) { //如果右侧没值
+					epoint.refresh([ 'datagrid', 'fui-toolbar' ]); //只刷新左边
+				} else {
+					epoint.refresh([ 'datagrid', 'datagrid2', 'fui-toolbar' ]); //同时刷新左右
+				}
+			}
+		}
+
+		function onvaluechangeright(e) {
+			if (e.value && e.value != mini_combo1.getValue()) {
+				$("#datagrid2")
+						.attr(
+								"style",
+								"border-width: 0px;width: 90%;height: 90%; margin-left: 40px;margin-top: 30px;padding: 0px;display: block;"); //移除style
+				mini_combo1.setData(JSON.parse(JSON.stringify(versionchoice)))
+				epoint.refresh([ 'datagrid2', 'fui-toolbar' ]); //只刷新右边
+				$('#result2').removeClass('hidden');
+			}
+		}
+
+		function openResult1() {
+			var id = mini.get('combo1').getValue();
+			var text = mini.get('combo1').getText();
+			if (text == '当前版本') {
+				epoint.openDialog('指标结果',
+						"frame/pages/eianalysemis/cockpit/cockpitjoblog/cockpitnormjobloglist?guid="
+								+ id, null, {
+							'width' : 1000,
+							'height' : 550
+						});
+			} else {
+				epoint.openDialog('指标结果',
+						"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormresulthistorylist?guid="
+								+ id + "&historyVersion=" + text, '', {
+							'width' : 1000,
+							'height' : 550
+						});
+			}
+		}
+		
+		function openResult2() {
+			var id = mini.get('combo2').getValue();
+			var text = mini.get('combo2').getText();
+			if (text == '当前版本') {
+				epoint.openDialog('指标结果',
+						"frame/pages/eianalysemis/cockpit/cockpitjoblog/cockpitnormjobloglist?guid="
+								+ id, null, {
+							'width' : 1000,
+							'height' : 550
+						});
+			} else {
+				epoint.openDialog('指标结果',
+						"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormresulthistorylist?guid="
+								+ id + "&historyVersion=" + text, '', {
+							'width' : 1000,
+							'height' : 550
+						});
+			}
+		}
+	</script>
+</body>
+
+</html>

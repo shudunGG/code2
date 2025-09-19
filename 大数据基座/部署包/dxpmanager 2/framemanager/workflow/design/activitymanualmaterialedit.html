@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>活动编辑材料</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!--   必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify"
+				iconCls="icon-save"> 保存修改
+			</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input bind="workflowActivityMaterial.processVersionGuid"
+			id="processVersionGuid" class="mini-hidden" /><input
+			bind="workflowActivityMaterial.controlVisiableMethodGuid"
+			id="controlVisiableMethodGuid" class="mini-hidden" />
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="材料名称">
+						<input id="materialName" bind="materialName" class="mini-textbox"
+							enabled="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序">
+						<input id="orderNum" bind="workflowActivityMaterial.orderNum"
+							class="mini-textbox" vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="提交方式">
+						<input name="type" bind="workflowActivityMaterial.submitType"
+							data="[{text:'提交电子文件',id:'10'},
+							{text:'提交纸质文件',id:'20'},
+							{text:'提交电子文件或提交纸质文件',id:'35'},
+							{text:'同时提交电子文件和提交纸质文件',id:'40'}]"
+							textField="text" valueField="id" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否必须提交">
+						<div id="ismustsubmit"
+							bind="workflowActivityMaterial.isMustSubmit"
+							class="mini-radiobuttonlist" repeatItems="2" repeatLayout="table"
+							repeatDirection="horizontal" textField="text" valueField="id"
+							data="[{text:'是',id:'10'},{text:'否',id:'20'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="控制显示方法">
+						<input id="methodName" bind="methodName" class="mini-buttonedit"
+							emptyText="" onbuttonclick="setMethod" selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="本步操作权限">
+						<div id="accessRight" bind="workflowActivityMaterial.accessRight"
+							class="mini-radiobuttonlist" repeatItems="2" repeatLayout="table"
+							repeatDirection="horizontal" textField="text" valueField="id"
+							data="[{text:'读写',id:'20'},{text:'只读',id:'10'}]"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('activitymanualmaterialeditaction', '', initCallBack);
+		function initCallBack(e) {
+			if (e.methodName) {
+				mini.get('methodName').setText(e.methodName);
+			}
+		}
+		//回调
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+		}
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+		// 保存操作的回调
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('updateMaterial', '', closeCallback);
+			}
+		}
+		//选择控制显示方法
+		function setMethod() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			epoint
+					.openDialog(
+							'选择流程处理页面',
+							'framemanager/workflow/design/designhelper?mode=function&processVersionGuid='
+									+ processVersionGuid, selMethodOperJS, {
+								'width' : 480,
+								'height' : 500
+							});
+		}
+
+		function selMethodOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var name = rtnValue.split(';')[0];
+				var guid = rtnValue.split(';')[1];
+				mini.get("methodName").setText(name);
+				mini.get("methodName").setValue(name);
+				//controlVisiableMethodGuid
+				mini.get("controlVisiableMethodGuid").setValue(guid);
+			}
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

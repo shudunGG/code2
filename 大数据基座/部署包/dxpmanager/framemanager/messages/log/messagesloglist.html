@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar"></div>
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="fromUserName" opened="false">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="消息类别">
+						<input class="mini-combobox" action="selectTypeModel"
+							bind="typeGuid" />
+					</div>
+					<div role="control" label="消息渠道">
+						<input class="mini-combobox" action="selectChannelModel"
+							bind="channelGuid" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="时间">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="beginTime" />
+					</div>
+					<div role="control" label="至">
+						<input class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="endTime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="发送人姓名">
+						<input class="mini-textbox" bind="fromUserName" id="fromUserName" />
+					</div>
+					<div role="control" label="接收人姓名">
+						<input class="mini-textbox" bind="targetUserName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="状态">
+						<input class="mini-radiobuttonlist" action="selectStatusModel"
+							bind="status" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="reset" callback="resetCallback"> <a role="searcher"
+			callback="searchData"></a><a role="close" callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="sendtime" headerAlign="center" width="150"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">发送时间</div>
+				<div field="fromusername" headerAlign="center" align="center"
+					width="100">发送人姓名</div>
+				<div field="targetusername" headerAlign="center" align="center"
+					width="100">接收人姓名</div>
+				<div field="remindcontent" headerAlign="center" align="left"
+					width="150" validateLevel="3">消息内容</div>
+				<div field="typename" headerAlign="center" align="center"
+					width="100">消息类型</div>
+				<div field="channelname" headerAlign="center" align="center"
+					width="100">消息渠道</div>
+				<div field="waitsendtime" headerAlign="center" width="150"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">下次重发时间</div>
+				<div field="retriedcount" headerAlign="center" align="center"
+					width="120">当前已重发次数</div>
+				<div field="statusname" headerAlign="center" align="center"
+					width="50">状态</div>
+				<div field="remark" headerAlign="center" align="center" width="140">备注</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesloglistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.alert("起始时间不能大于终止时间!", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("终止时间不能小于起始时间!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+	</script>
+</body>
+</html>

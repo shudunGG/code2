@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>添加数据表</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" id="add"
+				onclick="saveAndClose()">确定添加</a><a class="mini-button"
+				id="addCancel" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">取消添加</a>
+			</div>
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				<span class="text-danger">
+				          数据源:指定物理表数据源，选择后物理表将会新建到此数据源，如果不选择数据源，则默认框架数据源；如果勾选联机数据源，用作选择联机数据源；
+				</span>
+			</p>
+			<p>
+				<span class="text-danger">
+				          联机数据源:若启用联机数据源，所有表操作都是针对 数据源 下拉框 对应数据源的数据表
+				</span>
+			</p>
+		</div>
+
+		<div class="fui-content">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="表中文名称" starred="true">
+							<input class="mini-textbox"
+							bind="tablebasicinfoaddaction.tableBasicInfo.tableName"
+							required="true" requiredErrorText="表中文名称不能为空"
+							vtype="maxLength:50" />
+						</div>
+						<div role="control" label="SQL表名" id="sqlDiv">
+							<input id="sqlTableName"
+							bind="tablebasicinfoaddaction.tableBasicInfo.sqlTableName"
+							class="mini-textbox" emptyText="数据表名" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据源">
+							<input autoLoad="false" id="dataSource" showClose="true"
+							action="tablebasicinfoaddaction.getDataResource" showNullItem="false"
+							bind="tablebasicinfoaddaction.dataSourceGuid" property="editor" oncloseclick="onCloseClick"
+							class="mini-combobox" /> 
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="联机数据源">
+							<div id="linkds" class="mini-checkbox" style="width: 20px"
+							bind="tablebasicinfoaddaction.isEnable" readOnly="false"
+							onvaluechanged="changType"></div>
+							<div class="mini-outputtext" value="启用" style="width: 30px"></div>
+						</div>
+					</div>
+					<div role="row" id="dataSourceRow" style="display:none">
+						<div role="control" label="数据表">
+							<div class="mini-autocomplete" id="acSimple" textField="text"
+							valueField="id" bind="tablebasicinfoaddaction.tableName"
+							extraId="dataSource"
+							action="tablebasicinfoaddaction.getComplete"></div>
+						</div>
+					</div>
+					<div role="row">
+						<!-- TODO -->
+						<div role="control" label="排序号">
+							<input bind="tablebasicinfoaddaction.tableBasicInfo.ordernum"
+							class="mini-textbox" maxLength="8" vtype="int;range:0,99999999"/>
+						</div>
+						<div role="control" label="表ID">
+							<input bind="tablebasicinfoaddaction.tableBasicInfo.tableid"
+								class="mini-textbox"  vType="int;range:0,999999999" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="流程选择">
+							<input class="mini-buttonedit" allowInput="false"
+								id="processSelect" emptyText="请选择流程" oncloseclick="closeClick"
+								style="width: 100%;" onbuttonclick="selMainProcess" showClose="true"
+								bind="tablebasicinfoaddaction.tableBasicInfo.processguid" />
+						</div>
+						<input class="mini-hidden" id="processName"
+							bind="tablebasicinfoaddaction.tableBasicInfo.processname" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			// 初始化页面
+			epoint.initPage('tablebasicinfoaddaction', "", callback);
+
+			function callback() {
+			}
+
+			var onCloseClick = function(e) {
+				mini.get('dataSource').setValue('');
+			}
+			
+			// 保存并关闭
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('tablebasicinfoaddaction.add', 'fui-form', closeCallback);
+				}
+			}
+
+			// 是否启用联机数据源
+			function changType(e) {
+				var checked = this.getChecked();
+				var dsRow = $('#dataSourceRow');
+				if(checked){
+					Util.form.hideField('#sqlDiv');
+					dsRow.show();
+				}
+				else{
+					Util.form.showField('#sqlDiv');
+					dsRow.hide();
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				if (data.message) {
+					//if (data.message.indexOf("成功") != -1) {
+					if(data.success){
+						epoint.alertAndClose(data.message, '', null, null, 'success');
+					} else {
+						epoint.alert(data.message, '', null, 'error');
+					}
+				}
+			}
+				
+
+			function selMainProcess() {
+				epoint.openDialog('选择流程',
+						"framemanager/workflow/manage/selectprocess",
+						selMainProcessOperJS, {
+							'width' : 300,
+							'height' : 500
+						});
+			}
+			
+			function selMainProcessOperJS(rtnValue) {
+				if (rtnValue && rtnValue != "close") {
+					var s = rtnValue.split(";");
+					mini.get('processSelect').setText(s[0]);
+					mini.get('processSelect').setValue(s[1]);
+					mini.get('processName').setValue(s[0]);
+				}
+			}
+			
+			function closeClick() {
+				mini.get('processSelect').setText('');
+				mini.get('processSelect').setValue('');
+				mini.get('processName').setValue('');
+			}
+		</script>
+	</body>
+
+</html>

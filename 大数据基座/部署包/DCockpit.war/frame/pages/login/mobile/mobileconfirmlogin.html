@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+	name="viewport" />
+<meta name="format-detection"
+	content="telephone=no, address=no, email=no">
+<title>手机登录确认页面</title>
+<link rel="stylesheet" href="css/mui.css" />
+<link rel="stylesheet" href="css/login_home.css" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+<style>
+.hiddenbtn {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+	<div class="mui-content">
+		<div class="em-img-msg">
+			<img src="images/img_bg.png" alt="扫码登录图片">
+			<h4>新点确认登录</h4>
+			<p>请不要扫描来源不明的二维码</p>
+		</div>
+		<div class="em-button">
+			<button type="button"
+				class="mui-btn mui-btn-primary em-submit hiddenbtn" id="btn-login">确认登录</button>
+			<span class="em-cancel" onclick="ejs.page.closePage();">取消</span>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		// 获取参数
+		function getQueryVariable(variable) {
+			var query = window.location.search.substring(1);
+			var vars = query.split("&");
+			for (var i = 0; i < vars.length; i++) {
+				var pair = vars[i].split("=");
+				if (pair[0] == variable) {
+					return pair[1];
+				}
+			}
+			return (false);
+		}
+
+		// 获取token和loginid
+		var token;
+
+		$.getScript("js/ejs.js", function() {
+			$.getScript("js/ejs.native.js", function() {
+				ejs.config({
+					// 注，jsApiList中key代表模块，其中value为对应类的包名，Android和iOS下有区别
+					jsApiList : []
+				});
+				ejs.ready(function() {
+					ejs.auth.getToken({
+						success : function(result) {
+							// 获取token
+							token = result.access_token;
+							$("#btn-login").css("display", "inline-block");
+						},
+						error : function(error) {
+							alert(JSON.stringify(error));
+						}
+					});
+				});
+			});
+		});
+
+		// 获取code
+		var code = getQueryVariable("code");
+
+		if (code != undefined) {
+			$
+					.ajax({
+						url : Util
+								.getRightUrl('rest/login/qrloginaction/qrLoginQuery?isCommondto=true'),
+						data : {
+							"code" : code,
+							"order" : "scan"
+						},
+						dataType : "text",
+						type : "POST",
+						error : function(XMLHttpRequest, textStatus,
+								errorThrown) {
+							alert('error:' + textStatus);
+						},
+						success : function(data, textStatus) {
+							console.log("二维码已成功扫描");
+						}
+					});
+		}
+
+		document
+				.getElementById('btn-login')
+				.addEventListener(
+						'click',
+						function() {
+							if (typeof (code) == undefined) {
+								alert("code未获取到");
+								return;
+							}
+							if (typeof (token) == undefined) {
+								alert("token未获取到");
+								return;
+							}
+							var paramStr = "data={\"ValidateData\":\"" + token
+									+ "\"," + "\"paras\":" + "{\"code\":\""
+									+ code + "\"}}";
+							if (paramStr != undefined) {
+								$
+										.ajax({
+											url : Util
+													.getRightUrl("rest/login/qrloginaction/qrLoginConfirm?isCommondto=true"),
+											data : paramStr,
+											dataType : "text",
+											type : "POST",
+											error : function(XMLHttpRequest,
+													textStatus, errorThrown) {
+												alert('error:' + textStatus);
+											},
+											success : function(data, textStatus) {
+												if (data) {
+													var data1 = eval('(' + data
+															+ ')');
+													var result = data1.custom;
+													var returnInfo = result.ReturnInfo;
+													var businessInfo = result.BusinessInfo;
+													if (returnInfo.Code == "0") {
+														alert(decodeURI(returnInfo.Description));
+													}
+													if (businessInfo.Code == "0") {
+														alert(decodeURI(businessInfo.Description));
+													}
+													if (businessInfo.Code == "1"
+															&& returnInfo.Code == "1") {
+														ejs.page.closePage();
+													}
+												}
+											}
+										});
+							}
+						});
+	</script>
+</body>
+
+</html>

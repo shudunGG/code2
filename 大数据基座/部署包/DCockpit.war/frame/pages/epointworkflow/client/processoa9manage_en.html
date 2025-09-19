@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title></title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+<link href="../css/popup.css" rel="stylesheet" type="text/css" />
+<link href="../css/workflowdesign.css" rel="stylesheet" />
+
+<style type="text/css">
+A {
+	color: black;
+	text-decoration: none;
+}
+
+A:hover {
+	color: red;
+	text-decoration: underline;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div id="fuiContent" class="fui-content">
+		<!-- 			<input bind="processinstanceflowchartbrowseraction.processVersionInstanceGuid" -->
+		<!-- 				class="mini-textbox" style="display:none;"/> -->
+		<!-- 			<input bind="workitemlistnewaction.manage" -->
+		<!-- 				class="mini-textbox" style="display:none;"/> -->
+
+		<div title="The flow chart">
+			<div id="WorkFlowWrapper" style="overflow: hidden"></div>
+			<div id="panel">
+				<div id="info" runat="server"
+					style="position: absolute; display: none; width: 750px; height: 260px; z-index: 102; opacity: 100; border: solid 1px #CCCCCC; padding: 0px;">
+					<div id="pnlHead1" class="head">
+						<div id="ActivityName" class="title"
+							style="width: 730px; padding: 0px 0px 0px 0px;"></div>
+						<div id="btnCloseParent" style="float: right; opacity: 100;">
+							<img id="btnClose" src="../image/DragPanel/close.gif"
+								style="cursor: pointer;" description="Shut down"
+								title="#{msgs.gb}" width="15" height="15" />
+						</div>
+					</div>
+					<div>
+						<iframe id='PageDetail'
+							style="width: 100%; height: 230px; border: 0px" frameborder="0"></iframe>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<script type="text/javascript">
+		var miniLocal = 'en_US.js';
+	</script>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../js/raphael-min.js"></script>
+	<script src="../js/graffle.js"></script>
+	<script src="../js/workflowbrower_admin_new.js"></script>
+	<script src="../js/raphael.export.js"></script>
+	<script>
+		epoint.initPage("workitemlistnewaction");
+		//epoint.initPage("processinstanceflowchartbrowseraction");
+
+		var panel_detailPanel = $("#panel").children().get(0).id;
+		var DetailPanelId = panel_detailPanel.replace(/:/g, "\\:");
+		$(document).ready(
+				function() {
+					try {
+						if (!window.frameElement) {
+							window.moveTo(0, 0);
+							window.resizeTo(window.screen.availWidth,
+									window.screen.availHeight);
+						}
+					} catch (err) {
+					}
+
+					$('.ui-tabs-panel').each(function() {
+						$(this).height($(window).height() - 33);
+						$(this).width($(document).width() - 4);
+
+					});
+					$("#panel").height(0);
+
+					$("#table1").attr("style", "height:44px;");
+
+					epoint.execute(
+							'processinstanceflowchartbrowseraction.readJson',
+							'', ReadXMLHd);
+					$("#btnClose").click(function() {
+						$("#" + DetailPanelId).hide();
+					});
+
+					$(window).resize(function() {
+						$('.ui-tabs-panel').each(function() {
+							$(this).height($(window).height() - 33);
+							$(this).width($(document).width() - 4);
+						});
+					})
+					$(document).click(function() {
+						$("#" + DetailPanelId).hide();
+					});
+				});
+	</script>
+
+</body>
+
+</html>

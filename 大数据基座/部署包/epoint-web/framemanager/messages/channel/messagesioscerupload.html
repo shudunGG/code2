@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>上传证书</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">保存</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消</a>
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			<em>移动端推送证书联系app开发获取,密码一般都是123456,类型:正式发布</em><br>
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="选择证书" starred="true">
+						<div id="uploader1" class="mini-webuploader"
+							action="messagesiosceraddaction.getFileUploadModel"
+							fileNumLimit="1" fileSingleSizeLimit="5120" limitType="p12"
+							onuploadfinished="OnUploadFinished" auto="true"
+							onfilesuccess="OnFileSuccess"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="证书密码" starred="true">
+						<input bind="dataBean.password" class="mini-textbox" width="80%"
+							required="true" requiredErrorText="密码不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="证书类别" starred="true">
+						<input bind="dataBean.certype" class="mini-radiobuttonlist"
+							action="selectTypeModel" required="true"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="过期时间">
+						<input class="mini-datepicker" bind="dataBean.uploadtime"
+							data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" showTime="true"
+							timeFormat="H:mm:ss" dateFormat="yyyy-MM-dd HH:mm:ss"
+							align="center" width="80%" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesiosceraddaction');
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+				}
+				epoint.alert(data.msg, '', null, 'info');
+
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+		function updateTable() {
+			epoint.refresh([ 'fui-form' ]);
+		}
+		function OnFileSuccess() {
+			//epoint.execute('add', 'fui-form', closeCallback);
+		}
+		function OnUploadFinished() {
+			console.log("所有文件上传结束");
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+<title>宏控件</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+<meta name="generator" content="www.leipi.org" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+    <![endif]-->
+<!--[if lte IE 7]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+    <![endif]-->
+<link rel="stylesheet" href="leipi.style.css">
+<link rel="stylesheet" href="tab.css" type="text/css" />
+<script type="text/javascript"
+	src="../../../../frame/fui/js/widgets/ueditor/dialogs/internal.js"></script>
+<script type="text/javascript">
+	function createElement(type, name) {
+		var element = null;
+		try {
+			element = document
+					.createElement('<' + type + ' name="' + name + '">');
+		} catch (e) {
+		}
+		if (element == null) {
+			element = document.createElement(type);
+			element.name = name;
+		}
+		return element;
+	}
+</script>
+</head>
+
+<body>
+	<div class="wrapper">
+		<div id="tabhead" class="tabhead">
+			<span class="tab focus" data-content-id="basic">基本属性</var></span> <span
+				class="tab" data-content-id="external">扩展配置</var></span>
+		</div>
+		<div id="tabbody" class="tabbody">
+			<div id="basic" class="panel focus">
+				<iframe src="base.html" width="100%" height="400" name="base"></iframe>
+			</div>
+
+			<div id="external" class="panel">
+				<table class="table table-bordered table-striped table-hover">
+					<tr>
+						<th><span>类型</span></th>
+					</tr>
+					<tr>
+						<td><select id="macrotype" class="span7">
+								<optgroup label="----常用日期宏控件----">
+									<option value="EPOINT_SYS_DATE">当前日期，形如：2015-01-01</option>
+									<option value="EPOINT_SYS_DATE_CN">当前日期，形如：2015年1月1日</option>
+									<option value="EPOINT_SYS_DATE_CN_SHORT3">当前日期，形如：2015年</option>
+									<option value="EPOINT_SYS_DATE_CN_SHORT4">当前年份，形如：2015</option>
+									<option value="EPOINT_SYS_DATE_CN_SHORT1">当前日期，形如：2015年1月</option>
+									<option value="EPOINT_SYS_DATE_CN_SHORT2">当前日期，形如：1月1日</option>
+									<option value="EPOINT_SYS_TIME">当前时间，形如：HH时mm分ss秒</option>
+									<option value="EPOINT_SYS_DATETIME">当前日期+时间，形如：2015年1月1日
+										时分秒</option>
+									<option value="EPOINT_SYS_WEEK">当前星期中的第几天，形如：星期一</option>
+								</optgroup>
+								<optgroup label="----扩展定义----">
+									<option value="EPOINT_SYS_USERID">当前用户ID</option>
+									<option value="EPOINT_SYS_USERNAME">当前用户姓名</option>
+									<option value="EPOINT_SYS_DEPTNAME">当前用户部门(长名称)</option>
+									<option value="EPOINT_SYS_DEPTNAME_SHORT">当前用户部门(短名称)</option>
+									<option value="EPOINT_SYS_USERNAME_DATE">当前用户姓名+日期</option>
+									<option value="EPOINT_SYS_USERNAME_DATETIME">当前用户姓名+日期+时间</option>
+									<!-- 								<option value="sys_flownum">流水号</option> -->
+								</optgroup>
+						</select></td>
+					</tr>
+					<tr>
+						<th><span>计算时</span></th>
+					</tr>
+					<tr>
+						<td><select id="caculatetime" class="span7">
+								<option value="Init" selected="selected">表单初始化时</option>
+								<option value="Save">表单提交时</option>
+						</select></td>
+					</tr>
+					<input type="hidden" id="IsDate" />
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="tab.js"></script>
+	<script type="text/javascript">
+		var oNode = null, thePlugins = 'macros';
+		window.onload = function() {
+			initTabs();
+			if (UE.plugins[thePlugins].editdom) {
+				oNode = UE.plugins[thePlugins].editdom;
+				window.frames["base"].iframeedit(oNode);
+				$G('macrotype').value = oNode.getAttribute('macrotype');
+				$G('caculatetime').value = oNode.getAttribute('caculatetime');
+			} else {
+				parent.controlId += 1;
+				var df = "Ctrl" + parent.controlId
+				window.frames["base"].iframeinit(df);
+			}
+		}
+
+		dialog.oncancel = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+		dialog.onok = function() {
+			if (!oNode) {
+				try {
+					/*
+					if ( $G('orgtype').value.indexOf('sys_list')>0 ) {
+					    oNode = document.createElement("select");
+					    var objOption = new Option('{macros}', '');
+					    oNode.options[oNode.options.length] = objOption;
+					} else {
+					    //input
+					}*/
+					oNode = createElement('img');
+					oNode = window.frames["base"].iframeonok(oNode);
+					oNode.setAttribute('type', 'text');
+					oNode
+							.setAttribute('caculatetime',
+									$G('caculatetime').value);
+					oNode.setAttribute('class', 'macro');
+					oNode.setAttribute('data-ctrl', 'macro');
+					oNode.setAttribute('isdate', $G('IsDate').value);
+
+					// 					oNode.setAttribute('value', '{macros}');
+
+					oNode.setAttribute('macrotype', $G('macrotype').value);
+					oNode.setAttribute('controltype', thePlugins);
+					editor.execCommand('insertHtml', oNode.outerHTML);
+					return true;
+				} catch (e) {
+					try {
+						editor.execCommand('error');
+					} catch (e) {
+						alert('控件异常，请到 [雷劈网] 反馈或寻求帮助！');
+					}
+					return false;
+				}
+			} else {
+				oNode = window.frames["base"].iframeonok(oNode);
+				oNode.setAttribute('type', 'text');
+				oNode.setAttribute('caculatetime', $G('caculatetime').value);
+				oNode.setAttribute('class', 'macro');
+				oNode.setAttribute('data-ctrl', 'macro');
+				oNode.setAttribute('isdate', $G('IsDate').value);
+
+				// 					oNode.setAttribute('value', '{macros}');
+
+				oNode.setAttribute('macrotype', $G('macrotype').value);
+				oNode.setAttribute('controltype', thePlugins);
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+
+		// 		function changeType(val) {
+		// 			if (val == "sys_flownum")
+		// 				$G('flownumconfig').style.display = "block";
+		// 			else
+		// 				$G('flownumconfig').style.display = "none";
+		// 		}
+	</script>
+</body>
+
+</html>

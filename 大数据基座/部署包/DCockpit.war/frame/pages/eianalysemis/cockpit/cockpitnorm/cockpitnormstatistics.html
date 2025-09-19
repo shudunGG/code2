@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标综合统计</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="指标综合统计"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="treeModel"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="开始时间">
+							<input id="search_starttime" class="mini-datepicker" bind="startTime" format="yyyy-MM-dd" showClose="true"/>
+						</div>
+						<div role="control" label="截止时间">
+							<input id="search_endtime" class="mini-datepicker" bind="endTime" format="yyyy-MM-dd" showClose="true"/>
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="dataNodeType" bind="dataNodeType" />
+				<input class="mini-hidden" id="dataNodeGuid" bind="dataNodeGuid" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="statType">操作类型</div>
+					<div field="statName" >统计项</div>
+					<div field="statCount">统计值</div>
+					<!-- 隐藏列 -->
+					<div field="statGuid" visible="false"></div>
+					<div name="operate" type="actioncolumn" headerAlign="center" align="center">
+						<span type="action" icon="icon-search" onclick="openDetail">详情</span>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitnormstatistics', null, function(data) {
+		});
+
+		var gridTree = mini.get("datagrid");
+
+		//详情窗口
+		function openDetail(e) {
+			var url = "frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormstatisticsdetail";
+			url = url + "?guid=" + e.statGuid + "&type=" + e.statType;
+			url = url + "&startTime=" + mini.get("search_starttime").getFormValue();
+			url = url + "&endTime=" + mini.get("search_endtime").getFormValue();
+			epoint.openDialog('操作详情' ,url, searchData, {
+						'width' : 1280,
+						'height' : 800
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			var nodeType = e.node.nodeType;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('dataNodeGuid').setValue(id == 'f9root' ? "" : id);
+			mini.get('dataNodeType').setValue(nodeType);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+	</script>
+</body>
+</html>

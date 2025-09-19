@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NTKO</title>
+	<script src="../../../../frame/fui/js/cssboot.js"></script>
+	<style type="text/css">
+		.pad20{
+			padding: 20px;
+		}
+		
+		#officecontrol{
+			height: 600px;
+			margin-top: 10px;
+		}
+		
+		.btn-group .btn{
+			margin-right: 5px;
+		}
+	</style>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'frame/fui/js/lib/ntkoOffice/ntko.js']);
+	</script>
+</head>
+<body>
+	
+	<div class="container-fluid pad20">
+		<div class="btn-group">
+			<button type="button" class="btn btn-primary" onclick="saveFile();">保存修改</button>
+			<button type="button" class="btn btn-primary" onclick="TANGER_OCX_OBJ.Menubar=!TANGER_OCX_OBJ.Menubar;">菜单栏显隐</button>
+		</div>
+		<div id="officecontrol">
+			<script>
+				SrcBoot.output([ 'frame/fui/js/lib/ntkoOffice/ntkoofficecontrol.js']);
+			</script>
+		</div>
+	</div>
+	<script type="text/javascript">
+	    var guid = Util.getUrlParams('attachGuid'); 
+	    if(guid == undefined){
+	    	guid = "";
+	    }
+	    epoint.alert(guid, null, null, 'info');
+	    loadFile();
+		function loadFile(){
+			 OpenEditOffice(Util.getRootPath()+'rest/officeaction/load?isCommondto=true&guid=' + guid, "1");
+		}
+		
+		function saveFile(){ 
+			saveFileToUrl(Util.getRootPath()+'rest/officeaction/save?isCommondto=true', '', guid, '1', function(){
+				loadFile();
+			} ); 
+		}
+	</script>	
+</body>
+</html>

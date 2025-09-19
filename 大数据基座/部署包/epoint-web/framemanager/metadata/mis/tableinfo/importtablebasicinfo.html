@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>导入数据表结构</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style>
+	.red {
+		color: red;
+	}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div id="dataImport" class="mini-webuploader" pickerText="导入XML"
+			action="importtablebasicinfodatacheckaction.getDataImportModel"
+			showDefaultUI="false" limitType="xml"
+			dataImport="true" onuploadfinished="searchData" auto="true"
+			onuploadaccept="UploadSuccess" onstartupload="startUpload"></div>
+		<a class="mini-button" state="primary" onclick="importAll" id="btnImport" style="display:none;">继续导入 </a>
+		<a class="mini-button" onclick="epoint.closeDialog('关闭导入')" id="closeImport" style="display:none;">关闭导入</a>
+		<a class="mini-button" onclick="ignoreAll" id="btnIgnore" style="display:none;">全部忽略</a>
+		<!--帮助按钮 -->
+		<a role="helper"  showtype="tooltip">帮助</a>
+	</div>
+	
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>导入数据如果存在冲突的情况，可以<a href="./mis平台导入.docx" download="mis平台导入.docx"><font color="green">点击下载本文档</font></a>来参考进行冲突处理的选择。</p>
+	</div>
+	
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div role="control" id="tip" style="display: none">
+			<span class="text-assist">注:当前导入数据无重复内容，请操作继续导入完成导入操作&nbsp;&nbsp;</span>
+		</div>
+		<div role="control" id="dulitip" style="display: none">
+			<span class="text-assist" style="color:red">注:当前导入数据存在冲突数据，请先对冲突数据进行冲突解决方案的选择后再继续导入完成导入操作&nbsp;&nbsp;</span>
+		</div>
+		<div id="datagrid" class="mini-datagrid" idField="tableid" style="display: none"
+			action="getDataGridData" sortOrder="desc" showPager="false"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" allowCellValid="true" onDrawCell="onDrawCell" onCellBeginEdit = "OnCellBeginEdit" onCellEndEdit="cellendedit">
+			<div property="columns">
+				<!-- <div type="checkcolumn" width="40" name="check"></div> -->
+				<div type="indexcolumn" width="40">序</div>
+				<div field="tableid" visible="false">现有tableid</div>
+				<div field="importtableid" name="importtableid" width="200" vtype="required">
+					导入tableid <input property="editor" class="mini-textbox"
+						minWidth="80" inputStyle="text-align:right"/>
+				</div>
+				<div field="orginimporttableid" visible="false"></div>
+				<div field="sqltablename" visible="false">现有SqlTableName</div>
+				<div field="importsqltablename" name="importsqltablename" width="200" vtype="required">
+					导入SqlTableName <input property="editor" class="mini-textbox"
+						minWidth="80" inputStyle="text-align:right"/>
+				</div>
+				<div field="orginimportsqltablename" visible="false"></div>
+				<div field="dulicatestate" width="200" renderer="render">冲突情况</div>
+				<div field="dulicateoption" width="200" type="comboboxcolumn" autoShowPopup="true" >
+					冲突处理 
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="ignoreData" />
+	<input class="mini-hidden" id="dulpNameData" />
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		epoint.initPage('importtablebasicinfodatacheckaction');
+
+		var datagrid = mini.get("datagrid");
+
+		var ignoreData = mini.get("ignoreData").getValue();
+
+		var dulpNameData = mini.get("dulpNameData").getValue();
+
+		var tip = document.getElementById("tip");
+		
+		var dulitip = document.getElementById("dulitip");
+		
+		var dataImport = document.getElementById("dataImport");
+		
+		//忽略一个
+		function ignoreItem(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"ignoreChange","","忽略");
+		}
+
+		function ignoreChange(e) {
+			epoint.confirm("是否确认忽略?", '', function() {
+				ignoreData += datagrid.getSelected().oldsqltablename + ";";
+				datagrid.removeRow(datagrid.getSelected(), false);
+			});
+		}
+
+		//忽略全部
+		function ignoreAll() {
+			// 选中所有行,无需手动去勾选
+			datagrid.selectAll(true);
+			epoint
+					.confirm(
+							"是否确认全部忽略?",
+							'',
+							function() {
+								// 记录忽略的sqlTableName,；分隔
+								var selectedRows = datagrid.getSelecteds();
+								for (var i = 0; selectedRows != null
+										&& i < selectedRows.length; i++) {
+									ignoreData += selectedRows[i].oldsqltablename
+											+ ";";
+								}
+								datagrid.removeRows(datagrid.getSelecteds(),
+										false);
+							});
+		}
+
+		// 继续导入全部
+		function importAll() {
+			var isNeedConfirm = false;
+			// 数据库表名只能英文，数字加下划线
+			var pattern = /^[^\d_][a-zA-Z\d_]+$/;
+			epoint.confirm("是否确认继续导入?", '', function() {
+				for (var n = 0; n < datagrid.data.length; n++) {
+					// 检查下如果存在冲突，是否还有没有修改的数据
+					if ((datagrid.data[n].importtableid == "")
+							|| (datagrid.data[n].importtableid == null)) {
+						epoint.alert("存在未修改新importtableid数据，请先检查!");
+						return;
+					}
+					if ((datagrid.data[n].importsqltablename == "")
+							|| (datagrid.data[n].importsqltablename == null)) {
+						epoint.alert("存在未修改新importsqltablename数据，请先检查!");
+						return;
+					}
+					// 对修改的数据做下校验
+					if (!pattern.test(datagrid.data[n].importsqltablename)) {
+						epoint.alert("SQL表名只允许是英文、数字和下划线的组合,开头必须是英文字母! 问题表名：" + datagrid.data[n].importsqltablename);
+						return;
+					}
+					// 如果使用sqltablename进行覆盖需要加一个确认提示
+					if (datagrid.data[n].dulicateoption == "COVER_SQLTABLENAME") {
+						isNeedConfirm = true;
+					}
+				} 
+				if (epoint.validate()) {
+					if(isNeedConfirm){
+						epoint.confirm('当前冲突数据处理有选择使用sqltablename覆盖，使用该覆盖原表tableid会被修改成当前导入tableid，一些使用到该tableid的地方会受到影响。请确认是否要使用该覆盖形式。', '确认', function () {
+							epoint.execute('importAll', '', '',
+									msgCallBack);
+						}, function () {});
+					}else{
+						epoint.execute('importAll', '', '',
+								msgCallBack);
+					}
+				}
+			});
+		}
+
+
+		function UploadSuccess(args) {
+			epoint.hideLoading();
+			if (args.ret.extraDatas.msg) {
+				if (args.ret.extraDatas.msg == "导入成功！") {
+					tip.style.display = "block";
+					mini.get("btnImport").show();
+				} else {
+					var data = args.ret.extraDatas.msg;
+					var dulpList = JSON.parse(data);
+					if (dulpList != null && dulpList.length > 0) {
+						for (var i = 0; i < dulpList.length; i++) {
+							if (datagrid) {
+								var index = datagrid.data.length;
+								datagrid.addRow(dulpList[i], index);
+							}
+						}
+						onUpdate();
+						datagrid.show();
+						dulitip.style.display = "block";
+						tip.style.display = "none";
+						mini.get("btnImport").show();
+						mini.get("closeImport").hide();
+						mini.get("btnIgnore").show();
+					} else {
+						tip.style.display = "block";
+						dulitip.style.display = "none";
+						mini.get("btnImport").show();
+						mini.get("closeImport").hide();
+						mini.get("btnIgnore").show();
+					}
+				}
+				 mini.get("dataImport").clearFile();
+			     mini.get("dataImport").hide();
+			}
+		}
+		
+		function startUpload() {
+			epoint.showLoading();
+		}
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data){
+				if(data.success != "success"){
+					epoint.alert(data.msg);
+				}
+				else {
+					epoint.closeDialog(data.msg);
+				}
+			}
+		}
+
+		function onDrawCell(e){
+			var record = e.record,
+			field = e.field;
+			// 冲突的数据进行显示标红
+			if(field == 'importtableid' || field == 'tableid'){
+				if(record.importtableid === record.tableid){
+					e.cellCls = "red";
+				}
+			}
+			// 冲突的数据进行显示标红
+			if(field == 'sqltablename' || field == 'importsqltablename'){
+				if(record.sqltablename === record.importsqltablename){
+					e.cellCls = "red";
+				}
+			}
+			
+			// 冲突处理下拉选择, 下拉选择内容视冲突情况而定
+			if(field == 'dulicateoption'){
+				if(record.orginimporttableid == record.tableid && record.orginimportsqltablename == record.sqltablename){
+					e.cellHtml = '<input property="editor" class="mini-combobox" style="width: 99%" allowInput="false" data="dulicateoptions1" valueFromSelect="true" onitemclick="itemclick" onvalueChanged="updateRow"/>';
+				}
+				
+				if(record.orginimporttableid == record.tableid && record.orginimportsqltablename != record.sqltablename){
+					e.cellHtml = '<input property="editor" class="mini-combobox" style="width: 99%" allowInput="false" data="dulicateoptions2" valueFromSelect="true" onitemclick="itemclick" onvalueChanged="updateRow"/>';
+				}
+				
+				if(record.orginimporttableid != record.tableid && record.orginimportsqltablename == record.sqltablename){
+					e.cellHtml = '<input property="editor" class="mini-combobox" style="width: 99%" allowInput="false" data="dulicateoptions3" valueFromSelect="true"  onitemclick="itemclick" onvalueChanged="updateRow"/>';
+				}
+			}
+		}
+		
+		function onUpdate() {
+		    $(datagrid.el).find('.mini-grid-cell').each(function(i, el) {
+		        mini.parse(el);
+		    })
+		}
+		
+		var mySelect='';
+		
+		function itemclick(e){
+			
+			mySelect=e.item.id;
+			$curRow=$(e.sender.el).parents('.mini-grid-row');
+			$curRow.attr("data-select",mySelect);
+			
+			var curRow=$curRow[0].rowIndex-2;
+			
+			datagrid.beginEditCell(curRow, "importtableid");
+			
+		}
+		
+
+        function updateRow(e) {
+
+            var $cur = $(e.sender.el),
+                myfield,
+                myid,
+                curRow,
+                selected = datagrid.getSelected();
+
+            if($cur.hasClass('mini-combobox')) {
+
+                myfield = 'dulicateoption';
+
+            } 
+            datagrid.updateRow(selected, myfield, e.value);
+            
+            id = parseInt(selected._id) - 1;
+            
+    		$('.mini-grid-row').eq(id).find('.mini-grid-cell').each(function(i, el) {
+		        mini.parse(el);
+		    });
+    		
+    		var $curGridRow=$('.mini-grid-row').eq(id).find('.mini-combobox');
+			mini.getAndCreate($curGridRow[0]).setValue(e.value);
+
+        }
+		
+		function OnCellBeginEdit(e){
+
+			mySelect=$('.mini-grid-row.mini-grid-row-selected').attr('data-select');
+			
+			if(mySelect==='CUSTOM'){
+				e.cancel = false;
+			}else{
+				e.cancel = true;
+			}
+			
+		}
+		
+		function cellendedit(e){
+			
+			var curIndex=e.rowIndex;
+			
+			$('.mini-grid-row').eq(curIndex).find('.mini-grid-cell').each(function(i, el) {
+		        mini.parse(el);
+		    });
+			
+			var $curGridRow=$('.mini-grid-row').eq(curIndex).find('.mini-combobox');
+			mini.getAndCreate($curGridRow[0]).setValue('CUSTOM');
+			$('.mini-grid-row').eq(curIndex).attr("data-select",mySelect);
+			
+		}
+		
+		function render(e){
+			var html = "";
+			var record = e.record;
+			if(record.orginimporttableid == record.tableid && record.orginimportsqltablename == record.sqltablename){
+				html = "两者都冲突";
+			}
+			
+			if(record.orginimporttableid == record.tableid && record.orginimportsqltablename != record.sqltablename){
+				html = "tableid冲突";
+			}
+			
+			if(record.orginimporttableid != record.tableid && record.orginimportsqltablename == record.sqltablename){
+				html = "sqltablename冲突";
+			}
+			return html;
+		}
+		
+		/* 1.按照tableid覆盖（即如果tableid冲突，那么覆盖导入系统的sqltablename为导入数据的，并处理表结构）
+		2.按照sqltablename覆盖（即如果sqltablename冲突，那么覆盖导入系统的tableid为导入数据的，并处理表结构）
+		3.仅表结构处理（即无论tableid和sqltablename哪个冲突，或都是冲突的，只是去处理表结构）
+		4.直接忽略（什么都不处理，即跳过这个mis表）
+		5.直接新增（此时tableid如果冲突则会自动生成一个新的，如果sqltablename也冲突的话，必须修改sqltablename，否则物理表无法新增）
+		6.自行处理（也即页面上开放修改，可直接修改tableid和sqltablename） */
+		
+		// 冲突处理操作 两者都冲突
+		var dulicateoptions1 = [{
+			id : "STRUCT_ONLY",
+			text : '仅表结构处理'
+		}, {
+			id : "IGNORE",
+			text : '直接忽略'
+		}, {
+			id : "CUSTOM",
+			text : '自行处理'
+		}];
+		
+		// 冲突处理操作 tableid冲突
+		var dulicateoptions2 = [{
+			id : "COVER_TABLEID",
+			text : '按照tableid覆盖'
+		}, {
+			id : "STRUCT_ONLY",
+			text : '仅表结构处理'
+		}, {
+			id : "IGNORE",
+			text : '直接忽略'
+		}, {
+			id : "INSERT",
+			text : '直接新增'
+		}, {
+			id : "CUSTOM",
+			text : '自行处理'
+		}];
+		
+		// 冲突处理操作 sqltablename冲突
+		var dulicateoptions3 = [{
+			id : "COVER_SQLTABLENAME",
+			text : '按照sqltablename覆盖'
+		}, {
+			id : "STRUCT_ONLY",
+			text : '仅表结构处理'
+		}, {
+			id : "IGNORE",
+			text : '直接忽略'
+		}, {
+			id : "CUSTOM",
+			text : '自行处理'
+		}];
+	</script>
+</body>
+</html>

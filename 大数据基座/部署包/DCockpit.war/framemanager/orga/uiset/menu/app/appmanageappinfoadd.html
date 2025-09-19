@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增应用</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew"
+				iconCls="icon-save">保存并新建</a> <a class="mini-button" id="addClose"
+				onclick="saveAndClose" iconCls="icon-save">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog"
+				iconCls="icon-removecircle">取消添加</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<em> metro</em>背景色的配置，你可以直接在输入框中输入颜色的英文名称，比如yellow、green，也可以输入rgb值
+		</p>
+		<p>
+			<em> metro</em>跨行跨列属性不能超出屏幕允许范围，屏幕矩阵大小默认是4*4，如果要修改，可以到桌面配置下面进行。
+		</p>
+		<p>
+			<em> 消息数量地址配置：</em>你可以直接配置一条sql,也可以配置一个页面地址,这个地址用于返回消息数量,程序会自动去访问这个地址,同时会带上当前应用的rowguid这样一个参数给你使用
+		</p>
+		<p>
+			<em>应用打开宽高：</em>按桌面大小百分比设置应用打开大小，请填写0到100之间的值。
+		</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="基本信息"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="关联模块" starred="true">
+									<input id="modulename" bind="dataBean.modulename"
+										allowInput="false" class="mini-buttonedit" emptyText=""
+										required="true" requiredErrorText="请选择管理模块"
+										onbuttonclick="selectModule" selectOnFocus="true" />
+									<!-- 隐藏域 -->
+									<input bind="dataBean.moduleguid" id="moduleguid"
+										class="mini-hidden" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用名称" starred="true">
+									<input id="appname" bind="dataBean.appname"
+										class="mini-textbox" required="true"
+										requiredErrorText="应用名称不能为空" vtype="maxLength:50" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="上级应用">
+									<input id="parentappname"
+										bind="appmanageappinfoaddaction.parentName" allowInput="false"
+										class="mini-buttonedit" emptyText="" onbuttonclick="selectApp"
+										selectOnFocus="true" />
+									<!-- 隐藏域-->
+									<input bind="dataBean.parentguid" id="parentguid"
+										class="mini-hidden" />
+								</div>
+								<div role="control" label="所属分类">
+									<input id="categoryguid" bind="dataBean.categoryguid"
+										action="getYingYongList" allowInput="false" autoLoad="false"
+										class="mini-combobox" value="0" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用打开方式">
+									<input id="isblank" bind="dataBean.isblank"
+										data="[{id:false,text:'DIV窗口方式打开'},{id:true,text:'浏览器新窗口方式打开'}]"
+										allowInput="false" autoLoad="false" class="mini-combobox"
+										emptyText="请选择..." />
+								</div>
+								<div role="control" label="启用">
+									<div id="isdisable" bind="appmanageappinfoaddaction.appstatues"
+										checked="true" class="mini-checkbox"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用地址" starred="true">
+									<input id="url" bind="dataBean.url" class="mini-textbox" readonly="readonly"
+										required="true" requiredErrorText="应用地址不能为空" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="消息数量地址">
+									<input id="newmessageurl" bind="dataBean.newmessageurl"
+										class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用打开宽度">
+									<input id="width" bind="dataBean.width" class="mini-textbox"
+										value="0" vtype="range:0,100" />
+								</div>
+								<div role="control" label="应用打开高度">
+									<input id="heigth" bind="dataBean.heigth" class="mini-textbox"
+										value="0" vtype="range:0,100" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="MAC特有属性"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="应用简要">
+									<input id="description" bind="dataBean.description"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="显示图标">
+									<input id="imacIcon" bind="dataBean.desktopbigicon"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="openicon('imac');" selectOnFocus="true" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="METRO特有属性"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="跨行">
+									<input id="rowspan" bind="dataBean.rowspan"
+										class="mini-textbox" value="1" vtype="int" />
+								</div>
+								<div role="control" label="跨列">
+									<input id="colspan" bind="dataBean.colspan"
+										class="mini-textbox" value="1" vtype="int" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="背景色">
+									<input id="backgroundcolor" bind="dataBean.backgroundcolor"
+										class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="列表页面地址">
+									<input id="contenturl" bind="dataBean.contenturl"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="显示图标">
+									<input id="metroIcon" bind="dataBean.desktopsmallicon"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="openicon('metro');" selectOnFocus="true" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('appmanageappinfoaddaction', '', initPageBack);
+
+		function initPageBack(e) {
+			if (e && e.parentName) {
+				mini.get("parentappname").setValue(e.parentName);
+				mini.get("parentappname").setText(e.parentName);
+			}
+		}
+
+		function selectModule(e) {
+			epoint.openDialog('选择关联模块',
+					"framemanager/orga/uiset/menu/app/selectModuleGuid",
+					selectModuleOperJS, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		function selectModuleOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split(";");
+				if (s[0] != "") {
+					mini.get("modulename").setText(s[0]);
+					mini.get("modulename").setValue(s[0]);
+					mini.get("moduleguid").setValue(
+							s[1] == 'undefined' ? '' : s[1]);
+					epoint.execute('searchModule', '', initCallBack);
+				}
+			}
+		}
+
+		function initCallBack(data) {
+			if (data) {
+				var arr = data.split(";");
+				if (arr.length == 3) {
+					mini.get("isblank").setValue(arr[0] == "0" ? true : false);
+					mini.get("isdisable").setValue(arr[1]);
+					mini.get("url").setValue(arr[2]);
+				}
+			}
+		}
+
+		//选择应用
+		function selectApp(e) {
+			epoint.openDialog('选择应用', 'framemanager/orga/uiset/menu/app/selectapp?type=0',
+					function(param) {
+						s = param.split(";");
+						if (param != 'close' && s[1] != 'f9root') {
+							mini.get("parentappname").setText(s[0]);
+							mini.get("parentappname").setValue(s[0]);
+							mini.get("parentguid").setValue(s[1]);
+						} else if (s[1] == 'f9root') {
+							mini.get("parentappname").setText(s[0]);
+							mini.get("parentappname").setValue(s[0]);
+							mini.get("parentguid").setValue("");
+						}
+					}, {
+						width : 300,
+						height : 500
+					});
+		}
+
+		function openicon(type) {
+			var iconId = type + "Icon";
+			epoint.openDialog('选择图标',
+					'framemanager/orga/uiset/menu/app/selectappmanageicon?type=' + type,
+					function(param) {
+						if (param && param != 'close') {
+							mini.get(type + "Icon").setText(param);
+							mini.get(type + "Icon").setValue(param);
+						}
+					}, {
+						width : 1000,
+						height : 500
+					});
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				var categoryguid=mini.get('categoryguid').getValue();
+				epoint.execute('addNew','',[categoryguid] , newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', '', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				// 清空表单
+				epoint.clear('fui-accordions');
+				//赋值
+				mini.get("categoryguid").setValue(data.categoryguid);
+				mini.get("rowspan").setValue(1);
+				mini.get("colspan").setValue(1);
+			}
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

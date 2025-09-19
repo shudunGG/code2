@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>字段添加</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" onclick="add();">确定添加</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="当前数据表名称">
+						<input id="tablename" class="mini-outputtext" bind="tablename" />
+					</div>
+					<div role="control" label="SQL数据表名称">
+						<input id="sqltablename" class="mini-outputtext"
+							bind="sqltablename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="中文名称" starred="true">
+						<input id="fieldChineseName" class="mini-textbox"
+							bind="tableStruct.fieldchinesename" required="true"
+							requiredErrorText="中文名称不能为空!" />
+					</div>
+					<div role="control" label="英文名称" starred="true">
+						<input id="fieldName" class="mini-textbox"
+							bind="tableStruct.fieldname" required="true"
+							requiredErrorText="英文名称不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段类型">
+						<input id="fieldtypeMenu" autoLoad="false" action="getDataType"
+							textField="text" valueField="id" bind="tableStruct.fieldtype"
+							class="mini-combobox" value="nvarchar" onvaluechanged="changType" />
+					</div>
+					<div role="control" label="字段长度" id="fieldlengthDiv">
+						<input class="mini-textbox" id="fieldLength" bind="fieldlength"
+							onvalidation="onFieldLengthValidation" vtype="int" /> <input
+							id="fieldlengthOrg" class="mini-hidden" bind="fieldlengthOrg" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段显示类型" style="width:27%">
+						<input autoLoad="false" id="displayID" action="getDisplayType"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="请选择数据显示类型..." nullItemText="请选择数据显示类型..."
+							bind="tableStruct.fielddisplaytype" class="mini-combobox"
+							onvaluechanged="changeMacroString" />
+					</div>
+					<!-- div role="control" label="数据源代码" style="width:27%">
+						<input autoLoad="false" id="codesource" action="getCodesource"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="请选择" nullItemText="请选择" allowInput="true"
+							onvalidation="onComboValidation"
+							bind="tableStruct.datasourceCodename" class="mini-combobox" />
+					</div>
+					<div class="btn-group mr10" style="width:10%">
+			            <a class="mini-button" id="codeItem" onclick="addCodeItem();">代码项</a>
+		            </div-->
+				</div>
+				<div role="row" id="itemValue" >
+					<div role="control" label="子项值">
+						<input class="mini-textbox" id="addItem" width="200px" /> 
+						<a class="mini-button" id="addRecord" width="100px" onclick="addRecord" iconCls="icon-addcircle">新增子项</a> 
+						<a class="mini-button" id="delRecord" width="100px" onclick="delRecord" iconCls="icon-minuscircle">删除子项</a>
+						<select id="items" multiple="multiple" style="width: 100%; height: 100%"></select>
+					</div>
+				</div>
+				<div role="row" id="calculatePanel" style="display: none">
+					<div role="control" label="计算公式">
+						<input class="mini-textbox" bind="calculateValue" />
+					</div>
+				</div>
+				<div role="row" id="macroPanel" style="display: none">
+					<div role="control" label="宏控件显示">
+						<div id="macroDateDisplay" class="mini-combobox"
+							bind="macroDateDisplay" action="getMacroDateDisplayList"
+							textField="text" valueField="id"
+							style="display: none; width: 250px"></div>
+						<div id="macroStringDisplay" class="mini-combobox"
+							bind="macroStringDisplay" action="getMacroStringDisplayList"
+							textField="text" valueField="id"
+							style="display: none; width: 250px"
+							onvaluechanged="changeMacroString"></div>
+					</div>
+					<div role="control" label="计算时">
+						<div id="computerTime" class="mini-radiobuttonlist"
+							bind="rdoCaculateTimeDate" action="getTypeList" textField="text"
+							valueField="id"></div>
+					</div>
+				</div>
+				<div role="row" id="flowNumPanel" style="display: none">
+					<div role="control" label="流水号前缀">
+						<input class="mini-textbox" bind="flowNumPreffix" />
+					</div>
+					<div role="control" label="流水号位数">
+						<input class="mini-textbox" bind="flowNumLength" />
+					</div>
+				</div>
+				<div role="row" id="imagePanel" style="display: none">
+					<div role="control" label="图片上传">
+						<div id="file" class="mini-webuploader"
+							action="formtablestructaddaction.getFileUploadModel"
+							fileNumLimit="1" limitType="jpg,png,jpeg" fileSingleSizeLimit="5120"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="在列表中显示">
+						<div id="toDispInGrid" bind="tableStruct.todispingrid"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+					<div role="control" label="是否查询条件">
+						<div id="isQueryCondition" bind="tableStruct.isquerycondition"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序字段">
+						<div id="isOrderField" bind="tableStruct.isorderfield"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+					<div role="control" label="排序方向">
+						<div bind="tableStruct.orderdirection" action="getDirectionList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="控件显示宽度">
+						<div bind="controlwidth" action="getWidthList" textField="text"
+							valueField="id" class="mini-combobox"></div>
+					</div>
+					<div role="control" label="必填项">
+						<div id="mustFill" bind="tableStruct.mustfill"
+							action="getBooleanList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Grid列显示宽度">
+						<input class="mini-textbox" bind="tableStruct.gridwidth" />
+					</div>
+					<div role="control" label="Grid中允许折行">
+						<div bind="tableStruct.gridmultirows" action="getBooleanList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="在页面中显示">
+						<div bind="dispInAdd" action="getBooleanList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="epimagefileguid" bind="formtablestructaddaction.epimageguid"/>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('formtablestructaddaction');
+
+		var typeSelectItems = mini.get("fieldtypeMenu");
+
+		function add() {
+			//handleFileGuid();
+			var items="";
+			var selOpt = $("#items option");
+			for(var n=0; selOpt!=null && selOpt.length>0 && n<selOpt.length; n++){
+				items += selOpt[n].innerHTML+";";
+			}
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', [ 2,items ], closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag && (data.flag == "1")) {
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				} else {
+					epoint.alert(data.msg, '', null, 'info');
+				}
+			}
+		}
+
+		function changType(e) {
+			mini.get("displayID").setValue("");
+			var fieldtypeMenu = mini.get("fieldtypeMenu").getValue();
+			if (fieldtypeMenu != null && fieldtypeMenu != "") {
+				epoint.execute("valueChange", 'fui-form', [ fieldtypeMenu ],
+						tcallback);
+			}
+			changeMacroString();
+		}
+
+		function tcallback(data) {
+			if (data) {
+				mini.get("displayID").setData(data);
+			}
+		}
+
+		function onFieldLengthValidation(e) {
+			if (e.value) {
+				var orgValue = mini.get("fieldlengthOrg").getValue();
+				if (parseInt(e.value) < parseInt(orgValue)) {
+					e.isValid = false;
+					e.errorText = "字段长度不允许小于原有值！";
+				}
+			}
+		}
+
+		function changeMacroString() {
+			var fieldtypeMenu = mini.get("fieldtypeMenu").getValue();
+			var displayID = mini.get("displayID").getValue();
+			var macroStringDisplay = mini.get("macroStringDisplay").getValue();
+			if (fieldtypeMenu != null && fieldtypeMenu != ""
+					&& displayID != null && displayID != "") {
+				if (fieldtypeMenu == "nvarchar" && displayID == "Macro") {
+					document.getElementById("macroPanel").style.display = 'block';
+					document.getElementById("macroStringDisplay").style.display = 'block';
+
+					if (macroStringDisplay != null
+							&& macroStringDisplay == "EPOINT_SYS_FlowNum") {
+						document.getElementById("flowNumPanel").style.display = 'block';
+					}
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				} else if (fieldtypeMenu == "Numeric"
+						&& displayID == "CalculateControl") {
+					document.getElementById("calculatePanel").style.display = 'block';
+					document.getElementById("macroPanel").style.display = 'none';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				} else if (fieldtypeMenu == "DateTime" && displayID == "Macro") {
+					document.getElementById("macroPanel").style.display = 'block';
+					document.getElementById("macroDateDisplay").style.display = 'block';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				} else if(fieldtypeMenu == "Image" && displayID == "epimage"){
+					document.getElementById("macroPanel").style.display = 'none';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';//'block'
+				} else{
+					document.getElementById("macroPanel").style.display = 'none';
+					document.getElementById("macroStringDisplay").style.display = 'none';
+					document.getElementById("flowNumPanel").style.display = 'none';
+					document.getElementById("calculatePanel").style.display = 'none';
+					document.getElementById("macroDateDisplay").style.display = 'none';
+					document.getElementById("imagePanel").style.display = 'none';
+				}
+			} else {
+				document.getElementById("macroPanel").style.display = 'none';
+				document.getElementById("macroStringDisplay").style.display = 'none';
+				document.getElementById("flowNumPanel").style.display = 'none';
+				document.getElementById("calculatePanel").style.display = 'none';
+				document.getElementById("macroDateDisplay").style.display = 'none';
+				document.getElementById("imagePanel").style.display = 'none';
+			}
+		}
+
+		function onComboValidation(e) {
+			if (e.value) {
+				var items = this.findItems(e.value);
+				if (!items || items.length == 0) {
+					e.isValid = false;
+					e.errorText = "输入值不在下拉数据中";
+				}
+			}
+		}
+
+		function handleFileGuid() {
+			var imageupload = mini.get("file");//获取图片上传控件
+			if (imageupload.length) {
+				var lia = imageupload.find('ul>li a');
+				var imageurl = lia.attr('href');
+				if (imageurl) {
+					mini.get("epimagefileguid").setValue(imageurl);
+				}
+			}
+		};
+		
+		function addRecord() {
+			var addItem = mini.get("addItem").getValue();
+			if(addItem){
+				var selObj = $("#items");
+				selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+			}
+			mini.get("addItem").setValue("");
+		}
+
+		function delRecord() {
+			var selOpt = $("#items option:selected");
+			selOpt.remove();
+			mini.get("addItem").setValue("");
+		}
+		
+		/**数据源相关暂注释
+		function addCodeItem(){
+    		epoint.openDialog("代码项","framemanager/sform/formlistmanage/codemainlist", addCallBack, {
+    			'width':1000,
+    			'height':600
+    		});
+    	}
+		
+		function addCallBack(data){
+			if(data){
+				epoint.refresh('codesource');
+			}
+		}*/
+
+		//]]>
+	</script>
+</body>
+</html>

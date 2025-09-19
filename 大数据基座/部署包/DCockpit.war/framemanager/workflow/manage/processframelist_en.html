@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Process management</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="process category">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" style="margin-top: 5px;"
+					onclick="openType()">process category</a>
+			</div>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%"
+				action="getTreeModal"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+					onclick="saveProcess()">new process</a> <a class="mini-button"
+					iconCls="icon-removecircle"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {epoint.confirm('Sure to delete?','',deleteSelected);}">delete selected</a>
+				<a class="mini-button" iconCls="icon-copy"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to duplicate record!', '', null, 'warning');} else {copyWorkflow();}">processcopy</a>
+				<a class="mini-button" iconCls="icon-download"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a want to export record!', '', null, 'warning');} else {exportWorkflow();}">exportXML</a>
+				<div id="dataImport" class="mini-webuploader" pickerText="The importXML"
+					action="processframelistaction.getDataImportModel"
+					showDefaultUI="false" fileSingleSizeLimit="5120" limitType="text,xml" dataImport="true" 
+					onuploadfinished="searchData" auto="true" onuploadaccept="UploadSuccess"></div>
+			</div>
+			<form id="download_form" method="post" enctype="multipart/form-data"></form>
+			<div class="some-wrap r" title="Please input the target database connection string(Input format forurlThe blank spaceusernameThe blank spacepassword)">
+				<input class="mini-textbox" styleClass="l input-txt" id="connectInput" style="width:300px;" bind="dsGuid" 
+				    onfocus="tipLeave();" onblur="tipRemain();" />
+				<a class="mini-button" iconCls="icon-download"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to duplicate record!', '', null, 'warning');} else {copyWorkflowTo();}">copied to the specified base</a>
+			</div>
+		</div>
+
+		<div class="fui-condition">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="process name" starred="false">
+							<input bind="searchString" class="mini-textbox" />
+						</div>
+					</div>
+					<!-- Add a hidden field to the tree and the linkage of the table -->
+					<input bind="leftNumber" id="leftNumber" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="processGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDefaultModel" showPager="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" headerAlign="center" width="50">order</div>
+					<div field="processName" headerAlign="center" align="left" width="100%">name</div>
+					<div field="processGuid" headerAlign="center" align="left" width="300"
+						renderer="copy_btn">processGuid</div>
+					<div field="orderNum" width="80" headerAlign="center"
+						align="center" allowSort="true">roworderNo.</div>
+					<div field="createDate" width="50" headerAlign="center"
+						align="center" renderer="changeImage">state</div>
+					<div width="50" headerAlign="center" align="center" renderer="edit">
+						edit</div>
+					<div width="50" headerAlign="center" align="center"
+						renderer="version">version</div>
+					<div headerAlign="center" align="center" width="80"
+						renderer="refresh">refresh the cache</div>
+					<div headerAlign="center" align="center" width="50"
+						renderer="preview">preview</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	
+	<input class="mini-hidden" id="dsGuid" bind="dsGuid"/>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("processframelistaction");
+
+		//The treejsobject
+		var tree = mini.get("tree");
+		// Click on the left side of theThe treeRefresh the form on the right side
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// To the leftThe treeClick on the node id In a hidden field
+			// At the second request, the form is sent automatically bring conditions the contents of the area
+			mini.get('leftNumber').setValue(id);
+			//Refresh the table
+			searchData();
+		});
+
+		function exportWorkflow() {
+			epoint.execute('check', 'datagrid', exportafter);
+		}
+
+		function exportafter(data) {
+			if (data.guid) {
+				var form = document.getElementById('download_form');
+				form.action = "../../../" + epoint.dealRestfulUrl("processframelistaction/exportWorkflow?exportguid="
+						+ data.guid);
+				form.submit();
+			} else if (data.msg) {
+				epoint.alert(data.msg, '', '', 'warning');
+			}
+		}
+
+		//The process to copy
+		function copyWorkflow() {
+			epoint.execute('copyWorkflow', 'datagrid', msgCallBack);
+		}
+
+		function copyWorkflowTo() {
+			var ds = mini.get('connectInput').getValue();
+			epoint.execute('copyWorkflowTo', '', [ ds ], msgCallBack);
+		}
+
+		function saveProcess() {
+			var classid = mini.get('leftNumber').getValue();
+			epoint.openDialog('new process',
+					'framemanager/workflow/manage/processbaseinfoadd?simple=0&classId='
+							+ classid, searchKeepPage, {
+						'width' : 1000
+					});
+		}
+
+		// delete
+		function deleteSelected() {
+			epoint.execute('deleteWorkflow', 'datagrid', msgCallBack);
+		}
+
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alert(msg, '', searchKeepPage(), 'success');
+				}else{
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function changeImage(e) {
+			if (e.row.status == 10) {
+				return epoint.renderCell(e, "action-icon icon-start",
+						"changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause",
+						"changeStatus");
+			}
+
+		}
+
+		function changeStatus(e) {
+			epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+		}
+
+		function openType() {
+			epoint
+					.openDialog(
+							'Process category',
+							"framemanager/workflow/manage/processcategorylist",
+							updateTableTree, {
+								'width' : 1000
+							});
+		}
+
+		function createEditDialog(data) {
+			epoint.openDialog('editconfiguration',
+					'framemanager/workflow/manage/processbaseinfoedit?processGuid='
+							+ data + '&simple=0', searchKeepPage, {
+						'width' : 1000
+					});
+		}
+
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"createEditDialog");
+		}
+
+		function version(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"OpenProcessVersion");
+		}
+
+		function refresh(e) {
+			return epoint.renderCell(e, "action-icon icon-refresh",
+					"processrefresh");
+		}
+
+		function processrefresh(e) {
+			epoint.execute('refreshCache', 'datagrid', [ e ], function(a) {
+				epoint.alert('Refresh the success!', '', null, 'success');
+			});
+		}
+		
+		function preview(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openpreview");
+		}
+
+		function openpreview(data) {
+			epoint.openTopDialog('process preview',
+					'frame/pages/epointworkflow/client/processcreateinstance_en?ProcessGuid='
+							+ data);
+		}
+
+		function OpenProcessVersion(data) {
+			epoint.openTopDialog('processversionmanagement',
+					'framemanager/workflow/manage/processversionlist?processGuid='
+							+ data);
+		}
+
+		function checkRefreshTree(result) {
+			if (result) {
+				updateTableTree();
+			}
+		}
+
+		function openUrl(handleUrl) {
+			epoint.openDialog('to-doprocessTo deal with', handleUrl, searchKeepPage, {
+				'width' : 1000
+			});
+		}
+
+		// Search for tables
+		function searchData() {
+			mini.get('dataImport').clearFile();
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		function searchKeepPage() {
+			mini.get('dataImport').clearFile();
+			epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+		}
+		// Search for tables
+		function updateTableTree() {
+			epoint.refresh([ 'tree', 'fui-form' ],'',true);
+		}
+
+		function UploadSuccess(args) {
+			if(args.ret.extraDatas.msg){
+				epoint.alert(args.ret.extraDatas.msg, '', null, 'warning');
+			}else{
+				epoint.alert('The importsuccessful', '', null, 'success');
+			}
+		}
+		
+		function tipLeave(){
+			var conInput = mini.get("connectInput").getValue();
+			var dsGuid = mini.get("dsGuid").getValue();
+			if(conInput == dsGuid){
+				mini.get("connectInput").setValue("");
+			}	
+		}
+		
+		function tipRemain(){
+			var conInput = mini.get("connectInput").getValue();
+			var dsGuid = mini.get("dsGuid").getValue();
+			if(conInput == ""){
+				mini.get("connectInput").setValue(dsGuid);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

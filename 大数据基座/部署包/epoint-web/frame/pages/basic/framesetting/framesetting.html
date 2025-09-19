@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>框架系统参数配置</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './framesetting.min.css' ]);
+</script>
+<style>
+.form-label {
+	text-align: left;
+	padding-left: 10px;
+}
+
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<!-- <span class="mini-button" id="save">保存配置</span> -->
+		<div class="tabs-header clearfix l" id="tabs-header"
+			data-group="config-tab">
+			<div class="tab-item l" data-target="base">
+				<span class="modicon-8"></span>基本配置
+			</div>
+			<div class="tab-item l" data-target="attach">
+				<span class="modicon-96"></span>附件配置
+			</div>
+			<div class="tab-item l" data-target="data">
+				<span class="modicon-92"></span>DAO配置
+			</div>
+			<div class="tab-item l" data-target="sync">
+				<span class="modicon-88"></span>同步配置
+			</div>
+			<div class="tab-item l" data-target="workflow">
+				<span class="modicon-100"></span>工作流配置
+			</div>
+		</div>
+		<a role="helper" class="mr10">注意事项</a>
+
+		<div class="button-group r">
+			<input id="search-input" class="mini-autocomplete" textField="name"
+				valueField="uid" pinyinField="ctrId" value="" showNullItem="false"
+				remote="false" allowInput="true" emptyText="搜索" loadingText="" />
+		</div>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			此页面整理了新老版本的一些原来在系统参数或者epointframe.properties中配置的参数<br>
+			可以更方便清晰得使用框架的各个功能,如遇新老参数不明确,可以下载 <a href="framesetting_document.xlsx">新老参数对照表</a>
+		</p>
+	</div>
+	<form id="download_form" method="post" enctype="multipart/form-data">
+	</form>
+	<div class="fui-content">
+		<input type="text" name="username" class="hidden-accessible" /> <input
+			type="password" class="hidden-accessible" />
+		<div class="tabs-wrap" id="tabs-wrap" data-group="config-tab">
+			<div class="tab-body clearfix" data-id="base">
+				<div class="category-nav"></div>
+				<div class="config-content">
+					<div class="fui-block">
+						<div class="fui-block-hd">组织架构</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="独立单位管控">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用下层权限管理"
+												bind="dataBean.usermanage_baseou_operatechild"
+												id="usermanage_baseou_operatechild" style="margin-right: 8px"/><span
+												class="text-assist">上层独立单位是否可管理下层,关闭后独立单位管理员无法操作下级子独立单位</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="删除权限控制">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.usermanage_admindelright_enable"
+												id="usermanage_admindelright_enable" style="margin-right: 8px"/><span
+												class="text-assist">启用后用户列表只有adminGroup或者ouAdminGroup角色才能看到删除按钮，三员管理模式下判断是否是配置管理员</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="多账号模式">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_multiaccountmode_enable"
+												id="usermanage_multiaccountmode_enable" style="margin-right: 8px"/><span
+												class="text-assist">启用后用户列表页面会增加一栏关联账号功能,可以把选择的账号添加到另外的部门中去</span>
+										</div>
+									</div>
+									<!-- <div role="row">
+								<div role="control" label=".netsoa同步兼职部门">
+									<input class="mini-checkbox" width="auto" text="启用"
+										bind="dataBean.soa_issyncsecondou" id="soa_issyncsecondou" />
+								</div>
+							</div>
+							<div role="row" class="bottom-space">
+								<div role="control" label=".netsoa同步子部门">
+									<input class="mini-checkbox" width="auto" text="启用"
+										bind="dataBean.soa_issyncchildou" id="soa_issyncchildou" />
+								</div>
+							</div> -->
+									<div role="row">
+										<div role="control" label="部门树根名称">
+											<input class="mini-textbox"
+												bind="dataBean.usermanage_ou_tree_rootname"
+												id="usermanage_ou_tree_rootname" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="人员树根名称">
+											<input class="mini-textbox"
+												bind="dataBean.usermanage_user_tree_rootname"
+												id="usermanage_user_tree_rootname" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="部门树显示简称">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_tree_ouname_showshot"
+												id="usermanage_tree_ouname_showshot" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="人员树本部门查询">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.tree_usersearch_ownou"
+												id="tree_usersearch_ownou" style="margin-right: 8px"/> <span class="text-assist">控制本部门选人树只能查询到本部门的人</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="人员树区分重名">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.tree_username_distinguish"
+												id="tree_username_distinguish" style="margin-right: 8px"/> <span class="text-assist">开启后人员树中同名人员会拼接上loginid作为区分</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="独立部门模块树">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="独立展示"
+												bind="dataBean.usermanage_tree_module4oushowwithparent"
+												id="usermanage_tree_module4oushowwithparent" style="margin-right: 8px"/><span
+												class="text-assist">开启后展示上级下放的模块/自建的模块/这些模块的所有父模块,否则全部展示</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="部门名称显示全称">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_tree_ouname_fullname"
+												id="usermanage_tree_ouname_fullname" /> <span class="text-assist">控制部门名称显示为全称（包含上级部门名称）</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="用户|部门排序">
+											<input class="mini-radiobuttonlist"
+												bind="dataBean.usermanage_ouuser_ordertype"
+												id="usermanage_ouuser_ordertype"
+												data="[{id:'asc',text:'升序'},{id:'desc',text:'降序'}]" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="部门内排序">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_user_ordertype_orderinou"
+												id="usermanage_user_ordertype_orderinou" style="margin-right: 8px"/><span
+												class="text-assist">启用后用户列表排序变成部门内排序(即先根据部门排序号,部门内再按照用户排序号)</span>
+										</div>
+									</div>
+																		<div role="row">
+										<div role="control" label="用户自定义排序">
+											<input class="mini-combobox" width="auto" 
+												bind="dataBean.frameuser_comparator" action="getUserComparators"
+												id="frameuser_comparator" /><span
+												style="margin-left: 8px" class="text-assist">自定义：实现Comparator接口并且添加@CustomOrgaComparator注解，选择自定义排序后用户部门内排序不再起作用</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="部门自定义排序">
+											<input class="mini-combobox" width="auto"
+												bind="dataBean.frameou_comparator" action="getOuComparators"
+												id="frameou_comparator" /><span
+												style="margin-left: 8px" class="text-assist">自定义：实现Comparator接口并且添加@CustomOrgaComparator注解</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="启用部门编码">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_ou_codefull"
+												id="usermanage_ou_codefull" style="margin-right: 8px"/><span class="text-assist">启用后懒加载的部门树可在首次加载时，根据选中的子部门反向渲染其父部门选中</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="用户登录大小写敏感">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_user_loginid_casesensitive"
+												id="usermanage_user_loginid_casesensitive" style="margin-right: 8px"/><span
+												class="text-assist">启用后用户登录系统时,输入的用户名大小写要完全正确,否则不能登录</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="头像压缩分辨率">
+											<input class="mini-textbox narrow"
+												bind="dataBean.usermanage_user_image_compressscale"
+												id="usermanage_user_image_compressscale"
+												onvalidation="onCompressScaleValidation" /><span
+												class="text-assist">压缩图片的分辨率,配置形式:宽度*高度,例250*400</span>
+										</div>
+									</div>
+									<div role="row" class="bottom-space">
+										<div role="control" label="头像压缩大小">
+											<input class="mini-textbox narrow" value="50" vtype="int"
+												bind="dataBean.usermanage_user_image_compresssplit"
+												id="usermanage_user_image_compresssplit" />kb <br> <span
+												class="text-assist">超过大小的头像将被压缩</span>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">待办事宜</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="不发消息的标题">
+											<input class="mini-textarea"
+												bind="dataBean.waithandle_ignore_title"
+												id="waithandle_ignore_title"/> <span class="text-assist">待办中需要跳过发统一消息的标题
+												,默认有标题包含'未提交'的,不发送统一消息,多个以;间隔</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="待办代理人">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.waithandle_commission_enable"
+												id="waithandle_commission_enable" style="margin-right: 8px"/><span
+												class="text-assist">是否启用待办流程代理人，启用后待办和消息会同时发送至代理人</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="代理人阅读">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.waithandle_commission_showread"
+												id="waithandle_commission_showread" style="margin-right: 8px"/><span
+												class="text-assist">阅读类的消息提醒是否需要发送给代理人</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="待办不过滤部门">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.waithandle_ignore_filter_ouguid"
+												id="waithandle_ignore_filter_ouguid" style="margin-right: 8px"/><span
+												class="text-assist">待办查询过滤ouguid,如老版本数据没有ouguid,可以启用此项</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="已办不过滤操作人">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.waithandle_ignore_filter_optguid"
+												id="waithandle_ignore_filter_optguid" style="margin-right: 8px"/><span
+												class="text-assist">已办查询过滤操作人guid,如老版本数据没有optguid,可以启用此项</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="自定义更新">
+											<input class="mini-textbox"
+												bind="dataBean.waithandle_updatehandle_outclass"
+												id="waithandle_updatehandle_outclass" /><span
+												class="text-assist">待办转已办后执行的外部方法，此方法必须包含且只能有一个参数messageItemGuid，配置格式==>全类名:方法名</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="历史库转移频率">
+											<input class="mini-textbox narrow"
+												bind="dataBean.workflow_historymove_count"
+												id="workflow_historymove_count" vtype="int" />条/次
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">消息中心</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="发送模式">
+											<input class="mini-radiobuttonlist"
+												action="getMessagesRemindSendMode"
+												bind="dataBean.message_remind_sendmode"
+												id="message_remind_sendmode" /><span class="text-assist">消息中心默认线程池发送,如发送压力大可切换mq模式,mq模式下请确保appcontext.xml中打开了mq的注释和appcontext-rabbigmq.xml配置正确</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="消息提示音">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用" bind="dataBean.message_sound"
+												id="message_sound" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="本地应用信息">
+											<input class="mini-hidden" bind="dataBean.soa_local_appkey"
+												id="soa_local_appkey" /> <span class="text-assist">用于获取本机应用地址头，拼接消息地址<br>
+												<a id="soaconfig" href="javascript:void(0);"
+												onclick="soaConfig()" width="auto"></a>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">日志管理</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="访问日志">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.log_visitlog"
+												id="log_visitlog" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="数据库日志">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.log_databaselog"
+												id="log_databaselog" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="排除按钮日志">
+											<input class="mini-textarea"
+												bind="dataBean.log_buttion_exclude" id="log_buttion_exclude" /><span
+												class="text-assist">配置不需要记录在button.log日志文件中的action名字,多个以;分割</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="报错详情显示">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.ui_errormsg_show"
+												id="ui_errormsg_show" style="margin-right: 8px"/><span class="text-assist">开启后如果遇到后台报错,会显示详细堆栈,否则前端只提示'系统出现故障,请联系管理员'</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="fui-block">
+						<div class="fui-block-hd">界面管理</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="顶级模块排序">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.ui_customsort_enable"
+												id="ui_customsort_enable" style="margin-right: 8px"/><span class="text-assist">开启后长按屏幕顶部的模块可以自由拖动</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="E讯聊天">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.ui_exun_enable"
+												id="ui_exun_enable" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="全文检索路径">
+											<input class="mini-textbox" bind="dataBean.ui_fullsearch_url"
+												id="ui_fullsearch_url" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="全文检索应用路径">
+											<input class="mini-textbox"
+												bind="dataBean.ui_fullsearch_ftsurl"
+												id="ui_fullsearch_ftsurl" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="全文检索目录分类">
+											<input class="mini-textarea"
+												bind="dataBean.ui_fullsearch_systemtype"
+												id="ui_fullsearch_systemtype" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="默认主题地址">
+											<input class="mini-textbox" bind="dataBean.ui_framepage_url"
+												id="ui_framepage_url" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="系统名称">
+											<input class="mini-textbox" bind="dataBean.ui_system_name"
+												id="ui_system_name" maxLength="200" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="登陆页logo图片">
+											<input class="mini-textbox" bind="dataBean.ui_login_logo"
+												id="ui_login_logo" /><span class="text-assist">更换登录页logo图片,请使用本地图片</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="任务栏标签展示方式">
+											<input class="mini-radiobuttonlist"
+												action="getLabelShowModel" bind="dataBean.taskbar_mode"
+												id="taskbar_mode" /><span class="text-assist">隐藏：不显示标签，显示：显示多标签</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="任务栏显示位置">
+											<input class="mini-radiobuttonlist"
+												action="getTaskBarPositionModel"
+												bind="dataBean.taskbar_position" id="taskbar_position" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="标签激活刷新">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.ui_tab_refresh_onactive"
+												id="ui_tab_refresh_onactive" style="margin-right: 8px"/><span class="text-assist">
+												激活标签时是否自动刷新标签页面</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">常用控件</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="表格分页大小">
+											<input class="mini-combobox narrow" action="getGridPageSize"
+												bind="dataBean.ui_grid_pagesize" vtype="int"
+												id="ui_grid_pagesize" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="表格保留勾选">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.grid_allow_unselect" id="grid_allow_unselect" style="margin-right: 8px"/>
+											<span class="text-assist">表格点击某行后，其他行的选中状态任然保留</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="表格自动撑满">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.grid_adjust_pagesize"
+												id="grid_adjust_pagesize" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="弹出框tip模式">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用" bind="dataBean.lert_to_tips"
+												id="lert_to_tips" style="margin-right: 8px"/><span class="text-assist">开启后所有info或者success类型并且没加回调的epoint.alert弹出框提醒都会变成轻量的tips模式,提醒后自动消失</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="编辑器类型">
+											<input class="mini-radiobuttonlist" action="getEditorModel"
+												bind="dataBean.editor_model" id="editor_model" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">工作日</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="工作日工时">
+											<input class="mini-textbox"
+												bind="dataBean.workingday_working_time"
+												id="workingday_working_time"
+												onvalidation="onWorkingTimeValidation" /> <span
+												class="text-assist">工作日工时是初始化工作日时使用。格式：10:00;12:00;14:30;18:40</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="工作日同步接口">
+											<input class="mini-textbox"
+												bind="dataBean.workingday_syncoa_url"
+												id="workingday_syncoa_url" /><span class="text-assist">例http://oa2.epoint.com.cn/UniformDataSource/WorkingDay_Year</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<span class="text-assist">注:同步参数配置后可至<a
+												href="javascript:void(0);" onclick="openWorkingDay()"
+												width="auto">工作日</a>页面同步OA工作日
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="AppKey">
+											<input class="mini-textbox"
+												bind="dataBean.workingday_syncoa_appkey"
+												id="workingday_syncoa_appkey" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="AppSecret">
+											<input class="mini-textbox"
+												bind="dataBean.workingday_syncoa_appsecret"
+												id="workingday_syncoa_appsecret" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="Token超时时间">
+											<input class="mini-textbox narrow"
+												bind="dataBean.workingday_syncoa_timeout"
+												id="workingday_syncoa_timeout" vtype="int" />秒
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">报表</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="Smartbi登陆地址">
+											<input class="mini-textbox" bind="dataBean.smartbi_loginurl"
+												id="smartbi_loginurl" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="Smartbi管理密码">
+											<input class="mini-textbox" bind="dataBean.smartbi_adminpwd"
+												id="smartbi_adminpwd" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">帮助中心</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="反馈流程名称">
+											<input class="mini-textbox"
+												bind="dataBean.helpcenter_feedback_process"
+												id="helpcenter_feedback_process" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">MIS平台</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="显示默认字段">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.mis_defaultfield_show"
+												id="mis_defaultfield_show" style="margin-right: 8px"/><span class="text-assist">MIS新增表的时候是否显示默认字段</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">在线表单</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="自动保存时间">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.sform_autosave_time" id="sform_autosave_time" />毫秒
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">租户管理</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="租户管理员guid">
+											<input class="mini-textbox"
+												bind="dataBean.lessee_administrator_userguid"
+												id="lessee_administrator_userguid" /><span class="text-assist">租户库中管理员的userguid，一般情况下这边无需配置
+											</span><span class="text-assist">如果已使用租户库中userguid为框架默认userguid，则需要配置该字段为对应guid。
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-body clearfix" data-id="attach">
+				<div class="category-nav"></div>
+				<div class="config-content">
+					<div class="fui-block">
+						<div class="fui-block-hd">附件上传</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="上传类型限制">
+											<input class="mini-textarea" bind="dataBean.file_limit_type"
+												id="file_limit_type" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="上传总大小限制">
+											<input class="mini-textbox narrow"
+												bind="dataBean.file_limit_size" id="file_limit_size"
+												vtype="int" /><span>M</span></br> <span class="text-assist">验证文件总大小是否超出限制,超出则不允许加入队列，控件没有配置fileSizeLimit属性时生效</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="上传单个大小限制">
+											<input class="mini-textbox narrow"
+												bind="dataBean.file_single_limit_size"
+												id="file_single_limit_size" vtype="int" /><span>M</span></br> <span
+												class="text-assist">验证单个文件大小是否超出限制,超出则不允许加入队列，控件没有配置fileSingleSizeLimit属性时生效</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="文件名长度限制">
+											<input class="mini-textbox narrow"
+												bind="dataBean.file_limit_namelength"
+												id="file_limit_namelength" vtype="int" /><span>字符</span></br> <span
+												class="text-assist">允许上传的文件名的最大长度,默认255,超过后将会被自动截断,避免linux下落地时文件名过长的问题。</span>
+										</div>
+									</div>
+
+									<div role="row">
+										<div role="control" label="大小附件界定">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.max_small_attachsize"
+												id="max_small_attachsize" />M <span class="text-assist">当没有配置任何附件数据源时,系统上传的附件会进行大小判断;小附件存储到当前数据库,大附件存储到系统部署目录;大小附件的分割值默认为4M,取的就是此参数值。</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="旋转图片还原角度">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.image_orientation_change_enable"
+												id="image_orientation_change_enable" /><span
+												class="text-assist">开启此参数后,对于上传的文件如果是图片类型,会调用相应工具方法进行角度旋转,以解决移动设备拍照时的横向翻转,导致上传的照片不正的问题。</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="编辑器即时上传">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.editor_upload_enable"
+												id="editor_upload_enable" style="margin-right: 8px"/><span class="text-assist">开启后编辑器上传的附件将会存入框架附件数据源,否则默认存入编辑器的临时目录</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="秒传">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.attach_second_pass"
+												id="attach_second_pass" style="margin-right: 8px"/><span class="text-assist">开启后当上传与附件库文件有相同MD5值的文件时,只会存一份info信息,物理附件不会重复存储</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="NAS切换目录">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.attach_change_dir"
+												id="attach_change_dir" style="margin-right: 8px"/><span class="text-assist">如果当天存储的文件数量大于10000,切换目录(用于nas实现的附件数据源)</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">附件下载</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="附件下载模式">
+											<input class="mini-radiobuttonlist"
+												action="getAttachDownMode" bind="dataBean.attach_down_mode"
+												id="attach_down_mode" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="特殊字符替换">
+											<input class="mini-textbox"
+												bind="dataBean.attach_specialchar" id="attach_specialchar" /><span
+												class="text-assist">下载时文件名需要替换的特殊字符,多个;间隔(例如%;&等)</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="文档不可编辑">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.download_forbid_edit"
+												id="download_forbid_edit" style="margin-right: 8px"/><span class="text-assist">下载后的文档不可编辑</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="client强制校验">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.attach_search_clientrequired"
+												id="attach_search_clientrequired" style="margin-right: 8px"/><span
+												class="text-assist">通过框架api查询附件列表时,是否强制要求传clientGuid
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">附件水印</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="文档下载水印">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.download_watermark_enable"
+												id="download_watermark_enable" style="margin-right: 8px"/><span class="text-assist">开启后通过框架下载的office文档,打开会有水印效果。注意如果运行缺少jar包的话需要自行在pom或war包中引入。</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="自定义水印内容">
+											<input class="mini-textbox"
+												bind="dataBean.download_watermark_regex"
+												id="download_watermark_regex" /><span
+												class="text-assist">目前支持的数据有 部门,姓名,IP,时间。格式例如:部门+姓名+IP+时间,部门,姓名+部门</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="水印文档类型">
+											<input class="mini-textbox"
+												bind="dataBean.download_watermark_filetype"
+												id="download_watermark_filetype" /><span
+												class="text-assist">需要支持水印功能的文件类型,可选的有.pdf;.xls;.xlsx;.doc;.docx</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="水印工具许可证">
+											<input class="mini-textbox"
+												bind="dataBean.aspose_words_licensename"
+												id="aspose_words_licensename" /><span class="text-assist">doc,docx类型的文件如果需要支持水印,需要Aspose.Words许可证;
+												<br />默认许可证名称EpointAsposeWords.lic，放置在src/main/resources目录下
+												<br />如果项目上有购买申请到其它许可证,可以放到此目录然后配置新的许可证名称。
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">附件预览</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="预览服务器地址">
+											<input class="mini-textbox"
+												bind="dataBean.upload_preview_url" id="upload_preview_url" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览文档类型">
+											<input class="mini-textbox"
+												bind="dataBean.upload_preview_text" id="upload_preview_text" /><span
+												class="text-assist">需要支持预览功能的文件类型,可选的有doc,docx,ppt,pptx,xls,xlsx</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览地址加密">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.uploadpreview_encrypt_enable"
+												id="uploadpreview_encrypt_enable" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览地址加密key">
+											<input class="mini-textbox"
+												bind="dataBean.uploadpreview_encrypt_key"
+												id="uploadpreview_encrypt_key" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览地址加密向量">
+											<input class="mini-textbox"
+												bind="dataBean.uploadpreview_encrypt_iv"
+												id="uploadpreview_encrypt_iv" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览水印模板序号">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.uploadpreview_tp_no" id="uploadpreview_tp_no" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览水印附加文字">
+											<input class="mini-textarea"
+												bind="dataBean.uploadpreview_tp_text"
+												id="uploadpreview_tp_text" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预览token有效期">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.uploadpreview_token_timeoutext"
+												id="uploadpreview_token_timeoutext" />秒
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">附件安全</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="上传附件加密">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.file_encrypt_enable"
+												id="file_encrypt_enable" /><span
+												class="text-assist">&nbsp;&nbsp;开启此功能后，上传附件的流会被加一段标记，在服务器上无法打开，必须要下载到本地后才可打开</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="clamav扫描">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.upload_openclamav"
+												id="upload_openclamav" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="clamav部署地址">
+											<input class="mini-textbox"
+												bind="dataBean.upload_clamav_setting"
+												id=upload_clamav_setting "/>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="临时文件清理">
+											<input class="mini-textarea"
+												bind="dataBean.epointtemp_clear_skipfolder"
+												id="epointtemp_clear_skipfolder" /> <span
+												class="text-assist">每天定时清理临时文件（epointtemp文件夹），在此配置不需要清理的文件夹名字，分号间隔&nbsp;&nbsp;
+												<a href="javascript:void(0);" onclick="clearEpointTemp()"
+												width="auto">点击立即清理</a>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-body clearfix" data-id="data">
+				<div class="category-nav"></div>
+				<div class="config-content">
+					<div class="fui-block">
+						<div class="fui-block-hd">全局事务</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="全局事务">
+											<input class="mini-checkbox" width="auto" text="启用"
+												truevalue="true" falsevalue="false"
+												bind="dataBean.dto_global_transaction"
+												id="dto_global_transaction" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="额外地址">
+											<span class="text-assist">框架默认支持全局事务的地址规则：/rest/;/websocket/;/services/;.action<br>
+												如有其他地址需要开启全局事务,需要在epointframe.properties中配置dto_global_transaction_url=xxx,多个地址以分号间隔
+												<br>或者在请求地址后面直接带参数dto_global_transaction=true
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="排除事务地址">
+											<input class="mini-textarea"
+												bind="dataBean.dto_global_transaction_ignoreurl"
+												id="dto_global_transaction_ignoreurl" /><span
+												class="text-assist">如果某个地址不需要全局事务控制,可以通过此参数进行配置,多个地址以分号间隔
+												<br>或者在请求地址后面直接带参数dto_global_transaction=false
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">监控预警</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="druid监控">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.dao_druid_filter_enable" id="dao_druid_filter_enable" style="margin-right: 8px"/><span
+												class="text-assist">druid监控功能默认关闭,一般排查问题的时候开启,用完之后请及时关闭,比较耗性能,每次重启系统会重置为关闭。</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="结果集size检查">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.dao_resultset_check" id="dao_resultset_check" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="size检查界限">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.dao_querysize_max" id="dao_querysize_max" /><span
+												class="text-assist">和上面开关配合使用,当开启检查,并且设置了检查界限。通过DAO查询list集合的size超过设定边界就会在日志文件中输出警告日志,以提醒开发人员进行sql优化。</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">分库分表</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="框架业务分表">
+											<input class="mini-checkbox" width="auto" text="启用"
+												truevalue="1" falsevalue="0"
+												bind="dataBean.frame_basic_sharding"
+												id="frame_basic_sharding" style="margin-right: 8px"/><span class="text-assist">控制待办，已办，附件的分表</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">数据库</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="查询参数敏感字符">
+											<input class="mini-textarea"
+												bind="dataBean.dto_search_special_param"
+												id="dto_search_special_param" /><span class="text-assist">如果查询条件参数中含/(反斜杠),%(百分号),_(下划线)等特殊字符，可直接在此处配置，其配置规则为:名称,特殊字符,替换字符，如:BACKSLASH,\,@&@BACKSLASH@&@，多个以分号;分隔
+												<br>请勿随意配置，配置不当会导致查询数据失误，%及_为默认配置
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-body clearfix" data-id="sync">
+				<div class="category-nav"></div>
+				<div class="config-content">
+					<div class="fui-block">
+						<div class="fui-block-hd">SOA相关</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="soa同步兼职">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.soa_sync_secondou"
+												id="soa_sync_secondou" style="margin-right: 8px"/><span class="text-assist">系统作为支撑平台时,是否开放同步兼职</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="soa同步子部门">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.soa_sync_childou"
+												id="soa_sync_childou" style="margin-right: 8px"/><span class="text-assist">系统作为支撑平台时,是否开放同步子部门</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="接入应用IP区分">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.multiclient_enable"
+												id="multiclient_enable" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="快照刷新间隔">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.soa_snapshot_limittime"
+												id="soa_snapshot_limittime" />秒
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">Ldap同步</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control">
+											<span class="text-assist">注:开启Ldap同步后可以&nbsp;&nbsp; <a
+												href="javascript:void(0);" onclick="testLdapConnection()"
+												width="auto">测试连接</a>&nbsp;&nbsp;&nbsp;&nbsp;<a
+												href="javascript:void(0);"
+												onclick="epoint.confirm('此操作将会覆盖Ldap中部门用户数据!','',reSetLdap);"
+												width="auto">初始化Ldap数据</a>
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="Ldap同步">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" onvaluechanged="enableLdap();"
+												bind="dataBean.orga_sync_ldap_enable"
+												id="orga_sync_ldap_enable" text="启用" />
+										</div>
+									</div>
+									<div class="ldap">
+										<div role="row">
+											<div role="control" label="Ldap数据源">
+												<input class="mini-radiobuttonlist"
+													action="getLdapSourceButton"
+													bind="dataBean.orga_sync_ldap_source"
+													id="orga_sync_ldap_source" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="Ldap数据结构">
+												<input class="mini-radiobuttonlist"
+													action="getLdapDataStructureButton"
+													bind="dataBean.orga_sync_ldap_datastructure"
+													id="orga_sync_ldap_datastructure" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="Ldap连接地址">
+												<input class="mini-textbox"
+													bind="dataBean.orga_sync_ldap_ipport"
+													id="orga_sync_ldap_ipport" /><span class="text-assist">Ldap
+													ip和端口，如果只配ip
+													默认389端口;例：127.0.0.1:636、127.0.0.1:389、127.0.0.1</span>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="登录dn地址">
+												<input class="mini-textbox"
+													bind="dataBean.orga_sync_ldap_binddn"
+													id="orga_sync_ldap_binddn" /><span class="text-assist">登录绑定的DN,例：cn=admin,dc=sys,dc=com
+													、 uid=admin,ou=system</span>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="登录密码">
+												<input class="mini-password"
+													bind="dataBean.orga_sync_ldap_password"
+													id="orga_sync_ldap_password" /><span class="text-assist">openldap登录密码:值为slapd.conf的rootpw值;apacheDS:值为uid=admin的密码</span>
+											</div>
+										</div>
+										<div role="row" class="bottom-space">
+											<div role="control" label="Ldap根路径">
+												<input class="mini-textbox"
+													bind="dataBean.orga_sync_ldap_basedn"
+													id="orga_sync_ldap_basedn" /><span class="text-assist">默认值为：dc=sys,dc=com;openldap根路径：值为slapd.conf的suffix值;apacheDS:通过Configuration自己创建并重启apacheDS服务</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">钉钉微信通用配置</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="用户ID取值">
+											<input class="mini-radiobuttonlist"
+												bind="dataBean.orga_sync_thirdpartyuseridfield"
+												id="orga_sync_thirdpartyuseridfield"
+												data="[{id:'userguid',text:'userguid'},{id:'loginid',text:'loginid'}]" /><span
+												class="text-assist">将框架用户同步到第三方系统时,用户ID获取用户表的字段</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">企业微信</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control">
+											<span class="text-assist">注:开启企业微信同步后可以&nbsp;&nbsp; <a
+												href="javascript:void(0);" onclick="testWeiXinConnection()"
+												width="auto">测试连接</a>&nbsp;&nbsp;&nbsp;&nbsp;<a
+												href="javascript:void(0);"
+												onclick="epoint.confirm('此操作将会覆盖企业微信中部门用户数据!','',reSetWeiXin);"
+												width="auto">全量覆盖用户</a>
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="微信同步">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" onvaluechanged="enableWeiXin();"
+												bind="dataBean.orga_sync_weixin_enable"
+												id="orga_sync_weixin_enable" style="margin-right: 8px"/><span class="text-assist">启用后请登陆企业微信后台获取配置信息https://work.weixin.qq.com</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="企业ID">
+											<input class="mini-textbox" bind="dataBean.wechat_corpid"
+												id="wechat_corpid" /><span class="text-assist">企业微信后台管理界面获取</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="通讯录密钥">
+											<input class="mini-textbox"
+												bind="dataBean.orga_sync_weixin_corpsecret"
+												id="orga_sync_weixin_corpsecret" /><span
+												class="text-assist">企业微信后台管理-通讯录功能中获取</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="应用凭证密钥">
+											<input class="mini-textbox" bind="dataBean.wechat_corpsecret"
+												id="wechat_corpsecret" /><span class="text-assist">应用凭证密钥：应用访问密钥，自建应用secret在企业微信管理后台->“企业应用”->“自建应用”，点进某个应用，即可看到</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="回掉地址">
+											<input class="mini-textbox"
+												bind="dataBean.wechat_redirecturi" id="wechat_redirecturi" /><span
+												class="text-assist">授权后重定向的回调链接地址，一般为统一认证平台的地址，（内外网同时存在时，请配置外网ip）
+												<br>配置示例：http://218.4.136.115:8060，如果有端口，则只需配置到端口，如果没有端口，则只需配置到ip地址
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="认证参数">
+											<input class="mini-textbox"
+												bind="dataBean.wechat_artifactparametername"
+												id="wechat_artifactparametername" /><span
+												class="text-assist">默认填code即可</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">钉钉</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control">
+											<span class="text-assist">注:开启钉钉同步后可以&nbsp;&nbsp; <a
+												href="javascript:void(0);" onclick="testDDConnection()"
+												width="auto">测试连接</a><br>场景1：以框架用户为准&nbsp;&nbsp;官方推荐先通过excel导入全部用户<a
+												href="javascript:void(0);" onclick="reSetDD()" width="auto">获取全量组织架构excel</a>
+												<br>钉钉组织架构管理后台地址https://oa.dingtalk.com，导入后必须<a
+												href="javascript:void(0);"
+												onclick="generateDingtalkOrgaMapping()" width="auto">初始化映射关系</a>
+												<br>场景2：以钉钉用户为准&nbsp;&nbsp;点击同步按钮将钉钉组织架构同步到框架&nbsp;&nbsp;<a
+												href="javascript:void(0);" onclick="syncDingtalkOrga()"
+												width="auto">同步</a></span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="钉钉同步">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.orga_sync_dingtalk_enable"
+												id="orga_sync_dingtalk_enable" style="margin-right: 8px"/><span class="text-assist">启用后需要全量同步一次组织架构才能正常使用</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="应用标识">
+											<input class="mini-textbox" bind="dataBean.dingtalk_appkey"
+												id="dingtalk_appkey" /><span class="text-assist">应用标识appKey，获取此信息可在管理后台创建应用后获取</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="凭证密钥">
+											<input class="mini-textbox"
+												bind="dataBean.dingtalk_appsecret" id="dingtalk_appsecret" /><span
+												class="text-assist">应用密钥，获取此信息可在管理后台创建应用后获取</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="企业ID">
+											<input class="mini-textbox" bind="dataBean.dingtalk_corpid"
+												id="dingtalk_corpid" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="钉钉开发平台域名">
+											<input class="mini-textbox" bind="dataBean.dingtalk_domain"
+												id="dingtalk_domain" /><span
+												class="text-assist">钉钉运营商域名</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="回调地址">
+											<input class="mini-textbox"
+												bind="dataBean.dingtalk_redirecturi"
+												id="dingtalk_redirecturi" /><span class="text-assist">授权后重定向的回调链接地址，一般为统一认证平台的地址，（内外网同时存在时，请配置外网ip）
+												<br>配置示例：http://218.4.136.115:8060，如果有端口，则只需配置到端口，如果没有端口，则只需配置到ip地址
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="agentId">
+											<input class="mini-textbox" bind="dataBean.dingtalk_agentid"
+												id="dingtalk_agentid" /><span class="text-assist">用于获取钉钉SDK鉴权时agentId传参
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-body clearfix" data-id="workflow">
+				<div class="category-nav"></div>
+				<div class="config-content">
+					<div class="fui-block">
+						<div class="fui-block-hd">批量处理</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div class="mini-checkbox" id="workflow_batch_base"
+											readOnly="false" text="基本信息"></div>
+										<div repeatDirection="horizontal"
+											bind="dataBean.workflow_batch_base"
+											id="workflow_batch_base_value"
+											data="[{text:'附件操作权限',id:'attach'},{text:'流程处理页面',id:'handleurl'},{text:'短信通知内容',id:'sms'},{text:'通过率',id:'pass'},{text:'多人处理是否锁定',id:'lock'},{text:'多人处理方式',id:'multiTransactorMode'},{text:'共用同一活动实例',id:'singleInstance'}]"
+											textField="text" valueField="id" class="mini-checkboxlist"
+											style="width: 100%"></div>
+									</div>
+									<div role="row">
+										<div class="mini-checkbox" id="workflow_batch_operation"
+											readOnly="false" text="操作按钮"></div>
+										<div repeatDirection="horizontal"
+											bind="dataBean.workflow_batch_operation"
+											id="workflow_batch_operation_value"
+											data="[{text:'是否显示操作处理页面',id:'operationcommonpageurl'},{text:'是否显示意见模板',id:'showopiniontemplete'},{text:'检查必须材料',id:'checkmaterialsubmit'},{text:'是否显示后继活动',id:'shownextactivity'},{text:'必须输入意见',id:'opionneeded'},{text:'显示场合',id:'occasion'}]"
+											textField="text" valueField="id" class="mini-checkboxlist"
+											style="width: 100%"></div>
+									</div>
+									<div role="row">
+										<div class="mini-checkbox" id="workflow_batch_mobile"
+											readOnly="false" text="移动端配置"></div>
+										<div repeatDirection="horizontal"
+											bind="dataBean.workflow_batch_mobile"
+											id="workflow_batch_mobile_value"
+											data="[{text:'移动端处理方式',id:'mobilemethod'},{text:'移动端流程处理页',id:'mobilepageurl'}]"
+											textField="text" valueField="id" class="mini-checkboxlist"
+											style="width: 100%"></div>
+									</div>
+									<div role="row">
+										<div class="mini-checkbox" id="workflow_batch_material"
+											readOnly="false" text="材料"></div>
+										<div repeatDirection="horizontal"
+											bind="dataBean.workflow_batch_material"
+											id="workflow_batch_material_value"
+											data="[{text:'选择材料',id:'material'}]" textField="text"
+											valueField="id" class="mini-checkboxlist" style="width: 100%"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">流程相关</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="短信显示">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.workflow_sms_awoke"
+												id="workflow_sms_awoke" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="短信默认勾选">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_sms_checked"
+												id="workflow_sms_checked" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="短信长度">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.workflow_sms_length" id="workflow_sms_length" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="短信默认发送">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_sms_senddefault"
+												id="workflow_sms_senddefault" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="线程数">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.workflow_threadnumber"
+												id="workflow_threadnumber" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="流程锁定">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.workflow_lock"
+												id="workflow_lock" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="支持退回到子流程">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_backtosubprocess"
+												id="workflow_backtosubprocess" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="允许收回子流程事项">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_drawbacksubprocess"
+												id="workflow_drawbacksubprocess" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="ThreadLocal缓存PVI">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.threadlocal_enable"
+												id="threadlocal_enable" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="显示超时标记">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_piflowchart_isshowovertime"
+												id="workflow_piflowchart_isshowovertime" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">选人树</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="显示本部门">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.workflow_show_ownou"
+												id="workflow_show_ownou" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="展示独立子流转部门">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_show_subwebflowou"
+												id="workflow_show_subwebflowou" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="独立子流转tab页名称">
+											<input class="mini-textbox"
+												bind="dataBean.workflow_show_subwebflowouname"
+												id="workflow_show_subwebflowouname" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="展示地址簿">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_show_addressbook"
+												id="workflow_show_addressbook" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="地址簿tab页名称">
+											<input class="mini-textbox"
+												bind="dataBean.workflow_show_addressbookname"
+												id="workflow_show_addressbookname" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="展示所有部门">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.workflow_show_allou"
+												id="workflow_show_allou" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="展示岗位">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_show_jobrole"
+												id="workflow_show_jobrole" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="岗位tab页名称">
+											<input class="mini-textbox"
+												bind="dataBean.workflow_show_jobrolename"
+												id="workflow_show_jobrolename" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">安全相关</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="安全拦截">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_security_param"
+												id="workflow_security_param" style="margin-right: 8px"/><span class="text-assist">工作流相关页面安全拦截</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="外部方法校验">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.workflow_methodverificationcode_enable"
+												id="workflow_methodverificationcode_enable" style="margin-right: 8px"/><span
+												class="text-assist">如果开启了工作流外部方法校验功能，将会进行工作流进行验证</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			SrcBoot.output([ './framesetting.js' ]);
+			SrcBoot.output([ '../../../fui/js/libs/sm2security.js' ]);
+		</script>
+		<script>
+			//初始化请求
+			epoint
+					.initPage(
+							'framesettingaction',
+							'',
+							function() {
+								$
+										.each(
+												mini
+														.getChildControls($('#tabs-wrap')[0]),
+												function(i, ctr) {
+													ctr
+															.on(
+																	'valueChanged',
+																	function(ev) {
+																		if (!epoint
+																				.validate()) {
+																			return;
+																		}
+																		var saveId = ev.sender.id;
+																		var saveValue = ev.sender.value;
+																		var needEncrypt = [
+																				"orga_sync_ldap_binddn",
+																				"orga_sync_ldap_password",
+																				"smartbi_adminpwd" ];
+																		if (needEncrypt
+																				.indexOf(ev.sender.id) !== -1) {
+																			var value = encrypt(ev.sender.value);
+																			epoint
+																					.execute(
+																							'saveEncrypt',
+																							'',
+																							[
+																									ev.sender.id,
+																									value ],
+																							function(
+																									data) {
+																								if (data.success) {
+																									epoint
+																											.showTips(
+																													'保存成功',
+																													{
+																														state : 'success',
+																														iconCls : 'success'
+																													});
+																								} else {
+																									epoint
+																											.alert(
+																													data.msg,
+																													'',
+																													null,
+																													'info');
+																								}
+																							});
+																			return;
+																		}
+
+																		if (ev.sender.id == "grid_adjust_pagesize") {
+																			mini
+																					.get(
+																							"ui_grid_pagesize")
+																					.setEnabled(
+																							!(ev.sender.value == "true"));
+																		}
+																		// 如果以工作流批处理开头的配置项的话，需要做一下联动效果
+																		if (ev.sender.id
+																				.indexOf("workflow_batch_") == 0) {
+																			console
+																					.log(ev.sender.id)
+																			// 然后以_拆分
+																			var strs = ev.sender.id
+																					.split("_");
+																			console
+																					.log(strs)
+																			// 如果大于3的话说明就是复选按钮组
+																			if (strs.length > 3) {
+																				strs
+																						.pop();
+																				saveId = strs
+																						.join("_");
+																				saveValue = mini
+																						.get(
+																								ev.sender.id)
+																						.getValue();
+																				// 与复选框做联动，判断是否都选中
+																				var values = saveValue
+																						.split(",");
+																				var data = mini
+																						.get(ev.sender.id).data;
+																				if (values.length == 0) {
+																					mini
+																							.get(
+																									saveId)
+																							.setValue(
+																									'false');
+																				} else if (values.length < data.length) {
+																					mini
+																							.get(
+																									saveId)
+																							.setValue(
+																									'false');
+																				} else if (values.length == data.length) {
+																					mini
+																							.get(
+																									saveId)
+																							.setValue(
+																									'true');
+																				}
+																			} else {
+																				// 其他情况即为复选按钮，需要联动将下面的复选按钮组全部选中
+																				saveId = ev.sender.id;
+																				var checkBoxList = mini
+																						.get(ev.sender.id
+																								+ "_value");
+																				if (ev.sender.value
+																						&& ev.sender.value == 'true') {
+																					var data = checkBoxList.data;
+																					var value = "";
+																					for (var i = 0; i < data.length; i++) {
+																						value += data[i].id;
+																						if (i < data.length - 1) {
+																							value += ",";
+																						}
+																					}
+																					checkBoxList
+																							.setValue(value);
+																				} else {
+																					checkBoxList
+																							.setValue('');
+																				}
+																				saveValue = checkBoxList
+																						.getValue();
+																			}
+																		}
+
+																		if (ev.sender.id == "usermanage_ou_codefull") {
+																			epoint
+																					.execute(
+																							'saveEnableOuCodeFull',
+																							'',
+																							[
+																									ev.sender.id,
+																									ev.sender.value ],
+																							function(
+																									data) {
+																								if (data.success) {
+																									epoint
+																											.showTips(
+																													'启用成功',
+																													{
+																														state : 'success',
+																														iconCls : 'success'
+																													});
+																								} else {
+																									mini
+																											.get(
+																													"usermanage_ou_codefull")
+																											.setValue(
+																													"0");
+																									epoint
+																											.alert(
+																													data.msg,
+																													'',
+																													null,
+																													'info');
+																								}
+																							});
+																			return;
+																		}
+
+																		epoint
+																				.execute(
+																						'save',
+																						'',
+																						[
+																								saveId,
+																								saveValue ],
+																						function(
+																								data) {
+																							if (data.success) {
+																								epoint
+																										.showTips(
+																												'保存成功',
+																												{
+																													state : 'success',
+																													iconCls : 'success'
+																												});
+																							} else {
+																								epoint
+																										.alert(
+																												data.msg,
+																												'',
+																												null,
+																												'info');
+																							}
+																						});
+																	});
+													//console.log(ctr.id);
+													if (ctr.id
+															.indexOf("workflow_batch_") == 0) {
+														console.log(ctr.id);
+														// 然后以_拆分
+														var strs = ctr.id
+																.split("_");
+														if (strs.length == 3) {
+															var values = mini
+																	.get(
+																			ctr.id
+																					+ "_value")
+																	.getValue()
+																	.split(",");
+															console.log(values)
+															var data = mini
+																	.get(ctr.id
+																			+ "_value").data;
+															if (values.length == 0
+																	|| values == "") {
+																mini
+																		.get(
+																				ctr.id)
+																		.setValue(
+																				'false');
+															} else if (values.length < data.length) {
+																mini
+																		.get(
+																				ctr.id)
+																		.setValue(
+																				'false');
+															} else if (values.length == data.length) {
+																mini
+																		.get(
+																				ctr.id)
+																		.setValue(
+																				'true');
+															}
+														}
+													}
+												});
+								if (mini.get('soa_local_appkey').getValue() == null
+										|| mini.get('soa_local_appkey')
+												.getValue() == '') {
+									$('#soaconfig').text('添加配置');
+								} else {
+									$('#soaconfig').text('修改配置');
+								}
+								if (mini.get("grid_adjust_pagesize").getValue() == "true") {
+									mini.get("ui_grid_pagesize").setEnabled(
+											false);
+								}
+							});
+
+			// 客户端加密类型
+			function encrypt(str) {
+				if (str) {
+					str = Util.encryptSM2(str);
+				}
+				return str;
+			}
+
+			function removeColon() {
+				$('#config-content').find('.form-label').each(
+						function(i, label) {
+							var $l = $(label);
+							var t = $l.text();
+							t = t.substring(0, t.length - 1);
+							$l.text(t);
+						});
+			}
+			removeColon();
+
+			ConfigManager.init();
+			/**
+			 * ConfigManager 下有如下 方法
+			 * init() 初始化方法 自动绑定事件 收集数据 生成左侧导航
+			 * getData() 根据页面表单数据收集搜索和导航数据
+			 * buildNav(forceUpdate) 依照数据构建生成左侧导航 参数 forceUpdate 会强制从新从页面表单收集数据
+			 */
+
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', '', 'success');
+					} else if (data.info) {
+						epoint.alert(msg, '', '', 'info');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			var tip = new mini.ToolTip();
+			tip.set({
+				target : document,
+				selector : '[data-tooltip], [title]'
+			});
+
+			function enableLdap() {
+				if (mini.get("orga_sync_ldap_enable").getValue() == 1) {
+					mini.get("orga_sync_ldap_source").set({
+						required : true,
+						requiredErrorText : "Ldap源不能为空!"
+					});
+					mini.get("orga_sync_ldap_datastructure").set({
+						required : true,
+						requiredErrorText : "Ldap数据结构不能为空!"
+					});
+					mini.get("orga_sync_ldap_ipport").set({
+						required : true,
+						requiredErrorText : "Ldap连接地址不能为空!"
+					});
+					mini.get("orga_sync_ldap_binddn").set({
+						required : true,
+						requiredErrorText : "登录DN地址不能为空!"
+					});
+					mini.get("orga_sync_ldap_password").set({
+						required : true,
+						requiredErrorText : "登录密码不能为空!"
+					});
+				} else {
+					mini.get("orga_sync_ldap_source").set({
+						required : false
+					});
+					mini.get("orga_sync_ldap_datastructure").set({
+						required : false
+					});
+					mini.get("orga_sync_ldap_ipport").set({
+						required : false
+					});
+					mini.get("orga_sync_ldap_binddn").set({
+						required : false
+					});
+					mini.get("orga_sync_ldap_password").set({
+						required : false
+					});
+				}
+				epoint.validate();
+			}
+
+			function enableWeiXin() {
+				if (mini.get("orga_sync_weixin_enable").getValue() == 1) {
+					mini.get("wechat_corpid").set({
+						required : true,
+						requiredErrorText : "企业ID不能为空!"
+					});
+					mini.get("orga_sync_weixin_corpsecret").set({
+						required : true,
+						requiredErrorText : "通讯录密钥不能为空!"
+					});
+				} else {
+					mini.get("wechat_corpid").set({
+						required : false
+					});
+					mini.get("orga_sync_weixin_corpsecret").set({
+						required : false
+					});
+				}
+				epoint.validate();
+			}
+
+
+			function refreshCache() {
+				epoint.execute('refreshCache', '', function() {
+					epoint.alert('刷新成功', null, null, 'success');
+				});
+			}
+
+			function testLdapConnection() {
+				if (mini.get("orga_sync_ldap_enable").getValue() == "1") {
+					if (epoint.validate()) {
+						epoint.execute('testLdapConnection', '', msgCallBack);
+					}
+				} else {
+					epoint.alert("未开启同步", '', '', 'warning');
+				}
+			}
+
+			function reSetLdap() {
+				if (mini.get("orga_sync_ldap_enable").getValue() == "1") {
+					if (epoint.validate()) {
+						epoint.execute("reSetLdap", '', msgCallBack);
+					}
+				} else {
+					epoint.alert("未开启同步", '', '', 'warning');
+				}
+			}
+
+			function testWeiXinConnection() {
+				if (mini.get("orga_sync_weixin_enable").getValue() == "1") {
+					if (epoint.validate()) {
+						epoint.execute('testWeiXinConnection', '', msgCallBack);
+					}
+				} else {
+					epoint.alert("未开启同步", '', '', 'warning');
+				}
+			}
+
+			function reSetWeiXin() {
+				if (mini.get("orga_sync_weixin_enable").getValue() == "1") {
+					if (epoint.validate()) {
+						epoint.execute('reSetWeiXin', '', msgCallBack);
+					}
+				} else {
+					epoint.alert("未开启同步", '', '', 'warning');
+				}
+			}
+
+			function openWorkingDay() {
+				window
+						.open(Util
+								.getRightUrl('framemanager/metadata/workingday/workingday'));
+			}
+
+			function soaConfig() {
+				var appkey = mini.get("soa_local_appkey").getValue();
+				if (appkey) {
+					epoint.openDialog('soa配置',
+							"frame/pages/basic/framesetting/soaconfig?appkey="
+									+ appkey, configcallback, {
+								'width' : 800,
+								'height' : 550
+							});
+				} else {
+					epoint.openDialog('soa配置',
+							"frame/pages/basic/framesetting/soaconfig",
+							configcallback, {
+								'width' : 800,
+								'height' : 550
+							});
+				}
+			}
+
+			function configcallback(data) {
+				if (data != 'close') {
+					epoint.showTips('保存成功', {
+						state : 'success',
+						iconCls : 'success'
+					});
+					mini.get("soa_local_appkey").setValue(data);
+					if (data == '') {
+						$('#soaconfig').text('新增配置');
+					} else {
+						$('#soaconfig').text('修改配置');
+					}
+				}
+			}
+
+			function testDDConnection() {
+				if (mini.get("orga_sync_dingtalk_enable").getValue() == "1") {
+					if (epoint.validate()) {
+						epoint.execute('testDDConnection', '', msgCallBack);
+					}
+				} else {
+					epoint.alert("未开启同步", '', '', 'warning');
+				}
+			}
+
+			function clearEpointTemp() {
+				epoint.execute('clearEpointTemp', '', msgCallBack);
+			}
+
+			function reSetDD() {
+				if (mini.get("orga_sync_dingtalk_enable").getValue() == "1") {
+					if (epoint.validate()) {
+						epoint
+								.execute(
+										'reSetDD',
+										'',
+										function(e) {
+											if (e.msg) {
+												if (!e.dingtalkexcel) {
+													epoint.alert(e.msg, '', '',
+															'warning');
+												} else {
+													var form = document
+															.getElementById('download_form');
+													form.action = "../../../../"
+															+ epoint
+																	.dealRestfulUrl("rest/framesettingaction/download?dingtalkexcel="
+																			+ e.dingtalkexcel);
+													form.submit();
+												}
+											}
+										});
+					}
+				} else {
+					epoint.alert("未开启同步", '', '', 'warning');
+				}
+			}
+
+			function generateDingtalkOrgaMapping() {
+				epoint.execute('generateDingtalkOrgaMapping', '', msgCallBack);
+			}
+
+			function syncDingtalkOrga() {
+				mini.prompt("请输入起始同步的钉钉部门id，根部门为1", "",
+						function(action, value) {
+							if (action == "ok") {
+								epoint.execute("syncDingtalkOrga", '', value,
+										msgCallBack);
+							} else {
+								return;
+							}
+						});
+			}
+
+			function onWorkingTimeValidation(e) {
+				if (e.value) {
+					var times = e.value.split(';');
+					if (times.length == 4) {
+						var timeCompare = new Array();
+						var j = 0;
+						var i = 0;
+						for (; i < 4; i++) {
+							var time = times[i];
+							if (time.split(":").length == 2
+									&& time.split(":")[0].length == 2
+									&& time.split(":")[1].length == 2) {
+								timeCompare[j] = time.replace(":", "");
+								j++;
+							}
+						}
+						if (timeCompare.length == 4
+								&& (timeCompare[3] - timeCompare[2]) > 0
+								&& (timeCompare[2] - timeCompare[1]) > 0
+								&& (timeCompare[1] - timeCompare[0]) > 0) {
+							return;
+						}
+					}
+					e.errorText = "正确格式参考--->08:00;12:00;13:00;17:00";
+					e.isValid = false;
+				}
+			}
+
+			function onCompressScaleValidation(e) {
+				var result = false;
+				if (e.value.split('*').length == 2) {
+					var scales = e.value.split('*');
+					if (scales[1] % 1 === 0 && scales[1] > 0
+							&& scales[0] % 1 === 0 && scales[0] > 0) {
+						result = true;
+					}
+				}
+				if (!result) {
+					e.errorText = "正确格式参考--->250*400";
+					e.isValid = false;
+				}
+			}
+		</script>
+</body>
+</html>

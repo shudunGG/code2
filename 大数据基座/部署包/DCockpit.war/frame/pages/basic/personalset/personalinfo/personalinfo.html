@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>个人资料</title>
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<script>
+		if (URL && URL.createObjectURL && window.FileReader &&
+			FileReader.prototype.readAsDataURL) {
+			SrcBoot.output(['./headsculpture/cropper.min.css',
+				'./headsculpture/swipper/css/swiper.min.css'
+			]);
+		}
+	</script>
+	<script>
+		SrcBoot.output(['./css/personalinfo.css']);
+	</script>
+	<script>
+		SrcBoot.outputCustomSkin("./skins/personalinfo/");
+	</script>
+</head>
+
+<body>
+	<script>
+		(function () {
+			// 新的aide主题中 外部已经留了边距 无须我的桌面中在此空白 
+			// 此处加入判断 如果为不需要边距的主题 则去掉一下边距
+			if (top === window) {
+				return;
+			}
+			try {
+				var m = top.location.pathname.match(/fui\/pages\/themes\/(\w+)\/\1/i);
+				var theme = m && m[1];
+				// 在此补充不需要边距的主题名称即可 如/(?:aide|grace|dream)/;
+				var noGapThemeReg = /(?:aide)/;
+				if (theme && noGapThemeReg.test(theme)) {
+					document.body.className += ' nogap';
+				}
+			} catch (error) {}
+		})();
+	</script>
+	<!-- <img src="./images/personal-bg.png" class="page-bg"> -->
+
+	<!-- 用户头像的上传控件 IE9及以下使用-->
+	<div id="uploader" class="mini-webuploader" action="myinfomodifyaction.getFileUploadModel" fileNumLimit="1"
+		fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp" mimeTypes="image/*" showDefaultUI="false"
+		auto="true" pickerText="请上传" onfilesuccess="onPhotoSuccess"
+		style="position: absolute; top: -50px; left: 100px;"></div>
+
+	<div class="page-container">
+		<div class="header">
+			<div class="portrait-box">
+				<img class="portrait-img" id="portrait-img" src="./images/default-port.png" alt=""> <span
+					class="portrait-edit" id="portrait-edit">修改头像</span> <span class="portrait-remove hidden"
+					id="portrait-remove" title="重置头像"></span>
+			</div>
+			<div class="name-status">
+				<span class="name" id="user-top-name"></span> <span class="status hidden" id="user-state"></span>
+			</div>
+			<div class="person-text">
+				<div class="dept">
+					<span class="label">部门</span> <span class="dept-text" id="dept-text"></span>
+				</div>
+				<div class="position">
+					<span class="label">职务</span> <span class="position-text" id="position-text"></span>
+				</div>
+			</div>
+		</div>
+		<div class="body" id="main-view">
+			<div class="tabview-header" data-role="head" id="tabview-header">
+				<div class="tabview-header-item  fui-theme-hl-color active" data-role="tab" data-target="persondata"
+					url="./persondata">个人资料</div>
+				<div class="tabview-header-item  fui-theme-hl-color" data-role="tab" data-target="officecfg"
+					url="./officecfg">办公配置</div>
+				<div class="tabview-header-item  fui-theme-hl-color" data-role="tab" data-target="flowagency"
+					url="./flowagency">代理人配置</div>
+				<div class="tabview-header-item  fui-theme-hl-color" data-role="tab" data-target="msgsettting"
+					url="./messagesetting">消息配置</div>
+				<div class="tabview-header-item  fui-theme-hl-color" data-role="tab" data-target="passwordmodify"
+					url="../mypasswordmodify">密码修改</div>
+				<!-- 新扩展tab时 插入一下内容即可 -->
+				<!-- <div class="tabview-header-item  fui-theme-hl-color" data-role="tab" data-target="一个标识不能相同" url="此页的地址 根目录写起或相对目录">tab项名称</div> -->
+				<!-- end -->
+			</div>
+			<div class="tabview-body" data-role="body" id="tabview-body"></div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 此页需要获取头像地址、姓名、部门、职务
+		Util.ajax({
+			url: epoint.dealRestfulUrl('myinfomodifyaction/getPersonData')
+		}).done(function (data) {
+			$("#portrait-img").attr('src', Util.getRightUrl(epoint.dealRestfulUrl(data.lblPicture)));
+			$('#user-top-name').text(data.userName);
+			$('#dept-text').text(data.userDept);
+			if (data.userTitle) {
+				$('#position-text').text(data.userTitle);
+			}
+			// 不是默认头像则可重置
+			if (!data.isDefaultPortrait) {
+				$('#portrait-remove').removeClass('hidden');
+			}
+		});
+
+		// 重置头像的请求地址
+		// 返回数据 {"portrait": "默认头像的base64"}
+		var resetPortraitUrl = epoint
+			.dealRestfulUrl('myinfomodifyaction/delPhoto');
+
+		// ie10 + 用户头像上传地址
+		// 提交数据为 imgData: imgData 裁剪后的base64
+		var cropperImgUploadUrl = epoint
+			.dealRestfulUrl('myinfomodifyaction/upLoadPortrait');
+
+		// IE9- 头像上传成功
+		function onPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				$("#portrait-img").attr('src',
+					Util.getRightUrl(args.data.extraDatas.lblPicture));
+			}
+		}
+	</script>
+	<script>
+		if (window.URL && URL.createObjectURL && window.FileReader &&
+			FileReader.prototype.readAsDataURL) {
+			SrcBoot.output(['./headsculpture/cropper.js',
+				'./headsculpture/imagecropper.js',
+				// './headsculpture/jquery.webcam/jquery.webcam.js',
+				'frame/fui/js/libs/webcam/webcam.min.js'
+			]);
+		}
+	</script>
+	<script>
+		SrcBoot.output(['./personalinfo.js']);
+	</script>
+	<script>
+		// 方式二：通过后端数据配置个人信息中的扩展tab
+		var getExtTabsInfo = epoint
+			.dealRestfulUrl('myinfomodifyaction/getExtTabsInfo');
+		Util.ajax({
+			url: getExtTabsInfo
+		}).done(function (data) {
+			if (data && data.length) {
+				$.each(data, function (i, item) {
+					addExtTab(item);
+				});
+			}
+		});
+		var $tabHeader = $('#tabview-header');
+
+		function addExtTab(item) {
+			item.id = item.id || 'exttab-' + Util.uuid();
+			// <div class="tabview-header-item" data-role="tab" data-target="一个标识不能相同" url="此页的地址 根目录写起或相对目录">tab项名称</div>
+			$(
+				'<div class="tabview-header-item fui-theme-hl-color" data-role="tab" data-target="' + item.id +
+				'" url="' + item.url + '">' +
+				item.name + '</div> ').appendTo($tabHeader);
+		}
+		// end
+	</script>
+
+</body>
+
+</html>

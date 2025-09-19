@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程活动材料配置</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addMaterial" iconCls="icon-addcircle">选择材料</a>
+			<a class="mini-button" onclick="saveOrder" iconCls="icon-save">修改排序</a>
+			<a class="mini-button" onclick="deleteMaterial"
+				iconCls="icon-minuscircle">删除选中</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input bind="processVersionGuid" id="processVersionGuid"
+			class="mini-hidden" /> <input bind="activityGuid" id="activityGuid"
+			class="mini-hidden" /><input bind="mainPVActivityGuid"
+			id="mainPVActivityGuid" class="mini-hidden" />
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="activitymaterialguid" multiSelect="true"
+			style="height: 100%;" allowResize="true" action="getDataGridData"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="materialName" headerAlign="center" align="center">名称</div>
+				<div field="materialType" headerAlign="center" align="center">类型</div>
+				<div field="ismSubmit" headerAlign="center" align="center">必须提交</div>
+				<div field="submitTypeName" headerAlign="center" align="center">提交方式</div>
+				<div field="OrderNum" headerAlign="center">
+					排序号<input property="editor" class="mini-textbox" vtype="int;range:0,99999999"/>
+				</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitymaterialaction');
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ],'',true);
+		}
+
+		//删除选中行
+		function deleteMaterial() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("deleteSelect", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, '', null, 'info');
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", '', null, 'warning');
+			}
+		}
+		//选择材料
+		function addMaterial() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			var mainPVActivityGuid = mini.get('mainPVActivityGuid').getValue();
+			epoint.openDialog("选择材料",
+					'framemanager/workflow/design/selectmaterial?processVersionGuid='
+							+ processVersionGuid + '&activityGuid='
+							+ activityGuid + '&mainPVActivityGuid='
+							+ mainPVActivityGuid, addCallBack, {
+						'width' : 800,
+						'height' : 500
+					});
+		}
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"editMaterial", "activitymaterialguid");
+		};
+		// 弹出修改窗口
+		function editMaterial(activitymaterialguid) {
+			epoint.openDialog("修改材料",
+					'framemanager/workflow/design/activitymanualmaterialedit?activityMaterialGuid='
+							+ activitymaterialguid, callback, {
+						'width' : 800,
+						'height' : 500
+					});
+		}
+		// 保存排序
+		function saveOrder() {
+			epoint.execute('saveOrder', 'datagrid', callback);
+		}
+		//]]>
+	</script>
+</body>
+
+
+</html>

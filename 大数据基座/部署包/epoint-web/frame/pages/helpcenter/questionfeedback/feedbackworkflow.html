@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增反馈</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="uc-handlecontrols" id="handlecontrols"
+			action="handlecontrolsaction.handleCtrl" style="width: 100%"></div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<!-- 隐藏按钮id不能修改 -->
+		<div class="hidden">
+			<a class="mini-button" id="btnSaveFrom" onclick="saveFrom();">保存</a>
+			<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+		</div>
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="反馈类型" starred="true">
+					<div class="mini-radiobuttonlist" action="appeartypeModel"
+						id="feedbackType" bind="commFeedbackQuestionInfo.cFeedbackType"
+						required="true" requiredErrorText="反馈类型不能为空!" /></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="所属功能" starred="true">
+					<input class="mini-treeselect"
+						bind="commFeedbackQuestionInfo.cFunctionType"
+						action="getTreeModel" id="cFunctionType" required="true"
+						style="width: 300px; padding: 5px;" showfoldercheckbox="true"
+						showradiobutton="true" showtreeicon="true" textfield="text"
+						idfield="id" expandonload="true" />
+					<!-- div class="mini-radiobuttonlist" action="functiontypeModel"
+						id="functionType" bind="commFeedbackQuestionInfo.cFunctionType"
+						required="true" requiredErrorText="所属功能不能为空!" /></div-->
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="标题" starred="true">
+					<input id="cMessageTitle" class="mini-textbox" vtype="maxLength:500"
+						bind="commFeedbackQuestionInfo.cFeedbackQuestionTitle"
+						required="true" requiredErrorText="标题不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="问题内容" starred="true">
+					<textarea bind="commFeedbackQuestionInfo.cFeedbackQuestionContent"
+						id="cMessageContent" class="mini-webeditor" readOnly="false"></textarea>
+				</div>
+			</div>
+			
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNumber" class="mini-textbox"
+						bind="commFeedbackQuestionInfo.ordernum" vtype="int;range:0,99999999"/>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../epointworkflow/js/workflowjsboot.js"></script>
+	<script src="../../epointworkflow/js/tableproperty.js"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('feedbackworkflowaction', null, function(data) {
+			if (data && data.functionType) {
+				mini.get('cFunctionType').setText(data.functionType);
+			}
+		});
+
+		function saveFrom() {
+			var content = mini.get("cMessageContent").getValue();
+			if(content != null && content !=""){
+			    if (epoint.validate()) {
+					epoint.execute('saveForm', '', newCallback);
+				}
+		        else{
+				    ShowTdOperate(true);
+				}
+			}else{
+				epoint.alert('问题内容不能为空！', null, null, 'info');
+				ShowTdOperate(true);
+			}
+		}
+
+		function submit() {
+			var content = mini.get("cMessageContent").getValue();
+			if(content != null && content !=""){
+			    if (epoint.validate()) {
+				    epoint.execute('submit', '', newCallback);	
+			    } else{
+				    ShowTdOperate(true);
+			    }	
+			}else{
+				epoint.alert('问题内容不能为空！', null, null, 'info');
+				ShowTdOperate(true);
+			}
+		}
+
+		// 新增操作的回调,必须回调handlecontrols中的HeaderSubmit触发流程流转
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+				ShowTdOperate(true);
+				return;
+			}
+			HeaderSubmit();
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

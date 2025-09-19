@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Change lines information</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<span id="material" style="display: none;">Note: click on the select page</span> <span
+				id="context" style="display: none;">Click the radio buttons to choose relevant data</span> <span
+				id="method" style="display: none;">Click the radio button selection method</span>
+		</div>
+
+		<div class="some-wrap r mr20">
+			<a class="mini-button" id="addcontext" onclick="addnewcontext"
+				style="display: none;">Add a new data</a> <a class="mini-button"
+				id="addmethod" onclick="addnewmethods" style="display: none;">Register new method</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<iframe id="urlLink" frameborder="0" width="100%" height="100%"></iframe>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('designhelperaction', null, initCallBack);
+
+		var mainPVActivityGuid = Util.getUrlParams('mainPVActivityGuid');
+
+		var processVersionGuid = Util.getUrlParams('processVersionGuid');
+
+		//Initializes the callback event
+		function initCallBack(data) {
+			if (data.mode == "activityPage") {
+				document.getElementById("material").style.display = "";
+			} else if (data.mode == "context") {
+				document.getElementById("context").style.display = "";
+				document.getElementById("addcontext").style.display = "";
+			} else if (data.mode == "function") {
+				document.getElementById("method").style.display = "";
+				document.getElementById("addmethod").style.display = "";
+			}
+			//  window.frames['urlLink'].location.href = data.urlLink; 
+			document.getElementById("urlLink").src = data.urlLink;
+
+		}
+
+		function addnewcontext() {
+			epoint.openTopDialog('The new data',
+					'framemanager/workflow/design/contextfield?processVersionGuid='
+							+ processVersionGuid + '&mainPVActivityGuid='
+							+ mainPVActivityGuid, setParValueOperJS);
+		}
+
+		function addnewmethods() {
+			epoint.openTopDialog('The new method',
+					'framemanager/workflow/design/methodlist?processVersionGuid='
+							+ processVersionGuid + '&mainPVActivityGuid='
+							+ mainPVActivityGuid, setParValueOperJS);
+		}
+		
+		function setParValueOperJS(rtnValue) {
+			if (rtnValue || rtnValue == 'close' ) {
+				epoint.initPage('designhelperaction', null, initCallBack);
+            }	
+		}
+
+		function close(data) {
+			epoint.closeDialog(data);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

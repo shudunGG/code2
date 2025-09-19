@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>卡片模板选择列表</title>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div style=" float: left; width: 50%;">
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="模板名称">
+							<input class="mini-textbox" bind="dataBean.ChartName" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc" idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true" allowCellValid="true" action="getDataGridData"
+				showPager="false" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true" onselectionchanged="onSelectionChanged" >
+				<div property="columns">
+					<div type="indexcolumn" headerAlign="center" width="50">序</div>
+					<div field="ChartName" width="140" headerAlign="center" align="center">卡片模板名称 </div>
+					<div width="40" headerAlign="center" align="center" renderer="onChooseRenderer">确认</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="card-minipic">
+    	<div class="mini-outputtext" id="minipic" value="<img id='pic' src='' />" autoEscape="false"></div>
+    </div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitmobilecardtemplatelistaction');
+		
+		//确认选择
+		var onChooseRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-check", "choose", "epoint_total");
+		}
+		
+		function choose(e) {
+			epoint.closeDialog(e.rowguid);
+		}
+		
+		
+		function onSelectionChanged(e) {
+            var grid = e.sender;
+            var record = grid.getSelected();
+            epoint.execute('getPic', '', [ record.rowguid ], function(data){
+            	$('#pic').attr("src", "../cockpitcard/images/" + record.rowguid + "/" + data.chartIcon);
+            });
+        }
+
+		// 回掉提醒
+		function msgcallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			}
+		}
+
+		// 刷新
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form'], '', true);
+		}
+
+
+	</script>
+</body>
+
+</html>

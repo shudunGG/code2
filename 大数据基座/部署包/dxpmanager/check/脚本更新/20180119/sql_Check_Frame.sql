@@ -1,0 +1,1 @@
+select case count(1) when 0 then 1 else 0 end from frame_user where title !=null or title !=''

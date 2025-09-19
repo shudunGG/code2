@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>订阅角色</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="./css/roleSelect.css" />
+<style type="text/css">
+.footer-btns > .mini-button{
+margin-top: 20px
+}
+</style>
+</head>
+
+<body>
+	<div class="role-contain" id="role-contain">
+		<div class="role-status">
+			<div class="public-status l" id="public-status"></div>
+			<span class="public-lable" id="public-lable"> 公开状态：未开启</span>
+		</div>
+		<div>
+			<a id="addRole" class="mini-button" state="primary" onclick="addRole"></a>
+		</div>
+		<div class="tab-contain">
+			<div id="multi-tabs" class="hidden multi-tabs">
+				<div id="tabs1" class="mini-tabs" tabAlign="fit" activeIndex="0"
+					style="width: 100%; height: 100%;" plain="false">
+					<div title="授权角色">
+						<div class="role-tab">
+							<div class="clearfix">
+								<div class="r  role-search">
+									<input class="search-input" id="search-input" type="text"
+										placeholder="搜索角色名称" />
+								</div>
+							</div>
+							<div class="role-box" id=""></div>
+						</div>
+					</div>
+					<div title="授权用户">2</div>
+					<div title="授权部门">
+						<div id="tree" style="width: 100%;" class="mini-tabstreeselect"
+							action="" filterMode="server" loadWhenChecked="true"
+							selectedPanelTitle="已选部门" canCheckParent="true">
+							<div tabText="部门列表"></div>
+						</div>
+					</div>
+					<div title="授权群组">4</div>
+				</div>
+			</div>
+
+			<div id="single-tab" class="single-tab hidden">
+				<div class="role-tab">
+					<div class="clearfix">
+						<div class="r  role-search">
+							<input class="search-input" id="search-input" type="text"
+								placeholder="搜索角色名称" />
+						</div>
+					</div>
+					<div class="role-box" id="role-box2"></div>
+				</div>
+			</div>
+		</div>
+		<div class="footer-btns">
+			<span class="roleconfig-btn mini-button" state="primary">角色管理</span> <span
+				class="confirm-btn mini-button">保存设置</span> <a
+				class="mini-button" onclick="epoint.closeDialog('close')">取消</a>
+		</div>
+	</div>
+	<!-- 内容模板 -->
+	<script type="x-tmpl-mustache" id="role-template">
+        <ul>
+            {{#list}}
+            <li class="role-classify {{#isChecked}}select-all{{/isChecked}}">
+                <div class="role-title">
+                    <div data-id="{{id}}" data-title="{{title}}" class="role-title-check {{#isSearch}}search-title{{/isSearch}} {{#isHideCheck}}no-check{{/isHideCheck}} {{#isChecked}}active{{/isChecked}} l">
+                        {{^isSearch}}<i class="role-icons l"></i>{{/isSearch}}
+                        <span class="l">{{title}}</span>
+                    </div>
+                    <i class="role-arrow r"></i>
+                </div>
+                <div class="role-list-content">
+                    <ul class="clearfix role-list">
+                        {{#children}}
+                        <li class="role-item l">
+                            <div data-id="{{id}}" data-title="{{title}}" id="check-{{id}}" class="role-check {{#isSearch}}search-check{{/isSearch}} {{#isHideCheck}}no-check{{/isHideCheck}} {{#isChecked}}active{{/isChecked}} clearfix">
+                                <i class="role-icons l"></i>
+                                <span class="l">{{title}}</span>
+                            </div>
+                        </li>
+                        {{/children}}
+                    </ul>
+                </div>
+            </li>
+            {{/list}}
+        </ul>
+    </script>
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 授权用户，部门，群组等
+		epoint.initPage('approlesettingaction', '', function() {
+			renderRoleList();
+		});
+
+		var appGuid = Util.getUrlParams('guid');
+		
+		var roleConfig = {
+			// 角色列表
+			roleList : epoint
+					.dealRestfulUrl('approlesettingaction/getRoleData'),
+			//保存
+			roleSave : 'approlesettingaction/saveUserSetting',
+			// 角色搜索
+			searchRole : epoint
+					.dealRestfulUrl('approlesettingaction/searchRoles')
+		}
+	</script>
+	<script src="./js/roleSelect.js"></script>
+</body>
+
+</html>

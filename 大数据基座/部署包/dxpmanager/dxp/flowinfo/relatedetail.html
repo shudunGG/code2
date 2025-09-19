@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>作业导入</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form1">
+			<div role="form">
+				<div id="form" class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control" label="关联作业" starred="true" >
+								<input id="relateflow" onbuttonclick="openRelatePage"  required="true" 
+									bind="relateFlows" allowInput="false" class="mini-buttonedit"
+									emptyText="" /> <input id="relateflowval" class="mini-hidden">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="btn-group" style="margin: 0 auto; width: 25%;">
+			<a class="mini-button mr10" onclick="save()">确定</a> <a
+				class="mini-button" onclick="close()">关闭</a>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		var flowguid;
+		var advancedsetting = mini.get('advancedsetting');
+		epoint.initPage('uploadflowaction', '', function(data) {
+			flowguid = data.flowGuid;
+			mini.get('relateflow').setValue(data.relateFlows);
+			mini.get('relateflow').setText(data.relateFlowTexts);
+		});
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('saveRelate', '@all', function(data) {
+					if (data.result.indexOf('成功') != -1) {
+						epoint.alert(data.result, '提示', function() {
+							epoint.closeDialog(flowguid);
+						}, 'success');
+					} else {
+						epoint.alert(data.result);
+					}
+				});
+			}
+		}
+
+		function close() {
+			epoint.closeDialog(flowguid);
+		}
+
+		function openRelatePage() {
+			epoint.openTopDialog('关联作业',
+					'dxp/flowinfo/selectflowinfolist?flowType=02&&rowguid='
+							+ flowguid, function(data) {
+						var name = '', val = '';
+						if (data != 'close') {
+							for (var i = 0; i < data.length; i++) {
+								name += data[i].flowname + ';';
+								val += data[i].rowguid + ';';
+							}
+							mini.get('relateflow').setValue(val);
+							mini.get('relateflow').setText(name);
+						}
+					});
+		}
+	</script>
+</body>
+</html>

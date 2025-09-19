@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>读表算子</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" requiredErrorText="步骤名称不能为空"
+							required="true" emptyText="请输入步骤名称" vtype="maxLength:20" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="参数值">
+						<div id="defaultModel" class="mini-datagrid" idField="rowguid"
+							showPager="false" action="getDataGridData">
+							<div property="columns">
+								<div width="30" headerAlign="center" name="field" field="field"
+									align="center">
+									表字段选择 <input property="editor" class="mini-combobox"
+										data="Genderstime1" style="width: 70%;" onvaluechanged="changeselect"
+										inputStyle="text-align:left" showClose="true" requiredErrorText="表字段选择不能为空"
+										oncloseclick="onCloseClick" required="true" />
+								</div>
+
+								<div width="20" headerAlign="center" align="center"
+									name="refield" field="refield">
+									字段重命名<input property="editor" class="mini-textbox refield-operate-select"
+										style="width: 70%;" inputStyle="text-align:left"  requiredErrorText="字段重命名不能为空"
+										required="true" onvalidation="englishjy"/>
+								</div>
+
+								<div width="20" headerAlign="center" align="center"
+									name="refieldtitle" field="refieldtitle">
+									字段标题重命名<input property="editor" class="mini-textbox refieldtitle-operate-select"
+										style="width: 70%;" inputStyle="text-align:left" />
+								</div>
+
+								<div name="add" width="20" headerAlign="center" align="center"
+									renderer="onaddRenderer1">新增</div>
+							</div>
+						</div>
+						<input id="renamelist" name="renamelist" class="mini-hidden">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script src="js/fieldcheck.js"></script>
+	
+	<script>
+		// 初始化页面
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var grid1 = mini.get("defaultModel");
+		var grid1count = 0;
+		var Genderstime1;
+		var emptyfilljson;
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modelrenamefieldaction?stepId=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (e.Genderstime1) {
+				Genderstime1 = e.Genderstime1;
+			}
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {
+			if (grid1.data) {
+				for (var i = 0; i < grid1.data.length; i++) {
+					grid1.beginEditRow(grid1.getRow(i));
+					grid1count++;
+				}
+			}
+		}
+
+		function setGridData() {
+			var rows = grid1.findRows();
+			$.each(rows, function(i, o) {
+				grid1.commitEditRow(o);
+			});
+			var dataStr = JSON.stringify(grid1.getData());
+			mini.get('renamelist').setValue(dataStr);
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate('@all', false)) {
+				setGridData();
+
+				var griddata=grid1.getData();
+				for(var i=0;i<griddata.length;i++){
+				    for(var j=i+1;j<griddata.length;j++){
+                        if(griddata[i].field==griddata[j].field){
+                            epoint.alert(griddata[i].field+'不能重复重命名！');
+                            loadParam();
+                            return;
+                        }
+				    }
+				}
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+						loadParam();
+					}
+				});
+			}
+		}
+
+		function onCloseClick(e) {
+			console.log(e);
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		// 绘制新增的按钮
+		var onaddRenderer1 = function(e) {
+			var row = e.rowIndex;
+			var uid = e.record._uid;
+			if (row == 0) {
+				return epoint.renderCell(e, "action-icon icon-addcircle",
+						"add1");
+			} else {
+				var s = '<a href="javascript:deleteinfo1(\'' + uid
+						+ '\')" class="action-icon icon-minuscircle"></a>';
+				return s;
+			}
+		};
+
+		// 新增一行调用的方法
+		function add1() {
+			var newRow = {
+				name : "New Row"
+			};
+			grid1.addRow(newRow, grid1count + 1);
+			grid1.beginEditRow(newRow);
+			// 让新增栏在下方出现
+			grid1count++;
+		}
+
+		// 删除一行调用的方法
+		function deleteinfo1(row_uid) {
+			var row = grid1.getRowByUID(row_uid);
+			grid1.removeRow(row, true);
+			grid1count--;
+		}
+
+		function changeselect(e) {
+				var selectobj = JSON.parse(Genderstime1);
+				var selectid = e.value;
+				for (var i = 0; i < selectobj.length; i++) {
+					if (selectid == selectobj[i].id) {
+						var $parent = $(e.sender.el).parent().parent(); // .siblings('.refield-operate');
+						var $time = mini.byClass('refield-operate-select',
+								$parent);
+						mini.get($time).setValue(selectobj[i].id);
+
+						$parent = $(e.sender.el).parent().parent(); // .siblings('.refield-operate');
+						$time = mini.byClass('refieldtitle-operate-select',
+								$parent);
+							var text=selectobj[i].text;
+							if(text.indexOf('(')!=-1){
+								text=text.substring(0,text.indexOf('('));
+							}
+							mini.get($time).setValue(text);
+						break;
+					}
+				}
+		}
+
+		
+	</script>
+</body>
+</html>

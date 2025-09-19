@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>添加数据表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="add"
+				onclick="saveAndClose()">确定添加</a><a class="mini-button"
+				id="addCancel" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">取消添加</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<span class="text-danger">
+				数据源:指定物理表数据源，选择后物理表将会新建到此数据源，如果不选择数据源，则默认框架数据源； </span>
+		</p>
+		<!-- 		<p> -->
+		<!-- 			<span class="text-danger"> 如果勾选联机数据源，用作选择联机数据源；联机数据源:若启用联机数据源，所有表操作都是针对 数据源 下拉框 对应数据源的数据表 </span> -->
+		<!-- 		</p> -->
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row"></div>
+				<div role="row"></div>
+				<div role="row">
+					<div role="control" label="表中文名称" starred="true">
+						<input class="mini-textbox"
+							bind="eiatablebasicinfoaddaction.tableBasicInfo.tableName"
+							required="true" requiredErrorText="表中文名称不能为空"
+							vtype="maxLength:50" width="90%" />
+					</div>
+					<div role="control" label="SQL表名" id="sqlDiv" starred="true">
+						<input id="sqlTableName"
+							bind="eiatablebasicinfoaddaction.tableBasicInfo.sqlTableName"
+							required="true" requiredErrorText="SQL表名不能为空"
+							class="mini-textbox" onValidation="onSqlTableNameValidation"
+							emptyText="数据表名" width="90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据源" starred="true">
+						<input autoLoad="false" id="dataSource"
+							action="eiatablebasicinfoaddaction.getDataResource"
+							showNullItem="true"
+							bind="eiatablebasicinfoaddaction.dataSourceGuid" required="true"
+							property="editor" class="mini-combobox" width="96%"
+							onvaluechanged="selectedDataSourceChanged" allowInput="false"
+							nullItemText="请选择" />
+					</div>
+				</div>
+				<!-- 	<div role="row">
+					<div role="control" label="联机数据源">
+						<div id="linkds" class="mini-checkbox" style="width: 20px" bind="eiatablebasicinfoaddaction.isEnable" readOnly="false" onvaluechanged="changType"></div>
+						<div class="mini-outputtext" value="启用" style="width: 30px"></div>
+					</div>
+				</div> -->
+				<div role="row" id="dataSourceRow" style="display: none">
+					<div role="control" label="数据表">
+						<div class="mini-autocomplete" id="acSimple" textField="text"
+							valueField="id" bind="eiatablebasicinfoaddaction.tableName"
+							extraId="dataSource"
+							action="eiatablebasicinfoaddaction.getComplete"></div>
+					</div>
+				</div>
+				<div role="row">
+					<!-- TODO -->
+					<div role="control" label="排序号">
+						<input bind="eiatablebasicinfoaddaction.tableBasicInfo.ordernum"
+							class="mini-textbox" vType="int;range:0,99999" width="96%" />
+					</div>
+					<!-- 					<div role="control" label="表ID"> -->
+					<!-- 						<input bind="eiatablebasicinfoaddaction.tableBasicInfo.tableid" class="mini-textbox" vType="int" width="90%" /> -->
+					<!-- 					</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('eiatablebasicinfoaddaction', "", callback);
+
+		function callback() {
+		}
+
+		// 保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('eiatablebasicinfoaddaction.add', 'fui-form',
+						closeCallback);
+			}
+		}
+
+		// 是否启用联机数据源
+		function changType(e) {
+			var checked = this.getChecked();
+			var dsRow = $('#dataSourceRow');
+			if (checked) {
+				Util.form.hideField('#sqlDiv');
+				dsRow.show();
+			} else {
+				Util.form.showField('#sqlDiv');
+				dsRow.hide();
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.message) {
+				//if (data.message.indexOf("成功") != -1) {
+				if (data.success) {
+					epoint.alertAndClose(data.message, '', null, null,
+							'success');
+				} else {
+					epoint.alert(data.message, '', null, 'error');
+				}
+			}
+		}
+
+		function selectedDataSourceChanged(e) {
+			setSelectedDataSourcey(e.value);
+		}
+
+		function setSelectedDataSource(selectedDataSource) {
+			mini.get("dataSource").setValue(selectedDataSource);
+		}
+
+		//验证sql表名不能是纯数字
+		function onSqlTableNameValidation(e) {
+			if (e.isValid) {
+				var re = new RegExp("^[0-9]+$");
+				var flag = !re.test(e.value);
+				if(flag){
+				   re = new RegExp("^[A-Za-z0-9_]+$");
+				   flag = re.test(e.value);
+				}
+				if (!flag) {
+					e.errorText = "请输入英文、数字、下划线组成的SQL表名，不允许输入纯数字";
+					e.isValid = false;
+				}
+			}
+		}
+	</script>
+</body>
+
+</html>

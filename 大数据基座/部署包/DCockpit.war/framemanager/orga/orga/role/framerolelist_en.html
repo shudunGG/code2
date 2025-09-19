@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The role list</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="addrole" class="mini-button" onclick="add">sure add</a>
+			<a id="deleterole" class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm the deletion?','',deleteSelected);}">delete selected</a>
+			<a id="saverole" class="mini-button" onclick="saveModify">save changes</a>
+		</div>
+	</div>
+	<!-- conditions area -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="character name" starred="true" >
+						<input id="rolename" bind="frameRole.roleName" class="mini-textbox"
+							required="true" requiredErrorText="Character namemandatory"
+							vtype="maxLength:15" />
+					</div>
+					<div role="control" label="category">
+						<input bind="frameRole.roleType" onvalidation="onComboValidation"  value="all"
+							action="getFrameRoleType" allowInput="false" autoLoad="true"
+							class="mini-combobox" onvaluechanged="searchData" />
+						<input id="roleTypes" action="getFrameRoleTypeExcludeNull" autoLoad="true" class="mini-combobox hidden" />	
+					</div>
+					<div role="control" label="order no">
+						<input id="oNumber" bind="frameRole.orderNumber" maxLength="8" class="mini-textbox" vtype="int" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>		
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="roleGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellValid="true" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">
+					order
+				</div>
+				<div field="roleName" headerAlign="center" renderer="onRoleNameRender" vtype="required;maxLength:15" width="100%">
+					character name<input property="editor" class="mini-textbox" maxLength="15" style="width: 100%" />
+				</div>
+				<div field="orderNumber" headerAlign="center" align="right" allowSort="true" vtype="int" width="200">
+					order no<input property="editor" class="mini-textbox" maxLength="8" inputStyle="text-align:right" style="width: 100%" />
+				</div>
+				<div field="lx" headerAlign="center" align="center" renderer="onLxRender" width="200">
+					type
+				</div>
+				<div field="roleType" type="comboboxcolumn"  autoShowPopup="true" align="true"  headerAlign="center" allowSort="true" width="150">
+					category<input property="editor" class="mini-combobox" onvalidation="onComboValidation" data="roleTypes" allowInput="false" style="width: 99%" />
+				</div>
+				<div name="shezhi" headerAlign="center" renderer="onUserRoleRender" align="center" width="80">
+					Settings
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage('framerolelistaction','', initGrid);
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+		
+		//soa需要隐藏列
+		function initGrid(e) {
+			if (e.enableSOA == true) {//要隐藏掉增删改操作
+				mini.get('addrole').setVisible(false);
+				mini.get('deleterole').setVisible(false);
+				mini.get('saverole').setVisible(false);
+				grid.hideColumn("shezhi");//隐藏修改列
+			} 
+		}
+
+		
+		var roleTypes;
+		
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+		//At the time of initial edit, if it is a reserve role, can't modify the name
+        grid.on("cellbeginedit", function (e) {
+            if (e.field == "roleName") {
+                var row = e.record;
+                var editor = e.editor;
+                var enabled = row.isreserved == "1" ? false : true;
+                editor.setEnabled(enabled);
+            }
+        });
+
+		var combox = mini.get("roleTypes");
+
+		combox.on("load", function(e) {
+			roleTypes = e.sender.data;
+		});
+		
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid','fui-form']);
+		}
+		
+		//Changes to monitor
+		function onComboValidation(e) {
+            var items = this.findItems(e.value);
+            if (!items || items.length == 0) {
+                e.isValid = false;
+                e.errorText = "The input values are not in the drop-down in the data";
+            }
+        }
+		
+		//drawCharacter namecolumn
+		function onRoleNameRender(e){
+			var text=e.value;
+			if(e.record.isreserved=="1"){
+				text="<span class=\"text-assist\">"+e.value+"</span>";
+			}
+			return text;
+		}
+		
+		//drawtypecolumn
+		function onLxRender(e){
+			var text=e.value;
+			if(text=="Keep the global role"){
+				text="<span class=\"text-danger\">"+e.value+"</span>";
+			}else{
+				text="<span class=\"text-primary\">"+e.value+"</span>";
+			}
+			return text;
+		}
+		
+		//newcategory
+		function add(){
+			if (epoint.validate()) {
+				epoint.execute('addFrameRole', 'fui-form',msgCallBack);
+			}
+			epoint.clear('fui-form');
+		}
+		
+		
+		// Back to thediaoremind
+		function msgCallBack(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("successful") == -1) {
+				if(data.success){
+					epoint.alert(msg, '', '', function() {
+						epoint.refresh([ 'datagrid','fui-form'],'',true);
+					}, 'success');
+				} else {
+					epoint.alert(msg, '', function() {
+						epoint.refresh([ 'datagrid','fui-form'],'',true);
+					}, 'warning');
+				}
+			}
+		}
+		//delete selected
+		function deleteSelected() {
+			epoint.execute('deleteSelected', ['datagrid','fui-form'], msgCallBack);
+		}
+		
+		//save changes
+		function saveModify(){
+			grid.validate();
+            if (grid.isValid() == false) {
+                //alert("Please check the input cellscontent");
+                var error = grid.getCellErrors()[0];
+                grid.beginEditCell(error.record, error.column);
+                return;
+            }
+			epoint.execute('saveAll', ['datagrid','fui-form'],msgCallBack);
+		}
+		
+		function  openRoleUser(roleGuid){
+			epoint.openDialog("user role relationshipSet up the", 'framemanager/orga/orga/role/roleuserset?roleGuid='+roleGuid, "", {'width': 650, 'height': 600});
+		}
+		
+		//drawSet up thebutton
+		function onUserRoleRender(e){
+			return epoint.renderCell(e, "action-icon icon-gear", "openRoleUser","roleGuid");
+		}
+		
+		
+		//]]>
+	</script>
+
+
+</body>
+</html>

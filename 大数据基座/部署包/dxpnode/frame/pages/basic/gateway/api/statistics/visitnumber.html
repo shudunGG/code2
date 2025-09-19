@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="css/nginxmonitor.css">
+<title>访问次数统计</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div id="tabs1" class="mini-tabs" activeIndex="0"
+			onactivechanged="valuechanged" style="width: 100%; height: 100%;"
+			plain="false">
+			<div name="ipvisittabs" title="基于访问IP">
+				<div class="request-content" id="ipRequest">
+					<div class="search-bar">
+						<ul class="timerange">
+							<li value="onehour">一小时</li>
+							<li value="twohour">两小时</li>
+							<li value="threehour">三小时</li>
+							<li value="fourhour">四小时</li>
+							<li class="active2" value="oneday">天</li>
+							<li value="weekhour">周</li>
+							<li value="monthhour">月</li>
+							<li value="customhour">自定义</li>
+						</ul>
+						<div class="custome-time" style="display: none" id="ipcustome">
+							<input id="start" class="mini-datepicker" bind="start"
+								format="yyyy-MM-dd" data-options="{'format':'yyyy/MM/dd'}"
+								onValuechanged="validateDate(this)" /> <span>To</span> <input
+								id="finish" class="mini-datepicker" format="yyyy-MM-dd"
+								bind="finish" data-options="{'format':'yyyy/MM/dd'}"
+								onValuechanged="validateDate(this)" /> <a onclick="clickok()"
+								class="mini-button">确定</a>
+						</div>
+					</div>
+					<div class="chart-block">
+						<div id="ipvisitmain" style="width: 100%; height: 100%;"></div>
+					</div>
+				</div>
+			</div>
+			<div name="uservisittabs" title="基于用户">
+				<div class="request-content">
+					<div class="search-bar">
+						<ul class="timerange">
+							<li value="onehour">一小时</li>
+							<li value="twohour">两小时</li>
+							<li value="threehour">三小时</li>
+							<li value="fourhour">四小时</li>
+							<li value="oneday">天</li>
+							<li value="weekhour">周</li>
+							<li value="monthhour">月</li>
+							<li value="customhour">自定义</li>
+						</ul>
+						<div class="custome-time" style="display: none" id="usercustome">
+							<input id="start1" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="ustart"
+								onValuechanged="validateDate(this)" /> <span>To</span> <input
+								id="finish1" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="ufinish"
+								onValuechanged="validateDate(this)" /> <a onclick="clickok1()"
+								class="mini-button">确定</a>
+						</div>
+					</div>
+					<div class="chart-block">
+						<div id="uservisitmain" style="width: 100%; height: 100%;"></div>
+					</div>
+				</div>
+			</div>
+			<div name="apivisittabs" title="基于API">
+				<div class="request-content">
+					<div class="search-bar">
+						<ul class="timerange">
+							<li value="onehour">一小时</li>
+							<li value="twohour">两小时</li>
+							<li value="threehour">三小时</li>
+							<li value="fourhour">四小时</li>
+							<li value="oneday">天</li>
+							<li value="weekhour">周</li>
+							<li value="monthhour">月</li>
+							<li value="customhour">自定义</li>
+						</ul>
+						<div class="custome-time" style="display: none" id="apicustome">
+							<input id="start2" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="astart"
+								onValuechanged="validateDate(this)" /> <span>To</span> <input
+								id="finish2" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="afinish"
+								onValuechanged="validateDate(this)" /> <a onclick="clickok2()"
+								class="mini-button">确定</a>
+						</div>
+					</div>
+					<div class="chart-block">
+						<div id="apivisitmain" style="width: 100%; height: 100%;"></div>
+					</div>
+				</div>
+			</div>
+			<div name="browservisittabs" title="浏览器">
+				<div class="request-content">
+					<div class="search-bar">
+						<ul class="timerange">
+							<li value="onehour">一小时</li>
+							<li value="twohour">两小时</li>
+							<li value="threehour">三小时</li>
+							<li value="fourhour">四小时</li>
+							<li value="oneday">天</li>
+							<li value="weekhour">周</li>
+							<li value="monthhour">月</li>
+							<li value="customhour">自定义</li>
+						</ul>
+						<div class="custome-time" style="display: none"
+							id="browsercustome">
+							<input id="start3" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="bstart"
+								onValuechanged="validateDate(this)" /> <span>To</span> <input
+								id="finish3" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="bfinish"
+								onValuechanged="validateDate(this)" /> <a onclick="clickok3()"
+								class="mini-button">确定</a>
+						</div>
+					</div>
+					<div class="chart-block">
+						<div id="browservisitmain" style="width: 100%; height: 100%;"></div>
+					</div>
+				</div>
+			</div>
+			<div name="terminalvisittabs" title="终端">
+				<div class="request-content">
+					<div class="search-bar">
+						<ul class="timerange">
+							<li value="onehour">一小时</li>
+							<li value="twohour">两小时</li>
+							<li value="threehour">三小时</li>
+							<li value="fourhour">四小时</li>
+							<li value="oneday">天</li>
+							<li value="weekhour">周</li>
+							<li value="monthhour">月</li>
+							<li value="customhour">自定义</li>
+						</ul>
+						<div class="custome-time" style="display: none"
+							id="terminalcustome">
+							<input id="start4" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="tstart"
+								onValuechanged="validateDate(this)" /> <span>To</span> <input
+								id="finish4" class="mini-datepicker" format="yyyy-MM-dd"
+								data-options="{'format':'yyyy/MM/dd'}" bind="tfinish"
+								onValuechanged="validateDate(this)" /> <a onclick="clickok4()"
+								class="mini-button">确定</a>
+						</div>
+					</div>
+					<div class="chart-block">
+						<div id="terminalvisitmain" style="width: 100%; height: 100%;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<!-- 请引入 ECharts.js文件 -->
+	<script src="js/echarts.common.min.js"></script>
+	<script src="js/echarts.min.js"></script>
+	<script>
+		var index = 4;
+		// 初始化页面
+		var curname = 'ipvisittabs';
+		window.onload = function() {
+			$('.chart-block').height(
+					$(window).height() - $('.mini-tabs-scrollCt').height()
+							- $('.search-bar').height() - 55);
+
+			epoint.initPage('visitnumberaction', null, function(data) {
+				if ("ipvisittabs" == curname) {
+					ipVisitInitChart();
+					getIpChartInfo();
+				} else if ("uservisittabs" == curname) {
+					userVisitInitChart();
+					getUserChartInfo();
+				} else if ("apivisittabs" == curname) {
+					apiVisitInitChart();
+					getApiChartInfo();
+				} else if ("browservisittabs" == curname) {
+					browserVisitInitChart();
+					getBrowserChartInfo();
+				} else if ("terminalvisittabs" == curname) {
+					terminalVisitInitChart();
+					getTerminalChartInfo();
+				}
+			});
+		};
+
+		function valuechanged(e) {
+			$(".timerange li").removeClass('active2');
+			var name = e.name;
+			if ("ipvisittabs" == name) {
+				ipVisitInitChart();
+				getIpChartInfo();
+				$(".timerange li").eq(index).addClass('active2');
+			} else if ("uservisittabs" == name) {
+				userVisitInitChart();
+				getUserChartInfo();
+				$(".timerange li").eq(index + 8).addClass('active2');
+			} else if ("apivisittabs" == name) {
+				apiVisitInitChart();
+				getApiChartInfo();
+				$(".timerange li").eq(index + 16).addClass('active2');
+			} else if ("browservisittabs" == name) {
+				browserVisitInitChart();
+				getBrowserChartInfo();
+				$(".timerange li").eq(index + 24).addClass('active2');
+			} else if ("terminalvisittabs" == name) {
+				terminalVisitInitChart();
+				getTerminalChartInfo();
+				$(".timerange li").eq(index + 32).addClass('active2');
+			}
+			curname = name;
+		}
+
+		//=========================================基于ip==================================================
+		var myChart1;
+		var ipVisitInitChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart1 = echarts.init(document.getElementById('ipvisitmain'));
+
+		}
+
+		// 获取图表中的数据
+		var getIpChartInfo = function getIpChartInfo() {
+			epoint.execute("visitnumberaction.getIpBarData", null, null, function(
+					data) {
+				iprendermorechart(data);
+			});
+		}
+
+		var iprendermorechart = function(data) {
+			var name = data.name;
+			var time = data.time;
+			var basedip = data.basedip;
+			var series = [];
+			for (var i = 0; i < name.length; i++) {
+				series.push({
+					name : name[i],
+					type : 'bar',
+					itemStyle : {
+						normal : {
+							label : {
+								show : true
+							}
+						}
+					},
+					data : basedip[i]
+				});
+			}
+			// 指定图表的配置项和数据
+			option = {
+				title : {
+					text : 'ip访问统计图',
+
+				},
+				legend : {
+					type : 'scroll',
+					left : '15%',
+					right : '15%',
+					data : name
+				},
+				tooltip : {
+					trigger : 'axis'
+				},
+				dataZoom : [ {
+					type : 'slider',
+					show : true,
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+					zoomLock : true
+				}, {
+					type : 'inside',
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+				} ],
+				toolbox : {
+					show : true,
+					feature : {
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'line', 'bar' ]
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+				xAxis : [ {
+					type : 'category',
+					data : time,
+					axisTick : {
+						alignWithLabel : false
+					}
+				} ],
+				yAxis : [ {
+					type : 'value',
+					name : '次数(次)'
+				} ],
+				series : series
+
+			};
+
+			// 使用刚指定的配置项和数据显示图表。
+			myChart1.setOption(option);
+		}
+
+		//================================================基于用户=============================================
+
+		var myChart2;
+		var userVisitInitChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart2 = echarts.init(document.getElementById('uservisitmain'));
+
+		}
+
+		// 获取图表中的数据
+		var getUserChartInfo = function getUserChartInfo() {
+			epoint.execute("visitnumberaction.getUserBarData", null, null, function(
+					data) {
+				userendermorechart(data);
+			});
+		}
+
+		var userendermorechart = function(data) {
+			var name = data.name;
+			var time = data.time;
+			var baseduser = data.baseduser;
+			var series = [];
+			for (var i = 0; i < name.length; i++) {
+				series.push({
+					name : name[i],
+					type : 'bar',
+					itemStyle : {
+						normal : {
+							label : {
+								show : true
+							}
+						}
+					},
+					data : baseduser[i]
+				});
+			}
+			// 指定图表的配置项和数据
+			option = {
+				title : {
+					text : '用户访问统计图',
+
+				},
+				legend : {
+					type : 'scroll',
+					left : '15%',
+					right : '15%',
+					data : name
+				},
+				tooltip : {
+					trigger : 'axis'
+				},
+				dataZoom : [ {
+					type : 'slider',
+					show : true,
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+					zoomLock : true
+				}, {
+					type : 'inside',
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+				} ],
+				toolbox : {
+					show : true,
+					feature : {
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'line', 'bar' ]
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+				calculable : true,
+				xAxis : [ {
+					type : 'category',
+					data : time,
+					axisTick : {
+						alignWithLabel : false
+					}
+				} ],
+				yAxis : [ {
+					type : 'value',
+					name : '次数(次)'
+				} ],
+				series : series
+			};
+
+			// 使用刚指定的配置项和数据显示图表。
+			myChart2.setOption(option);
+		}
+		//========================================================基于api=========================================
+
+		var myChart3;
+		var apiVisitInitChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart3 = echarts.init(document.getElementById('apivisitmain'));
+
+		}
+
+		// 获取图表中的数据
+		var getApiChartInfo = function getApiChartInfo() {
+			epoint.execute("visitnumberaction.getApiBarData", null, null, function(
+					data) {
+				apirendermorechart(data);
+			});
+		}
+
+		var apirendermorechart = function(data) {
+			var name = data.name;
+			var time = data.time;
+			var basedapi = data.basedapi;
+			var series = [];
+			for (var i = 0; i < name.length; i++) {
+				series.push({
+					name : name[i],
+					type : 'bar',
+					itemStyle : {
+						normal : {
+							label : {
+								show : true
+							}
+						}
+					},
+					data : basedapi[i]
+				});
+			}
+
+			// 指定图表的配置项和数据
+			option = {
+				title : {
+					text : 'api访问统计图',
+
+				},
+				tooltip : {
+					trigger : 'axis'
+				},
+				legend : {
+					type : 'scroll',
+					left : '15%',
+					right : '15%',
+					data : name
+				},
+				dataZoom : [ {
+					type : 'slider',
+					show : true,
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+					zoomLock : true
+				}, {
+					type : 'inside',
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+				} ],
+				toolbox : {
+					show : true,
+					feature : {
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'line', 'bar' ]
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+
+				calculable : true,
+				xAxis : [ {
+					type : 'category',
+					data : time,
+					axisTick : {
+						alignWithLabel : false
+					}
+				} ],
+				yAxis : [ {
+					type : 'value',
+					name : '次数(次)'
+				} ],
+				series : series
+			};
+
+			// 使用刚指定的配置项和数据显示图表。
+			myChart3.setOption(option);
+		}
+
+		//搜索时间
+		$('.timerange li').click(function() {
+			$('.active2', $(this).parent()).removeClass('active2');
+			$(this).addClass('active2');
+			index = $(this).index();
+			var text = $(this).attr('value');
+			if ("customhour" == text) {
+				$('.custome-time').show();
+			} else {
+				$('.custome-time').hide();
+				mini.get("start").setValue(null);
+				mini.get("finish").setValue(null);
+				mini.get("start1").setValue(null);
+				mini.get("finish1").setValue(null);
+				mini.get("start2").setValue(null);
+				mini.get("finish2").setValue(null);
+				mini.get("start3").setValue(null);
+				mini.get("finish3").setValue(null);
+				mini.get("start4").setValue(null);
+				mini.get("finish4").setValue(null);
+			}
+			epoint.execute('modifyTimeRange', '', text, function() {
+				epoint.refresh('@all');
+			});
+
+		});
+
+		//验证自定义时间
+		var start = mini.get("start");
+		var end = mini.get("finish");
+		var start1 = mini.get("start1");
+		var end1 = mini.get("finish1");
+		var start2 = mini.get("start2");
+		var end2 = mini.get("finish2");
+		var start3 = mini.get("start3");
+		var end3 = mini.get("finish3");
+		var start4 = mini.get("start4");
+		var end4 = mini.get("finish4");
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'start') {
+						epoint.alert("开始时间不能大于结束时间!");
+						start.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间");
+						end.setValue(null);
+					}
+				}
+			}
+			if (start1.getValue() && end1.getValue()) {
+				if (!epoint.validateDateInterval(start1, end1, 0)) {
+					if (e.id == 'start1') {
+						epoint.alert("开始时间不能大于结束时间!");
+						start1.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间");
+						end1.setValue(null);
+					}
+				}
+			}
+			if (start2.getValue() && end2.getValue()) {
+				if (!epoint.validateDateInterval(start2, end2, 0)) {
+					if (e.id == 'start2') {
+						epoint.alert("开始时间不能大于结束时间!");
+						start2.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间");
+						end2.setValue(null);
+					}
+				}
+			}
+			if (start3.getValue() && end3.getValue()) {
+				if (!epoint.validateDateInterval(start3, end3, 0)) {
+					if (e.id == 'start3') {
+						epoint.alert("开始时间不能大于结束时间!");
+						start3.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间");
+						end3.setValue(null);
+					}
+				}
+			}
+			if (start4.getValue() && end4.getValue()) {
+				if (!epoint.validateDateInterval(start4, end4, 0)) {
+					if (e.id == 'start4') {
+						epoint.alert("开始时间不能大于结束时间!");
+						start4.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间");
+						end4.setValue(null);
+					}
+				}
+			}
+		}
+		//========================================================基于浏览器=========================================
+
+		var myChart4;
+		var browserVisitInitChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart4 = echarts
+					.init(document.getElementById('browservisitmain'));
+
+		}
+
+		// 获取图表中的数据
+		var getBrowserChartInfo = function getBrowserChartInfo() {
+			epoint.execute("visitnumberaction.getBrowserBarData", null, null,
+					function(data) {
+						browserrendermorechart(data.chart);
+					});
+		}
+
+		var browserrendermorechart = function(data) {
+			var value = data.data;
+			// 指定图表的配置项和数据
+			option = {
+				//标题组件，包含主标题和副标题。
+				title : {
+					text : '浏览器访问统计图',
+					x : 'center'
+				},
+				//提示框组件，tooltip即设置在全局
+				tooltip : {
+					//触发类型
+					trigger : 'item',
+					//模板变量有 {a}, {b}，{c}，{d}，{e}，分别表示系列名，数据名，数据值等
+					formatter : "{a} <br/>{b} : {c} ({d}%)"
+				},
+				//图例
+				legend : {
+					//图例列表的布局朝向，可选水平的或垂直的
+					orient : 'vertical',
+					x : 'left',
+					data : [ 'IE浏览器', '360浏览器', '搜狗浏览器', 'Chrome', 'Safari',
+							'腾讯浏览器', '火狐浏览器', 'UC浏览器' ]
+				},
+				//工具栏
+				toolbox : {
+					show : true,
+					feature : {
+						mark : {
+							show : true
+						},
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'pie', 'funnel' ],
+							option : {
+								funnel : {
+									x : '25%',
+									width : '50%',
+									funnelAlign : 'left',
+									max : 1548
+								}
+							}
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+				//是否显示拖拽手柄
+				calculable : true,
+				//系列列表，通过type决定列表的图标类型
+				series : [ {
+					name : '终端类型',
+					type : 'pie',
+					radius : '55%',
+					center : [ '50%', '60%' ],
+					data : value
+				} ]
+			};
+			// 使用刚指定的配置项和数据显示图表。
+			myChart4.setOption(option);
+		}
+
+		//========================================================基于终端=========================================
+
+		var myChart5;
+		var terminalVisitInitChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart5 = echarts.init(document
+					.getElementById('terminalvisitmain'));
+
+		}
+
+		// 获取图表中的数据
+		var getTerminalChartInfo = function getTerminalChartInfo() {
+			epoint.execute("visitnumberaction.getTerminalBarData", null, null,
+					function(data) {
+						terminalrendermorechart(data.chart);
+					});
+		}
+
+		var terminalrendermorechart = function(data) {
+			var value = data.data;
+			// 指定图表的配置项和数据
+			option = {
+				//标题组件，包含主标题和副标题。
+				title : {
+					text : '终端访问统计图',
+					x : 'center'
+				},
+				//提示框组件，tooltip即设置在全局
+				tooltip : {
+					//触发类型
+					trigger : 'item',
+					//模板变量有 {a}, {b}，{c}，{d}，{e}，分别表示系列名，数据名，数据值等
+					formatter : "{a} <br/>{b} : {c} ({d}%)"
+				},
+				//图例
+				legend : {
+					//图例列表的布局朝向，可选水平的或垂直的
+					orient : 'vertical',
+					x : 'left',
+					data : [ 'Windows', 'Mac', 'iPad', 'ios', 'Android',
+							'weixin' ]
+				},
+				//工具栏
+				toolbox : {
+					show : true,
+					feature : {
+						mark : {
+							show : true
+						},
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'pie', 'funnel' ],
+							option : {
+								funnel : {
+									x : '25%',
+									width : '50%',
+									funnelAlign : 'left',
+									max : 1548
+								}
+							}
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+				//是否显示拖拽手柄
+				calculable : true,
+				//系列列表，通过type决定列表的图标类型
+				series : [ {
+					name : '终端类型',
+					type : 'pie',
+					radius : '55%',
+					center : [ '50%', '60%' ],
+					data : value
+				} ]
+			};
+			// 使用刚指定的配置项和数据显示图表。
+			myChart5.setOption(option);
+		}
+
+		//自定义选择时间
+		function clickok() {
+			epoint.refresh([ 'ipcustome', 'ipvisitmain' ]);
+		}
+
+		function clickok1(e) {
+			epoint.refresh([ 'usercustome', 'uservisitmain' ]);
+		}
+
+		function clickok2(e) {
+			epoint.refresh([ 'apicustome', 'apivisitmain' ]);
+		}
+
+		function clickok3(e) {
+			epoint.refresh([ 'browsercustome', 'browservisitmain' ]);
+		}
+		function clickok4(e) {
+			epoint.refresh([ 'browsercustome', 'browservisitmain' ]);
+		}
+	</script>
+</body>
+</html>

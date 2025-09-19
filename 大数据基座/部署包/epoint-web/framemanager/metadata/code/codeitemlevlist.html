@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>分级定义</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div id="operateitemlev">
+			<a class="mini-button" state="primary" onclick="addCodeItemLev()">新增分级</a>
+			<a class="mini-button" onclick="saveAll()">保存分级</a> <a
+				class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确定要删除吗?','',deleteSelected);}">删除选中</a>
+		</div>
+
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>说明：这里定义一个多级代码的每一级定义，包括每级的编码长度。例如：一个行政区划编码3205002中，</p>
+		<p>
+			32表示省份；05表示地级市；002表示县市；那么需要定义三个级别，分级编号1的长度为2；分级编号2的长度为2；分级编号3的长度为3。</p>
+		<p>注意：分级编号必须从1开始，并且必须连续，不能缺失。</p>
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="sysid" multiSelect="true" style="width: 100%; height: 100%;"
+			allowResize="true" action="getDataGridData" showPager="false"
+			allowCellEdit="true" allowCellSelect="true" allowCellValid="true"
+			editNextOnEnterKey="true">
+			<div property="columns">
+				<div type="checkcolumn" name="checkcolumn" width="40"></div>
+
+				<div type="indexcolumn" width="40" align="left">序</div>
+
+				<div field="nowlevstr" width="50" vtype="int;range:0,999999999">
+					分层定义</div>
+				<div field="nowlev" visible="false"></div>
+				<div field="nowbit" name="nowbit" width="50"
+					vtype="int;range:0,999999999;required">
+					本级编码长度 <input property="editor" class="mini-textbox" minWidth="50"
+						inputStyle="text-align:right" />
+				</div>
+				<div field="yesinp" width="50" renderer="onInpRenderer"
+					type="comboboxcolumn" autoShowPopup="true">
+					是否可选 <input autoLoad="false" data="selectItems.selectable"
+						property="editor" class="mini-combobox" minWidth="50" />
+				</div>
+				<div field="isfullpath" width="50" renderer="onFullPathRenderer"
+					type="comboboxcolumn" autoShowPopup="true">
+					返回全路径文本 <input autoLoad="false" data="selectItems.isFullPath"
+						property="editor" class="mini-combobox" minWidth="50" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("codeitemlevlistaction", '', initCallBack);
+
+		var levNum = 0;
+		function initCallBack(e) {
+			if (e.nooperate && e.nooperate == true) {
+				$('#operateitemlev').hide();
+				grid.hideColumn('checkcolumn');
+			}
+			if (e.dataSize) {
+				levNum = e.dataSize;
+			}
+			adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+
+		}
+
+		var selectItems = {
+			'selectable' : [ {
+				id : 0,
+				text : '不可选'
+			}, {
+				id : 1,
+				text : '可选'
+			} ],
+			'isFullPath' : [ {
+				id : 0,
+				text : '否'
+			}, {
+				id : 1,
+				text : '是'
+			} ]
+		};
+
+		function onInpRenderer(e) {
+			for (var i = 0, l = selectItems.selectable.length; i < l; i++) {
+				var sel = selectItems.selectable[i];
+				if (sel.id == e.value) {
+					return sel.text;
+				}
+			}
+			return "";
+		}
+
+		function onFullPathRenderer(e) {
+			for (var i = 0, l = selectItems.isFullPath.length; i < l; i++) {
+				var sel = selectItems.isFullPath[i];
+				if (sel.id == e.value) {
+					return sel.text;
+				}
+			}
+			return "";
+		}
+
+		var grid = mini.get("datagrid");
+
+		// 新增代码项
+		function addCodeItemLev() {
+			levNum++;
+			var newRow = {
+				yesinp : "1",
+				isfullpath : "1",
+				nowlev : levNum,
+				nowlevstr : "第" + levNum + "层"
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditCell(newRow, "nowbit");
+		}
+
+		// 保存
+		function saveAll() {
+
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', 'datagrid', msgCallBack);
+		}
+
+		// 删除
+		function deleteSelected() {
+			var rows = grid.getSelecteds();
+			var deleteNum = rows.length;
+			for (var i = 0; i < rows.length; i++) {
+				if (rows[i]._state && rows[i]._state == 'added') {
+					grid.removeRow(rows[i], false);
+					var changedRows = grid.getChanges('added', false);
+					$(changedRows).each(function(index, r) {
+						if (r.nowlev > rows[i].nowlev) {
+							r.nowlev--;
+							r.nowlevstr = "第" + r.nowlev + "层";
+							grid.updateRow(r);
+						}
+					});
+				}
+			}
+
+			var ids = grid.getSelectedIds();
+			if (ids.length == 0) {
+				levNum -= deleteNum;
+				epoint.showTips('删除成功',  {state : 'success'});
+			} else {
+				epoint.execute('deleteSelected', 'datagrid', function(data) {
+					var msg = data.msg;
+					if (msg) {
+						if (data.success) {
+							epoint.showTips(msg,  {state : 'success'});
+							searchData();
+							levNum -= deleteNum;
+						} else {
+							epoint.showTips(msg, {state : 'warning'});
+						}
+					} else {
+						searchData();
+						levNum -= deleteNum;
+					}
+				});
+			}
+
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg,  {state : 'success'});
+					searchData();
+				} else {
+					epoint.showTips(msg,  {state : 'warning'});
+				}
+			} else {
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//]]>
+	</script>
+
+</body>
+
+</html>

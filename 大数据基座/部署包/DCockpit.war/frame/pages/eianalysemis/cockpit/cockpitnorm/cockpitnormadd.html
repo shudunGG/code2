@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>指标定义表添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+b {
+	color: blue;
+}
+
+b.alias {
+	color: red;
+}
+
+.form-row>.cell {
+	width: 40%;
+}
+
+.form-row>.relation {
+	width: 10%;
+}
+
+.form-label {
+	width: 10%;
+}
+
+.form-control.span2 {
+	width: 40%;
+}
+
+.form-control.span1 {
+	width: 23.3%;
+}
+
+.form-control.span5 {
+	width: 90%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" iconCls="icon-save" onclick="saveTemp">暂存</a>
+			<!-- <a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a> -->
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" style="margin-right: -5px"></a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<div>
+			<div style="margin: 0px auto; text-align: left; width: 750px">
+				<p>
+					<em>时间字段&时间窗口：</em>按时间字段的相应时间窗口对指标结果进行分组统计
+				</p>
+				<p>
+					<em>统计周期：</em>将统计周期作为特殊的过滤条件，统计近一年、近一月、近一周、近一天的数据
+				</p>
+				<p>
+					<em>是否累加：</em>若累加，则指标结果不根据时间窗口分组；若不累加，则指标结果根据时间窗口进行分组
+				</p>
+				<p>
+					<em>结果数量：</em>指标结果数量限制
+				</p>
+				<p>
+					<em>排序方式：</em>指标结果按升序或降序排序
+				</p>
+				<p>
+					<em>API类型：</em>1.选择API;2.输入参数;3.调用服务、测试API;4.在过滤器中输入js代码，使得result变量为指标结果json数组;
+					5.在映射中填入对应的字段键名
+				</p>
+				<p>
+					<em>kylin指标：</em>1.只能选择kylin数据源;2.指标结果实时查询，估不能执行，也无法查看指标结果;3.写sql时支持参数化查询通配符，即'?';4.支持自定义搜索条件（最多一个），以'#'替换
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="指标名称" starred="true">
+									<input id="normname" class="mini-textbox"
+										bind="dataBean.normname" required="required"
+										requiredErrorText="指标名称不能为空" emptyText="请填写指标名称"
+										vtype="maxLength:100;" maxLengthErrorText="指标名称不能超过100个字符" />
+								</div>
+								<div role="control" label="指标类型" starred="true">
+									<div id="normtype" bind="dataBean.normtype"
+										action="getNormtypeList" class="mini-combobox"
+										textField="text" valueField="id"
+										onvaluechanged="onTypeChanged"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="指标分类">
+									<div id="setguid" bind="dataBean.setguid" multiSelect="true"
+										parentField="pid" autoCheckParent="false"
+										showFolderCheckBox="true" expandOnLoad="true"
+										cantChecked="true" showClose="true" oncloseclick="onClearSetguid" expandOnNodeClick="true"
+										action="getOuSetTreeModel" class="mini-treeselect"
+										textField="text" valueField="id"></div>
+								</div>
+								<div role="control" label="ApiCode" starred="true"
+									id="apicodeText">
+									<input class="mini-textbox" bind="dataBean.apicode"
+										id="apicode" required="true" enabled="false"   emptyText="提交后自动生成"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="是否启用" starred="true">
+									<div id="status" name="status" bind="dataBean.status"
+										class="mini-checkbox switch"></div>
+								</div>
+								<div role="control" label="是否预警" starred="true" id="iswarning">
+									<div id="isneedwarning" name="isneedwarning"
+										bind="dataBean.isneedwarning" class="mini-checkbox switch"></div>
+								</div>
+							</div>
+							<div role="row" id="zblx">
+								<div role="control" label="配置类型" starred="true">
+									<div id="configtype" bind="dataBean.configtype"
+										action="getConfigtype" class="mini-radiobuttonlist"
+										textField="text" valueField="id"
+										onvaluechanged="onTypeChanged"></div>
+								</div>
+								<div id="groupTypeDiv" role="control" label="聚合方式"
+									starred="true">
+									<input class="mini-combobox" action="groupbytypeModel"
+										id="groupbytype" bind="dataBean.groupbytype" textField="text"
+										valueField="id" emptyText="请选择" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="数据责任部门" starred="true">
+									<input id="liableou" class="mini-treeselect" 
+										action="getOuTreeModel" bind="dataBean.liableou"
+										showFolderCheckBox="true" showRadioButton="true"
+										showTreeIcon="true" textField="text" idField="id"
+										expandOnLoad="true" required="required"  showFilter="true"
+										requiredErrorText="数据责任部门不能为空"
+										onvaluechanged="liableOuChanged" />
+								</div>
+								<div role="control" label="数据责任人">
+									<input id="liablePer" class="mini-treeselect"
+										onbeforenodeselect="beforenodeselect"
+										action="getOuUserTreeModel" bind="dataBean.liableperson"
+										showFolderCheckBox="true" showRadioButton="true"
+										showTreeIcon="true" textField="text" idField="id"
+										expandOnLoad="true" showFilter="true"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="运营人员" starred="true">
+									<input id="operationperson" class="mini-treeselect"
+										onbeforenodeselect="beforenodeselect"
+										action="getAllUserTreeModel" bind="dataBean.operationperson"
+										showFolderCheckBox="true" showRadioButton="true"
+										showTreeIcon="true" textField="text" idField="id"
+										expandOnLoad="true" required="required"  showFilter="true"
+										requiredErrorText="运营人员不能为空" />
+								</div>
+								<div role="control" label="是否需要审核" starred="true">
+									<div id="needCheck" name="needCheck" bind="dataBean.needCheck"
+										class="mini-checkbox switch"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="单位">
+									<input id="unit" class="mini-textbox" bind="dataBean.unit"
+										vtype="maxLength:50;" maxLengthErrorText="单位不能超过50个字符" />
+								</div>
+								<div role="control" label="排序号" starred="true">
+									<input id="ordernum" class="mini-textbox"
+										bind="dataBean.ordernum" vtype="int;range:0,99999;"
+										emptyText="请填写排序号" inputStyle="text-align:left;"
+										required="true" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="备注">
+									<input id="remark" class="mini-textarea" bind="dataBean.remark"
+										emptyText="请填写备注" vtype="maxLength:1000;"
+										maxLengthErrorText="备注不能超过1000个字符" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="计算规则"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row" id="datasource">
+								<div role="control" label="来源库" starred="true">
+									<input id="datasourceid" class="mini-combobox" textField="text" required="true"
+										bind="dataBean.datasourceid" valueField="id" 
+										action="getDataSourceList" emptyText="请选择"
+										onvaluechanged="datasourceChanged" />
+								</div>
+							</div>
+							<div role="row" id="prestodatasource" style="display: none;">
+								<div role="control" label="来源库" starred="true">
+									<input id="datasourceidps" class="mini-combobox"
+										textField="text" bind="dataBean.psdatasourceid" required="true"
+										valueField="id"  action="getPsDataSourceList"
+										emptyText="请选择" onvaluechanged="datasourceChanged" />
+								</div>
+							</div>
+							<div class="commonType" id="commonType">
+								<div role="row" class="data">
+									<div role="control" label="来源表" starred="true">
+										<input id="datatableguid" class="mini-combobox"
+											textField="text" bind="dataBean.datatableguid" required="true"
+											valueField="id" action="getTableBasicList" emptyText="请选择"
+											onvaluechanged="loadData"/>
+									</div>
+									<div role="control" label="来源字段" starred="true">
+										<input id="datafieldguid" name="datafieldguid"
+											class="mini-combobox" textField="text" required="true"
+											bind="dataBean.datafieldnameen" valueField="id"
+											action="getFieldList" emptyText="请选择"
+											onblur="checkSortColumn" onfocus="checkDataTableGuid"/>
+									</div>
+								</div>
+								<div class="dim">
+									<div role="row">
+										<div role="control" label="维度字段" starred="true">
+											<input id="dimfieldguid" name="dimfieldguid"
+												multiSelect="true" onvaluechanged="addGrid2Row"
+												class="mini-combobox" textField="text" valueField="id"
+												action="getFieldList" emptyText="请选择"
+												onfocus="checkDataTableGuid" allowInput="true" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="维度表" starred="true">
+											<input id="dimtableguid" class="mini-combobox"
+												textField="text" bind="dataBean.dimtableguid"
+												valueField="id" action="getDimtableBasicList"
+												emptyText="请选择" showclose="true" oncloseclick="onClearDimtableguid" onvaluechanged="loadData2"
+												allowInput="true" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="维度值字段">
+											<input id="dimvalue" name="dimvalue" class="mini-combobox"
+												textField="text" valueField="id" action="getFieldList2"
+												emptyText="请选择" onfocus="checkDimTableGuid"
+												allowInput="true" />
+										</div>
+										<div role="control" label="显示字段">
+											<input id="dimtext" name="dimtext" class="mini-combobox"
+												textField="text" valueField="id"
+												bind="dataBean.dimfieldnameen" action="getFieldList2"
+												emptyText="请选择" onfocus="checkDimTableGuid"
+												allowInput="true" />
+										</div>
+									</div>
+									<div role="row" id="dimGridDiv">
+										<div role="control" label="维度过滤条件" starred="true">
+											<div style="border: 1px solid #ccc;">
+												<div id="datagrid2" action="getRelatelistModel"
+													class="mini-datagrid" style="width: 100%; height: 250px;"
+													allowResize="true" idField="id" emptyText="维度过滤条件为空"
+													showEmptyText="true" oncellbeginedit="OnCellBeginEdit2"
+													showPager="false">
+													<div property="columns">
+														<div field="DataFieldNameEN" displayField="DataFieldName"
+															width="150" align="center" headerAlign="center">
+															维度字段 <input property="editor" class="mini-outputtext"
+																valueField="value" textField="text" style="width: 100%;"
+																required="true" requiredErrorText="数据表字段不能为空"
+																emptyText="请选择" allowInput="true">
+														</div>
+														<!--ComboBox：本地数据-->
+
+														<div field="DimFilterFieldNameEN"
+															displayField="DimFilterFieldName" width="150"
+															align="center" headerAlign="center">
+															维表过滤字段 <input property="editor" class="mini-combobox"
+																valueField="value" textField="text" style="width: 100%;"
+																emptyText="请选择" allowInput="true">
+														</div>
+														<div field="DimFilterRelateType" width="50" align="center"
+															headerAlign="center">
+															组合方式 <input property="editor" class="mini-outputtext"
+																name="DimFilterType" value="="
+																style="width: 100%; text-align: center;" />
+														</div>
+														<div field="DimFilterValue" width="150" align="center"
+															headerAlign="center">
+															维表过滤值 <input property="editor" class="mini-textbox"
+																valueField="value" textField="text" style="width: 100%;"
+																emptyText="请填写过滤值" allowInput="true">
+														</div>
+														<div visible="false" field="DimFieldNameEN"></div>
+														<div visible="false" field="RelateType"></div>
+														<div name="action" width="60" headerAlign="center"
+															align="center" renderer="onActionRenderer2"
+															cellStyle="padding:0;">操作</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div role="row" class="data">
+									<div role="control" label="过滤条件">
+										<div style="border: 1px solid #ccc;">
+											<div id="datagrid1" action="getFilterlistModel"
+												class="mini-datagrid" style="width: 100%; height: 250px;"
+												allowResize="true" idField="id"
+												emptyText="过滤条件为空，<a href='javascript:newRow()' style='color:blue;text-decoration:underline;'>增加一条</a>"
+												showEmptyText="true" oncellbeginedit="OnCellBeginEdit"
+												showPager="false">
+												<div property="columns">
+													<div field="DataFieldNameEN" displayField="DataFieldNameCN"
+														width="150" align="center" headerAlign="center">
+														数据表字段 <input property="editor" class="mini-combobox"
+															valueField="value" textField="text" style="width: 100%;"
+															required="true" requiredErrorText="数据表字段不能为空"
+															allowInput="true" emptyText="请选择"
+															onvaluechanged="onDataFieldGuidValueChanged">
+													</div>
+													<!--ComboBox：本地数据-->
+													<div field="FilterType" width="50" align="center"
+														headerAlign="center">
+														过滤条件 <input property="editor" class="mini-combobox"
+															style="width: 100%;" data="fConditonDatas"
+															required="true" requiredErrorText="过滤条件不能为空"
+															emptyText="请选择" />
+													</div>
+													<div field="FilterValue" displayField="FilterValueNameCN"
+														width="150" align="center" headerAlign="center"
+														name="FilterValue">
+														过滤值 <input property="editor" class="mini-combobox"
+															valueField="value" textField="text" style="width: 100%;"
+															required="true" requiredErrorText="过滤值不能为空"
+															allowInput="true" emptyText="请选择">
+													</div>
+													<div name="action" width="120" headerAlign="center"
+														align="center" renderer="onActionRenderer"
+														cellStyle="padding:0;">操作</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div role="row" id="timeDiv">
+									<div role="control" label="时间字段" id="">
+										<input id="timefieldguid" name="timefieldguid"
+											class="mini-combobox" valueField="id" textField="text"
+											bind="dataBean.timefieldnameen" action="getTimeFieldList"
+											emptyText="请选择" onvaluechanged="ontimefieldvaluechanged"
+											oncloseclick="onCloseClick" showclose="true"
+											allowInput="true" />
+									</div>
+									<div role="control" label="时间窗口" id="timewindowCon">
+										<div class="mini-radiobuttonlist" action="timewindowModel"
+											id="timewindow" bind="dataBean.timewindow"
+											onvaluechanged="onTimewindowChanged"></div>
+									</div>
+								</div>
+								<div role="row" id="timeDiv1">
+									<div role="control" label="统计周期">
+										<input id="statisticsCycle" name="statisticsCycle"
+											class="mini-combobox" valueField="id" textField="text"
+											bind="dataBean.statisticsCycle"
+											action="getStatisticsCycleList" emptyText="请选择"
+											onvaluechanged="onStatisticsCycleChanged"
+											oncloseclick="onCloseClick" showclose="true" />
+									</div>
+									<div role="control" label="是否累加" starred="true"
+										id="isCumsumCon">
+										<div class="mini-radiobuttonlist" id="isCumsum"
+											bind="dataBean.isCumsum"
+											data="[{text:'是',id:'1'},{text:'否',id:'0'}]" textField="text"
+											valueField="id"></div>
+									</div>
+								</div>
+								<div role="row" id="resCount">
+									<div role="control" label="结果数量">
+										<input id="resultCount" name="resultCount"
+											class="mini-textbox" bind="dataBean.resultCount"
+											vtype="int;range:1,50;" onvaluechanged="onResultCountChanged" />
+									</div>
+									<div role="control" label="排序方式" starred="true"
+										id="sortOrderCon">
+										<div class="mini-radiobuttonlist" action="getSortOrderList"
+											id="sortOrder" bind="dataBean.sortOrder"></div>
+									</div>
+								</div>
+								<div role="row" id="sortColumn">
+									<div role="control" label="排序字段" starred="true">
+										<input class="mini-combobox" action="getSortColumnList"
+											required="required" requiredErrorText="排序字段不能为空"
+											bind="dataBean.sortColumn" id="sortColumnText" />
+									</div>
+									<div role="control"></div>
+								</div>
+								<div role="row" id="rightConf">
+									<div role="control" label="权限控制">
+										<input id="rightControl" name="rightControl"
+											class="mini-radiobuttonlist" bind="dataBean.rightControl"
+											data="[{text:'是',id:'1'},{text:'否',id:'0'}]" textField="text"
+											valueField="id" onvaluechanged="onRightControlChanged" />
+									</div>
+									<div role="control" label="权限控制字段" starred="true"
+										id="rightControlFieldCon">
+										<div class="mini-combobox" action="getFieldList"
+											required="required" requiredErrorText="权限控制字段不能为空"
+											id="rightControlField"
+											bind="dataBean.rightControlFieldNameEn"></div>
+									</div>
+								</div>
+							</div>
+							<div class="tags" style="display: none;">
+								<div role="row">
+									<div role="control" label="来源主体" starred="true">
+										<input id="entityguid" name="entityguid"
+											onvaluechanged="entityChanged" class="mini-combobox"
+											textField="text" valueField="id" action="getEntityList"
+											emptyText="请选择" allowInput="true" bind="dataBean.entityalias" />
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="来源标签" starred="true">
+										<input id="datatag" name="datatag" class="mini-combobox"
+											textField="text" valueField="id" action="getTagList"
+											emptyText="请选择" allowInput="true" bind="dataBean.tagalias" />
+									</div>
+								</div>
+								<div role="row" id="tagdim">
+									<div role="control" label="维度标签" starred="true">
+										<input id="dimtag" name="dimtag" multiSelect="true"
+											class="mini-combobox" textField="text" valueField="id"
+											action="getTagList" emptyText="请选择" allowInput="true"
+											bind="dataBean.dimtagalias" />
+									</div>
+								</div>
+								<div role="row" class="data">
+									<div role="control" label="过滤条件">
+										<div style="border: 1px solid #ccc;">
+											<div id="datagrid3" action="getFilterlistModel"
+												class="mini-datagrid" style="width: 100%; height: 250px;"
+												allowResize="true" idField="id"
+												emptyText="过滤条件为空，<a href='javascript:newRow3()' style='color:blue;text-decoration:underline;'>增加一条</a>"
+												showEmptyText="true" oncellbeginedit="OnCellBeginEdit3"
+												showPager="false">
+												<div property="columns">
+													<div field="DataFieldNameEN" displayField="DataFieldNameCN"
+														width="150" align="center" headerAlign="center">
+														标签字段 <input property="editor" class="mini-combobox"
+															valueField="value" textField="text" style="width: 100%;"
+															required="true" requiredErrorText="标签字段不能为空"
+															allowInput="true" emptyText="请选择"
+															onvaluechanged="onDataTagValueChanged">
+													</div>
+													<!--ComboBox：本地数据-->
+													<div field="FilterType" width="50" align="center"
+														headerAlign="center">
+														过滤条件 <input property="editor" class="mini-combobox"
+															style="width: 100%;" data="fConditonDatas"
+															required="true" requiredErrorText="过滤条件不能为空"
+															emptyText="请选择" />
+													</div>
+													<div field="FilterValue" displayField="FilterValueNameCN"
+														width="150" align="center" headerAlign="center"
+														name="FilterValue">
+														过滤值 <input property="editor" class="mini-textbox"
+															valueField="value" textField="text" style="width: 100%;"
+															required="true" requiredErrorText="过滤值不能为空"
+															allowInput="true">
+													</div>
+													<div name="action" width="120" headerAlign="center"
+														align="center" renderer="onActionRenderer3"
+														cellStyle="padding:0;">操作</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="结果数量">
+										<input id="tagresultCount" name="resultCount"
+											class="mini-textbox" bind="dataBean.tagResultCount"
+											vtype="int;range:1,50;"
+											onvaluechanged="tagResultCountChanged" />
+									</div>
+									<div role="control" label="排序方式" id="tagSortOrderCon">
+										<div class="mini-radiobuttonlist" action="getSortOrderList"
+											id="tagsortOrder" bind="dataBean.tagSortOrder" value="asc"></div>
+									</div>
+								</div>
+								<div role="row" id="tagSortColumn">
+									<div role="control" label="排序字段">
+										<input class="mini-combobox" action="getTagList"
+											bind="dataBean.tagSortColumn" id="tagsortColumnText" />
+									</div>
+									<div role="control"></div>
+								</div>
+							</div>
+							<div role="row" class="seniorType" id="sqlConf">
+								<div role="control" label="SQL语句" starred="true">
+									<input id="generatesql" class="mini-textarea"
+										bind="generatesql"
+										emptyText="请填写SQL，当SQL不为空时，默认取SQL，且以上字段配置失效"
+										style="width: 80%; height: 150px;" />
+									<div class="btn-group mr10" style="width: 15%; float: right;"
+										id="sqlDemoConf">
+										<a class="mini-button" iconCls="modicon-17"
+											onclick="openSqlDemo()">示例</a>
+									</div>
+									<div id="modelSqlConf" class="btn-group mr10"
+										style="width: 15%; float: right; margin-top: 10px;">
+										<a class="mini-button" iconCls="modicon-17"
+											onclick="openModelSql()">图形配置</a>
+									</div>
+									<input bind="dataBean.flowguid" id="flowguid"
+										class="mini-hidden" />
+									<input bind="dataBean.flowJdbcUrl" id="flowJdbcUrl" class="mini-hidden" />
+								</div>
+							</div>
+							<div role="row" class="seniorType">
+								<div role="control" label="结果数量">
+									<input id="resultCount2" name="resultCount"
+										class="mini-textbox" bind="dataBean.resultCount"
+										vtype="int;range:1,50;" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div class="APIType" id="APIType">
+								<div role="row">
+									<div role="control" label="API">
+										<input id="API" class="mini-buttonedit"
+											onbuttonclick="onAPISelected();" allowInput="false"
+											required="required" requiredErrorText="API不能为空"
+											bind="dataBean.apiguid" />
+									</div>
+									<div id="APIInfo" style="display: none;">
+										<input id="apiurl" /><input id="requestType" /><input
+											id="apiguid" />
+									</div>
+								</div>
+								<div role="row">
+									<div class="form-label">参数:</div>
+									<div class="form-control span2">
+										<pre id="params" class="ace_editor"
+											style="width: 100%; height: 200px; border: 1px solid #9e9e9e;"></pre>
+									</div>
+									<div class="form-label">过滤器:</div>
+									<div class="form-control span2">
+										<pre id="resultFilter" class="ace_editor"
+											style="width: 100%; height: 200px; border: 1px solid #9e9e9e;"></pre>
+									</div>
+									<div id="resultScipt">
+										<script>
+											function initFilter() {
+
+											}
+										</script>
+									</div>
+								</div>
+								<div class="form-row" id="hyperbutton">
+									<div class="form-control span3">
+										<a class="mini-button" onClick="callApi(0)"
+											style="float: right; width: 128px">调用服务</a>
+									</div>
+									<div class="form-control span3">
+										<a class="mini-button" onClick="applyFilter"
+											style="float: right; width: 128px">结果过滤</a>
+									</div>
+								</div>
+								<div role="row" style="position: relative;">
+									<div class="form-label">结果:</div>
+									<div class="form-control span2">
+										<pre id="apiResult" class="ace_editor"
+											style="width: 100%; height: 330px; border: 1px solid #9e9e9e;"></pre>
+									</div>
+									<div class="form-label">映射:</div>
+									<div class="form-control span2">
+										<div id="matchgrid" class="mini-datagrid" showpager="false"
+											allowCellEdit="true" allowCellSelect="true">
+											<div property="columns">
+												<div field="fieldname" displayfield="fielddisplayname"
+													width="120" headerAlign="center" align="center"
+													readOnly="true">预置字段</div>
+												<div field="matchname" width="120" headerAlign="center"
+													align="center">
+													结果字段<input property="editor" class="mini-textbox"
+														valueField="value" textField="text" style="width: 100%;"
+														emptyText="请填写过滤值" allowInput="true">
+												</div>
+												<div field="status" width="120" headerAlign="center"
+													align="center" readOnly="true">匹配状态</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div role="row">
+									<div class="form-label">请求头json：</div>
+									<div class="form-control span2">
+										<input id="headers" class="mini-textbox"/>
+									</div>
+								</div>
+							</div>
+							<div role="row" id="dimDiv" style="display: none;">
+								<div role="control" label="维表来源库">
+									<input id="dimdatasourceid" class="mini-textbox"
+										bind="dataBean.dimdatasourceid" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="editWindow" class="mini-window" title="维表过滤条件"
+		style="width: 800px;" showModal="true" allowResize="true"
+		allowDrag="true">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" id="add"
+					onclick="saveDimFilter()">保存</a><a class="mini-button"
+					id="addCancel" iconCls="icon-minuscircle"
+					onclick="epoint.closeDiv('editWindow')">取消</a>
+			</div>
+		</div>
+		<div id="editform" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div class="cell">
+						<input class="mini-combobox" required="true"
+							name="DimFilterFieldGuid" valueField="value" textField="text"
+							requiredErrorText="维表字段不能为空" action="getFilterFieldList"
+							style="width: 100%;" id="dimFilterFieldGuid" />
+					</div>
+					<div class="relation">
+						<input class="mini-outputtext" name="DimFilterType" value="="
+							style="width: 100%; text-align: center;" />
+					</div>
+					<div class="cell">
+						<input class="mini-textbox" name="DimFilterValue"
+							style="width: 100%;" id="DimFilterValue" />
+					</div>
+					<input class="mini-hidden" name="rowid" /> <input
+						class="mini-hidden" name="index" /><input class="mini-hidden"
+						name="dimFieldNameEN" id="dimFieldNameEN" bind="dimFieldNameEN" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" bind="dataSourceType" id="dataSourceType" />
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../../../../../epointdemo/js/beautify.min.js"></script>
+	<script src="./js/ace.js"></script>
+	<script src="./js/util.js"></script>
+	<script src="./js/cockpitnormadd.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>元件预览</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot
+			.output([
+					'framemanager/ui/portalNew/mCustomScrollbar/jquery.mCustomScrollbar.min.css',
+					'framemanager/ui/portalNew/portaldesign/css/preview.css',
+			// 'framemanager/ui/portalNew/portaldesign/css/ruler.css'
+			// 'framemanager/ui/portalNew/deskmanagement/deskmanagement.css'
+			]);
+</script>
+<style>
+.top-info {
+	padding: 0 10px;
+	height: 50px;
+	line-height: 50px;
+	box-sizing: border-box;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+
+.top-edit {
+	margin-top: 9px;
+}
+
+.info-item {
+	margin-right: 35px;
+}
+
+.label {
+	color: #898989;
+}
+
+.text {
+	color: #5e5e5e;
+}
+
+.green {
+	color: #3ab141;
+}
+
+.main {
+	top: 50px;
+	bottom: 0;
+}
+
+.element-item .element-body:before {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+	<div class="top-info clearfix">
+		<div class="l">
+			<div class="l info-item">
+				<span class="label">初始宽高：</span><span class="text" id="size"></span>
+			</div>
+			<div class="l info-item">
+				<span class="label">打开方式：</span><span class="text" id="open-type"></span>
+			</div>
+			<div class="l info-item">
+				<span class="label">随主题换肤：</span><span class="text green" id="theme"></span>
+			</div>
+		</div>
+		<a class="mini-button top-edit r" onclick="useTemplate()" state="primary">编辑</a>
+	</div>
+	<div class="main relative">
+		<!-- 右侧内容 -->
+		<div class="container-panel" id="container-panel">
+			<div class="painting-area" id="painting-area">
+				<div class="grid-container row-line ui-droppable"
+					id="grid-container">
+					<ul>
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="x-tmpl-mustache" id="element-content-tpl">
+        <ul class="element-body-list">
+            {{#itemList}}
+            <li class="todo-item">
+                <a href="javascript:;" class="todo-item-link" title="{{title}}" data-url="{{url}}" data-id="{{id}}">{{content}}</a>
+                <span class="todo-item-date">{{date}}</span>
+            </li>
+            {{/itemList}}
+        </ul>
+    </script>
+
+	<!-- js -->
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		SrcBoot.output([ './js/jquery.gridster.min.js', './js/common.js',
+				'./js/preview.js' ]);
+	</script>
+	<script>
+		var domain = "rest/portaldesignaction/", 
+		portalConfig = {
+			getElementDataUrl : domain + 'getElementData?isCommondto=true'// 获取元件中的列表和数量
+		};
+		
+		var cacheTableData = '';
+		epoint.initPage('portalpreviewaction', '@all', function(data) {
+
+			// 初始化内容
+			var tableData = [ data.tableData[0] ];
+			tableData[0].col = (24 - tableData[0].sizex) / 2;
+			cacheTableData = tableData;
+			var ele_data = tableData[0];
+			$('#theme').html(ele_data.themeCheck ? '开启':'关闭');
+			$('#open-type').html(ele_data.linkOpenType == 'dialog' ? '弹窗' : ele_data.linkOpenType == 'tabsNav' ? '内部跳转' : '新窗口');
+			$('#size').html(ele_data.sizex + 'x' + ele_data.sizey);
+
+			gridster.remove_all_widgets();
+			commonUtil.loadTemp({
+				templ : './tpl/element.tpl',
+				callback : function() {
+					$.each(tableData, function(index, item) {
+						item.visible = true;
+						ElementManage.addElementItem(item, true);
+					});
+
+					gridster.disable();
+				}
+			});
+
+		});
+
+		// 弹出编辑页面
+		function useTemplate() {
+			var componentGuid = cacheTableData[0].id;
+			epoint.openDialog('元件编辑',
+					"framemanager/ui/template/portalcomponentedit?guid="
+							+ componentGuid, function(param) {
+						if (param != 'close') {
+							location.reload();
+						}
+					}, {
+						'width' : 500,
+						'height' : 720
+					});
+		}
+	</script>
+
+</body>
+
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<title>张家港市公安建模平台</title>
+<link rel="stylesheet" href="gacss/animate.css">
+<link rel="stylesheet" href="gajs/lib/swiper.min.css">
+<link rel="stylesheet" href="gacss/common.css">
+<link rel="stylesheet" href="gacss/loginPage.css">
+<script src="gajs/lib/jquery.min.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- 背景 -->
+	<img src="images/lead_bg.jpg" class="body-bg">
+	<img id="logo-img" src="images/login-title11.png" alt=""  style="display: none"/>
+		<div class="banner-place">
+			<!-- star -->
+			<div class="ban1Bg ban1Bg1"></div>
+			<div class="ban1Bg ban1Bg2"></div>
+			<div class="ban1Bg ban1Bg3"></div>
+			<div
+				class="swiper-container swiper-container-horizontal swiper-container-fade">
+				<div class="swiper-wrapper">
+					<div class="swiper-slide Ban1 swiper-no-swiping">
+						<div class="ewb-login-wpr">
+							<img src="images/login_logo.png" alt="" class="login-logo">
+							<div class="ewb-show clearfix">
+								<div class="show-l">
+									<div class="ewb-go">
+										<img src="images/show_t.png" alt="" class="go-bg01 ani"
+											swiper-animate-effect="fadeInDown"
+											swiper-animate-duration="1s" swiper-animate-delay="0.6s">
+										<img src="images/show_b.png" alt="" class="go-bg02 ani"
+											swiper-animate-effect="fadeInUp"
+											swiper-animate-duration="0.5s" swiper-animate-delay="0.3s">
+										<img src="images/show_m.png" alt="" class="go-bg03 ani"
+											swiper-animate-effect="fadeIn" swiper-animate-duration="0.5s"
+											swiper-animate-delay="1s">
+									</div>
+								</div>
+								<div class="show-r">
+									<div class="ewb-ent-wpr ani"
+										swiper-animate-effect="fadeInRight"
+										swiper-animate-duration="0.5s" swiper-animate-delay="0.3s">
+										<form id="loginform">
+											<div class="ewb-login">
+												<div class="input-tips ewb-search ewb-login-inp bg01">
+													<i class="login-tico bg01"></i> <label
+														class="input-placeholder" for="username">请输入您的用户名</label>
+													<input class="input-box" type="text" id="username"
+														name="username" />
+												</div>
+												<div class="input-tips ewb-search ewb-login-inp bg01">
+													<i class="login-tico bg02"></i> <label
+														class="input-placeholder" for="pwd">请输入您的密码</label> <input
+														class="input-box" type="password" id="pwd" name="password" />
+												</div>
+												<div class="login-btnwpr clearfix">
+													<button class="login-btn trans l"  onclick="encryUserMsg()" type="button">登
+														录</button>
+												</div>
+												<div class="ewb-ps clearfix">
+													<a  class="ps-lk r"> 数字证书 </a>
+												</div>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+							<div class="ewb-ftmsg">版权所有：江苏国泰新点软件有限公司</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input class="mini-hidden" id="exponent_hidden" /> <input
+				class="mini-hidden" id="modulus_hidden" />
+			<object classid='clsid:4391DCDD-5FB4-462F-9308-70A195937DAE'
+				height='0' width='0' id='EliteIVGetSerialNumber'></object>
+		</div>
+	<script src="gajs/lib/placeholder.min.js"></script>
+	<script src="gajs/lib/idangerous.swiper.min.js"></script>
+	<script src="gajs/lib/swiper.animate1.0.2.min.js"></script>
+	<script src="gajs/lib/wow.js"></script>
+	<script src="gajs/loginPage.js"></script>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		SrcBoot.output([ 'frame/fui/js/libs/security.js' ]);
+	</script>
+	<script>
+		// 初始化时获取title和logo的请求地址
+		var initUrl = epoint.dealRestfulUrl("loginaction/getLoginData");
+
+		var key;
+
+		//再次访问可以自动登录
+		epoint.execute("loginaction.autoLoad", "", function(data) {
+			//key = RSAUtils.getKeyPair(data.publicExponent, "", data.modulus);
+			Util.hidePageLoading();
+
+		}, true);
+	</script>
+	<script>
+		SrcBoot.output([ 'frame/fui/js/widgets/jquery.placeholder.min.js',
+				'./login.js' ]);
+	</script>
+	<script>
+		//<![CDATA[ 
+		(function(win, $) {
+
+			var $name = $('#username'), $pwd = $('#pwd'), $usbpsd = $('#username');
+
+			var loginType = '0';
+
+			var userName;
+			var passWord;
+
+			win.changeLoginType = function(type) {
+				if ('10' == type) {
+					//获取usbkey
+					var key = checkUsbKey();
+					if (key) {
+						$("#warn").hide();
+					} else {
+						$("#warn").show();
+					}
+				}
+				loginType = type;
+			};
+
+			win.encryUserMsg = function() {
+				var result = true;
+				if ('0' == loginType) {
+					userName = $.trim($name.val());
+					passWord = $.trim($pwd.val());
+					if (!(userName && passWord)) {
+						result = false;
+						epoint.alert('用户名和密码不能为空!', null, null, 'warning');
+						return false;
+					}
+				} else if ('10' == loginType) {
+					userName = checkUsbKey();
+					passWord = $.trim($usbpsd.val());
+					if (!(userName && passWord)) {
+						result = false;
+						epoint.alert('未检测到CA锁，请插入CA锁!', null, null, 'warning');
+						return false;
+					}
+				}
+
+				//cacheUserName(userName);
+
+				// 本地保存登录类型 和 用户名  用于快捷登录中的自动切换和填充
+				if (window.localStorage) {
+					localStorage.setItem('_loginType_', loginType);
+					localStorage.setItem('_loginUsername_', userName);
+				}
+
+				//调用自定义编码
+				userName = epoint.encode(userName);
+				passWord = epoint.encode(passWord);
+
+				epoint.execute('loginaction.login', '', [ userName, passWord,
+						loginType ], checkMultipleLogin);
+
+				return result;
+			};
+
+			win.checkMultipleLogin = function(args) {
+				if (args.systemMessages) {
+					if (args.systemMessages.indexOf('此账号') != -1) {
+						var msgs = args.systemMessages.split('?');
+						epoint.confirm(msgs[0] + '?', '', function() {
+							epoint.execute('loginaction.login', '', [ userName,
+									passWord, '20' ], checkMultipleLogin);
+						});
+					} else if (args.systemMessages.indexOf('IsDefaultOU') != -1) {
+						var userguid = args.systemMessages.split('?')[1];
+						var url = "frame/pages/login/switchparttime?userguid="
+								+ userguid;
+						epoint.openDialog("账号选择", url, secondLogin, {
+							'width' : 850,
+							'height' : 350
+						});
+					} else {
+						epoint.alert(args.systemMessages, '', null, 'warning');
+					}
+				}
+			};
+
+			win.secondLogin = function(result) {
+				if (result && result != 'success' && result != 'close') {
+					var msgs = result.split(";");
+					//TODO 下面这段逻辑需要重新考虑实现,后台的
+					var userName;
+					var passWord;
+					if ('0' == loginType) {
+						userName = $.trim($name.val());
+						passWord = $.trim($pwd.val());
+					} else if ('10' == loginType) {
+						userName = checkUsbKey();
+						passWord = $.trim($usbpsd.val());
+					}
+					epoint.execute('loginaction.userLogin', '', [ loginType,
+							msgs[1], msgs[2], userName, passWord ],
+							userLoginCallBack);
+				}
+			};
+
+			win.userLoginCallBack = function(args) {
+				if (args.systemMessages) {
+					epoint.alert(args.systemMessages, null, null, 'warning');
+				}
+			}
+
+			function checkUsbKey() {
+				var str;
+				try {
+					str = document.all('EliteIVGetSerialNumber')
+							.SERIAL_NUMBER();
+				} catch (e) {
+					epoint.alert("当前浏览器不支持", null, null, 'error');
+					return false;
+				}
+				return str;
+			}
+
+		}(this, jQuery));
+
+		//]]>
+	</script>
+</body>
+</html>

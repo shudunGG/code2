@@ -1,0 +1,557 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据查看</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.conditionHidden {
+	display: none !important
+}
+
+.conditionShow {
+	display: "" !important
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="选择指标"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeModel"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<div class="fui-toolbar" style="white-space: nowrap; min-width: 700px">
+			<a class="mini-button" onclick="searchData()">查询 </a> <a
+				class="mini-button" onclick="openQueryTree()">打开 </a> <a
+				class="mini-button" onclick="saveData()">保存 </a> <a
+				class="mini-button" onclick="clearConditionAdvance">清空查询</a>
+		</div>
+		<div class="fui-condition" style="height: auto; overflow: auto;">
+			<div class="fui-form" id="fui-form" style="display: none">
+				<!-- 添加隐藏域，用于树与表格的联动 -->
+				<input class="mini-hidden" bind="conditionid" id="conditionid" /> <input
+					class="mini-hidden" bind="simpleCondition" id="simpleCondition" />
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" id="searchButton" callback="searchData"></a>
+		</div>
+		<div class="fui-content" id="content">
+			<div id="searchdatagrid" class="mini-datagrid" idField="rowguid"
+				sortOrder="desc" showPager="false" style="height: 100%;"
+				multiSelect="true" allowCellSelect="true" showHGridLines="true"
+				showVGridLines="true" editNextOnEnterKey="true" allowCellEdit="true"
+				action="getConditionDate" editNextRowCell="true">
+
+				<div property="columns">
+					<div type="indexcolumn" width="40">序</div>
+					<div name="fieldchinesename" field="fieldchinesename"
+						displayField="fieldchinesename" header="字段" width="150"></div>
+					<div field="condition" name="condition" header="条件">
+						<input property="editor" class="mini-combobox"
+							style="width: 100%;" onitemclick="itemclick" />
+					</div>
+					<div header="值">
+						<div property="columns">
+							<div field="content" name="content" headerAlign="center"
+								header=""></div>
+							<div field="endcontent" name="endcontent" headerAlign="center"
+								header=""></div>
+						</div>
+					</div>
+					<div name="relation" field="relation" header="关系">
+						<input property="editor" class="mini-combobox"
+							style="width: 100%;" />
+					</div>
+					<div width="50" renderer="onUpRender">上移</div>
+					<div width="50" renderer="onDownRenderer">下移</div>
+					<div name="delete" width="50" renderer="onDeleteRenderer"
+						header="删除"></div>
+					<div name="controltype" field="controltype" width="0"></div>
+					<div name="codename" field="codename" width="0"></div>
+					<div name="fieldname" field="fieldname" width="0"></div>
+					<div name="conditionText" field="conditionText" width="0"></div>
+					<div name="contentText" field="contentText" width="0"></div>
+					<div name="relationText" field="relationText" width="0"></div>
+					<div name="endcontentText" field="endcontentText" width="0"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script src="../js/eputil.js"></script>
+	<script>
+		var needMerge = false;
+
+		var deleterowgid;
+
+		var searchdatagrid = mini.get("searchdatagrid");
+
+		var tree = mini.get("tree");
+
+		var schemeGuid = Util.getUrlParams("schemeGuid");
+
+		//初始化页面
+		epoint.initPage("simplesearchaction", "", function(data) {
+			mergeCells();
+		});
+
+		function itemclick() {
+			searchdatagrid.fire("cellcommitedit");
+		}
+
+		// 点击左侧树将字段带入表格
+		tree.on("nodeclick", function(e) {
+			if (e.node) {
+				if (!e.node.istable) {
+					var newRow = {};
+					newRow.rowguid = e.node.id;
+					newRow.fieldname = e.node.id;
+					newRow.fieldchinesename = e.node.text;
+					searchdatagrid.addRow(newRow, searchdatagrid.data.length);
+					mergeCells();
+				}
+			}
+		});
+
+		// 高级查询列表刷新
+		function searchSqlData() {
+			epoint.refresh([ 'searchdatagrid', 'fui-form' ]);
+		}
+
+		//清空高级查询条件
+		var clearConditionAdvance = function() {
+			searchdatagrid.clearRows();
+			mini.get("conditionid").setValue("");
+			mini.get("simpleCondition").setValue("");
+			searchSqlData();
+
+		}
+
+		searchdatagrid.on("update", function(e) {
+			if (needMerge) {
+				mergeCells();
+				needMerge = false;
+			}
+		})
+
+		//动态设置表格的编辑器
+		searchdatagrid
+				.on(
+						"cellbeginedit",
+						function(e) {
+							if (e.field != "fieldname") {
+								var field = e.field;
+								var fieldGuid = e.row.fieldname;
+								if (fieldGuid == undefined
+										&& !field == "delete") {
+									epoint.alert("请先设置字段")
+									e.cancel = true;
+									return false;
+								}
+							}
+							if (e.field == "content" || e.field == "endcontent") {
+								if (e.field == "endcontent"
+										&& e.record.condition != "between"
+										&& e.record.condition != "notbetween") {
+									e.cancel = true;
+									return false;
+								}
+								var controlTrpe = e.row.controlType;
+								var editor;
+								if (controlTrpe == "date") {
+									editor = new mini.DatePicker();
+								} else if (controlTrpe == "code") {
+									var codeName = e.row.codeName;
+									editor = new mini.ButtonEdit();
+									editor.setAllowInput(false);
+									editor.codename = codeName;
+									editor.setText(e.record.contentText);
+									if (e.record.condition == "in"
+											|| e.record.condition == "notin"
+											|| e.record.condition == "notlike") {
+										editor.on("buttonclick",
+												eputil.openCodeItemTreeMulti);
+									} else {
+										editor.on("buttonclick",
+												eputil.openCodeItemTreeSingle);
+									}
+
+								} else if (controlTrpe == "outree") {
+									editor = new mini.ButtonEdit();
+									editor.setAllowInput(false);
+									editor.setText(e.record.contentText);
+
+									//部门树
+									if (e.record.condition == "in"
+											|| e.record.condition == "notin"
+											|| e.record.condition == "notlike") {
+										editor.on("buttonclick",
+												eputil.selectMultiOu);
+									} else {
+										editor.on("buttonclick",
+												eputil.selectSingleOu);
+									}
+
+								} else if (controlTrpe == "usertree") {
+									editor = new mini.ButtonEdit();
+									editor.setAllowInput(false);
+									editor.setText(e.record.contentText);
+									//用户树
+									editor.on("buttonclick", eputil.selectUser);
+
+								} else if (controlTrpe == "text") {
+									editor = new mini.TextBox();
+								}
+								e.editor = editor;
+								e.column.editor = editor;
+							}
+
+							if (e.field == 'condition') {
+								e.editor.setData(conditionData);
+							}
+							if (e.field == 'relation') {
+								e.editor.setData(relationData);
+							}
+
+						});
+
+		//结束编辑室设值
+		searchdatagrid.on("cellcommitedit", function(e) {
+			var record = e.record;
+			if (e.field == "content") {
+				var format = e.record.format;
+				if (format) {
+					e.value = mini.formatDate(e.value, format);
+				}
+				if (e.editor.getText) {
+					record.contentText = e.editor.getText();
+				} else {
+					record.contentText = e.value;
+				}
+			}
+
+			if (e.field == "endcontent") {
+				var format = e.record.format;
+				if (format) {
+					e.value = mini.formatDate(e.value, format);
+				}
+				if (e.editor.getText) {
+					record.endcontentText = e.editor.getText();
+				} else {
+					record.endcontentText = e.value;
+				}
+			}
+
+			if (e.field == "condition") {
+				//获取字段对应的控件
+				epoint.execute('getControl', '@none', [ e.record.fieldname ],
+						function(data) {
+							record.controlType = data.type;
+							record.codeName = data.codeName;
+						})
+				needMerge = true;
+				mergeCells();
+
+				if (e.editor.getText) {
+					record.conditionText = e.editor.getText();
+				} else {
+					record.conditionText = e.value;
+				}
+			}
+			if (e.field == "relation") {
+				if (e.editor.getText) {
+					record.relationText = e.editor.getText();
+				} else {
+					record.relationText = e.value;
+				}
+			}
+
+		});
+
+		//绘制单元格
+		searchdatagrid
+				.on(
+						"drawcell",
+						function(e) {
+							if (e.field == "fieldname") {
+								var record = e.record;
+								e.cellHtml = !mini
+										.isNull(record.fieldchinesename) ? record.fieldchinesename
+										: record.fieldname;
+							}
+							if (e.field == "condition") {
+								var record = e.record;
+								e.cellHtml = !mini.isNull(record.conditionText) ? record.conditionText
+										: record.condition;
+							}
+							if (e.field == "relation") {
+								var record = e.record;
+								e.cellHtml = !mini.isNull(record.relationText) ? record.relationText
+										: record.relation;
+							}
+							if (e.field == "content") {
+								var record = e.record;
+								e.cellHtml = !mini.isNull(record.contentText) ? record.contentText
+										: record.content;
+							}
+							if (e.field == "endcontent") {
+								if (e.record.condition == 'between'
+										|| e.record.condition == 'notbetween') {
+									var record = e.record;
+									e.cellHtml = !mini
+											.isNull(record.endcontentText) ? record.endcontentText
+											: record.endcontent;
+								}
+							}
+						});
+
+		//删除行
+		var onDeleteRenderer = function(e) {
+			var record = e.record;
+			var uid = record._uid;
+			var s = '<a href="javascript:deleteRow(\'' + uid
+					+ '\')" class="action-icon icon-remove"> </a> '
+			return s;
+		}
+
+		//合并单元格
+		var mergeCells = function() {
+			var rows = searchdatagrid.getData();
+			var marges = [];
+			for (var i = 0, length = rows.length; i < length; i++) {
+				var row = rows[i];
+				if ("between" == row.condition || "notbetween" == row.condition) {
+					marges[i] = {
+						rowIndex : i,
+						columnIndex : 3,
+						rowSpan : 1,
+						colSpan : 1
+					};
+				} else {
+					marges[i] = {
+						rowIndex : i,
+						columnIndex : 3,
+						rowSpan : 1,
+						colSpan : 2
+					};
+
+				}
+			}
+			searchdatagrid.mergeCells(marges);
+		}
+
+		function deleteRow(row_uid) {
+			var row = searchdatagrid.getRowByUID(row_uid);
+			if (row) {
+				epoint.confirm('确定删除此记录？', '信息确认', function() {
+					searchdatagrid.removeRow(row, true);
+				}, function() {
+
+				});
+			}
+		}
+
+		var conditionData = [ {
+			text : "请选择",
+			id : ""
+		}, {
+			text : "等于",
+			id : "等于"
+		}, {
+			text : "大于",
+			id : "大于"
+		}, {
+			text : "大于等于",
+			id : "大于等于"
+		}, {
+			text : "小于",
+			id : "小于"
+		}, {
+			text : "小于等于",
+			id : "小于等于"
+		}, {
+			text : "左包含",
+			id : "左包含"
+		}, {
+			text : "右包含",
+			id : "右包含"
+		}, {
+			text : "包含",
+			id : "包含"
+		}, {
+			text : "不包含",
+			id : "notlike"
+		}, {
+			text : "不等于",
+			id : "不等于"
+		}, {
+			text : "在...之中",
+			id : "in"
+		}, {
+			text : "不在...之中",
+			id : "notin"
+		}, {
+			text : "介于...之中",
+			id : "between"
+		}, {
+			text : "不介于...之中",
+			id : "notbetween"
+		} ];
+
+		var relationData = [ {
+			text : "请选择",
+			id : ""
+		}, {
+			text : "并且",
+			id : "and"
+		}, {
+			text : "或者",
+			id : "or"
+		} ];
+
+		var searchData = function() {
+			var data = mini.encode(searchdatagrid.getData());
+			if (data != "close") {
+				epoint.closeDialog(data + ";" + schemeGuid);
+			}
+		}
+
+		function deleteContidion() {
+			if (mini.get("conditionid").getValue() == "") {
+				epoint.alert("请选择删除条件！");
+			} else {
+				epoint.execute("deleteContidion", "conditionid", "", function(
+						result) {
+					if (result.msg) {
+						epoint.alert(result.msg, null, null, 'info');
+						searchSqlData();
+					}
+				});
+			}
+		}
+
+		function onUpRender(e) {
+			return epoint.renderCell(e, "action-icon icon-up", "openUp",
+					"epoint_total");
+		}
+
+		function openUp() {
+			var row = searchdatagrid.getSelected();
+			if (row) {
+				var index = searchdatagrid.indexOf(row);
+				if (index == 0) {
+					epoint.showTips("第一条记录，无法上移！");
+					return;
+				}
+				searchdatagrid.moveRow(row, index - 1);
+			} else {
+				alert("请选择一条记录");
+			}
+		}
+
+		function onDownRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-down", "openDown",
+					"epoint_total");
+		}
+
+		function openDown() {
+			//获取最后一条记录的下标
+			var totalCount = searchdatagrid.totalCount - 1;
+			var row = searchdatagrid.getSelected();
+			if (row) {
+				var index = searchdatagrid.indexOf(row);
+				if (index == totalCount) {
+					epoint.showTips("最后一条记录，无法下移！");
+					return;
+				}
+				searchdatagrid.moveRow(row, index + 2);
+			} else {
+				alert("请选择一条记录");
+			}
+		}
+
+		function openQueryTree() {
+			var url = "framemanager/metadata/mis/datamanage/search/tree/dataquerytree?queryType=1";
+			var size = {
+				width : 350,
+				height : 500
+			};
+			epoint.openTopDialog('选择', url, function(rtn) {
+				if (rtn) {
+					if (rtn == "close") {
+						return;
+					}
+					mini.get("conditionid").setValue(rtn.id);
+					searchdatagrid.clearRows();
+					needMerge = true;
+					searchSqlData();
+				}
+			}, size);
+		}
+
+		//保存查询条件数据
+		function saveData() {
+			var griddate = searchdatagrid.getData();
+			mini.get("simpleCondition").setValue(mini.encode(griddate));
+			if (epoint.validate()) {
+				epoint.execute('savequeryfirst', '@all', function(data) {
+					if (data.msg == 'OK') {
+						saveDataCallback();
+					} else {
+						epoint.alert(data.msg, null, null, 'info');
+					}
+				});
+			}
+		}
+
+		function saveDataCallback() {
+			var conditionid = mini.get("conditionid").getValue();
+			if (conditionid == "") {
+				epoint
+						.openDialog(
+								'保存查询条件',
+								"framemanager/metadata/mis/datamanage/search/dataqueryadd?queryType=1",
+								callbackData, {
+									'width' : 600,
+									'height' : 400
+								});
+			} else {
+				var griddate = searchdatagrid.getData();
+				mini.get("simpleCondition").setValue(mini.encode(griddate));
+				if (epoint.validate()) {
+					epoint.execute('updatequery', '@all', null, function(data) {
+						epoint.alert(data.msg, null, null, 'info');
+					});
+
+				}
+			}
+		}
+
+		//返回保存的查询条件
+		function callbackData(data) {
+			var griddate = searchdatagrid.getData();
+			mini.get("simpleCondition").setValue(mini.encode(griddate));
+			if (data.dataquery) {
+				epoint.execute('savequery', '@all', [ data.dataquery ],
+						function(data) {
+							epoint.alert(data.msg, null, null, 'info');
+						});
+			} else if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+			}
+		}
+	</script>
+
+</body>
+
+</html>

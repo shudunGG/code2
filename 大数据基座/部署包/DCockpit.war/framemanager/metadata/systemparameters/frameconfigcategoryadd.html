@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>新增系统参数类别</title>
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<!-- 必须有，加载时的loading效果 -->
+		<div class="page-loading"></div>
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" onclick="addNew" iconCls="icon-save">
+				保存并新增
+				</a>
+				<a class="mini-button" id="addClose" onclick="add" iconCls="icon-save">
+				保存并关闭
+				</a>
+				<a class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">
+				关闭
+				</a>
+			</div>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<!-- 表单区域 -->
+			<div id="fui-form" class="fui-form">
+				<div role="form">
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="分类名称" starred="true">
+							<input  bind="frameConfigCateGory.cateGoryName" class="mini-textbox" required="true" requiredErrorText="分类名称不能为空" maxLength="50"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="备注">
+							<input bind="frameConfigCateGory.cateGoryDes" class="mini-textbox" maxLength="50"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="排序号">
+							<input id="ordernumber" bind="frameConfigCateGory.orderNumber" class="mini-textbox" vtype="int;range:0,99999999" allowSort="true"/>
+						</div>
+					</div>
+					<div style="display:none">
+						<input id="configValue" bind="frameConfigCateGory.cateGoryGuid" class="mini-textbox"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//Initialization request 
+			epoint.initPage('frameconfigcategoryaddaction');
+	
+			// New correction operation
+			function newCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alert(data.msg, '', null, 'success');
+						epoint.clear('fui-form');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+	
+			function addNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+	
+			// Shut downOperation of the callback
+			function closeCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+	
+			function add() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', closeCallback);
+				}
+			}
+		</script>
+	</body>
+
+</html>

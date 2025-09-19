@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>查询区域配置条件列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="add" onclick="add();">新增查询</a>
+		<a class="mini-button" id="fastadd" onclick="fastadd();">快速新增查询</a> <a
+			class="mini-button" id="save" onclick="saveAll()">保存</a> <a
+			class="mini-button" state="danger" id="del"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的消息！',  {state : 'warning'});} else {del();}">删除选中</a>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="querytext" width="auto">
+					查询条件名称 <input property="editor" class="mini-textbox"
+						style="width: 99%" />
+				</div>
+				<div field="ctypetext" width="120">查询类型</div>
+				<div field="rangetypetext" width="120">范围类型</div>
+				<div field="controltypetext" width="120">控件类型</div>
+				<div field="ordernum" width="100" vtype="int;range:0,99999999">
+					排序号 <input property="editor" class="mini-textbox" minWidth="30"
+						inputStyle="text-align:right" />
+				</div>
+				<div width="60" renderer="edit">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="listGuid" bind="listGuid" />
+	<input class="mini-hidden" id="versionGuid" bind="versionGuid" />
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		var isSub = "";
+		epoint.initPage("queryareaconfiglistaction", "", function(data) {
+			if (data.isSub == "1") {
+				isSub = data.isSub;
+			}
+		});
+
+		function add() {
+			epoint.openTopDialog("新增查询",
+					"frame/pages/listdesigner/config/queryareaconfigadd?listGuid="
+							+ mini.get("listGuid").getValue() + "&versionGuid="
+							+ mini.get("versionGuid").getValue() + "&isSub="
+							+ isSub, addCallBack, {
+						'width' : 1000,
+						'height' : 670
+					});
+		}
+
+		function fastadd() {
+			epoint.openDialog("选择字段",
+					"frame/pages/listdesigner/config/fieldselect?listGuid="
+							+ mini.get("listGuid").getValue() + "&versionGuid="
+							+ mini.get("versionGuid").getValue()
+							+ "&initType=queryArea&isSub=" + isSub,
+					function(e) {
+						if (e != "close") {
+							e = e.replace(/,/g, "_gtigepoint_");
+							epoint.execute('fastAdd', null, e, function(data) {
+								if (data.msg) {
+									epoint.showTips(data.msg, {state : 'success'});
+									epoint.refresh('datagrid', '', true);
+								}
+							});
+						}
+					}, {
+						'width' : 800,
+						'height' : 550
+					});
+		}
+
+		//修改
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"createEditDialog");
+		}
+
+		function createEditDialog(data) {
+			epoint.openTopDialog("修改查询",
+					"frame/pages/listdesigner/config/queryareaconfigadd?rowGuid="
+							+ data + "&listGuid="
+							+ mini.get("listGuid").getValue() + "&versionGuid="
+							+ mini.get("versionGuid").getValue() + "&isSub="
+							+ isSub, addCallBack, {
+						'width' : 650,
+						'height' : 570
+					});
+		}
+
+		// 保存
+		function saveAll() {
+			if (mini.get('datagrid').isValid()) {
+				epoint.execute('saveAll', [ 'datagrid' ], msgCallBack);
+			} else {
+				epoint.showTips('排序号验证失败：数字必须在 0 到 99999999 之间', {state : 'warning'});
+			}
+		}
+
+		// 删除
+		function del() {
+			epoint.execute('del', [ 'datagrid' ], msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if(msg.indexOf("成功")!=-1){
+					epoint.showTips(msg,{state : 'success'});
+				}else{
+					epoint.showTips(msg,{state : 'warning'});
+				}
+				epoint.refresh([ 'datagrid' ], '', true);
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param && param != 'close') {
+					epoint.showTips(param,{state : 'success'});
+				}
+				epoint.refresh([ 'datagrid' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

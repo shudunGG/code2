@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>本地库</title>
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox" vtype="maxLength:20"
+						required="true" emptyText="请输入步骤名称" style="width: 90%"  requiredErrorText="步骤名称不能为空"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="指定已存在的表">
+					<input id="isSelectTable" name="isSelectTable"
+						class="mini-checkbox" style="width: 10%"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="选择目标表" starred="true" id="targetTable">
+					<input id="tableName" name="tableName" class="mini-buttonedit"
+						bind="tableName" allowInput="false" showClose="true"
+						required="true" style="width: 90%" oncloseclick="onCloseClick"
+						onbuttonclick="onButtonEdit" requiredErrorText="请选择目标表！" />
+					<input id="targetTableName" name="targetTableName" class="mini-textbox" style="width: 90%" required="true" requiredErrorText="自定义表名必填！" onvalidation="englishjy"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="是否删除原目标表">
+					<input id="isDel" name="isDel" class="mini-checkbox" style="width: 10%"/>
+				</div>
+			</div>
+		</div>
+		<input id="columnLinkList" name="columnLinkList" class="mini-hidden">
+	</div>
+	<div class="fui-toolbar" id="btns" style="padding-top: 1px;display:none">
+		<div class="btn-group mr10" style="padding-left: 7%;">
+			<a id="fieldmap" class="mini-button mini-btn-primary" enabled="false" visible="false"
+				onclick="addFieldMap" style="margin-left: 30px">字段映射</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="mini-fit" style="padding-top: 1px;display:none" id="maptable">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			multiSelect="true" allowCellValid="true" allowCellEdit="true"
+			style="width: 85%; height: 100%; margin: 0 auto" allowResize="true"
+			action="getDataGridData" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<!-- 				<div type="checkcolumn" width="55"></div> -->
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="targetField" headerAlign="center" width="200"
+					align="center">字段名称</div>
+				<div field="isfield" width="50" visible="false"></div>
+				<div field="sourceField" headerAlign="center" align="center"
+					width="200" maxLength="8">
+					源字段 <input field="sourcefield" property="editor"
+						class="mini-textbox" emptyText="请输入源字段名称..." maxLength="50"
+						style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var columnLinkList = mini.get('columnLinkList');
+		var datagrid = mini.get("datagrid");
+		var type=Util.getUrlParams("flowtype");
+		var nodeData;
+		var nodeInfo;
+		var transGuid;
+		var columnTemp;
+
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			form.setData(nodeData);
+			console.log(nodeData);
+			if(!nodeData||nodeData.isSelectTable=='false'){
+				epoint.clear('tableName');
+				mini.get('fieldmap').setEnabled(false);
+				mini.get('fieldmap').setVisible(false);
+				$('#btns').hide();
+				$('#maptable').hide();
+				mini.get('targetTableName').setVisible(true);
+				mini.get('tableName').setVisible(false);
+				Util.form.setLabel('#targetTable', '自定义表名');
+			}else{
+				epoint.clear('targetTableName');
+				$('#btns').show();
+				$('#maptable').show();
+				mini.get('targetTableName').setVisible(false);
+				mini.get('fieldmap').setVisible(true);
+				mini.get('tableName').setVisible(true);
+				mini.get('fieldmap').setEnabled(true);
+				Util.form.setLabel('#targetTable', '选择目标表');
+			}
+			var obj = Util.getUrlParams();
+			transGuid = obj.flowGuid;
+			//初始化字段映射表单
+			epoint.initPage('modeltableoutputaction',{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			var nodeName = nodeData.stepName;
+			form.setData(nodeData);
+			var tableName=nodeData.tableName;
+			mini.get('tableName').setText(tableName);
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			if(type==3){
+				if(mini.get('isSelectTable').getValue()=="false"){
+					$('#isSelectTable').click();
+				}
+				mini.get('isSelectTable').setEnabled(false);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		// 弹出字段映射窗口
+		function addFieldMap(sysGuid) {
+			if (epoint.validate()) {
+				var tableName = mini.get("tableName").getValue();
+				var cloumnlink = columnLinkList.value;
+				localStorage.setItem("cloumnlink",cloumnlink);
+				epoint.openDialog('字段映射',
+						'./tableoutputfieldmap?sysGuid='
+								+ sysGuid + "&nodeInfoKey=" + nodeInfo.key
+								+ "&flowGuid=" + transGuid + "&tableName=" + tableName,
+						addCallBack, {
+							'width' : 1000,
+							'height' : 620
+						});
+			}
+		}
+
+		function addCallBack(param) {
+			if (param) {
+				//columnList
+				if (param != "close") {
+					columnTemp = param;
+					columnLinkList.setValue(param);
+					datagrid.setData(epoint.decodeJson(param));
+				}
+
+			}
+		}
+
+		function onButtonEdit(e){
+			var dsId=Util.getUrlParams('dsId');
+			var flowtype=Util.getUrlParams('flowtype');
+			epoint.openDialog('选择目标表',
+					'./tableselect?dsID='+dsId+'&flowType='+flowtype+'&type=1',
+					function(data){
+				if(data!='close'){
+					e.sender.setValue(data);
+					e.sender.setText(data);
+					epoint.validate('tableName');
+				}
+			}, {
+						'width' : 800,
+						'height' :500
+					});
+		}
+
+		datagrid.on('cellbeginedit',function(e){
+			if(e.row.isfield!='0'){
+				e.cancel=true;
+			}
+		});
+
+
+
+		// 关闭操作的回调
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function onlySave() {
+			var nodeForm = getForm();
+			epoint.execute("saveForm", '', [ nodeInfo,nodeForm ],function(msg){});
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate('@all', true)) {
+				if(mini.get('isSelectTable').getValue()=='true'&&datagrid.getData().length==0){
+					epoint.alert('请配置映射关系', '', null, 'warning');
+					return
+				}
+				if(mini.get('isSelectTable').getValue()=='true'){
+					setGridData();
+				}
+				var nodeForm = getForm();
+				epoint.execute("saveForm", '', [ nodeInfo, nodeForm ], function(msg) {
+					if (msg == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+
+		mini.get('isSelectTable').on('valuechanged',function(data){
+			if(data.value=='true'){
+				epoint.clear('targetTableName');
+				mini.get('targetTableName').setVisible(false);
+				mini.get('tableName').setVisible(true);
+				mini.get('fieldmap').setEnabled(true);
+				mini.get('fieldmap').setVisible(true);
+				$('#btns').show();
+				$('#maptable').show();
+				Util.form.setLabel('#targetTable', '选择目标表');
+			}else{
+				epoint.clear('tableName');
+				mini.get('fieldmap').setEnabled(false);
+				mini.get('targetTableName').setVisible(true);
+				mini.get('tableName').setVisible(false);
+				mini.get('fieldmap').setVisible(false);
+				columnLinkList.setValue('');
+				mini.get('datagrid').clearRows();
+				$('#btns').hide();
+				$('#maptable').hide();
+				Util.form.setLabel('#targetTable', '自定义表名');
+			}
+		});
+
+		function onCloseClick(e) {
+		  var obj = e.sender;
+		  obj.setText("");
+		  obj.setValue("");
+		}
+
+
+		function setGridData() {
+			var datas = datagrid.getData();
+			var columnLink = [];
+			for (var i = 0; i < datas.length; i++) {
+				console.log(datas[i].sourceField);
+				columnLink.push({
+					"sourceField" : datas[i].sourceField,
+					"targetField" : datas[i].targetField,
+					"isfield" : datas[i].isfield,
+				});
+			}
+			columnLinkList.setValue(JSON.stringify(columnLink));
+		}
+
+		function englishjy(e) {
+			var retainedFields = ['like','as'];
+			if(retainedFields.indexOf(e.value) != -1){
+				e.errorText = "表名不能为数据库保留字："+retainedFields;
+				e.isValid = false;
+				return;
+			}
+			var reg =  new RegExp("^[a-zA-Z][a-zA-Z0-9_]*$");
+			var v = reg.test(e.value);
+			if (!v) {
+				e.errorText = "必须以字母开头，英文、数字、下划线作为表名组合名称!";
+				e.isValid = false;
+			}
+		}
+
+
+
+
+
+
+	</script>
+</body>
+
+</html>

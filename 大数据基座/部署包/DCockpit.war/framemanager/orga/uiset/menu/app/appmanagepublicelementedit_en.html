@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Element to add</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify" iconCls="icon-save">save changes</a>
+            <a class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">shut down</a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">precautions</a>
+	</div>
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			Components of the<em>The width of the</em><em>highly</em>If attribute is configured to0, then the element is a full screen element, full screen element in the screen don't configure any other things
+		</p>
+		<p>
+			<em>No border</em>After checked, the border around the element is not, and no title bar at the top, when the mouse moved to the position of the title bar, you will show the related content
+		</p>
+		<p>
+			<em>Whether to allowShut down</em>After check, element ICONS in the upper right corner will be unloaded, if components can't unload, can not check this
+		</p>
+		<p>
+			<em>Associated application</em>After configuration, click on the element at the top of the title bar, page will open the associated application
+		</p>
+		<p>
+			<em>The content page address:</em>The element embeddediframeThe address of the page
+		</p>
+		<p>
+			<em>Advanced Settings page address:</em>After the address configuration,Components of theThere will be a gear icon button at top right corner, click will open configuration after the address,Shut downThe page will refresh the components
+		</p>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="element name" starred="true">
+						<input bind="dataBean.portaletname" class="mini-textbox"
+							required="true" requiredErrorText="Name of the elementCan't be empty" vtype="maxLength:50" />
+					</div>
+					<div role="control" label="order no">
+						<input bind="dataBean.ordernum" class="mini-textbox" vtype="int;maxLength:6" value="0"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="category">
+						<input name="yingYongList" bind="dataBean.categoryguid"
+							action="getYingYongList" allowInput="false" autoLoad="false"
+							class="mini-combobox" emptyText="Please select a..." />
+					</div>
+					<div role="control" label="associated">
+						<input id="appRelation" bind="appmanagepublicelementeditaction.linkapp" class="mini-buttonedit"
+							emptyText="" onbuttonclick="selectApp" selectOnFocus="true" allowInput="false" />
+						<!-- Hidden fields, used for bindingappguid -->
+						<input bind="dataBean.linkapp" id="appguid"
+							class="mini-hidden" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="top position">
+						<input bind="dataBean.position_top" class="mini-textbox" maxLength="8" vtype="int" />
+					</div>
+					<div role="control" label="left position">
+						<input bind="dataBean.position_left" class="mini-textbox" maxLength="8" vtype="int"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="width">
+						<input bind="dataBean.width" class="mini-textbox" maxLength="8" vtype="int"/>
+					</div>
+					<div role="control" label="height">
+						<input bind="dataBean.heigth" class="mini-textbox" maxLength="8" vtype="int"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="whether shut down">
+						<div name="allowclosebutton" bind="allowclosebutton"
+							class="mini-checkbox"></div>
+					</div>
+					<div role="control" label="whether start using">
+						<div name="isdisable" bind="isdisable" class="mini-checkbox"></div>
+					</div>
+					<div role="control" label="no border">
+						<div name="isinit" bind="isinit" class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="contentPage address">
+						<input bind="dataBean.url" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="settings address">
+						<input bind="dataBean.userconfigurl" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="app store icon">
+						<input id="bigRefresh" bind="storeicon"
+							class="mini-buttonedit" emptyText="" onbuttonclick="openicon" allowInput="false"
+							selectOnFocus="true" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage("appmanagepublicelementeditaction",'',initCallBack);
+
+		function initCallBack(data){
+			if(data && data.storeicon){
+				mini.get("bigRefresh").setText(data.storeicon);
+				mini.get("bigRefresh").setValue(data.storeicon);
+			}
+			mini.get("appRelation").setText(mini.get("appRelation").getValue());
+		}
+		
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		// Shut downOperation of the callback
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		//Open the big picture
+		function openicon(e) {
+			epoint.openDialog(
+							'Choose the icon',
+							'framemanager/orga/uiset/menu/module/selectoa8icon?type=big',
+							function(param) {
+								if (param && param != 'close') {
+									mini.get("bigRefresh").setText(param);
+									mini.get("bigRefresh").setValue(param);
+								}
+							}, {
+								width : 1000,
+								height : 400
+							});
+		}
+
+		//Choose to apply
+		function selectApp(e) {
+			epoint.openDialog('Choose to apply',
+					'framemanager/orga/uiset/menu/app/selectapp?type=1',
+					function(param) {
+						s = param.split(";");
+						if (param!='close' && s[1] != 'f9root') {
+							mini.get("appRelation").setText(s[0]);
+							mini.get("appguid").setValue(s[1]);
+						} 
+					}, {
+						width : 300,
+						height : 500
+					});
+		}
+		
+		// saveOperation of the callback
+	    function saveCallback(data) {
+	        if (data.msg) {
+	        	if(data.success){
+	        		epoint.alertAndClose(data.msg, '', null, null, 'success');
+	        	}else{
+	        		epoint.alert(data.msg, '', null, 'error');
+	        	}
+	        }
+	    }
+	    
+	    function saveModify() {
+	        if(epoint.validate()){
+	            epoint.execute('add','fui-form',saveCallback);
+	        }
+	    }
+
+		//]]>
+	</script>
+</body>
+</html>

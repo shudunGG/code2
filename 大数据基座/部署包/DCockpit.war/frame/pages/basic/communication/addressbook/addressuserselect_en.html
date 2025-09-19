@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Select personnel</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- Wait for the tooltip -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="save">sure add</a> <a class="mini-button" onclick="epoint.closeDialog">cancel</a>
+		</div>
+	</div>
+
+
+	<!-- content area -->
+	<div class="fui-content">
+
+		<!-- The form layout -->
+		<div class="fui-form">
+			<div role="form">
+				<div id="treelistselect" class="mini-tabstreeselect" filterMode="server"
+					action="getTreeData" loadWhenChecked="true" showBorder="true" width="100%">
+					<div tabText="personnel list"></div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[  
+        //Initialize the page
+        epoint.initPage ("addressuserselectaction");
+        
+        //Save the callback event
+        function saveCallback (data)
+        {
+        	
+		if (data.added) {
+				epoint.alert(data.added, null, null, 'info');
+			} else {
+				epoint.alertAndClose(data.msg, null, null null, 'info');
+			}
+		}
+
+		//Save button
+		function save() {
+			var selectNodes = mini.get('treelistselect').getSelectedNodes();
+			var length = selectNodes.length;
+			if (length > 0) {
+				var userList = "";
+				var guidList = "";
+				for (var i = 0; i < length; i++) {
+					var node = selectNodes[i];
+					userList += node.text;
+					userList += ";";
+					guidList += node.value;
+					guidList += ";";
+				}
+				epoint.execute('addressuserselectaction.save', '', [ guidList,
+						userList ], saveCallback);
+			} else {
+				epoint.alert('You have not chosen any record!', null, null, 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+
+</html>

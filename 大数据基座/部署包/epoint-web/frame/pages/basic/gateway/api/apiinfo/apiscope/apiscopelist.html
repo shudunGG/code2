@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>方法别名列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="openAdd();"
+			id="btnAddRecord"> 新增授权范围 </a> <a class="mini-button"
+			onclick="saveAll();" id="btnSaveRecord"> 保存修改 </a> <a id="btnDel"
+			class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div width="300" field="scopename" vtype="required;maxLength:49">
+					Scope名称 <input property="editor" class="mini-textbox"
+						maxLength="49" />
+				</div>
+				<div width="100%" field="description" vtype="maxLength:200">
+					描述 <input property="editor" class="mini-textbox" maxLength="200" />
+				</div>
+				<div width="100" field="ordernum" sortOrder="desc" width="80"
+					allowSort="true" vtype="int;range:0,99999999">
+					排序值 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" />
+				</div>
+				<div type="actioncolumn" name="optColumn">
+					操作 <span type="action" icon="icon-edit" onclick="openEdit">修改</span>
+					<span type="action" icon="icon-search" onclick="openDetail">查看</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiscopelistaction');
+
+		var grid = mini.get('datagrid');
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"frame/pages/basic/gateway/api/apiinfo/apiscope/apiscope",
+					function(param) {
+						if (param != 'close') {
+							if(param == "保存成功！"){
+								epoint.showTips(param, {state : 'success'});
+							}else{
+								epoint.showTips(param, {state : 'warning'});
+							}
+						}
+						searchData();
+					}, {
+						'width' : 970,
+						'height' : 320
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(row) {
+			epoint.openDialog('修改记录',
+					"frame/pages/basic/gateway/api/apiinfo/apiscope/apiscope?guid="
+							+ row.rowguid, function(param) {
+						if (param != 'close') {
+							if(param == "保存成功！"){
+								epoint.showTips(param, {state : 'success'});
+							}else{
+								epoint.showTips(param, {state : 'warning'});
+							}
+						}
+						searchData();
+					}, {
+						'width' : 970,
+						'height' : 320
+					});
+		}
+
+		// 弹出明细窗口
+		function openDetail(row) {
+			epoint.openDialog('详细信息',
+					"frame/pages/basic/gateway/api/apiinfo/apiscope/apiscopedetail?guid="
+							+ row.rowguid, searchData, {
+						'width' : 500,
+						'height' : 340
+					});
+		}
+
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,{state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+	</script>
+</body>
+</html>

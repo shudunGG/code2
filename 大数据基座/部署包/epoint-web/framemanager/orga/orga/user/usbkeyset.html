@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>USBKEY设置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="setUsbKey">读取KEY</a> <a
+			class="mini-button" onclick="saveKey">保存KEY</a> <a
+			class="mini-button" id="btnAddClose" onclick="reSaveKey">重置KEY</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消设置</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="登录名称">
+						<div bind="frameUser.loginId" class="mini-output" /></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="用户姓名">
+						<div bind="frameUser.displayName" class="mini-output" /></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所在部门">
+						<div bind="selectedFrameOu.ouname" class="mini-output" /></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="USBKey">
+						<input bind="userExtendInfo.usbkey" class="mini-textbox"
+							id="usbkey" style="width: 300px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="注意事项">
+						<font color="red">第一次使用本系统时要安装加密锁驱动程序，点击<a
+							href="install.rar">下载</a>后安装
+						</font>
+					</div>
+				</div>
+			</div>
+		</div>
+		<object classid='clsid:4391DCDD-5FB4-462F-9308-70A195937DAE'
+			height='0' width='0' id='EliteIVGetSerialNumber' />
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("usbkeysetaction", null, initCallBack);
+
+		function initCallBack(data) {
+			if (data.soa) {
+				epoint.alertAndClose(e.soa, '', null, null, 'info');
+			}
+			if (data.threemanage) {
+				epoint.alertAndClose(e.threemanage, '', null, null, 'info');
+			}
+			if (data) {
+				mini.get("usbkey").setValue(data.usbkey);
+			}
+		}
+
+		function setUsbKey() {
+			if (document.all) {
+				var str = document.all('EliteIVGetSerialNumber')
+						.SERIAL_NUMBER();
+				if (str == null || str == '') {
+					showTips("未发现ca锁，请插入ca锁", {state : 'warning'});
+				} else {
+					epoint.execute("usbSet", "", [ str ], setSaveCallBack);
+				}
+			} else {
+				epoint.showTips("此功能只支持IE10及以下的浏览器", {state : 'warning'});
+				searchData();
+			}
+		}
+
+		//设置回调事件
+		function setSaveCallBack(data) {
+			epoint.showTips(data.msg, {state : 'success'});
+			searchData();
+		}
+
+		//重置回调
+		function reSaveCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.showTips(msg, {state : 'success'});
+				searchData();
+			}
+		}
+
+		//重置
+		function reSaveKey() {
+			epoint.execute("usbReSet", "", reSaveCallBack);
+		}
+
+		//保存
+		function saveKey() {
+			var str = mini.get("usbkey").value;
+			epoint.execute("saveKey", "", str, setSaveCallBack);
+		}
+
+		//刷新
+		function searchData() {
+			epoint.refresh('fui-form');
+		}
+		//]]>
+	</script>
+</body>
+</html>

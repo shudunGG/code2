@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CheckBoxList checkbox</title>
+    <link rel="stylesheet" href="../css/base.css"></link>
+    <link rel="stylesheet" href="../css/control.css"></link>
+</head>
+
+<body>
+    <div class="control-form">
+        <input type="hidden" id="DataField"/>
+        <input type="hidden" id="DefaultValue"/>
+        <input type="hidden" id="IsExtra"/>
+        <input type="hidden" id="DataCtrl"/>
+        <input type="hidden" id="fieldCreateFlag"/>
+        
+ 		<ul class="form-field">
+   			<li class="form-title">control name</li>
+   			<li>
+   			    <input type="text" id="DataFieldCn" class="form-control"></input>
+   			</li>
+ 		</ul>
+ 		<ul id="fieldEn" style="display:none" class="form-field">
+   			<li class="form-title">control english name</li>
+   			<li>
+   			    <input type="text" id="DataFieldEn" class="form-control"></input>
+   			</li>
+ 		</ul>
+ 		<ul class="form-field">
+            <li class="form-title">drop items</li>
+            <li>
+                <input type="text" id="addItem" class="form-control"/> 
+                <input type="button" style="font-size: 12px;" id="addRecord" width="100px" onclick="addRecord()" value="add items"/>
+				<input type="button" style="font-size: 12px;" id="delRecord" width="100px" onclick="delRecord()" value="del items"/>
+            </li>
+            <li>
+                <select id="items" multiple="multiple" style="margin-top: 5px;width: 100%; height: 100%"></select>
+            </li>
+        </ul>
+        <ul class="form-field">
+            <li class="form-title">Selection direction</li>
+            <li>
+                <select id="RepeatDirection" class="form-control">
+                    <option value="Horizontal">transverse</option>
+                    <option value="Vertical">portrait</option>
+                </select>
+            </li>
+        </ul>
+        <ul class="form-field">
+            <li class="form-title">Number of items per row</li>
+            <li>
+                <input type="text" id="RepeatColumns" class="form-control"/>
+            </li>
+        </ul>
+        <div id="validatepropertylst" class="form-field" style="float:left;width:100%">
+        </div>
+    </div>
+
+    <script type="text/x-template" id="ctrl-templ">
+        <div><input type="text"
+            class="checkboxlist"
+            data-ctrl={{datactrl}}
+            id="{{id}}"
+            title="{{title}}"
+            DataField="{{dataField}}"
+            DataFieldCn="{{dataFieldCn}}"
+            RepeatDirection="{{repeatDirection}}" 
+            {{#repeatColumns}}
+            RepeatColumns="{{repeatColumns}}"
+            {{/repeatColumns}}
+            dataoptions="{{dataoptions}}"
+            defaultvalue="{{defaultvalue}}"
+            isextra="{{isextra}}"
+            validate="{{validate}}"/></div>
+    </script>
+
+    <script type="text/javascript">
+        var tableId = parent.tableId;
+        var propertyUrl = '../formlistmanage/propertyinfoaction.action';
+        
+        var itemsString ="";
+
+        function addRecord() {
+ 			var addItem = document.getElementById("addItem").value;
+ 			if(addItem){
+ 				var m=0;
+ 				if(itemsString != null && itemsString != ""){
+ 					for(var n=0;itemsString.split(";").length>0 && n<itemsString.split(";").length; n++){
+ 	 					if(itemsString.split(";")[n] == addItem){
+ 	 						return;
+ 	 					}else{
+ 	 						m++;
+ 	 					}
+ 	 				}
+ 	 				if(m == itemsString.split(";").length){
+ 	 					var selObj = $("#items");
+ 	 	 				selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+ 	 	 				itemsString += addItem +";";
+ 	 				}else{
+	 					return;
+ 	 				}
+ 				}else{
+ 					var selObj = $("#items");
+	 	 			selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+	 	 			itemsString += addItem +";";
+ 				}
+ 			}
+ 			document.getElementById("addItem").value="";
+ 		 }
+
+		 function delRecord() {
+			//deleted the selected items, console the control 
+	 		var selOpt = $("#items option:selected");
+	 		selOpt.remove();
+	 		document.getElementById("addItem").value="";
+	 			
+	 		//reset the control values after deleted
+	 		var opts =  $("#items option");
+	 		var delAfterStr = "";
+	 		for(var n=0; opts!=null && opts.length>0 && n<opts.length; n++){
+	 			delAfterStr += opts[n].innerHTML+";";
+	 		}
+	 		itemsString = delAfterStr;
+		 }
+    </script>
+    <script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="../js/mustache.js"></script>
+    <script type="text/javascript" src="../js/controls/control.js"></script>
+    <script type="text/javascript" src="../js/controls/CheckBoxList.js"></script>
+</body>
+
+</html>

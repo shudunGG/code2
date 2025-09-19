@@ -1,0 +1,1 @@
+select count(1) from information_schema.COLUMNS where TABLE_SCHEMA=DATABASE() and table_name='cockpit_norm' and column_name='xxljobid'

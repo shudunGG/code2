@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增组件</title>
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.id_connection_row .form-control {
+	width: 70%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog(0)">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="分组名称" starred="true" starred="true">
+						<input id="groupName" class="mini-textbox" bind="assemblyGroup.groupName"
+							required="true" requiredErrorText="组件名称不能为空!"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分组图标路径" starred="true">
+						<input id="typeicon" class="mini-textbox" bind="assemblyGroup.typeicon"
+							required="true" requiredErrorText="分组图标路径不能为空!"  />
+					</div>
+				</div>
+				<div role="row" id="group">
+					<div role="control" label="分组类型" starred="true">
+						<input id="plugintype" requiredErrorText="分组类型不能为空"
+							bind="assemblyGroup.plugintype"
+							action="getPluginType"  required="true"
+							class="mini-radiobuttonlist"  textField="text"
+							valueField="id" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpdevsubassemblygroupaddaction','',function(){
+			var type=Util.getUrlParams('type');
+			if(type=='model'){
+				$('#group').hide();
+				mini.get('plugintype').setValue(type);
+			}
+		});
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功') != -1) {
+				epoint.alertAndClose(data.msg, '', '', 'success');
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+	</script>
+</body>
+</html>

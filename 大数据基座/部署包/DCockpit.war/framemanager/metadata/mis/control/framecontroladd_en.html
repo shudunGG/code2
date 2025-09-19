@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Component to add</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="content-type" content="text/html" />
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" onclick="saveAndNew" iconCls="icon-save">save and new</a><a
+				class="mini-button" id="addClose" onclick="saveAndClose" iconCls="icon-save">save and close</a><a
+				class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">shut down</a>
+			</div>
+		</div>
+
+		<!-- content area -->
+		<div class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div id="fui-form" class="fui-form">
+					<div role="row">
+						<div role="control" label="componentname" starred="true">
+							<input class="mini-textbox"
+							bind="dataBean.chname" required="true"
+							requiredErrorText="Component nameCan't be empty!" />
+						</div>
+						<div role="control" label="displaytype" starred="true">
+							<input class="mini-textbox"
+							bind="dataBean.name" required="true"
+							requiredErrorText="Display typeCan't be empty!" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="allow field type" >
+							<input class="mini-checkboxlist" action="getDataType" repeatItems="5" repeatLayout="table"
+							textField="text" valueField="id" bind="dataBean.allowfieldtype"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="componenttemplates" starred="true">
+							<input class="mini-textarea" style="height:80px"
+							bind="dataBean.template" required="true"
+							requiredErrorText="Component templatesCan't be empty!" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="componentmodel">
+							<input class="mini-textbox"
+							bind="dataBean.remark" />
+						</div>
+						<div role="control" label="order no">
+							<input class="mini-textbox"
+							bind="dataBean.ordernum" vType="int" value="0"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="componenttype">
+							<input class="mini-textbox"
+							bind="dataBean.type" />
+						</div>
+						<div role="control"></div>
+					</div>
+					<br/>
+					<p>
+						<em>Component name:</em><font color="red">Pay attention to andEpointKeyNames9Is consistent with the public variable values, such as:INPUT_TEXT = "Text input box";</font>
+					</p>
+					<p>
+						<em>Display type:</em><font color="red">Pay attention to andDtoContantsIs consistent with the public variable values, such as:TEXTBOX = "textbox";</font>
+					</p>
+					<p>
+						<em>Component templates:</em><font color="red">Pay attention to replace the keyword keyword for system support, such as:"action="{{action}}" id="{{id}}" bind="{{value}}" textField="{{textField}}" valueField="{{valueField}}" emptyText="{{emptyText}}" {{extendAttribute}}"</font>
+					</p>
+					<p>
+						<em>componentmodel:</em><font color="red">The generated code corresponding to the receptioncomponentInitialization of datatype,Such as:List&#60;SelectItem&#62; </font>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			// Initialize the page
+			epoint.initPage('framecontroladdaction');
+
+			function saveAndNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				}
+			}
+
+			// New correction operation
+			function newCallback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', null, 'info');
+					// Empty form
+					epoint.clear('fui-form');
+				}
+			}
+
+			// Shut downOperation of the callback
+			function closeCallback(data) {
+				if (data.msg) {
+					//if (data.msg.indexOf("successful") != -1) {
+					if(data.success){
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+		</script>
+	</body>
+</html>

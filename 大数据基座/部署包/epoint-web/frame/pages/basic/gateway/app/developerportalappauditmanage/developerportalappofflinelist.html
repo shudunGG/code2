@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>下架应用列表</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+.btn-in-column {
+	margin-right: 5px;
+}
+
+.btn-in-column-text {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="应用名">
+						<input id="search_appName" class="mini-textbox" bind="appName"
+							onkeyenter="searchData();" />
+					</div>
+					<div role="control" label="申请人">
+						<input id="search_linkManName" class="mini-textbox"
+							bind="linkManName" onkeyenter="searchData();" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="下架时间">
+						<div>
+							<input id="search_offlineDateStart" bind="offlineDateStart"
+								class="mini-datepicker" onvaluechanged='onDateStartValueChanged' />
+							至 <input id="search_offlineDateFinsh" bind="offlineDateFinsh"
+								class="mini-datepicker" onvaluechanged='onDateFinshValueChanged' />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="appName" width="150">应用名称</div>
+				<div field="companyName" width="100%">企业名称</div>
+				<div field="linkManName" width="150">申请人</div>
+				<div field="submitTime" renderer="onTimeRender" width="150">创建时间</div>
+				<div field="removeTime" renderer="onTimeRender" width="150">下架时间</div>
+				<div field="removeDesc" width="150">理由</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		//初始化页面
+		epoint.initPage('developerportalappofflinelistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 格式化提交时间列
+		function onTimeRender(e) {
+
+			var time = e.value;
+
+			time = new Date(time);
+
+			// 格式化时间
+			var year = time.getFullYear();
+			var month = time.getMonth() + 1;
+			month = fixZero(month);
+			var date = time.getDate();
+			date = fixZero(date);
+			var hours = time.getHours();
+			hours = fixZero(hours);
+			var minutes = time.getMinutes();
+			minutes = fixZero(minutes);
+			var seconds = time.getSeconds();
+			seconds = fixZero(seconds);
+
+			return year + '-' + month + '-' + date + ' ' + hours + ':'
+					+ minutes + ':' + seconds;
+		}
+
+		function fixZero(data, range) {
+			if (data < 10) {
+				data = '0' + data;
+			}
+			return data;
+		}
+
+		// 起始日期选择器值改变
+		function onDateStartValueChanged(e) {
+			// 设置截止日期选择器的日期最小值
+			mini.get('search_offlineDateFinsh').minDate = this.getFormValue();
+			// 设置截止日期选择器的下拉默认显示值
+			mini.get('search_offlineDateFinsh').viewDate = this.getFormValue();
+		}
+
+		// 截止日期选择器值改变
+		function onDateFinshValueChanged(e) {
+			// 设置开始日期选择器的日期最大值
+			mini.get('search_offlineDateStart').maxDate = this.getFormValue();
+		}
+
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		// 搜索
+		function searchData() {
+			// 设置截止时间为所选时间的23点59分59秒
+			if (mini.get('search_offlineDateFinsh').getValue() != "") {
+				mini.get('search_offlineDateFinsh').getValue().setHours(23);
+				mini.get('search_offlineDateFinsh').getValue().setMinutes(59);
+				mini.get('search_offlineDateFinsh').getValue().setSeconds(59);
+				mini.get('search_offlineDateFinsh').getValue().setMilliseconds(
+						999);
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//]]>
+	</script>
+
+
+</body>
+</html>

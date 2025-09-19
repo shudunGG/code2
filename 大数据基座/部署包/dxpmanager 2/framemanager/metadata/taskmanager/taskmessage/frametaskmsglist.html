@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>任务管理</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+		<style>
+			.link:hover {
+				cursor: pointer;
+				color: red;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd()">新增任务</a>
+
+				<a class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗？','',deleteSelect);}">删除任务</a>
+			</div>
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<div>
+				<div style="margin: 0px auto; text-align: left; width: 750px">
+					<p>
+						当前页面启动、停止、暂停、恢复等操作都是全局的，即会操作该任务下面所有的触发器配置！
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="fui-condition">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="任务名字">
+							<input bind="taskname"
+							class="mini-textbox" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDataGridData"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="50">
+						序
+					</div>
+					<div field="taskname" headerAlign="center" width="100" Align="left">
+						任务名字
+					</div>
+					<div field="categoryguid" width="80" headerAlign="center" data-options="{'code' : '框架任务分类'}">
+						所属分类
+					</div>
+					<div field="taskclassname" width="100%" headerAlign="center" Align="left">
+						执行类名称
+					</div>
+					<!-- <div field="executetype" width="80" headerAlign="center" align="center" renderer="onExecuteTypeRenderer">
+						执行方式
+					</div> -->
+					<div width="50" headerAlign="center" align="center" renderer="onEditRenderer">
+						修改
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onSetRenderer">
+						配置
+					</div>
+					<div field="jobschedulestate" width="80" headerAlign="center" align="center">
+						状态
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onStartRenderer">
+						启动
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onStopRenderer">
+						停止
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onPauseRenderer">
+						暂停
+					</div>
+					<div width="50" headerAlign="center" align="center" renderer="onResumeRenderer">
+						恢复
+					</div>
+					<div field="iscluster" width="100%" headerAlign="center" visible="false">
+						iscluster
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			//<![CDATA[
+			//初始化页面
+			epoint.initPage("frametaskmsglistaction");
+
+			// 执行方式取值
+			function onExecuteTypeRenderer(e) {
+				if (e.value == '0') {
+					return '手动';
+				} else {
+					return '自动';
+				}
+			}
+
+			// 修改
+			function onEditRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			}
+
+			function openEdit(id) {
+				epoint.openDialog('修改任务', "framemanager/metadata/taskmanager/taskmessage/frametaskmsg?guid=" + id, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 350
+				});
+			}
+
+			// 配置
+			function onSetRenderer(e) {
+				return "<a class=\"link\" onclick=\"openConfig('" + e.record.rowguid + "'," + e.record.iscluster + ")\">配置</a>";
+			}
+
+			// 启动
+			function onStartRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('startOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">启动</a>";
+			}
+
+			// 卸载
+			function onStopRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('stopOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">停止</a>";
+			}
+
+			// 暂停
+			function onPauseRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('pauseOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">暂停</a>";
+			}
+
+			// 恢复
+			function onResumeRenderer(e) {
+				return "<a class=\"link\" onclick=\"epoint.execute('resumeOperation',null,['" + e.record.rowguid + "'],operationCallBack)\">恢复</a>";
+			}
+			
+			function operationCallBack(e){
+				if(e.msg){
+					epoint.alert(e.msg, '', null, 'info');
+				}
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+
+			function openAdd() {
+				epoint.openDialog('新增任务', "framemanager/metadata/taskmanager/taskmessage/frametaskmsg", function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 350
+				});
+			}
+
+			function openConfig(id,iscluster) {
+				var flag = "1";
+				if(!iscluster)
+					flag = "0";
+				epoint.openDialog('配置任务', "framemanager/metadata/taskmanager/tasktrigger/frametasktriglistpage?guid=" + id + "&iscluster=" + flag, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 550
+				});
+			}
+
+			function deleteSelect() {
+				epoint.execute('deleteSelect', 'datagrid', msgcallback);
+			}
+
+			function msgcallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', '', 'success');
+					} else {
+						epoint.alert(msg, '', function(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true);
+						}, 'error');
+					}
+				}
+			}
+
+			// 表格搜索
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

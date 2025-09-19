@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>隐私详情页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="版本号" starred="true">
+						<input class="mini-textbox" bind="dataBean.privacyVersion"
+							required="true" requiredErrorText="隐私版本号不能为空"
+							vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="参数分类">
+						<input id="cateGoryGuid" class="mini-combobox" bind="privacyType"
+							valueField="privacyType" emptyText="" action="getPrivacyTypeList"
+							autoLoad="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="隐私信息" starred="true">
+						<textarea bind="dataBean.privacyStatement" id="privacyStatement"
+							class="mini-webeditor" required="true" readOnly="false"
+							requiredErrorText="隐私信息不能为空"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addPublish"
+			onclick="saveAndPublish()">保存并发布</a> <a class="mini-button" id="add"
+			onclick="save()">保存</a> <a class="mini-button" state="primary"
+			id="editPublish" onclick="saveAndPublish()">保存并发布</a> <a
+			class="mini-button" id="edit" onclick="save()">保存</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('frameprivacyaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			if (data.add) {
+				//隐藏修改按钮
+				mini.get('editPublish').setVisible(false);
+				mini.get('edit').setVisible(false);
+			} else {
+				//隐藏新增按钮
+				mini.get('addPublish').setVisible(false);
+				mini.get('add').setVisible(false);
+			}
+		}
+
+		// 保存并发布
+		function saveAndPublish() {
+			if (epoint.validate()) {
+				if (mini.get('addPublish').getVisible()) {
+					epoint.confirm('该发布信息默认帮您同意！', '', function() {
+						epoint.execute('addAndPublish', 'fui-form',
+								closeCallback)
+					});
+				} else if (mini.get('editPublish').getVisible()) {
+					epoint.execute('saveAndPublish', 'fui-form', closeCallback);
+				}
+			}
+		}
+
+		// 保存并发布
+		function save() {
+			if (epoint.validate()) {
+				if (mini.get('add').getVisible()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				} else if (mini.get('edit').getVisible()) {
+					epoint.execute('save', 'fui-form', closeCallback);
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.closeDialog(msg);
+				} else {
+					epoint.alert(msg, '', null, 'info');
+				}
+			}
+		}
+	</script>
+
+</body>
+
+</html>

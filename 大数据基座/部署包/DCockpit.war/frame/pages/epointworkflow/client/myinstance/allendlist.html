@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>所有结束审批</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true" action="getDefaultModel"
+			showPager="true" style="width: 100%; height: 100%;">
+		</div>
+	</div>
+
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script type="text/javascript">
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('allendlistaction','',initCallBack);
+		
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 初始化回掉，动态生成列
+		function initCallBack(data){
+			if(data.msg){
+				epoint.alertAndClose(data.msg, null, null, null, 'error');
+			}else{
+				adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+				if (data) {
+					drawDynamicColumn(data);
+				}
+			}
+		}
+		
+		// 绘制动态列
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = Util.safeEval('(' + tmp + ')');
+			grid.set(columns);
+		}
+		
+		// 在表格数据加载完之后打开表格编辑状态
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+		
+		// 表格的搜索
+		/*
+		function searchData() {
+			epoint.refresh();
+		}*/
+		
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>标签搜索首页</title>
+    <script src="../../js/boot/boot.min.js"></script>
+    <script>
+        ResBoot.output([
+            './css/label_search_index.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div id="header" class="header">
+        <div class="container">
+            <p class="header-title">指标门户</p>
+        </div>
+    </div>
+
+    <!-- 主体内容区域 -->
+    <div class="main" id="app">
+
+        <div class="main-body">
+            <!--   标题 -->
+            <h2 class="page-title">指标门户</h2>
+            <!-- 搜索框区域 -->
+            <div class="search-area clearfix">
+                <input id="keyword" class="search-input l" type="text" placeholder="请输入数据资源">
+                <a id="search-btn" class="search-btn l" href="javascript:;">搜索</a>
+            </div>
+            <!-- 搜索下面的区域 -->
+            <div class="tools clearfix">
+                <h3 class="tools-title">热门搜索</h3>
+                <!-- 推荐列表 -->
+                <ul class="hotsearch-items clearfix" id="list">
+                </ul>
+            </div>
+    </div>
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <script id="list-item-tmpl" type="mustache-tmpl">
+        {{#items}}
+        <li class="hotsearch-item l">
+            <a class="hotsearch-item-box" href="./norm_detail.html?rowguid={{guid}}">
+                <h3 class="item-title" title="{{title}}">
+                    <!-- <i class="item-imgarea"><img class="item-img" src=""></i> -->
+                    {{title}}
+                </h3>
+                <p class="item-box-row updatetime">
+                    <span class="item-row-title" title="{{time}}">更新时间</span>
+                    {{time}}
+                </p>
+                <p class="item-box-row" title="{{body}}"><span
+                        class="item-row-title">所属领域</span>{{body}}</p>
+                <p class="item-box-row" title="{{dep}}"><span
+                        class="item-row-title">创建部门</span>{{dep}}</p>
+            </a>
+        </li>
+        {{/items}}
+    </script>
+    <!-- 配置放于最前 -->
+    <script>
+        function getRootPath() {
+            var curWwwPath = window.document.location.href;
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName
+                .substring(0, pathName.substr(1).indexOf('/') + 1);
+            return (localhostPaht + projectName);
+        }
+        Config.ajaxUrls = {
+            listUrl: getRootPath() + '/rest/cockpitnorm/getList',
+            hintUrl: getRootPath() + '/rest/cockpitnorm/getExtendKeywords'
+        }
+    </script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+        ResBoot.output([
+            './js/norm_search_index.js'
+        ]);
+    </script>
+
+</body>
+
+</html>

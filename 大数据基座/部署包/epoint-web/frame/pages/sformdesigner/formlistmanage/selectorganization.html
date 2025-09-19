@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择部门人员</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar" id="toolbar">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndClose">确定选择</a> <a class="mini-button"
+			onclick="epoint.closeDialog" id="checkClose">取消选择</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getModel" resultAsTree="false"
+			showRadioButton="true" onbeforenodeselect="beforenodeselect">
+		</ul>
+		<ul id="tree1" class="mini-tree" style="height: 100%; display: none"
+			textField="text" idField="id" parentField="pid" action="getModel"
+			resultAsTree="false" showCheckBox="true">
+		</ul>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var multselect = "";
+		var mode = "";
+		var selectDataValue = "";
+		var selectDataText = "";
+
+		//树js对象
+		var tree = mini.get("tree");
+		var tree1 = mini.get("tree1");
+
+		//初始化请求
+		epoint.initPage('selectorganizationaction', '', function(data) {
+			if (data) {
+				if ("true" == data.multselect) {
+					document.getElementById("tree1").style.display = "block";
+					document.getElementById("tree").style.display = "none";
+					multselect = data.multselect;
+					
+					if(selectDataValue){
+						tree1.setValue(selectDataValue.replace(new RegExp(";",'g'), ","));
+					}
+					
+				} else {
+					document.getElementById("toolbar").style.display = "none";
+					tree.setValue(selectDataValue);
+				}
+
+				if (data.mode) {
+					mode = data.mode;
+				}
+			}
+		});
+
+		// 限制多选树的可选节点
+		tree1.on("drawnode", function(e) {
+			if ("people" == mode) {
+				if (!e.isLeaf || e.node.dataType == 'ou') {
+					e.node.ckr = false;
+					e.showCheckBox = false;
+				}
+			} else {
+				if (!e.isLeaf) {
+					e.node.ckr = false;
+					e.showCheckBox = false;
+				}
+			}
+		});
+
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			if (e.node) {
+				if (e.node.noClick == true) {
+					e.cancel = true;
+				} else {
+					var id = e.node.id;
+					epoint.closeDialog(mini.htmlUnescape(e.node.text) + ";"
+							+ e.node.id);
+				}
+			}
+		});
+
+		function saveAndClose() {
+			var ids = "";
+			var names = "";
+			var vars=tree1.getCheckedNodes();
+			for (var i = 0; i < vars.length; i++) {
+				ids += vars[i].id + ";";
+				names += vars[i].text + ";";
+			}
+			
+			epoint.execute('oulist', "tree1", [ ids, names ], saveCallback);
+		}
+
+		//回调
+		function saveCallback(data) {
+			if (data.nameandguidlist) {
+				epoint.closeDialog(data.nameandguidlist);
+			} else {
+				epoint.alert('您还没有选择任何记录！', '', null, 'warning');
+			}
+		}
+
+		function beforenodeselect(e) {
+			if ("people" == mode) {
+				if (e.isLeaf == false || e.record.ckr == false
+						|| e.record.path == 'parent'
+						|| e.record.noClick == true) {
+					e.cancel = true;
+				}
+			} 
+		};
+
+		function pageLoad(data) {
+			if (data) {
+				selectDataValue=data[0];
+				selectDataText =data[1];
+			}
+		}
+	</script>
+
+
+</body>
+</html>

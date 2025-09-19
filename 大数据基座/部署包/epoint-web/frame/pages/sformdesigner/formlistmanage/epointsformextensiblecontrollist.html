@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>扩展控件管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="选择子系统"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="epointsformlistaction.getTreeData" resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" onclick="openAdd();"
+				id="btnAddRecord"> 新建控件 </a> <a id="btnDel" class="mini-button"
+				state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选中 </a> <a class="mini-button" id="transferBtn"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要操作的记录!',  {state : 'warning'});}else{move();}">转移选中</a>
+			<a class="mini-button" id="transferBtn"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要操作的记录!', {state : 'warning'});}else{selectSave();}">设置未分类</a>
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="searchString1" bind="searchString1"
+					emptyText="请输入控件名称搜索" onenter="searchData" /> <input
+					class="mini-hidden" bind="categoryNum" id="categoryNum" /> <a
+					class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="controlguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="false" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="controlname" width="100%">控件名称</div>
+					<div field="controlenglishname" width="200">控件英文名</div>
+					<div field="categoryname" width="200">所属子系统</div>
+					<div field="ordernum" width="80">排序号</div>
+					<div width="80" renderer="onEditRenderer">修改</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get("datagrid");
+		// 初始化页面
+		epoint.initPage('epointsformextensiblecontrollistaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('categoryNum').setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			//frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=07176f48-6ce2-407f-a4a7-0dfe3c7cbcf7
+			epoint
+					.openDialog(
+							'新建控件',
+							"frame/pages/sformdesigner/formlistmanage/epointsformextensiblecontroladd?categoryNum="
+									+ mini.get("categoryNum").getValue(),
+							function(param) {
+								if (param != 'close') {
+									epoint.showTips(param,  {state : 'success'});
+								}
+								searchData();
+							}, {
+								'width' : 650,
+								'height' : 450
+							});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint
+					.openDialog(
+							'修改控件',
+							"frame/pages/sformdesigner/formlistmanage/epointsformextensiblecontroledit?guid="
+									+ id, function(param) {
+								if (param != 'close') {
+									epoint.showTips(param,  {state : 'success'});
+								}
+								searchData();
+							}, {
+								'width' : 650,
+								'height' : 450
+							});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 转移选中
+		function move() {
+			epoint.execute('epointsformextensiblecontrollistaction.move',
+					'datagrid', movetc);
+		}
+
+		function movetc(data) {
+			epoint.openDialog('转移子系统',
+					"frame/pages/sformdesigner/formlistmanage/extensiblecontrolselect?guidlist="
+							+ data.movelist, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 600,
+						'height' : 400
+					});
+		}
+
+		function movetcCallBack(msg) {
+			if (msg && msg != 'close') {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+		//选中需要转移至未分类状态下
+		function selectSave() {
+			epoint.execute("saveSelected", '', callback);
+		}
+	</script>
+</body>
+</html>

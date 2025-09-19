@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Process version</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet"
+	href="../css/workflowicons.css?releaseNo=#{version.version}" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="saveProcessVersion()">save changes</a> <a class="mini-button"
+				iconCls="icon-removecircle" id="cancelbtn"
+				onclick="epoint.closeDialog()">cancel the change</a>
+		</div>
+
+		<a role="helper" class="mr10">In use process need to pay attention to information</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<font style="color: blue;">Listening class configuration of the full path to your classes, the class must implement<em>com.epoint.workflow.engine.event.EventObserver</em>Interface,
+			</font>
+		</p>
+		<p>
+			<font style="color: blue;">Used to monitor the whole process of circulation, when you realize it, principle, do not need to configure any other event。</font>
+		</p>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="version" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="workflowProcessVersion.version" emptyText="versionThe name cannot be empty"
+							style="width: 100%;" />
+					</div>
+					<div role="control" label="versionInstance name" id="versionname">
+						<input class="mini-textbox" bind="workflowProcessVersion.processVersionName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="listening class" id="type">
+						<input class="mini-textbox" bind="workflowProcessVersion.tag" />
+					</div>
+					<div role="control" label="author" id=author>
+						<input class="mini-textbox" bind="author" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="processInstancename">
+						<input class="mini-buttonedit " id="pviname"
+							bind="workflowProcessVersion.instanceNameExpression"
+							onbuttonclick="setParValue1" />
+					</div>
+					<div style="display: none">
+						<input id="pvguid" class="mini-textbox"
+							bind="workflowProcessVersion.processVersionGuid" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">Can be a string+The relevant data ,Such as[#=The project name#]([#=To apply for the unit#])</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="todo list title">
+						<input class="mini-buttonedit" onbuttonclick="setParValue2"
+							bind="workflowProcessVersion.workItemNameExpression"
+							style="width: 100%;" id="title" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">Can be a string+The relevant data ,Such as[#=The project name#]([#=To apply for the unit#])</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="mobile todo marks">
+						<input class="mini-textbox" bind="workflowProcessVersion.mobileMessageTag" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">Description: multiple systems or personalized mobile interface can fill in</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input class="mini-textarea" bind="workflowProcessVersion.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="overtime">
+						<input id="txtTimeLimit" bind="txtTimeLimit" class="mini-textbox"
+							style="width: 20%"/>
+						<input id="timeLimitUnit" name="timeLimitUnit" showNullItem="false"
+							bind="workflowProcessVersion.timeLimitUnit"
+							action="getTiemUnitList" class="mini-combobox" textField="text"
+							valueField="id" style="width: 30%" />
+					</div>
+					<div role="control" label="early-warning">
+						<input id="txtWarningTime" bind="txtWarningTime"
+							class="mini-textbox" style="width: 20%"/>
+						<input id="earlyWarningTimeUnit" name="earlyWarningTimeUnit"
+							showNullItem="false"
+							bind="workflowProcessVersion.earlyWarningTimeUnit"
+							action="getTiemUnitList" class="mini-combobox" textField="text"
+							valueField="id" style="width: 30%" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage("processversionbaseinfoeditaction", '', initEdit);
+
+		function initEdit(e) {
+			if (e) {
+				mini.get("pviname").setValue(e.pviname);
+				mini.get("pviname").setText(e.pviname);
+				mini.get("title").setValue(e.title);
+				mini.get("title").setText(e.title);
+			}
+		}
+
+		function showSelect(e) {
+			epoint.openDialog('Select the category',
+					'framemanager/workflow/manage/selectItemcode',
+					showSelectOperJS, {
+						'width' : 300,
+						'height' : 550
+					});
+		}
+
+		function setParValue1(e) {
+			var pvguid = mini.get('pvguid').getValue();
+			epoint
+					.openDialog(
+							'chooseThe relevant data',
+							"framemanager/workflow/design/designhelper?mode=context&processVersionGuid="
+									+ pvguid, setParValue1OperJS, {
+								'width' : 480,
+								'height' : 300
+							});
+		}
+
+		function saveProcessVersion() {
+			if (epoint.validate()) {
+				epoint.execute('saveProcessVersion', '', editComplete);
+			}
+		}
+
+		function setParValue1OperJS(data) {
+			if (data && data != 'close') {
+				var s = data.split(';')[0];
+				mini.get('pviname').setValue("[#=" + s + "#]");
+				mini.get('pviname').setText("[#=" + s + "#]");
+			}
+		}
+
+		function setParValue2(e) {
+			var pvguid = mini.get('pvguid').getValue();
+			epoint
+					.openDialog(
+							'chooseThe relevant data',
+							"framemanager/workflow/design/designhelper?mode=context&processVersionGuid="
+									+ pvguid, setParValue2OperJS, {
+								'width' : 480,
+								'height' : 300
+							});
+		}
+
+		function setParValue2OperJS(data) {
+			if (data && data != 'close') {
+				var s = data.split(';')[0];
+				mini.get('title').setValue("[#=" + s + "#]");
+				mini.get('title').setText("[#=" + s + "#]");
+			}
+		}
+
+		function editComplete(data) {
+			if (data) {
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alertAndClose(data.sameName, '', null, null, 'success');
+				}else{
+					epoint.alert(data.sameName, '', '', 'warning');
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

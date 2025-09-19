@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>元件添加</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<ul id="tabstreeselect2" class="mini-tree" style="height: 100%"
+			textField="text" idField="id" parentField="pid"
+			action="getElementTreeData" resultAsTree="false"
+			showRadioButton="false">
+		</ul>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("portalelementaddaction");
+
+		var tree = mini.get('tabstreeselect2');
+		tree.on("beforenodeselect", function(e) {
+			if (e.node.noclick == true) {
+				e.cancel = true;
+			}
+		});
+		tree.on("nodeselect", function(e) {
+			if (e.node) {
+				var id = e.node.id;
+				epoint.confirm('确认添加', '添加确认', function() {
+					epoint.execute("portalelementaddaction.add", '', id,
+							closeCallback);
+				}, function() {
+					tree.setValue('');
+				});
+
+			}
+		});
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', '', {
+						backParam : {
+							addElement : data.addElement
+						}
+					}, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

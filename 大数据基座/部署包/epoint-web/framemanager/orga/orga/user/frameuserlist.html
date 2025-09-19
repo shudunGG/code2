@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>用户列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 页面内容区域 -->
+	<div class="fui-left">
+		<div role="head" title="选择部门"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%"
+				textField="text" idField="id" parentField="pid"
+				action="getTreeModel" filterMode="server" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group">
+				<a id="addUser" class="mini-button" state="primary"
+					onclick="addUser">新增用户</a><a id="saveAll" class="mini-button"
+					onclick="saveAll">保存</a> <a id="deleteUser" class="mini-button"
+					state="danger"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认删除？','',deleteSelected);}">删除选定</a>
+
+			</div>
+			<div class="btn-group">
+				<a id="moveUser" class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要转移的记录!', {state : 'warning'});} else {moveuser();}">移动</a>
+				<a id="moveUserRole" class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要转移角色的用户记录!', {state : 'warning'});} else if(mini.get('datagrid').getSelecteds().length >1){epoint.showTips('请选择一条要转移角色的用户记录!', {state : 'warning'});} else {moveuserrole();}">转移用户角色</a>
+				<a id="setUserEnable" class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要启用/禁用的记录!',  {state : 'warning'});} else {setUserEnable();}">启用/禁用</a>
+			</div>
+			<div class="btn-group">
+			<!-- 	<div id="uploader" class="mini-webuploader mr1" pickerText="导入"
+					action="frameuserlistaction.getDataImport" limitType="xls,xlsx"
+					dataImport="true" showDefaultUI="false"
+					onfilesuccess="onFileSuccess" auto="true"></div> -->
+					<a id="newImport" class="mini-button" onclick="onImport()">导入</a>
+				<a class="mini-dataexport" id="dataexport" gridId="datagrid"
+					fileName="用户列表" action="getExportModel" extraId="fui-form"
+					exportAction="frameuserlistaction.export"></a>
+					<form id="download_form" method="post" enctype="multipart/form-data"></form>
+			</div>
+			<div class="btn-group">
+				<a id="morebtn" class="mini-menubutton" menu="#popupMenu"
+					style="margin-left: 1px">更多</a>
+				<ul id="popupMenu" class="mini-menu" style="display: none;">
+					<li id="newExport" onclick="onExport()">模板化导出</li>
+					<li id="addStepSize" onclick="addStepSize">调整排序步长</li>
+					<li id="changeAccountMode" onclick="changeAccountMode">切换账号模式</li>
+					<li id="setUserSyncThirdParty"
+						onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要开启/关闭同步到第三方平台的记录!',  {state : 'warning'});} else {setUserSyncThirdParty();}">授权/取消同步第三方</li>
+				</ul>
+			</div>
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10" id="helper" showtype="tooltip">导入模板</a>
+		</div>
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				<a href="userimport.xlsx">下载excel导入模板</a>
+			</p>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-search" opened="false" primaryControl="userName">
+			<div class="fui-form" id="fui-form" style="margin-right: 100px">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="用户名称">
+							<input bind="userName" class="mini-textbox" id="userName" />
+						</div>
+						<div role="control" label="登录名称">
+							<input bind="loginId" class="mini-textbox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="部门名称">
+							<input bind="ouName" class="mini-textbox" />
+						</div>
+						<div role="control" label="状态">
+							<input bind="enabled" class="mini-combobox"
+								action="getEnabledItem" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="直属用户">
+							<div name="onlyDirect" bind="isDirect" class="mini-checkbox"
+								onvaluechanged="searchData"></div>
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+						class="mini-hidden" /> <input bind="transferOuguid" id="ouguid"
+						class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a> <a role="reset"
+				callback="resetCallback"></a> <a role="close"
+				callback="closeCallback"></a>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="userGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" allowCellSelect="true"
+				allowCellValid="true" allowCellEdit="true" editNextOnEnterKey="true"
+				editNextRowCell="true" ondrawcell="onCheckRender"
+				oncellbeginedit="cellBeginEdit">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="30" align="left">序</div>
+					<div field="displayName" renderer="onDisplayNameRender" width="200">用户名称</div>
+					<div field="showLoginId" width="200">登录名称</div>
+					<div field="ouname" width="200">部门名称</div>
+					<div name="edit" field="framemj">涉密等级</div>
+					<div name="jzqk" field="jzqk" renderer="onJzqkRender" width="70">兼职情况</div>
+					<div field="zt" renderer="onZtRender" width="100">状态</div>
+					<div name="syncthirdparty" field="syncthirdparty"
+						renderer="onThirdPartyRender" width="120">是否同步第三方</div>
+					<div field="orderNumber" width="100" allowSort="true"
+						sortOrder="desc" vtype="int;range:0,99999999">
+						排序 <input property="editor" class="mini-textbox"
+							vtype="int;range:0,99999999" inputStyle="text-align:right"
+							style="width: 100%" />
+					</div>
+					<div name="setaccountrelation" renderer="onSetAccountRelation"
+						width="70">关联账号</div>
+					<div type="actioncolumn">
+						操作 <span type="action" icon="icon-copy" onclick="createUser"
+							renderer="onCopyRender">复制</span> <span type="action"
+							icon="icon-refresh" onclick="rePassword" renderer="onCshmmRender">初始化密码</span>
+						<span type="action" icon="icon-gear" onclick="keySet"
+							renderer="onUsbkeysetRender">USB设置</span> <span type="action"
+							icon="icon-chat" onclick="setSecretaryInfo"
+							renderer="onMsgszRender">秘书岗</span> <span type="action"
+							icon="icon-console" onclick="selectModule"
+							renderer="onSelectUserModuleRender">模块订阅</span> <span
+							type="action" icon="icon-addsquare" onclick="selectRole"
+							renderer="onSelectRoleRender">配置角色</span></span><span type="action" icon="icon-copy" onclick="copyRight">复制用户角色模块关系</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="info-box" class="mini-window mini-messagebox" title="进度提醒"
+		style="width: 400px; height: 250px; display: none;"
+		showMaxButton="false" showCollapseButton="false" showShadow="true"
+		showToolbar="false" showFooter="true" showModal="true"
+		allowResize="false" allowDrag="false">
+		<i class="mini-messagebox-icon mini-messagebox-info" style=""></i>
+		<div style="margin-left: 100px; height: 50px; margin-top: 60px;">
+			<div id="info-box-moving">
+				<div id="move-progressbar" class="mini-progressbar" value="0"></div>
+				<p>
+					初始化中，当前第<span id="info-box-curr"></span> 个，共 <span
+						id="info-box-all"></span> 个。
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 表格对象
+		var grid = mini.get("datagrid");
+		//本页面请求使用sm2加密
+		var useSm2Encrypt = true;
+		//初始化页面
+		epoint.initPage('frameuserlistaction');
+
+		epoint.onPreload = function(controls, custom) {
+			initGrid(custom);
+		};
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+		var isMultiAccountMode = 0;
+		var userRole;
+		var enableThreeManage = false;
+
+		// 在表格数据加载完之后打开表格编辑状态
+		grid.on("cellbeginedit", function(e) {
+			if (e.field == "orderNumber") {
+				var row = e.record;
+				var editor = e.editor;
+				var enabled = row.canOperateBaseOu == "0" ? false : true;
+				editor.setEnabled(enabled);
+			}
+		});
+		//soa需要隐藏列
+		var initData;
+		function initGrid(e) {
+			initData = e;
+			var grid = mini.get("datagrid");
+
+			//SOA模式下面要隐藏掉增删改操作
+			if (e.enableSOA == true) {
+				mini.get('addUser').setVisible(false);
+				mini.get('newImport').setVisible(false);
+				mini.get('deleteUser').setVisible(false);
+				mini.get('saveAll').setVisible(false);
+				mini.get('moveUser').setVisible(false);
+				mini.get('moveUserRole').setVisible(false);
+				mini.get('setUserEnable').setVisible(false);
+				mini.get('addStepSize').setVisible(false);
+				mini.get('setUserSyncThirdParty').setVisible(false);
+
+				var grid = mini.get("datagrid");
+				grid.hideColumn("jzqk");//隐藏兼职情况
+				grid.hideColumn("syncthirdparty");//隐藏同步第三方设置
+				grid.hideColumn("setaccountrelation");//隐藏帐号关联设置
+			} else if (e.showDelBtn == false) {
+				mini.get('deleteUser').setVisible(false);
+			}
+
+			if (e.isSheMi == 'false') {//要隐藏掉涉密信息列
+				grid.hideColumn("edit");
+			}
+
+			isMultiAccountMode = e.isMultiAccountMode;
+			if (e.isMultiAccountMode == 1) {
+				grid.hideColumn("jzqk");//隐藏兼职情况
+			} else if (e.isMultiAccountMode == 0) {
+				grid.hideColumn("setaccountrelation");//隐藏帐号关联设置
+			}
+			if (e.isSyncThirdParty == 0) {
+				//隐藏同步第三方设置
+				grid.hideColumn("syncthirdparty");
+			}
+
+			// 部门管理下，隐藏切换账号模式
+			if (isSub == "1") {
+				mini.get('changeAccountMode').setVisible(false);
+			}
+
+			if (e.enableThreeManage) {
+				enableThreeManage = true;
+				$('#helper').hide();
+				mini.get('newImport').setVisible(false);
+				if (e.role) {
+					if (e.role.indexOf('systemadmin') >= 0
+							&& e.role.indexOf('securityadmin') == -1) {
+						userRole = 'systemadmin';
+						mini.get('setUserEnable').setVisible(false);
+						mini.get('moveUserRole').setVisible(false);
+					} else if (e.role.indexOf('securityadmin') >= 0
+							&& e.role.indexOf('systemadmin') == -1) {
+						userRole = 'securityadmin';
+						mini.get('addUser').setVisible(false);
+						mini.get('deleteUser').setVisible(false);
+						mini.get('saveAll').setVisible(false);
+						mini.get('moveUser').setVisible(false);
+						mini.get('morebtn').setVisible(false);
+						grid.hideColumn("jzqk");
+						grid.hideColumn("setaccountrelation");
+					} else {
+						userRole = e.role;
+					}
+				}
+			}
+		}
+
+		function cellBeginEdit(e) {
+			if (enableThreeManage && userRole
+					&& userRole.indexOf('securityadmin') >= 0
+					&& userRole.indexOf('systemadmin') == -1
+					&& e.field == 'orderNumber') {
+				e.cancel = true;
+			}
+		};
+
+		$(document).ready(function() {
+			// 将导出按钮文字设置为“导出”
+			$("#dataexport").find(".mini-button-text").text("导出")
+			$("#dataexport").click(function(e) {
+				$("#dataexport").find(".mini-button-text").text("导出")
+			});
+			setTimeout(function() {
+				$(window).resize()
+			}, 300);
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect",
+				function(e) {
+					if (e.node) {
+						var id = e.node.id;
+						//将左侧树点击的节点id放到隐藏域中
+						mini.get('leftTreeNodeGuid').setValue(
+								id == 'f9root' ? "" : id);
+					}
+					//刷新表格
+					searchData();
+				});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		//修改回调
+		function editCallBack(param) {
+			if (param) {
+				if (param != 'close' && param != 'ok') {
+					epoint.showTips(param, {
+						state : 'success'
+					});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		//修改用户js
+		function updateUser(userGuid) {
+			epoint.openDialog("修改用户",
+					'framemanager/orga/orga/user/frameuseredit?isSub=' + isSub
+							+ '&userGuid=' + userGuid, editCallBack, {
+						'width' : 970,
+						'height' : 580
+					});
+		}
+
+		//重新绘制用户名称列
+		function onDisplayNameRender(e) {
+			var url = e.value;
+			if (enableThreeManage && userRole
+					&& userRole.indexOf('securityadmin') >= 0
+					&& userRole.indexOf('systemadmin') == -1) {
+				return url;
+			}
+			var userGuid = e.row['userGuid'];
+			var enableSOA = e.row['enableSOA'];
+			var isCopy = e.row['isCopy'];
+			if (!enableSOA) {
+				if (isCopy == "1") {
+					url = "<a style=\"cursor:pointer\" onclick=\"updateUser('"
+							+ userGuid + "')\" >" + e.value
+							+ "<font color='red'>（关联账号）</font></a>";
+				} else {
+					url = "<a style=\"cursor:pointer\" onclick=\"updateUser('"
+							+ userGuid + "')\" >" + e.value + "</a>";
+				}
+			}
+			if (e.row['canOperateBaseOu'] == 0) {
+				url = "<div>" + e.value + "</div>";
+			}
+			return url;
+		}
+
+		function showSecondOu(userGuid, isCopy) {
+			if (isCopy == 1) {
+				epoint.showTips('关联账号不允许这么操作', {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog("用户兼职设定",
+						'framemanager/orga/orga/user/framesecondoulist?userGuid='
+								+ userGuid + '&isSub=' + isSub, function() {
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, {
+							'width' : 1200,
+							'height' : 600
+						});
+			}
+		}
+
+		//绘制兼职链接
+		function onJzqkRender(e) {
+			var userGuid = e.row['userGuid'];
+			var isCopy = e.row['isCopy'];
+			var styleStr = "";
+			if (e.value == '有兼职') {
+				styleStr = " style=\"cursor:pointer;color:red;\" ";
+			} else {
+				styleStr = " style=\"cursor:pointer;\" ";
+			}
+			if (e.row['canOperateBaseOu'] == 0) {
+				return "<div>" + e.value + "</div>";
+			}
+			return "<a " + styleStr + " onclick=\"showSecondOu('" + userGuid
+					+ "','" + isCopy + "')\" >" + e.value + "</a>";
+		}
+
+		//绘制状态列
+		function onZtRender(e) {
+			var ztValue = e.value;
+			if (ztValue == '禁用') {
+				return '<i class="dot-error"></i>' + ztValue;
+
+			}
+			return '<i class="dot-success"></i>' + ztValue;
+		}
+
+		//打开复制页
+		function createUser(row) {
+			epoint.openDialog("复制用户",
+					'framemanager/orga/orga/user/frameusercreate?isSub='
+							+ isSub + '&userGuid=' + row.userGuid, addCallBack,
+					{
+						'width' : 1000,
+						'height' : 580
+					});
+		}
+
+		//绘制复制列
+		function onCopyRender(e) {
+			if (initData.enableSOA == true) {
+				e.icon.visible = false;
+			}
+			if (initData.enableThreeManage) {
+				if (initData.role) {
+					if (initData.role.indexOf('securityadmin') >= 0
+							&& initData.role.indexOf('systemadmin') == -1) {
+						e.icon.visible = false;
+					}
+				}
+			}
+		}
+
+		// 初始化密码回调
+		function rePasswordCallback(data) {
+			if (data.success) {
+				epoint.refresh([ 'datagrid', 'tree', 'fui-form' ], '', true);
+				epoint.showTips(data.msg, {
+					state : 'success'
+				});
+			} else {
+				if (data.msg) {
+					epoint.showTips(data.msg, {
+						state : 'warning'
+					});
+				}
+			}
+		}
+
+		//初始化密码
+		function rePassword(row) {
+			if (row.isCopy == 1) {
+				epoint.showTips('关联账号不允许这么操作', {
+					state : 'warning'
+				});
+			} else {
+				epoint.confirm("是否继续初始化密码操作?", '', function() {
+					epoint.execute('rePassword', 'fui-form', '[' + row.userGuid
+							+ ']', rePasswordCallback);
+				});
+
+			}
+		}
+
+		//绘制初始化密码列
+		function onCshmmRender(e) {
+			if (e.record.canOperateBaseOu == 0) {
+				e.icon.visible = false;
+			}
+			if (initData.enableSOA == true) {
+				e.icon.visible = false;
+			}
+			if (initData.enableThreeManage) {
+				if (initData.role) {
+					if (initData.role.indexOf('securityadmin') >= 0
+							&& initData.role.indexOf('systemadmin') == -1) {
+						e.icon.visible = false;
+					}
+				}
+			}
+		}
+
+		//设置usbKey
+		function keySet(row) {
+			if (row.isCopy == 1) {
+				epoint.showTips('关联账号不允许这么操作', {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog("USB 设置",
+						'framemanager/orga/orga/user/usbkeyset?userGuid='
+								+ row.userGuid + "&isSub=" + isSub, '', {
+							'width' : 950,
+							'height' : 550
+						});
+			}
+		}
+
+		//绘制usb设置列
+		function onUsbkeysetRender(e) {
+			if (e.record.canOperateBaseOu == 0) {
+				e.icon.visible = false;
+			}
+			if (initData.enableSOA == true) {
+				e.icon.visible = false;
+			}
+			if (initData.enableThreeManage) {
+				if (initData.role) {
+					if (initData.role.indexOf('securityadmin') >= 0
+							&& initData.role.indexOf('systemadmin') == -1) {
+						e.icon.visible = false;
+					}
+				}
+			}
+		}
+
+		//打开秘书岗
+		function setSecretaryInfo(row) {
+			if (row.isCopy == 1) {
+				epoint.showTips('关联账号不允许这么操作', {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog("秘书岗设置",
+						'framemanager/orga/orga/user/settingsecretaryinfo?userGuid='
+								+ row.userGuid + '&isSub=' + isSub, function(
+								param) {
+							if (param && param != "close") {
+								epoint.showTips(param, {
+									state : 'success'
+								});
+							}
+						}, {
+							'width' : 700,
+							'height' : 550
+						});
+			}
+		}
+
+		//秘书岗设置
+		function onMsgszRender(e) {
+			if (e.record.canOperateBaseOu == 0) {
+				e.icon.visible = false;
+			}
+			if (initData.enableThreeManage) {
+				if (initData.role) {
+					if (initData.role.indexOf('securityadmin') >= 0
+							&& initData.role.indexOf('systemadmin') == -1) {
+						e.icon.visible = false;
+					}
+				}
+			}
+		}
+
+		//打开模块页
+		function showModule(userGuid) {
+			epoint.openDialog("查看模块",
+					'framemanager/orga/orga/user/showusermodule?userGuid='
+							+ userGuid, '', {
+						'width' : 400,
+						'height' : 400
+					});
+		}
+
+		//查看模块
+		function onCkmkRender(e) {
+			var userGuid = e.row['userGuid'];
+			return "<a  style=\"cursor:pointer;\"  onclick=\"showModule('"
+					+ userGuid + "')\" >查看模块</a>";
+		}
+		//打开模块页
+		function selectModule(row) {
+			var tUrl = 'framemanager/orga/uiset/menu/module/subscribemodule/subscribemoduletree?userGuid='
+					+ row.userGuid;
+			if (isSub && isSub == "1") {
+				tUrl = 'framemanager/orga/uiset/menu/module/sub/subsubscribemoduletree?userGuid='
+						+ row.userGuid;
+			}
+			epoint.openDialog("订阅模块", tUrl, function(param) {
+				if (param && param != "close") {
+					epoint.showTips(param, {
+						state : 'success'
+					});
+				}
+			}, {
+				'width' : 1000,
+				'height' : 800
+			});
+		}
+
+		//授权模块
+		function onSelectUserModuleRender(e) {
+			if (initData.enableThreeManage) {
+				if (initData.role) {
+					if (initData.role.indexOf('systemadmin') >= 0
+							&& initData.role.indexOf('securityadmin') == -1) {
+						e.icon.visible = false;
+					}
+				}
+			}
+		}
+
+		// 授权角色
+		function onSelectRoleRender(e) {
+			if (initData.enableSOA == true && initData.isSoaSyncRole == true) {
+				e.icon.visible = false;
+			}
+
+			if (e.enableThreeManage) {
+				if (e.role) {
+					if (e.role.indexOf('systemadmin') >= 0
+							&& e.role.indexOf('securityadmin') == -1) {
+						e.icon.visible = false;
+					} else if (e.role.indexOf('securityadmin') >= 0
+							&& e.role.indexOf('systemadmin') == -1) {
+						e.icon.visible = true;
+					}
+				}
+			}
+		}
+
+		//打开授权角色设置页
+		function selectRole(row) {
+			//var ouGuid = mini.get('leftTreeNodeGuid').getValue();
+			var url = 'framemanager/orga/orga/user/settinguserrole?userGuid='
+					+ row.userGuid + "&isSub=" + isSub;
+			//if(ouGuid && row.ouguid && ouGuid != row.ouguid ){
+			//	url = 'framemanager/orga/orga/user/settingsecondouuserrole?userGuid='+ row.userGuid + "&ouGuid=" + ouGuid + "&isSub="+ isSub;
+			//}
+			epoint.openDialog("设置用户角色关系", url, function(param) {
+				if (param && param != "close") {
+					epoint.showTips(param, {
+						state : 'success'
+					});
+				}
+			}, {
+				'width' : 680,
+				'height' : 480
+			});
+		}
+
+		// 关联账号
+		function onSetAccountRelation(e) {
+			var userGuid = e.row['userGuid'];
+			var isCopy = e.row['isCopy'];
+
+			return "<a  style=\"cursor:pointer;\"  onclick=\"setAccountRelation('"
+					+ userGuid + "','" + isCopy + "')\" >关联账号</a>";
+		}
+
+		//打开关联账号设置页
+		function setAccountRelation(userGuid, isCopy) {
+			if (isCopy == 1) {
+				epoint.showTips('关联账号不允许这么操作', {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog("设置关联账号",
+						'framemanager/orga/orga/user/settingaccountrelation?userGuid='
+								+ userGuid + "&isSub=" + isSub, function() {
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, {
+							'width' : 1200,
+							'height' : 600
+						});
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param, {
+						state : 'success'
+					});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		//新增用户
+		function addUser() {
+			var ouGuid = mini.get('leftTreeNodeGuid').getValue();
+			epoint.openDialog("新增用户",
+					'framemanager/orga/orga/user/frameuseradd?isSub=' + isSub
+							+ '&leftTreeNodeGuid=' + ouGuid, addCallBack, {
+						'width' : 970,
+						'height' : 580
+					});
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg, {
+						state : 'success'
+					});
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				} else {
+					epoint.showTips(msg, {
+						state : 'warning'
+					});
+				}
+			}
+			searchData();
+		}
+
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', [ 'datagrid', 'fui-form' ],
+					msgCallBack);
+		}
+		//保存排序
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', [ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		//转移用户回调
+		function moveuserCallBack(data) {
+			if (data) {
+				if (data != 'close') {
+					epoint.confirm('确认转移吗?', '', function() {
+						var s = data.split(";");
+						if (s[1] != 'f9root') {
+							epoint.execute('moveUser', '', '[' + s[1] + ','
+									+ epoint.encodeUtf8(s[0]) + ']',
+									msgCallBack);
+						}
+					});
+				}
+			}
+		}
+
+		//转移选中
+		function moveuser() {
+			var url = "framemanager/orga/orga/ou/selectou?type=1";
+			if (isSub && isSub == "1") {
+				url = url + "&isSub=1";
+			}
+			epoint.openDialog("转移用户", url, moveuserCallBack, {
+				'width' : 300,
+				'height' : 500
+			});
+		}
+
+		var roles = '';
+		var users = '';
+		//用户角色转移
+		function moveuserrole() {
+			var selectedItemIds = grid.getSelectedIds();
+			var userGuid = '';
+			if (selectedItemIds.length > 0) {
+				userGuid = selectedItemIds[0];
+			}
+			var url = 'framemanager/orga/orga/role/userroleselect?userGuid='
+					+ userGuid;
+			if (isSub && isSub == "1") {
+				url = url + "&isSub=1";
+			}
+			epoint.openDialog("转移角色选择", url, selectRoleCallback, {
+				'width' : 800,
+				'height' : 500
+			});
+		}
+
+		function selectRoleCallback(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var selectedItemIds = grid.getSelectedIds();
+				var userGuid = '';
+				if (selectedItemIds.length > 0) {
+					userGuid = selectedItemIds[0];
+				}
+				roles = rtnValue;
+				var url = 'framemanager/orga/orga/user/selectuser?selectUser='
+						+ userGuid;
+				if (isSub && isSub == "1") {
+					url = url + "&isSub=1&showTabs=ownOu;ownDepartment";
+				}
+				epoint.openDialog("转移用户对象选择", url, selectUserCallback, {
+					'width' : 1200,
+					'height' : 500
+				});
+			}
+		}
+
+		function selectUserCallback(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				users = rtnValue;
+				epoint.execute('moveUserRole', '', [ roles, users ],
+						msgCallBack);
+			}
+		}
+
+		//启用/禁用
+		function setUserEnable() {
+			epoint.execute('setUserEnable', [ 'datagrid', 'fui-form' ],
+					msgCallBack);
+		}
+
+		function onFileSuccess(e) {
+			if (e.data && e.data.extraDatas.msg) {
+				epoint.showTips(e.data.extraDatas.msg, {
+					state : 'success'
+				});
+				epoint.refresh([ 'tree' ]);
+			}
+		}
+		function onCheckRender(e) {
+			//此功能只是隐藏掉选择框，但是还是可以被选到的，注意！！！！，要配合beforeselect使用
+			if (e.record.canOperateBaseOu) {
+				var canOperateBaseOu = e.row['canOperateBaseOu'];
+				if (canOperateBaseOu == "0" && e.cellCls === "mini-checkcolumn") {
+					e.cellHtml = "";
+				}
+			}
+		}
+		grid.on("beforeselect", function(e) {
+			if (e.record.canOperateBaseOu) {
+				var canOperateBaseOu = e.row['canOperateBaseOu'];
+				if (canOperateBaseOu == "0") {
+					e.cancel = true;
+				}
+			}
+		});
+
+		function changeAccountMode() {
+			var info = "";
+			if (isMultiAccountMode == 1) {
+				info = '当前账号模式为多账号模式，是否确认切换为兼职模式，切换后关联账号对应的所有数据都将失效！';
+			} else if (isMultiAccountMode == 0) {
+				info = '当前账号模式为兼职模式，是否确认切换为多账号模式，切换后兼职对应的所有数据都将失效！';
+			}
+			epoint.confirm(info, '切换模式', confirmChangeAccountMode);
+		}
+
+		function confirmChangeAccountMode() {
+			var mode = 0;
+			if (isMultiAccountMode == 1) {
+				mode = 0;
+			} else if (isMultiAccountMode == 0) {
+				mode = 1;
+			}
+			epoint.execute('modifyAccountMode', '', [ mode ],
+					function(data) {
+						var msg = data.msg;
+						if (msg) {
+							if (data.success) {
+								epoint.showTips(msg, {
+									state : 'success'
+								});
+								Util.getSafeLocation().href = Util
+										.getSafeLocation().href;
+							} else {
+								epoint.showTips(msg, {
+									state : 'warning'
+								});
+							}
+						}
+					});
+		}
+
+		// 提示区域
+		var infoBox = mini.get('info-box');
+		// 进度条
+		var progressbar = mini.get('move-progressbar');
+		// 总数
+		var $infoCountAll = $('#info-box-all'),
+		// 当前数据
+		$infoCountCurr = $('#info-box-curr'),
+		// 转移中提示
+		$moveingTips = $('#info-box-moving'),
+		// 暂停中提示
+		$pausingTips = $('#info-box-moving');
+
+		// var IS_PAUSED = false;
+
+		// 增加步长
+		function addStepSize() {
+
+			// 打开步长选择对话框
+			epoint
+					.openDialog(
+							'选择步长',
+							'frame/pages/basic/stepsize/selectstepsize?data=2,3,5,10,20',
+							dealSelectStepSize, {
+								width : 600,
+								height : 300
+							});
+		}
+
+		// 选择步长的回调
+		function dealSelectStepSize(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				epoint.execute("addUserStepSize?stepsize=" + rtnValue,
+						[ 'fui-form' ], function(data) {
+							epoint.showTips(data.msg, {
+								state : 'success'
+							});
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						});
+			}
+		}
+		//绘制同步列
+		function onThirdPartyRender(e) {
+			var ztValue = e.value;
+			if (ztValue != '否') {
+				return "<span style=\"color:green;\">" + ztValue + "</span>";
+			}
+			return ztValue;
+		}
+		//授权/取消
+		function setUserSyncThirdParty() {
+			epoint.execute('setUserSyncThirdParty', [ 'datagrid', 'fui-form' ],
+					msgCallBack);
+		}
+		
+		function onImport(){
+			epoint.openTopDialog('导入',
+					'../orgaimport/orgaimport',function(){
+			})
+		}
+		
+		function onExport(){
+			var form = document.getElementById('download_form');
+			form.action = "../../../../"+ epoint.dealRestfulUrl("orgaexportaction/exportOrga");
+			form.submit();
+		}
+		
+		//打开复制用户角色页面
+		function copyRight(row) {
+			epoint.openDialog("复制用户角色模块权限", 'framemanager/orga/orga/user/frameuserroleandmodulecopylist?isSub=' + isSub + '&userGuid=' + row.userGuid, addCallBack, {
+				'width' : 1000,
+				'height' : 580
+			});
+		}
+		//]]>
+	</script>
+
+
+</body>
+</html>

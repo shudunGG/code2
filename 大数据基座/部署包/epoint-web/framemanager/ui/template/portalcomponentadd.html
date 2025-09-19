@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增元件</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style>
+.icon-set {
+	width: 30px;
+	width: .3rem;
+	height: 30px;
+	height: .3rem;
+	background-position: center !important;
+	background-size: contain !important;
+	border: 1px solid #d7d7d7;
+	color: #939393;
+	text-align: center;
+	line-height: 30px;
+	border-radius: 4px;
+	position: relative;
+}
+
+.icon-set.icon-none:after {
+	content: "无";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	line-height: 30px;
+	color: #bdbec1;
+	font-size: 16px;
+	z-index: 0;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form" id="basicInfo">
+				<div role="row">
+					<div role="control" label="元件名称" starred="true">
+						<input id="componentname" class="mini-textbox"
+							bind="dataBean.componentname" required="true" maxLength="50"
+							requiredErrorText="元件名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属分类" starred="true">
+						<input id="belongcategory" class="mini-treeselect"
+							action="getTreeModel" textField="text" valueField="id"
+							bind="dataBean.belongcategory" required="true" 
+							requiredErrorText="分类不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="元件类型">
+						<div class="mini-radiobuttonlist" repeatItems="2" textField="text"
+							valueField="value" bind="dataBean.componenttype"
+							id="componenttype" onvaluechanged="isTemplate"
+							data="[{value:'1',text:'元件实例'},{value:'0',text:'元件模板'}]"></div>
+						<span id="instancetip" class="text-assist hidden">元件内容唯一，设计者只能设置元件外部属性和样式</span>
+						<span id="templatetip" class="text-assist hidden">设计者可配置不同数据来源，按模板形式显示不同信息</span>
+					</div>
+				</div>
+				<div role="row" id="content">
+					<div role="control" label="元件内容页" starred="true">
+						<input id="columnurl" class="mini-combobox" textField="name"
+							valueField="id" required="true" requiredErrorText="内容页不能为空"
+							emptyText="选择接口" /> <input id="columnvalue" class="mini-hidden"
+							bind="dataBean.columnvalue" /> <input id="columnname"
+							class="mini-hidden" bind="dataBean.columnname" /> <input
+							id="counturl" class="mini-hidden" bind="dataBean.counturl" /> <input
+							id="diyurl" class="mini-textbox" visible="false" required="true"
+							requiredErrorText="内容页不能为空" emptyText="填写地址" />
+						<div id="isdiylink" bind="dataBean.isdiylink"
+							class="mini-checkbox" onvaluechanged="onDiyChange">自定义内容页</div>
+					</div>
+				</div>
+				<div role="row" id="template" class="hidden">
+					<div role="control" label="元件模板页" starred="true">
+						<input id="templateurl" class="mini-textbox" required="true"
+							requiredErrorText="地址不能为空" emptyText="填写模板页地址" />
+					</div>
+				</div>
+				<input id="componenturl" class="mini-hidden"
+					bind="dataBean.componenturl" />
+				<div role="row">
+					<div role="control" label="元件管理页">
+						<input id="manageurl" class="mini-textbox"
+							bind="dataBean.manageurl" emptyText="不填地址，则默认使用标准管理页" /> <span
+							class="text-assist">自定义管理页示例：./child/eleedit</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="初始宽高" starred="true">
+						<input id="initwidth" bind="dataBean.initwidth"
+							style="width: 100px;" class="mini-spinner mr5" minValue="2"
+							maxValue="24" /><span class="mr5"> x </span> <input
+							id="initheight" bind="dataBean.initheight" style="width: 100px;"
+							class="mini-spinner" minValue="2" maxValue="24" /> <span
+							class="text-assist">元件被拖出时默认占格大小，设计者无法配置</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序">
+						<input id="ordernumber" class="mini-textbox" maxLength="8"
+							vtype="int;range:0,99999999" bind="dataBean.ordernumber">
+					</div>
+				</div>
+			</div>
+
+			<div role="form" id="defaultConfig" class="hidden">
+				<span class="text-assist">请根据需要预设的初始属性和样式，在设计器中可再次调整。可点击<a
+					href="javascript:void(0);" onclick="reset();"
+					style="color: #2590EB;">重置</a>恢复默认配置
+				</span>
+				<div role="row">
+					<div role="control" label="最大宽高">
+						<input id="maxwidth" bind="dataBean.maxwidth"
+							style="width: 100px;" class="mini-spinner mr5" minValue="2"
+							maxValue="24" /><span class="mr5"> x </span> <input
+							id="maxheight" bind="dataBean.maxheight" style="width: 100px;"
+							class="mini-spinner" minValue="2" maxValue="24" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="最小宽高">
+						<input id="minwidth" bind="dataBean.minwidth"
+							style="width: 100px;" class="mini-spinner mr5" minValue="2"
+							maxValue="24" /><span class="mr5"> x </span> <input
+							id="minheight" bind="dataBean.minheight" style="width: 100px;"
+							class="mini-spinner" minValue="2" maxValue="24" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<div id="allowedit" bind="dataBean.allowedit"
+							class="mini-checkbox">禁止设计者修改最大、最小宽高</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="打开方式">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							valueField="value" bind="dataBean.openwith" id="openwith"
+							data="[{value:'dialog',text:'对话框'},{value:'tabsNav',text:'标签页'},{value:'blank',text:'新窗口'}]">
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="元件标题">
+						<div id="isshowtitle" bind="dataBean.isshowtitle"
+							class="mini-checkbox switch" checked="true"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="随主题换肤">
+						<div id="themecheck" bind="dataBean.themecheck"
+							class="mini-checkbox switch" checked="true"
+							onvaluechanged="themeChange"></div>
+					</div>
+				</div>
+				<div id="component-style" class="hidden">
+					<div role="row">
+						<div role="control" label="元件边框">
+							<input id="framecolor" bind="dataBean.framecolor"
+								class="mini-colorpicker" style="width: 100px;" format="hex"
+								allowInput="true" /><input id="framesize"
+								bind="dataBean.framesize" style="width: 75px;"
+								class="mini-spinner mr5" minValue="0" />px
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="元件背景">
+							<input id="backgroundcolor" bind="dataBean.backgroundcolor"
+								class="mini-colorpicker" style="width: 100px;" format="hex"
+								allowInput="true" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="元件阴影">
+							<input id="shadow" bind="dataBean.shadow"
+								class="mini-colorpicker" style="width: 100px;" format="hex"
+								allowInput="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="圆角半径">
+							<input id="radius" bind="dataBean.radius" style="width: 75px;"
+								class="mini-spinner" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="标题文字">
+							<input id="fontcolor" bind="dataBean.fontcolor"
+								class="mini-colorpicker" style="width: 100px;" format="hex"
+								allowInput="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="标题背景">
+							<input id="titlebackgroundcolor"
+								bind="dataBean.titlebackgroundcolor" class="mini-colorpicker"
+								style="width: 100px;" format="hex" allowInput="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="图标颜色">
+							<input id="iconcolor" bind="dataBean.iconcolor"
+								class="mini-colorpicker" style="width: 100px;" format="hex"
+								allowInput="true" />
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="图标">
+						<div class="icon-set" id="icon-set"></div>
+						<input id="icon" bind="dataBean.icon" class="mini-textbox hidden" />
+						<span style="margin-left:8px;font-size: 12px">点击更换图标</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="功能">
+						<div>
+							<div id="showmessagecount" class="mini-checkbox"
+								bind="dataBean.isshowmessagecount" text="消息数量"></div>
+							<div id="showrefreshbtn" class="mini-checkbox"
+								bind="dataBean.isshowrefresh" text="刷新"></div>
+							<div id="showmorebtn" class="mini-checkbox"
+								bind="dataBean.isshowmorebutton" text="更多"
+								onvaluechanged="moreChange"></div>
+							<div id="showaddbtn" class="mini-checkbox"
+								bind="dataBean.isshownewbutton" text="新增"
+								onvaluechanged="addChange"></div>
+						</div>
+					</div>
+				</div>
+
+				<div role="row" id="more" class="hidden">
+					<div role="control" label="更多">
+						<input id="moreurl" bind="dataBean.moreurl" class="mini-textbox"
+							emptyText="请填写更多页地址" />
+					</div>
+				</div>
+				<div role="row" id="add" class="hidden">
+					<div role="control" label="新增">
+						<input id="addurl" bind="dataBean.addurl" class="mini-textbox"
+							emptyText="请填写新增页地址" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="nextStep"
+			onclick="btnNextStep">下一步</a> <a class="mini-button hidden"
+			id="prevStep" onclick="btnPrevStep">上一步</a> <a
+			class="mini-button hidden" state="primary" id="addClose"
+			onclick="saveAndClose">完成</a>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		var portalConfig = {
+			getColumns : 'rest/elementeditaction/getColumns?isCommondto=true'
+		};
+	</script>
+	<script>
+		var rowGuid = '';
+		var iconNum = '';
+		// 初始化页面
+		epoint.initPage('frameportalcomponentaddaction', null, function(data) {
+			$('#icon-set').addClass('icon-none');
+
+			if (data && data.rowGuid) {
+				rowGuid = data.rowGuid;
+			}
+			// 所属分类
+			if (data && data.typeGuid && data.typeName) {
+				mini.get("belongcategory").setText(data.typeName);
+				mini.get("belongcategory").setValue(data.typeGuid);
+			}
+
+			mini.get("componenttype").setValue(1);
+
+			// 初始宽高默认值
+			mini.get("initwidth").setValue(8);
+			mini.get("initheight").setValue(5);
+
+			mini.get("ordernumber").setValue(0);
+
+			initDefaultConfig();
+			isTemplate();
+			getColumns();
+		});
+
+		// 元件内容页接口选择
+		function getColumns() {
+			Util.ajax({
+				url : portalConfig.getColumns
+			}).done(function(data) {
+				mini.get('columnurl').setData(data.columns);
+			});
+		}
+
+		// 设置"默认配置"的默认值
+		function initDefaultConfig() {
+			mini.get('maxwidth').setValue(24);
+			mini.get('maxheight').setValue(24);
+			mini.get('minwidth').setValue(2);
+			mini.get('minheight').setValue(2);
+
+			mini.get('themecheck').setValue(1);
+			mini.get('framecolor').setValue('#EBEBEB');
+			mini.get('framesize').setValue(1);
+			mini.get('backgroundcolor').setValue('#FFFFFF');
+			mini.get('shadow').setValue('#D6D6D6');
+			mini.get('radius').setValue('4');
+
+			mini.get('isshowtitle').setValue(1);
+			mini.get('fontcolor').setValue('#5C5C5C');
+			mini.get('titlebackgroundcolor').setValue('#FFFFFF');
+			mini.get('iconcolor').setValue('#5C5C5C');
+
+			mini.get("openwith").setValue("dialog");
+		}
+
+		// 根据元件类型控制元件内容页及元件模板页的显隐		
+		function isTemplate() {
+			if (mini.get('componenttype').getValue() == 0) {
+				$("#content").hide();
+				$("#template").show();
+				// 清空内容页
+				epoint.clear('content');
+				$("#templatetip").removeClass('hidden');
+				$("#instancetip").addClass('hidden');
+				$('#showmessagecount').show();
+			} else {
+				$("#content").show();
+				$('#columnurl').show();
+				var isDiyLink = mini.get('isdiylink').getValue();
+				if (isDiyLink == 'true') {
+					$('#diyurl').show();
+					$('#columnurl').hide();
+					$('#showmessagecount').hide();
+				} else {
+					$('#diyurl').hide();
+					$('#columnurl').show();
+					$('#showmessagecount').show();
+				}
+				$("#template").hide();
+				// 清空模板页
+				epoint.clear('template');
+				$("#instancetip").removeClass('hidden');
+				$("#templatetip").addClass('hidden');
+			}
+		}
+
+		// 是否自定义元件内容页
+		function onDiyChange() {
+			if (this.getChecked()) {
+				$('#columnurl').hide();
+				$('#diyurl').show();
+				$('#showmessagecount').hide();
+			} else {
+				$('#diyurl').hide();
+				$('#columnurl').show();
+				$('#showmessagecount').show();
+			}
+		}
+
+		// 重置默认配置
+		function reset() {
+			epoint.clear('defaultConfig');
+			initDefaultConfig();
+			$('#component-style').addClass('hidden');
+			$('#more').addClass('hidden');
+			epoint.clear('more');
+			$('#add').addClass('hidden');
+			epoint.clear('add');
+		}
+
+		// 是否随主题换肤 
+		function themeChange() {
+			if (this.getChecked()) {
+				$('#component-style').addClass('hidden');
+			} else {
+				$('#component-style').removeClass('hidden');
+			}
+		}
+
+		// 功能-更多
+		function moreChange() {
+			if (this.getChecked()) {
+				$('#more').removeClass('hidden');
+			} else {
+				$('#more').addClass('hidden');
+				epoint.clear('more');
+			}
+		}
+
+		// 功能-新增
+		function addChange() {
+			if (this.getChecked()) {
+				$('#add').removeClass('hidden');
+			} else {
+				$('#add').addClass('hidden');
+				epoint.clear('add');
+			}
+		}
+
+		// 默认配置窗口
+		function btnNextStep() {
+			if (epoint.validate()) {
+				$('#basicInfo').addClass('hidden');
+				$('#defaultConfig').removeClass('hidden');
+				$('#nextStep').addClass('hidden');
+				$('#prevStep').removeClass('hidden');
+				$('#addClose').removeClass('hidden');
+			}
+		}
+
+		// 基础信息窗口
+		function btnPrevStep() {
+			$('#basicInfo').removeClass('hidden');
+			$('#defaultConfig').addClass('hidden');
+			$('#nextStep').removeClass('hidden');
+			$('#prevStep').addClass('hidden');
+			$('#addClose').addClass('hidden');
+		}
+
+		// 完成
+		function saveAndClose() {
+			var $componentUrl = mini.get('componenturl');
+			var componenType = mini.get('componenttype').getValue();
+			var isdiyLink = mini.get('isdiylink').getValue();
+			// 给元件内容页/模板页赋值
+			if (componenType == 0) {
+				$componentUrl.setValue(mini.get('templateurl').getValue());
+			} else if (isdiyLink == 'true') {
+				$componentUrl.setValue(mini.get('diyurl').getValue());
+				mini.get('showmessagecount').setValue(0);
+			} else {
+				var selectColumn = mini.get('columnurl').getSelected();
+				$componentUrl.setValue(selectColumn.url);
+				mini.get('columnname').setValue(selectColumn.name);
+				mini.get('columnvalue').setValue(selectColumn.id);
+				mini.get('counturl').setValue(selectColumn.countUrl);
+			}
+
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg, {
+						state : "warning"
+					});
+				}
+			}
+		}
+
+		// 图标设置
+		$('body')
+				.on(
+						'click',
+						'#icon-set',
+						function() {
+							var $this = $(this);
+							var currentIcon = mini.get('icon').value;
+							epoint
+									.openTopDialog(
+											'图标设置',
+											'framemanager/ui/portalNew/portaldesign/child/icons?icon='
+													+ currentIcon
+													+ '&elementGuid=' + rowGuid,
+											function(param) {
+												if (param.type = 'ok') {
+													iconNum = param.options.num;
+													if (iconNum) {
+														var iconUrl = '';
+														if (isNaN(+iconNum)) {
+															iconUrl = Util
+																	.getRightUrl(iconNum);
+															$this
+																	.css(
+																			{
+																				"background" : "url("
+																						+ iconUrl
+																						+ ") no-repeat center"
+																			})
+																	.removeClass(
+																			'icon-none');
+														} else {
+															// 数字
+															$this
+																	.addClass(
+																			'modicon-'
+																					+ iconNum)
+																	.removeClass(
+																			'icon-none');
+														}
+													} else {
+														$('#icon-set')
+																.css(
+																		{
+																			"background" : "none"
+																		})
+																.addClass(
+																		'icon-none');
+													}
+													mini.get('icon').setValue(
+															iconNum);
+												}
+											}, {
+												'width' : 500,
+												'height' : 494
+											});
+						});
+	</script>
+</body>
+</html>

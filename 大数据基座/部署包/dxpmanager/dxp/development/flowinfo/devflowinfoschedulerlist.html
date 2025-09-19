@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>交换流程</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+
+<div class="fui-left">
+    <div role="head" title="选择分组">
+        <a class="mini-button" onclick="addGroup()">新增分组</a>
+    </div>
+    <div role="body">
+        <ul id="tree" class="mini-filtertree" textField="text" idField="id"
+            parentField="pid" action="dxpflowgroupaction.getTreeModel" resultAsTree="false"
+            filterMode="server">
+        </ul>
+    </div>
+</div>
+
+<div class="fui-right">
+    <!-- 按钮区域 -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="startJob()">启动作业</a>
+        </div>
+        <div class="btn-group mr10">
+            <a class="mini-button mini-btn-warning" id="stop" onclick="stopJob()">停止作业</a>
+        </div>
+    </div>
+
+    <!-- 条件区域 -->
+    <div class="fui-search" primaryControl="flowName" opened="false">
+        <!-- 表单布局 -->
+        <div class="fui-form" id="fui-form">
+            <div role="form">
+                <div role="row">
+                    <div role="control" label="流程名称">
+                        <input bind="dataBean.flowName" id="flowName" class="mini-textbox"/>
+                    </div>
+                    <div role="control" label="所属节点域">
+                        <input bind="nodeguid" id="nodeguid" class="mini-combobox"
+                               action="getNodeGuidList"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="调度状态">
+                        <input bind="jobStatus" class="mini-combobox" action="getJobStatusSelectList"/>
+                    </div>
+                    <div role="control">
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="生成时间(开始)">
+                        <input bind="generateBegin" id="generateBegin" class="mini-datepicker"/>
+                    </div>
+                    <div role="control" label="生成时间(结束)">
+                        <input bind="generateEnd" id="generateEnd" class="mini-datepicker"/>
+                    </div>
+                </div>
+                <input bind="groupGuid" id="groupGuid" class="mini-hidden"/>
+            </div>
+        </div>
+
+        <!-- 搜索按钮 -->
+        <a role="searcher" callback="searchData"></a>
+    </div>
+
+    <!-- 表格区域 -->
+    <div class="fui-content">
+        <div id="datagrid" name="datagrid" class="mini-datagrid"
+             idField="rowguid" multiSelect="true"
+             style="width: 100%; height: 100%;" showPager="true"
+             action="getSchedulerDataGridData">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div type="indexcolumn" width="50" headerAlign="center">序</div>
+                <div field="flowname" width="200" headerAlign="center"
+                     align="center">流程名称
+                </div>
+                <div field="nodename" width="100" headerAlign="center"
+                     align="center">所属节点域
+                </div>
+                <div field="flowtypename" width="100" headerAlign="center"
+                     align="center">流程类型
+                </div>
+                <div field="jobstatus" width="80" headerAlign="center"
+                     align="center" renderer="onStatusRender">调度状态
+                </div>
+                <div field="errorCount" width="80" headerAlign="center"
+                     align="center">异常次数
+                </div>
+                <div field="operatedate" width="80" headerAlign="center"
+                     align="center" renderer="onScheduleRenderer">调度配置
+                </div>
+                <div field="log" width="80" headerAlign="center"
+                     align="center" renderer="onLogRenderer">作业日志
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../../rest/resource/jsboot"></script>
+<script>
+    epoint.initPage('dxpdatadeveloplistaction');
+
+    var tree = mini.get('tree');
+    tree.on('beforenodeselect', function (e) {
+        if (e.node.id === 'f9root') {
+            mini.get('groupGuid').setValue('');
+        } else {
+            mini.get('groupGuid').setValue(e.node.id);
+        }
+        searchData();
+    });
+
+    var grid = mini.get('datagrid');
+    grid.on('selectionchanged', function (e) {
+        if (e.selecteds.length > 0) {
+            buttonEnable();
+        } else {
+            buttonDisable();
+        }
+    });
+
+
+    function searchData() {
+        epoint.refresh(['datagrid', 'fui-form']);
+    }
+
+    function startJob() {
+	// start标志变量启动作业
+		if (mini.get('datagrid').getSelecteds().length == 0) {
+			epoint.alert('请选择启动的作业!', '', null, 'warning');
+		} else {
+			epoint.execute('doJobWork', '', 'start', function(data) {
+				if (data.msg.indexOf('成功' != -1)) {
+					epoint.alert(data.msg, '', function() {
+						epoint.refresh('datagrid', '', true);
+					}, 'success');
+				} else {
+					epoint.alert(data.msg, '', '', 'warning');
+				}
+			});
+		}
+	}
+
+	function stopJob() {
+		if (mini.get('datagrid').getSelecteds().length == 0) {
+			epoint.alert('请选择停止的作业!', '', null, 'warning');
+		} else {
+			epoint.confirm('确认要停止吗?', '', function() {
+				// stop 标志变量停用作业
+				epoint.execute('doJobWork', '', 'stop', function(data) {
+					if (data.msg.indexOf('成功' != -1)) {
+						epoint.refresh('datagrid', '', true);
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			});
+		}
+	}
+
+	var onScheduleRenderer = function(e) {
+		return epoint.renderCell(e, "action-icon modicon-97",
+				"openScheduleList");
+	};
+
+	function openScheduleList(e) {
+		epoint.openDialog('调度配置', 'dxp/flowinfo/taskconfigNew?guid=' + e, null, {
+			'width' : 600,
+			'height' : 300
+		});
+	}
+
+	var onLogRenderer = function(e) {
+		return epoint.renderCell(e, "action-icon modicon-49", "openLogList");
+	};
+
+	function openLogList(e) {
+		epoint.openDialog('调度记录', 'dxp/flowinfo/dxpschedulerloglist?guid=' + e, null, {
+			'width' : 1000,
+			'height' : 600
+		});
+	}
+
+
+	function onStatusRender(e) {
+		var color = 'red';
+		if (e.value == '交换中') {
+			color = '#f39c12';
+		} else if (e.value == '已停止') {
+			color = '#d2d6de';
+		} else if (e.value.indexOf('运行中') != -1) {
+			color = '#00a65a';
+		} else {
+			color = '#dd4b39';
+		}
+		return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+				+ e.value + '</span>';
+	}
+
+</script>
+</body>
+</html>

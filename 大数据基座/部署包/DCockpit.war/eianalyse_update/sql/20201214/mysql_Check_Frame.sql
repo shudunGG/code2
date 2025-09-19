@@ -1,0 +1,1 @@
+select (select count(1) from cockpit_norm where normtype = '3') = 0

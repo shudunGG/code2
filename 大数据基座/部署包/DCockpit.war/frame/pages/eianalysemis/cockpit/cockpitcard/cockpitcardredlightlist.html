@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>红灯信息列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- search区域 -->
+	<div class="fui-condition" opened="true">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="卡片名称">
+						<input id="search_cardname" class="mini-textbox"
+							bind="dataBean.cardname" />
+					</div>
+					<div role="control" label="状态">
+						<input id="search_status" class="mini-combobox"
+							bind="dataBean.status" action="getStatusList" showClose="true"
+							oncloseclick="onCloseClick" showNullItem="true"
+							emptyText="请选择..." textField="text" valueField="id" />
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="false">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="40" headerAlign="center"
+					Align="center">序</div>
+				<div field="cardname" headerAlign="center" width="60" Align="center">卡片名称</div>
+				<div field="launchusername" headerAlign="center" width="60"
+					Align="center">发起人</div>
+				<div field="responseusername" headerAlign="center" width="60"
+					Align="center">责任人</div>
+				<div field="statuss" headerAlign="center" width="60" Align="center">状态</div>
+				<div field="createtime" headerAlign="center" align="center"
+					width="80" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">创建时间</div>
+				<div field="content" headerAlign="center" Align="center">红灯指示</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onDetailRenderer">红灯流程</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		var grid = mini.get("datagrid");
+
+		// 初始化页面
+		epoint.initPage('cockpitcardredlightlistaction', null, function(data) {
+		});
+
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+
+		// 弹出修改窗口
+		function openDetail(id) {
+			epoint.openDialog('红灯流程',
+					"./cockpitcardredlightprocess?guid=" + id, searchData, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+		//]]>
+	</script>
+</body>
+</html>

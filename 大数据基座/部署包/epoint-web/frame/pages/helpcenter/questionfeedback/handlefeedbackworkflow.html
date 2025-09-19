@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增反馈</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+table {
+	table-layout: fixed;
+}
+
+table img {
+	max-width: 100%;
+}
+
+#questioncontent img {
+	max-width: 100%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="uc-handlecontrols" id="handlecontrols"
+			action="handlecontrolsaction.handleCtrl" style="width: 100%"></div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="问题提问"></div>
+				<div role="body">
+					<!-- 隐藏按钮id不能修改 -->
+					<div class="hidden">
+						<a class="mini-button" id="btnSaveFrom" onclick="saveFrom();">保存</a>
+						<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+					</div>
+					<div id="fui-form" class="fui-form">
+						<div role="row">
+							<div role="control" label="反馈类型" starred="true">
+								<div class="mini-output"
+									bind="commFeedbackQuestionInfo.cFeedbackType"
+									data-options="{code:'反馈问题类型'}" /></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="所属功能" starred="true">
+								<div class="mini-output" id="functionType"
+									bind="commFeedbackQuestionInfo.cFunctionType" /></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="标题" starred="true">
+								<input id="cMessageTitle" class="mini-output"
+									bind="commFeedbackQuestionInfo.cFeedbackQuestionTitle"
+									validateLevel="3" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="问题内容" starred="true">
+								<textarea
+									bind="commFeedbackQuestionInfo.cFeedbackQuestionContent"
+									validateLevel="3" id="cMessageContent" class="mini-outputtext"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="反馈信息"></div>
+				<div role="body">
+					<div class="btn-group mr10">
+						<div id="btnAddFeedback" class="mini-button"
+							onclick="OpenAddFeedBack">添加我的反馈意见</div>
+					</div>
+					<div id="feedbackgrid" class="mini-datagrid"
+						idField="cfeedbackguid" action="getDataGridData" sortOrder="desc"
+						showPager="true" sortField="cfeedbacktime" allowResize="true"
+						multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+						editNextOnEnterKey="true" editNextRowCell="true">
+						<div property="columns">
+							<div type="indexcolumn" width="40">序</div>
+							<div field="cfeedbackusername" width="100">反馈人</div>
+							<div field="cfeedbacktime" width="160"
+								data-options="{format:'yyyy-MM-dd HH:mm'}">反馈时间</div>
+							<div field="cfeedbackcontent" width="100%" validateLevel="1">反馈内容</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../epointworkflow/js/workflowjsboot.js"></script>
+	<script src="../../epointworkflow/js/tableproperty.js"></script>
+
+	<script>
+		//<![CDATA[ 
+		var rowguid;
+		var pviguid;
+		var workItemGuid;
+
+		// 初始化页面
+		epoint.initPage('handlefeedbackworkflowaction', '', initCallback);
+
+		function initCallback(data) {
+			rowguid = data.rowguid;
+			pviguid = data.pviguid;
+			workItemGuid = data.workItemGuid;
+			functionType = data.functionType;
+			mini.get('functionType').setValue(functionType);
+			window.prepFancy && prepFancy($('.fui-form').find('table'));
+		}
+
+		function saveFrom() {
+			if (epoint.validate()) {
+				epoint.execute('saveForm', '', newCallback);
+			} else
+				ShowTdOperate(true);
+		}
+
+		function submit() {
+			if (epoint.validate()) {
+				epoint.execute('submit', '', newCallback);
+			} else
+				ShowTdOperate(true);
+		}
+
+		// 新增操作的回调,必须回调handlecontrols中的HeaderSubmit触发流程流转
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+				ShowTdOperate(true);
+				return;
+			}
+			HeaderSubmit();
+		}
+
+		function OpenAddFeedBack() {
+			epoint.openDialog('添加反馈',
+					'frame/pages/helpcenter/infofeedback/infofeedback?cFeedbackQuestionGuid='
+							+ rowguid + '&ProcessVersionInstanceGuid='
+							+ pviguid + '&WorkItemGuid=' + workItemGuid,
+					function(ret) {
+						epoint.refresh([ 'feedbackgrid' ]);
+					}, {
+						width : 900,
+						height : 700,
+					});
+		}
+		//打开问题反馈页面
+		var feedbackgrid = mini.get("feedbackgrid");
+		feedbackgrid
+				.on(
+						"rowclick",
+						function(e) {
+							var row = e.record;
+							var cfeedbackguid = row.cfeedbackguid;
+							var url = "frame/pages/helpcenter/infofeedback/infofeedbackdetail?cFeedbackguid="
+									+ cfeedbackguid
+									+ "&ProcessVersionInstanceGuid="
+									+ row.processversioninstanceguid
+									+ "&WorkItemGuid=" + row.workitemguid;
+							epoint.openDialog('问题反馈详情', url, function(ret) {
+							}, {
+								width : 700,
+								height : 500
+							});
+						});
+
+		//]]>
+	</script>
+</body>
+</html>

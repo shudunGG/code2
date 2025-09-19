@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>通讯录</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ 'frame/fui/js/widgets/navpages/topTabNav/topTabNav.min.css',
+			'./css/communicate.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 页面内容区域 -->
+	<div class="fui-left">
+		<div role="body">
+			<div id="primary-tab" class="mini-tabs" activeIndex="0"
+				style="width: 100%; height: 100%;"
+				boxdyStyle="padding: 0; border: 0" plain="false" tabAlign="fit">
+				<div title="内部通讯录">
+					<div class="fui-tabnav-bd">
+						<ul id="inner-address" class="fui-tabnav-sub clearfix active">
+							<li class="fui-tabnav-item"><a href="javascript:;"
+								class="fui-tabnav-link">组织</a></li>
+							<li class="fui-tabnav-item"><a href="javascript:;"
+								class="fui-tabnav-link">公共群组</a></li>
+							<li class="fui-tabnav-item"><a href="javascript:;"
+								class="fui-tabnav-link">自定义群组</a></li>
+						</ul>
+					</div>
+				</div>
+				<div title="外部通讯录">
+					<div class="fui-tabnav-bd">
+						<ul id="outer-address" class="fui-tabnav-sub clearfix active">
+							<li class="fui-tabnav-item"><a href="javascript:;"
+								class="fui-tabnav-link">公共联系人</a></li>
+							<li class="fui-tabnav-item"><a href="javascript:;"
+								class="fui-tabnav-link">我的联系人</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="fui-tabnav-content shrinked" id="mainContent">
+				<!-- 组织 -->
+				<div class="com-tabnav-contentitem">
+
+					<ul id="org-tree" name="tree" class="mini-tree"
+						style="width: 100%;" showTreeIcon="true" textField="text"
+						idField="id" parentField="pid" action="getTreeData">
+					</ul>
+				</div>
+				<!-- 公共群组 -->
+				<div class="com-tabnav-contentitem" onfirstload="requestGroup">
+					<ul class="group-menu">
+
+					</ul>
+				</div>
+				<!-- 自定义群组 -->
+				<div class="com-tabnav-contentitem" onfirstload="requestGroup">
+					<ul class="group-menu">
+
+					</ul>
+				</div>
+				<!-- 公共联系人 -->
+				<div class="com-tabnav-contentitem"
+					onfirstload="requestOuterAddress">
+					<ul class="group-menu">
+
+					</ul>
+				</div>
+				<!-- 我的联系人 -->
+				<div class="com-tabnav-contentitem"
+					onfirstload="requestOuterAddress">
+					<ul class="group-menu">
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<iframe src="" frameborder="0" scrolling="no" width="100%"
+			height="100%" id="com-rightframe"></iframe>
+	</div>
+	<!-- 群组、外部通讯录列表模板 -->
+	<script type="x-tmpl-mustache" id="framelist-tmpl">
+    <li class="group-menu-item">
+        <div class="group-menu-node">
+            <!--<a href="javascript:jumpTo('{{allUrl}}');" class="text" id="{{allId}}">所有联系人</a>-->
+        </div>
+        <ul class="group-menu-expand">
+            {{#items}}
+            <li class="group-menu-item">
+                <div class="group-menu-node">
+                    <i class="modicon-34"></i><a href="javascript:jumpTo('{{url}}');" title="{{name}}" class="text" data-url="{{url}}" id="{{id}}">（{{amount}}）{{name}}</a>
+                </div>
+            </li>
+            {{/items}}
+        </ul>
+    </li>
+    </script>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<!-- 接口配置 -->
+	<script>
+		var orgTree = mini.get("org-tree"), // 组织树控件
+		primaryTab = mini.get("primary-tab"); // 一级tab
+
+		var $comRightFrame = $("#com-rightframe"), $tabs = $(".fui-tabnav-item"), $comTabContents = $(".com-tabnav-contentitem"), $fuiTabBds = $(".fui-tabnav-bd"), $tabMainContent = $("#mainContent");
+
+		var M = Mustache, framelistTmpl = $("#framelist-tmpl").html();
+
+		var innerListUrl, // 内部通讯录列表页地址
+		outerListUrl; // 外部通讯录列表页地址
+		var mydeptid = "";
+		var baseouguid = "";
+		epoint.initPage('frameinaddresslistaction', "@all", function(data) {
+			var view = data.view, // 视图模式
+			mydeptUrl = ""; // 本部门地址
+
+			initTab();
+			initUrl(view);
+			bindEvent();
+			mydeptUrl = innerListUrl + "?grouptype=1&groupguid="
+					+ data.mydeptid;
+			mydeptid = data.mydeptid;
+			// 默认显示本部门list
+			$comRightFrame.attr("src", mydeptUrl);
+
+			// 插入本部门节点
+
+			//  隐藏本部门按钮  qqf  2017-5-9
+			//var temp = '<a href="javascript:jumpTo({{url}});" class="btn-mydept">本部门</a>';
+			// Mustache.render(temp, {
+			//     url: ("'" + mydeptUrl + "'")
+			// });
+
+			//  隐藏本部门按钮  qqf  2017-5-9
+			/* $comTabContents.eq(0)
+			    .prepend(M.render(temp, {
+			        url: ("'" + mydeptUrl + "'")
+			    })); */
+
+			var contentTop = $fuiTabBds.height() + $fuiTabBds.offset().top;
+			$tabMainContent.css("top", contentTop);
+
+			if (data.baseouguid) {
+				baseouguid = data.baseouguid;
+			}
+
+		});
+
+		// 一级tab切换事件
+		primaryTab.on('activechanged', function(event) {
+			var index = event.index;
+
+			$fuiTabBds.eq(index).find(".fui-tabnav-item").eq(0)
+					.trigger('click');
+			if (index == 0) {
+				if (innerListUrl === undefined) {
+					innerListUrl = "inaddresslist";
+				}
+				jumpTo(innerListUrl + "?grouptype=1&groupguid=" + mydeptid);
+			}
+			if (index == 1) {
+				jumpTo(outerListUrl + "?grouptype=1&groupguid=");
+			}
+
+		});
+
+		// 组织树节点点击跳转页面
+		orgTree.on('nodeclick', function(event) {
+			var nodeid = event.node.id;
+
+			if (nodeid == "f9root" && event.node.text != "所有部门")
+				nodeid = baseouguid;
+			jumpTo(innerListUrl + "?grouptype=1&groupguid=" + nodeid);
+		});
+
+		function bindEvent() {
+			// 点击本部门，组织树取消激活样式
+			$tabMainContent.on('click', ".btn-mydept", function(event) {
+
+				orgTree.selectNode();
+			});
+
+			$tabMainContent.on('click', '.group-menu-node .text', function(
+					event) {
+				$(".group-menu-node").removeClass('active');
+				$(this).parent().addClass('active');
+			});
+
+			$tabMainContent.on("click", ".group-menu-node", function() {
+				var url = $(this).find(".text").data("url");
+				jumpTo(url);
+
+			})
+		}
+
+		function initUrl(view) {
+			if (view === "2") { //卡片视图
+				innerListUrl = "card";
+				outerListUrl = "cardout";
+
+			} else { // 默认列表视图
+				innerListUrl = "inaddresslist";
+				outerListUrl = "outeraddresslist";
+			}
+		}
+
+		function initTab() {
+			initTavEvent();
+
+			var primaryTabActIndex = primaryTab.activeIndex;
+			$fuiTabBds.eq(primaryTabActIndex).find(".fui-tabnav-item").eq(0)
+					.trigger('click');
+
+		}
+
+		function initTavEvent() {
+			$("#primary-tab").on('click', '.fui-tabnav-item', function(event) {
+				var subActiveIndex = "", $this = $(this);
+				$tabs.removeClass('active');
+				$this.addClass('active');
+
+				//console.log($tabs.index($this));
+
+				subActiveIndex = $tabs.index($this);
+
+				activeTabByIndex(subActiveIndex);
+			});
+		}
+
+		function activeTabByIndex(tabIndex) {
+			if (tabIndex == 0) {
+				jumpTo(innerListUrl + "?grouptype=1&groupguid=" + mydeptid);
+			} else if (tabIndex == 1) {
+				jumpTo(innerListUrl + "?grouptype=2&groupguid=");
+			} else if (tabIndex == 2) {
+				jumpTo(innerListUrl + "?grouptype=3&groupguid=");
+			} else if (tabIndex == 3) {
+				jumpTo(outerListUrl + "?grouptype=1&groupguid=");
+			} else if (tabIndex == 4) {
+				jumpTo(outerListUrl + "?grouptype=2&groupguid=");
+			}
+			var $curComTabContent = $comTabContents.eq(tabIndex);
+
+			$comTabContents.addClass('hidden');
+			$curComTabContent.removeClass('hidden');
+
+			if ($curComTabContent.data("init")) {
+				return;
+			} else {
+				var loadAction = $curComTabContent.attr('onfirstload');
+
+				if (window[loadAction]) {
+					window[loadAction](tabIndex);
+					$curComTabContent.data("init", true);
+				}
+			}
+		}
+
+		// 请求列表（内部群组）
+		function requestGroup(tabIndex) {
+
+			if (tabIndex) {
+				mini.mask({
+					el : $tabMainContent[0],
+					cls : 'mini-mask-loading'
+				});
+				var grouptype = tabIndex + 1;
+				if (tabIndex === 1) {
+					epoint.execute('getAddressGroup', "@none", {
+						type : tabIndex
+					}, function(data) {
+						data = epoint.decodeJson(data);
+						renderList(tabIndex, data);
+						mini.unmask($tabMainContent[0]);
+					}, true);
+				}
+				if (tabIndex === 2) {
+					epoint.execute('getMyAddressGroup', "@none", {
+						type : tabIndex
+					}, function(data) {
+						// data = {userGuid: "0556ca74-939d-4c69-8206-2d81c8c7a0d0",displayName: "张三",ouName: "电子政务研发2部",allId: "10000",items: [{id: "12",name: "分组名称",amount: 15}]};
+						data = epoint.decodeJson(data);
+						renderList(tabIndex, data);
+						mini.unmask($tabMainContent[0]);
+					}, true);
+				}
+
+			}
+		}
+
+		// 请求外部联系人
+		function requestOuterAddress(tabIndex) {
+
+			if (tabIndex) {
+				mini.mask({
+					el : $tabMainContent[0],
+					cls : 'mini-mask-loading'
+				});
+				var grouptype = tabIndex - 2;
+				if (tabIndex === 3) {
+					epoint.execute('getOutPubAddressGroup', "@none", {
+						grouptype : grouptype
+					}, function(data) {
+						data = epoint.decodeJson(data);
+						renderList(tabIndex, data);
+						mini.unmask($tabMainContent[0]);
+					}, true);
+				}
+				if (tabIndex === 4) {
+					epoint.execute('getOutPrivateAddressGroup', "@none", {
+						grouptype : grouptype
+					}, function(data) {
+						data = epoint.decodeJson(data);
+						renderList(tabIndex, data);
+						mini.unmask($tabMainContent[0]);
+					}, true);
+				}
+			}
+		}
+
+		// 根据tabIndex渲染列表到相应内容
+		function renderList(tabIndex, data) {
+			if (data) {
+				var grouptype, baseUrl, items = data.items;
+
+				// Modify view
+				switch (tabIndex) {
+				case 1:
+					grouptype = 2; // 公共群组
+					baseUrl = innerListUrl;
+					data.allUrl = innerListUrl + "?grouptype=2&groupguid="
+							+ data.allId;
+					break;
+				case 2:
+					grouptype = 3; // 自定义群组
+					baseUrl = innerListUrl;
+					data.allUrl = innerListUrl + "?grouptype=3&groupguid="
+							+ data.allId;
+					break;
+				case 3:
+					grouptype = 1; // 公共联系人
+					baseUrl = outerListUrl;
+					data.allUrl = outerListUrl + "?grouptype=1&groupguid="
+							+ data.allId;
+					break;
+				case 4:
+					grouptype = 2; // 我的联系人
+					baseUrl = outerListUrl;
+					data.allUrl = outerListUrl + "?grouptype=2&groupguid="
+							+ data.allId;
+					break;
+				}
+				for (var i = 0, l = items.length; i < l; i++) {
+					items[i].url = baseUrl + "?grouptype=" + grouptype
+							+ "&groupguid=" + items[i].id;
+				}
+
+				$comTabContents.eq(tabIndex).find(".group-menu").html(
+						M.render(framelistTmpl, data));
+			}
+		}
+
+		//
+		function jumpTo(url) {
+			$comRightFrame.attr("src", url);
+		}
+
+		function freshaddresslist(data) {
+			renderList(3, epoint.decodeJson(data.outpubaddressgroup));
+			renderList(4, epoint.decodeJson(data.outprivateaddressgroup));
+
+		}
+	</script>
+</body>
+
+</html>

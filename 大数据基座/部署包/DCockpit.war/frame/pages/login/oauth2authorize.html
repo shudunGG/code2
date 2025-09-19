@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新点统一认证授权页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../fui/js/cssboot.js"></script>
+</head>
+
+<body style="text-align: center">
+	<h3>新点统一认证授权页面</h3>
+	<hr />
+	<ul>
+		<li><a style="cursor: pointer;" onclick="confimAuthorize()">确认授权</a></li>
+		<li id="scopes"></li>
+	</ul>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		var scopes = Util.getUrlParams("scope");
+		$("#scopes").html("授权范围：" + " " + epoint.decodeUtf8(scopes));
+
+		function confimAuthorize() {
+			$.ajax({
+				type : 'POST',
+				url : Util.getRightUrl("rest/oauth2/authorizeconfirm"),
+				success : function(data) {
+					var dataJson = eval('(' + data + ')');
+					// 返回的data格式：{'url':'授权成功后的跳转地址'}
+					window.location.href = dataJson.url;
+				},
+				error : function(e) {
+					alert(e.status);
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

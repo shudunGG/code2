@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>版块分类授权</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="../../../../../frame/pages/basic/gateway/app/appinfomanage/css/roleSelect.css" />
+<style type="text/css">
+.role-status {
+	margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="role-status" id="role-status">
+			<div class="public-status l" id="public-status"></div>
+			<span class="public-lable" id="public-lable"> 公开状态：未开启</span>
+		</div>
+		<div class="mini-tabstreeselect" selectedPanelTitle="已选择用戶" style="width: 99%; height: 100%;" action="getUserTreeData" loadWhenChecked="true" showBorder="true" canCheckParent="true" checkRecursive="true">
+			<div tabText="用戶列表" tabKey="user"></div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar-bottom text-center" id="bar">
+		<div class="btn-group mr10"
+			style="float: none; display: inline-block;">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[  
+		//初始化请求
+		var $roleStatus = $ ('#role-status');
+        var $publicLable = $ ('#public-lable');
+        var $publicStatus = $ ('#public-status');
+		epoint.initPage('cockpitplatecateauthorizeaction', null,function(data) {
+			if (data.isPublic == "true"){
+		        $publicStatus.addClass ('active');
+		        $publicLable.text (' 公开状态：已开启');
+	        }
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var isPublic = $publicStatus.hasClass ('active');
+				epoint.execute('save', '', isPublic, function(data) {
+					if (data.msg.indexOf("成功") == -1) {
+						epoint.alert(data.msg, '', null, null, 'info');
+					} else {
+						epoint.alertAndClose(data.msg, '', null, null, 'info');
+					}
+				});
+			}
+		}
+		
+		$roleStatus.on ('click', '.public-status', function () {
+	        var $this = $ (this);
+	        if ($this.hasClass ("active")){
+		        $this.removeClass ('active');
+		        var $repeat = $ ('#repeat');
+		        if ($repeat){
+			        $repeat.removeClass ('status-active');
+		        }
+		        $publicLable.text (' 公开状态：未开启');
+	        }
+	        else{
+		        $this.addClass ('active');
+		        var $repeat = $ ('#repeat');
+		        if ($repeat){
+			        $repeat.addClass ('status-active');
+		        }
+		        $publicLable.text (' 公开状态：已开启');
+	        }
+	        
+        });
+
+		//]]>
+	</script>
+</body>
+</html>

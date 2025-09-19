@@ -1,0 +1,1 @@
+select COUNT(*) from dbo.sysobjects where id = object_id(N'[dbo].[Drop_PK]') and OBJECTPROPERTY(id, N'IsProcedure') = 1

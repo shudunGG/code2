@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标定义表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 新增搜索区域 -->
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="指标名称">
+						<input id="search_NormName" class="mini-textbox" bind="dataBean.normname" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="width: 100%; height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="normname" headerAlign="center" renderer="onNameRenderer" align="center">指标名称</div>
+				<div field="normtypeText" headerAlign="center" align="center">指标类型</div>
+				<div field="statusText" headerAlign="center" align="center" width="60">状态</div>
+				<div  headerAlign="center" align="center" width="40" renderer="onSearchRenderer">查看结果</div>
+				<div width="40" headerAlign="center" align="center" renderer="onChooseRenderer">关联指标</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 版块指标关联
+		var grid = mini.get('datagrid');
+
+		// 初始化页面
+		epoint.initPage('newchoosenormlistaction', null, function(data) {
+		});
+		
+		var onSearchRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "searchResult");
+		}
+		
+		function searchResult(e){
+			epoint.openDialog('指标结果', "../cockpitmobilecard/normlistdatalist?normguid=" + e, '', {
+				'width': 800,
+				'height': 500
+			});
+		}
+		
+		//确认选择
+		var onChooseRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-check", "choose", "epoint_total");
+		}
+		
+		var rowguid = Util.getUrlParams('rowguid');
+		function choose(e) {
+			epoint.execute('choose', '', [ e.rowguid], closeCallback);
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', '', '', 'info');
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid + '\')" style="color:blue;text-decoration:underline;">' + e.value + '</a>';
+		}
+
+		// 弹出明细窗口
+		function openDetail(guid) {
+			epoint.openDialog('详细信息', "frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormdetail?guid=" + guid, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+	</script>
+</body>
+</html>

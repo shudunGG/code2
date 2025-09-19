@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>请求次数限制策略</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+
+		<!-- 内容区域 -->
+		<div role="accordion" id="req">
+			<div role="head" title="请求次数限制"></div>
+			<div role="body">
+				<!-- 内容区域 -->
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row" id="chooseApp">
+							<div role="control" label="选择应用">
+								<input class="mini-buttonedit" style="width: 80%" id="Subscribe"
+									allowInput="false" allowInput="false"
+									onbuttonclick="onSubscribe" /> <input class="mini-hidden"
+									id="selectReqAm" bind="selectReqAm"> <input
+									class="mini-hidden" id="selectReqAmGuid" bind="selectReqAmGuid">
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="1秒内允许调用次数">
+								<input id="second" class="mini-textbox"
+									onValuechanged="countValid" bind="dataBean.second"
+									style="width: 80%" vType="int" /><span style="width: 30px">&nbsp;(次)</span><span
+									id="spsecond" style="color: red; width: 200px"></span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="1分钟内允许调用次数">
+								<input id="minute" class="mini-textbox" enabled="true"
+									onValuechanged="countValid" bind="dataBean.minute"
+									style="width: 80%" vType="int" /><span style="width: 30px">&nbsp;(次)</span><span
+									id="spminute" style="color: red; width: 200px"></span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="1小时内允许调用次数">
+								<input id="hour" class="mini-textbox" bind="dataBean.hour"
+									onValuechanged="countValid" style="width: 80%" vType="int" /><span
+									style="width: 30px">&nbsp;(次)</span><span id="sphour"
+									style="color: red; width: 200px"></span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="1天内允许调用次数">
+								<input id="day" class="mini-textbox" bind="dataBean.day"
+									onValuechanged="countValid" style="width: 80%" vType="int" /><span
+									style="width: 30px">&nbsp;(次)</span><span id="spday"
+									style="color: red; width: 200px"></span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="1月内允许调用次数">
+								<input id="month" class="mini-textbox" bind="dataBean.month"
+									onValuechanged="countValid" style="width: 80%" vType="int" /><span
+									style="width: 30px">&nbsp;(次)</span><span id="spmonth"
+									style="color: red; width: 200px"></span>
+							</div>
+
+						</div>
+						<div role="row">
+							<div role="control" label="1年内允许调用次数">
+								<input id="year" class="mini-textbox" bind="dataBean.year"
+									onValuechanged="countValid" style="width: 80%" vType="int" /><span
+									style="width: 30px">&nbsp;(次)</span><span id="spyear"
+									style="color: red; width: 200px"></span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<span style="color: red">时间范围大的次数请保证不能比时间小的次数的值小</span> <span
+									style="color: red">请填写时间段内（至少一个）允许调用的次数，如果都不填写，那么这条次数控制策略将不会被添加保存</span>
+							</div>
+						</div>
+						<input class="mini-hidden" id="datagrid"> <input
+							class="mini-hidden" id="consumerName"> <input
+							class="mini-hidden" bind="reqCountValid" id="reqCountValid">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="apiguid" bind="apiguid">
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<div id="add">
+			<a class="mini-button" state="primary" id="addClose"
+				onclick="saveAndClose">新增并关闭</a> <a class="mini-button"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<div id="edit">
+			<a class="mini-button" state="primary" id="editClose"
+				onclick="editAndClose">保存并关闭</a> <a class="mini-button"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		function saveAndClose() {
+			var name = mini.get("consumerName").getValue();
+			var name = mini.get("consumerName").getValue();
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', name, closeCallback);
+			}
+		}
+
+		function editAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					//console.log(data.param);
+					epoint.alertAndClose(data.msg, '', null, {
+						backParam : {
+							'param' : data.param,
+						}
+					}, 'success');
+				} else {
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		function onSubscribe() {
+			var apiguid = mini.get("apiguid").value;
+			//用于查看是否是默认all
+			var selectreqamguid = mini.get("selectReqAmGuid").value;
+			var datagrid = mini.get("datagrid").value;
+			epoint.openTopDialog('选择应用',
+					"frame/pages/basic/gateway/api/apiinfo/apiauth?apiguid="
+							+ apiguid + "&flag=transformation&amguid="
+							+ selectreqamguid + "&datagrid=" + datagrid,
+					function(data) {
+						if (data.text) {
+							mini.get("Subscribe").setText(data.text);
+							mini.get("selectReqAm").setValue(data.text);
+						}
+						if (data.guid) {
+							mini.get("selectReqAmGuid").setValue(data.guid);
+						}
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		//修改参数
+		function pageLoad(data) {
+			// 初始化页面
+			epoint.initPage('reqratelimitaction', '', function(data1) {
+				if (data1.method) {
+					if (data1.method == "add") {
+						$("#edit").hide();
+						mini.get("Subscribe").setText("All");
+						mini.get("selectReqAm").setValue("All");
+						mini.get("selectReqAmGuid").setValue("All");
+					}
+					if (data1.method == "edit") {
+						$("#add").hide();
+						$("#chooseApp").hide();
+					}
+				}
+
+				if (data1.apiguid) {
+					mini.get("apiguid").setValue(data1.apiguid);
+				}
+				var value = data.value;
+				if (value) {
+					mini.get("Subscribe").setText(value.consumerName);
+					mini.get("selectReqAm").setValue(value.consumerName);
+					mini.get("selectReqAmGuid").setValue(value.consumerId);
+
+					mini.get("second").setValue(value.config.second);
+					mini.get("minute").setValue(value.config.minute);
+					mini.get("hour").setValue(value.config.hour);
+					mini.get("day").setValue(value.config.day);
+					mini.get("month").setValue(value.config.month);
+					mini.get("year").setValue(value.config.year);
+
+				}
+			});
+
+			var datagrid = data.datagrid;
+			if (datagrid) {
+				var gridguid = "";
+				var gridName = "";
+				for (var i = 0; i < datagrid.length; i++) {
+					if ("All" == datagrid[i].consumerName) {
+						gridName = datagrid[i].consumerName;
+					}
+					if (i != datagrid.length - 1) {
+						gridguid += datagrid[i].consumerId + ";";
+					} else {
+						gridguid += datagrid[i].consumerId;
+					}
+				}
+				mini.get("datagrid").setValue(gridguid);
+				mini.get("consumerName").setValue(gridName);
+			}
+		}
+
+		function countValid() {
+			if (mini.get("second").value != '') {
+				if (mini.get("minute").value != '') {
+					if (parseInt(mini.get("second").value) > parseInt(mini
+							.get("minute").value)) {
+						$("#spsecond").text("一秒钟调用次数不能比一分钟多！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spsecond").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+			}
+			if (mini.get("minute").value != '') {
+				if (mini.get("second").value != '') {
+					if (parseInt(mini.get("minute").value) < parseInt(mini
+							.get("second").value)) {
+						$("#spminute").text("一分钟调用次数不能比一秒钟少！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spminute").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+				if (mini.get("hour").value != '') {
+					if (parseInt(mini.get("minute").value) > parseInt(mini
+							.get("hour").value)) {
+						$("#spminute").text("一分钟调用次数不能比一小时多！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spminute").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+			}
+
+			if (mini.get("hour").value != '') {
+				if (mini.get("minute").value != '') {
+					if (parseInt(mini.get("hour").value) < parseInt(mini
+							.get("minute").value)) {
+						$("#sphour").text("一小时调用次数不能比一分钟少！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#sphour").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+				if (mini.get("day").value != '') {
+					if (parseInt(mini.get("hour").value) > parseInt(mini
+							.get("day").value)) {
+						$("#sphour").text("一小时调用次数不能比一天多！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#sphour").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+			}
+
+			if (mini.get("day").value != '') {
+				if (mini.get("hour").value != '') {
+					if (parseInt(mini.get("day").value) < parseInt(mini
+							.get("hour").value)) {
+						$("#spday").text("一天调用次数不能比一小时少！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spday").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+				if (mini.get("month").value != '') {
+					if (parseInt(mini.get("day").value) > parseInt(mini
+							.get("month").value)) {
+						$("#spday").text("一天调用次数不能比一个月多！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spday").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+			}
+
+			if (mini.get("month").value != '') {
+				if (mini.get("day").value != '') {
+					if (parseInt(mini.get("month").value) < parseInt(mini
+							.get("day").value)) {
+						$("#spmonth").text("一天调用次数不能比一个月多！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spmonth").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+				if (mini.get("year").value != '') {
+					if (parseInt(mini.get("month").value) > parseInt(mini
+							.get("year").value)) {
+						$("#spmonth").text("一个月调用次数不能比一年多！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spmonth").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+			}
+
+			if (mini.get("year").value != '') {
+				if (mini.get("month").value != '') {
+					if (parseInt(mini.get("year").value) < parseInt(mini
+							.get("month").value)) {
+						$("#spyear").text("一年调用次数不能比一个月少！");
+						mini.get("reqCountValid").setValue("true");
+					} else {
+						$("#spyear").text("");
+						mini.get("reqCountValid").setValue("");
+					}
+				}
+			}
+		}
+	</script>
+</body>
+</html>

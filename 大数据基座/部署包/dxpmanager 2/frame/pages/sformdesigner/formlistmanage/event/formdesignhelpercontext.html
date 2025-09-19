@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>相关数据</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getTreeData"
+			resultAsTree="false" showRadioButton="true"></ul>
+	</div>
+	<input id="tableID" class="mini-hidden" bind="tableID" />
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('formdesignhelpercontextaction');
+		var tableid = mini.get('tableID').getValue();
+		//树js对象
+		var tree = mini.get("tree");
+		if (tree) {
+			// 点击左侧树刷新右侧表格
+			tree.on("nodeselect", function(e) {
+
+				var savevalue = "";
+				if (e.node && e.isLeaf) {
+					switch (e.selected.pid) {
+					case "Common"://会话参数值
+					case "Request"://请求参数值
+					case ""://上下文对象参数(仅支持单独配置) 
+						savevalue = e.node.text + ";" + e.node.id;
+						break;
+					default:
+						//材料表单字段[#=EPOINTFORM (TableID,  FromFieldName)#])
+						if (e.selected.pid.indexOf('cloumn_') == 0
+								&& e.node.text.indexOf('值(') == 0) {
+							//材料_字段值
+							savevalue = tableid + ";" + e.node.id + ";"
+									+ e.node.text;
+						} else {
+							savevalue = e.node.text + ";" + e.node.id;
+						}
+
+						break;
+					}
+					epoint.closeDialog(savevalue);
+				}
+			});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>授权管理</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button mini-btn-primary" iconCls="icon-addcircle" onclick="add();">新增</a> <a
+					class="mini-button mini-btn-danger" iconCls="icon-minuscircle" onclick="deleteSelected();">删除</a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="认证名称">
+							<input bind="principal" class="mini-textbox" />
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="topicGuid" id="topicGuid" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="principal"
+				multiSelect="true" action="getDataGridModel"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellEdit="true" showPager="true" allowCellSelect="true">
+				<div property="columns">
+				    <div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="topicguid" headerAlign="center" align="center" visible="false"></div>
+					<div field="principal" headerAlign="center" align="center">认证名称</div>
+					<div field="authorization" headerAlign="center" align="center">授权模式</div>
+					<div field="groupname" headerAlign="center" align="center">消费组名称</div>
+					<div field="subscribedate" headerAlign="center" align="center"
+						data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">认证时间</div>
+					<div field="download" headerAlign="center" align="center" renderer="onDownloadRender">认证下载</div>
+					<div headerAlign="center" align="center" renderer="onOptRender">操作</div>
+				</div>
+			</div>
+		</div>	
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		epoint.initPage('dxpkafkatopicrightlistaction','',function(data){
+			mini.get('topicGuid').setValue(data.topicGuid);
+		});
+		
+		var grid = mini.get("datagrid");
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onOptRender(e) {
+			return '<a href="javascript:void(0);" onclick="editTopicRight(' + "'"
+					+ e.row.principal + "'" + ",'"
+					+ e.row.topicguid + "'" +');" >' + '修改' + '</a>';
+		}
+		
+		function onDownloadRender(e) {
+			return '<a href="javascript:void(0);" onclick="downloadKeytab(' + "'"
+					+ e.row.principal + "'" + ');" >' + '下载 ' + '</a>';
+		}
+
+
+		// 编辑
+		function editTopicRight(principal,topicguid) {
+			epoint.openDialog("编辑授权",
+					'dxp/kafka/manager/dxpkafkatopicrightedit?principal='
+							+ principal+"&topicguid="+topicguid, function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+		
+		// 下载
+		function downloadKeytab(rowguid) {
+			var form = document.getElementById('download_form');
+			form.action = "dxpkafkatopicrightlistaction.action?cmd=download&principal=" + rowguid;
+			form.submit();
+		}
+
+
+		// 删除选中
+		function deleteSelected() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认删除？', '操作确认', function() {
+					epoint.execute('delete', [ 'datagrid',
+							'fui-form' ], [], function(data) {
+						if (data.success) {
+							epoint.alert(data.msg, '', null,
+									'success');
+							searchData();
+						} else {
+							epoint.alert(data.msg, '', null,
+									'warning');
+						}
+					});
+				});
+			}
+		}
+
+		// 新增
+		function add() {
+			epoint.openDialog("新增授权",
+					'dxp/kafka/manager/dxpkafkatopicrightadd?topicGuid='
+							+ mini.get('topicGuid').getValue(), function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+
+	</script>
+</body>
+</html>

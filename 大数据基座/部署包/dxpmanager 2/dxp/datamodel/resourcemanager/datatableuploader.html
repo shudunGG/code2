@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="confirmImport()">确认导入</a>
+		</div>
+
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" action="getDataGridData" sortOrder="desc" idField="fieldname" multiSelect="true" style="width: 100%; height: 100%;"
+			allowResize="true" allowCellValid="true" showPager="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" headerAlign="center" width="20">序</div>
+				<div field="fieldname" width="80" headerAlign="center">字段名称</div>
+				<div name="delete" width="20" headerAlign="center" align="center" renderer="ondeleteRenderer">删除</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		var grid = mini.get("datagrid");
+		epoint.initPage("datatableuploaderaction", null, function(data){
+
+			//mini.get("datagrid").setData(eval('(' + name + ')'));
+		});
+
+		// 绘制新增的按钮
+		var ondeleteRenderer = function(e) {
+			var row = e.rowIndex;
+			var uid = e.record._uid;
+			var s = '<a href="javascript:deleteinfo(\'' + uid + '\')" class="action-icon icon-minuscircle"></a>';
+			return s;
+		};
+
+		// 删除一行调用的方法
+		function deleteinfo(row_uid) {
+			var row = grid.getRowByUID(row_uid);
+			grid.removeRow(row, true);
+		}
+
+		//确认导入
+		function confirmImport() {
+
+			var datafield = grid.getData();
+			var result = "";
+			for (var i = 0; i < datafield.length; i++) {
+				result += datafield[i].fieldname + ",";
+			}
+
+			epoint.execute('datatableuploaderaction.saveForm', null, [ result ], function(ret) {
+				if (ret) {
+					epoint.alertAndClose(ret, '', null, null, 'info');
+				}
+			});
+		}
+		//_$t
+	</script>
+
+</body>
+</html>

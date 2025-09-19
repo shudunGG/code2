@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择人员</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div id="tabstreeselect" class="mini-tabstreeselect" width="100%" filterMode="server"
+						action="getTreeOuModel" loadWhenChecked="true" showBorder="true" onbeforenodecheck="beforenodecheck">
+					</div>
+				</div>
+				<div role="row">
+					<div id="tabstreeselect1" class="mini-tabstreeselect" width="100%"
+						filterMode="server" action="getTreeOuModel" loadWhenChecked="true"
+						showBorder="true" onbeforenodecheck="beforenodecheck">
+					</div>
+				</div>
+				<input class="mini-hidden" bind="isSub" id="isSub"></input>
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">确定选择</a>
+		<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		//初始化请求
+		function pageLoad(data) {
+			//初始化请求
+			if (data) {
+				epoint.initPage('selectuseraction', {
+					userGuid : data.userGuid
+				}, initCallBack);
+			} else {
+				epoint.initPage('selectuseraction', '', initCallBack);
+			}
+		}
+		
+		var showTabs = Util.getUrlParams('showTabs');
+		var tree = mini.get('tabstreeselect');
+		var tree1 = mini.get('tabstreeselect1');
+		function initCallBack(e) {
+			var isSub = mini.get('isSub').getValue();
+			if (isSub == '1') {
+				tree.setVisible(false);
+				if(showTabs) {
+					var isActive = false;
+					if(showTabs.indexOf('ownOu') >= 0) {
+						isActive = true;
+						tree1.addTab({
+							tabText: '本部门',
+							tabKey: 'tab1'
+						},true);
+					}
+					if(showTabs.indexOf('ownDepartment') >= 0) {
+						var needActive = false;
+						if(!isActive) {
+							needActive = true;
+							isActive = true;
+						}
+						tree1.addTab({
+							tabText: '本单位',
+							tabKey: 'tab2'
+						},needActive);
+					}
+					if(showTabs.indexOf('addressGroup') >= 0) {
+						var needActive = false;
+						if(!isActive) {
+							needActive = true;
+							isActive = true;
+						}
+						tree1.addTab({
+							tabText: '群组',
+							tabKey: 'tab3'
+						},needActive);
+					}
+				}
+				else {
+					tree1.addTab({
+						tabText: '本部门',
+						tabKey: 'tab1'
+					},true);
+					tree1.addTab({
+						tabText: '本单位',
+						tabKey: 'tab2'
+					},false);
+					tree1.addTab({
+						tabText: '群组',
+						tabKey: 'tab3'
+					},false);
+				}
+			}else{
+				tree1.setVisible(false);
+				if(showTabs) {
+					var isActive = false;
+					if(showTabs.indexOf('ownOu') >= 0) {
+						isActive = true;
+						tree.addTab({
+							tabText: '本部门',
+							tabKey: 'tab1'
+						},true);
+					}
+					if(showTabs.indexOf('ownDepartment') >= 0) {
+						var needActive = false;
+						if(!isActive) {
+							needActive = true;
+							isActive = true;
+						}
+						tree.addTab({
+							tabText: '本单位',
+							tabKey: 'tab2'
+						},needActive);
+					}
+					if(showTabs.indexOf('addressGroup') >= 0) {
+						var needActive = false;
+						if(!isActive) {
+							needActive = true;
+							isActive = true;
+						}
+						tree.addTab({
+							tabText: '群组',
+							tabKey: 'tab3'
+						},needActive);
+					}
+					if(showTabs.indexOf('allUser') >= 0) {
+						var needActive = false;
+						if(!isActive) {
+							needActive = true;
+							isActive = true;
+						}
+						tree.addTab({
+							tabText: '所有用户',
+							tabKey: 'tab4'
+						},needActive);
+					}
+					if(showTabs.indexOf('secondOu') >= 0 && e.hasParttime == 1) {
+						var needActive = false;
+						if(!isActive) {
+							needActive = true;
+							isActive = true;
+						}
+						tree.addTab({
+							tabText: '兼职',
+							tabKey: 'tab5'
+						},needActive);
+					}
+				}
+				else {
+					tree.addTab({
+						tabText: '本部门',
+						tabKey: 'tab1'
+					},true);
+					tree.addTab({
+						tabText: '本单位',
+						tabKey: 'tab2'
+					},false);
+					tree.addTab({
+						tabText: '群组',
+						tabKey: 'tab3'
+					},false);
+					tree.addTab({
+						tabText: '所有用户',
+						tabKey: 'tab4'
+					},false);
+					if(e.hasParttime == 1) {
+						mini.get('tabstreeselect').addTab({
+							tabText: '兼职',
+							tabKey: 'tab5'
+						},false);
+					}
+				}
+			}
+		}
+		
+		function beforenodecheck(e) {
+            //禁止选中 ckr=false节点
+            if (e.node.ckr == false){
+            	e.cancel = true;
+            }
+        }
+
+		function saveAndClose() {
+			var selectNodes = mini.get('tabstreeselect').getSelectedNodes();
+			var isSub = mini.get('isSub').getValue();
+			if (isSub == '1') {
+				selectNodes = mini.get('tabstreeselect1').getSelectedNodes();
+			}
+			var length = selectNodes.length;
+			if (length > 0) {
+				var userList = "";
+				var guidList = "";
+				for (var i = 0; i < length; i++) {
+					var node = selectNodes[i];
+					userList += node.text;
+					if((i+1)!=length){
+						userList += ";";
+					}
+					guidList += node.value;
+					if((i+1)!=length){
+						guidList += ";";
+					}
+					
+				}
+				epoint.closeDialog(guidList + "_SPLIT_" + userList);
+			} else {
+				epoint.showTips('您还没有选择任何人员记录！',  {state : 'warning'});
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

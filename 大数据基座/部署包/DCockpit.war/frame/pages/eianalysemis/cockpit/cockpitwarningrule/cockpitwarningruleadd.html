@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>预警规则添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+	.form-label {
+	  width: 10%;
+	}
+	.form-control.span2 {
+	  width: 40%;
+	}
+	.form-control.span1 {
+	  width: 23.3%;
+	}
+	.form-control.span5 {
+	  width: 90%;
+	}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">取消</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 95%;">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="规则描述">
+						<input id="normname" class="mini-textbox" bind="dataBean.rulename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="预警类型">
+						<div id="warningtype" bind="dataBean.warningtype"
+							action="getWarningTypeList" class="mini-radiobuttonlist"
+							textField="text" valueField="id" onvaluechanged="onTypeChanged"></div>
+					</div>
+					<div role="control" label="是否启用">
+						<div id="status" name="status" bind="dataBean.status" class="mini-checkbox switch" ></div>
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="计算方式">
+						<div id="datagrid" class="mini-datagrid"
+							 allowResize="true"  showPager="false"
+							idField="rowguid" action="getDataGridData">
+							<div property="columns">
+								<div name="dimStruct" field="FieldNameEN" type="comboboxcolumn" width="120" headerAlign="center">
+									维度字段 <input property="editor" class="mini-combobox"
+										textField='text' valueField='value' autoLoad="true" style="width: 100%;" />
+								</div>
+								<div name="dimStruct2" field="FieldNameEN2" type="comboboxcolumn" width="120" headerAlign="center">
+									维度字段2 <input property="editor" class="mini-combobox"
+										textField='text' valueField='value' autoLoad="true" style="width: 100%;" />
+								</div>
+								<div name="dimStruct3" field="FieldNameEN3" type="comboboxcolumn" width="120" headerAlign="center">
+									维度字段3 <input property="editor" class="mini-combobox"
+										textField='text' valueField='value' autoLoad="true" style="width: 100%;" />
+								</div>
+								<div name="dimStruct4" field="FieldNameEN4" type="comboboxcolumn" width="120" headerAlign="center">
+									维度字段4 <input property="editor" class="mini-combobox"
+										textField='text' valueField='value' autoLoad="true" style="width: 100%;" />
+								</div>
+								<div name="dimStruct5" field="FieldNameEN5" type="comboboxcolumn" width="120" headerAlign="center">
+									维度字段5 <input property="editor" class="mini-combobox"
+										textField='text' valueField='value' autoLoad="true" style="width: 100%;" />
+								</div>
+								<div name ="compareWays" field="compareWays" type="comboboxcolumn"  width="100"
+									align="center" headerAlign="center">
+									比较方式<input property="editor" class="mini-combobox"
+										style="width: 100%;" data="compareWaysData" />
+								</div>
+								<div name="filter" field="filter" type="comboboxcolumn"  width="100"
+									align="center" headerAlign="center">
+									过滤条件 <input property="editor" class="mini-combobox"
+										style="width: 100%;" data="fConditonDatas" />
+								</div>
+								<div name="filtervalue" field="filtervalue" width="120" headerAlign="center">
+									阀值 <input property="editor" class="mini-textbox"
+										style="width: 100%;"/>
+								</div>
+								<div name="percent" field="filtervalue" width="120" headerAlign="center">
+									百分比<input property="editor" class="mini-textbox"
+										style="width: 100%;" vtype="int;range:0,100"/>
+								</div>
+								<div name="rank" field="rank" type="comboboxcolumn"  width="100"
+									align="center" headerAlign="center">
+									排名<input property="editor" class="mini-combobox"
+										style="width: 100%;" data="rankData" />
+								</div>
+								<div name="rankRange" field="filtervalue" width="120" headerAlign="center">
+									变化名次<input property="editor" class="mini-textbox"
+										style="width: 100%;"/>
+								</div>
+								<div name="action" width="60" align="center" headerAlign="center"
+									renderer="onObjectRenderer">预警对象</div>
+								<div name="operate" type="actioncolumn" headerAlign="center" align="center">
+									<span type="action" icon="icon-addcircle" onclick="openAdd">新增</span>
+									<span type="action" icon="icon-error" onclick="openDelete">删除</span>
+								</div>
+								<div name="roleguids" field="roleguids" visible="false"></div>
+								<div name="userguids" field="userguids" visible="false"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../cockpitnorm/js/util.js"></script>
+	<script>
+		var grid = mini.get("datagrid");
+		var normtype;
+		var timewindow;
+		var type;
+		var dimnum;
+		var ruleguid = Util.getUrlParams("guid");
+		var normguid = Util.getUrlParams("normguid");
+		// 初始化页面
+		epoint.initPage('cockpitwarningruleaddaction',null,function(data){
+			normtype = data.normtype;
+			timewindow = data.timewindow;
+			type = data.type;
+			dimnum = data.dimnum;
+			if(type == null){
+				mini.get("warningtype").setValue(1);
+				mini.get("status").setValue(true);
+			}
+			
+			onTypeChanged();
+		});
+		var fConditonDatas=[{ id: '=', text: '=' }, { id: '!=', text: '!='}, { id: '>', text: '>'}, { id: '<', text: '<'}, { id: '>=', text: '>='}, { id: '<=', text: '<='}];
+		var compareWaysData=[{ id: '同比', text: '同比' }, { id: '环比', text: '环比'}];
+		var rankData=[{ id: '上升', text: '上升' }, { id: '下降', text: '下降'}];
+		var fConditonDatasForZX = [{ id: '>', text: '上升' }, { id: '<', text: '下降'}];
+		var fConditonDatasNormal=[{ id: '=', text: '=' }, { id: '!=', text: '!='}, { id: '>', text: '>'}, { id: '<', text: '<'}, { id: '>=', text: '>='}, { id: '<=', text: '<='}];
+		
+        grid.on("load", function(e) {
+        	var rows = grid.findRows();
+            $.each(rows, function (i, o) {
+                grid.beginEditRow(o);
+            });
+		}); 
+        
+     	// 表格渲染完毕事件
+		grid.on('update', function(e) {
+			var rows = grid.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				var rowIndex = grid.indexOf(rows[i]);
+				getDims(rowIndex);
+			}
+		});
+     
+        function onActionRenderer(e) {
+        	var record = e.record;
+            var uid = record._uid;
+            s = '<a href="javascript:warnObject(\'' + uid + '\')">设置预警对象</a>';
+            return s;
+        }
+        
+        function onActionRenderer2(e) {
+        	var record = e.record;
+            var uid = record._uid;
+            s = '<a href="javascript:delete(\'' + uid + '\')">删除</a>';
+            return s;
+        }
+        
+        var onObjectRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc", "openObjectSet");
+		};
+		
+		function openObjectSet(e) {
+			var row = grid.findRow(function(row){
+	            if(row.rowguid == e) return true;
+	        });
+			grid.commitEditRow(row);
+	        grid.beginEditRow(row);
+	        var selectedRoles = row.roleguids;
+	        var selectedUsers = row.userguids;
+			epoint.openDialog('预警对象',
+					"frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningobjectadd?rowid="
+							+ e + "&selectedRoles=" + selectedRoles + "&selectedUsers=" + selectedUsers, dealSelectValue, {
+						'width' : 1440,
+						'height' : 960
+					});
+		}
+		
+        function dealSelectValue (rtnValue) {
+	        var role_guids=rtnValue.roleguids;
+	        var user_guids=rtnValue.userguids;
+	        var row_id=rtnValue.rowid;
+	        var row = grid.findRow(function(row){
+	            if(row.rowguid == row_id) return true;
+	        });
+	        grid.updateRow(row,{
+	        	"roleguids" : role_guids,
+	        	"userguids" : user_guids
+	        });
+	        grid.beginEditRow(row);
+        }
+		
+		function openDelete(e){
+			var totalRowNum = grid.getData().length;
+			if (totalRowNum > 1) {
+				grid.removeRow(e, false);
+			}
+			else {
+				epoint.alert('至少有一行计算方式');
+			}
+		}
+		
+		function openAdd(e){
+			epoint.execute('addCompute','',function(data){
+				grid.addRow(data.compute, false);
+				grid.beginEditRow(data.compute);
+				var rowIndex = grid.indexOf(data.compute);
+				getDims(rowIndex);
+			});
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var rows = grid.findRows();
+	            $.each(rows, function (i, o) {
+	            	grid.commitEditRow(o);
+	            });
+				var griddata=grid.getData();
+				var dataStr=JSON.stringify(griddata);
+				epoint.execute('add', '@all', [dataStr],closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				// 清空表单
+				epoint.clear('fui-form');
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+		
+		function warnObject(e) {
+			epoint.openDialog('预警对象',
+					"frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningobjectlist?normguid="
+							+ e.rowguid, null, {
+						'width' : 1440,
+						'height' : 960
+					});
+		}
+		
+		function onTypeChanged() {
+			var type = mini.get('warningtype').getValue();
+			fConditonDatas = fConditonDatasNormal;
+			grid.hideColumn("dimStruct");
+			for(var i=2;i<=5;i++){
+				grid.hideColumn("dimStruct" + String(i));
+			}
+			grid.hideColumn("rank");
+			grid.hideColumn("compareWays");
+			grid.hideColumn("filter");
+			grid.hideColumn("filtervalue");
+			grid.hideColumn("rankRange");
+			grid.hideColumn("percent");
+			if(normtype == "2"){
+				grid.showColumn("dimStruct");
+				for(var i=2;i<=dimnum;i++){
+					grid.showColumn("dimStruct" + String(i));
+				}
+			}
+			
+			if(type == 1){
+				grid.showColumn("filter");
+				grid.showColumn("filtervalue");
+			}else if(type == 2){
+				fConditonDatas = fConditonDatasForZX;
+				grid.showColumn("compareWays");
+				grid.showColumn("filter");
+				grid.showColumn("percent");
+			}else{
+				grid.showColumn("rank");
+				grid.showColumn("rankRange");
+			}
+			var rows = grid.findRows();
+			$.each(rows, function (i, o) {
+				grid.beginEditRow(o);
+			});
+			
+		}
+
+		function getDims(rowIndex){
+			var editor = grid.getCellEditor("dimStruct", rowIndex);
+			if (editor) {
+				editor.setUrl("cockpitwarningruleaddaction.action?cmd=getDimFieldValue&dim=1");
+			}
+			var editor2 = grid.getCellEditor("dimStruct2", rowIndex);
+			if (editor2) {
+				editor2.setUrl("cockpitwarningruleaddaction.action?cmd=getDimFieldValue&dim=2");
+			}
+			var editor3 = grid.getCellEditor("dimStruct3", rowIndex);
+			if (editor3) {
+				editor3.setUrl("cockpitwarningruleaddaction.action?cmd=getDimFieldValue&dim=3");
+			}
+			var editor4 = grid.getCellEditor("dimStruct4", rowIndex);
+			if (editor4) {
+				editor4.setUrl("cockpitwarningruleaddaction.action?cmd=getDimFieldValue&dim=4");
+			}
+			var editor5 = grid.getCellEditor("dimStruct5", rowIndex);
+			if (editor5) {
+				editor5.setUrl("cockpitwarningruleaddaction.action?cmd=getDimFieldValue&dim=5");
+			}
+		}
+	</script>
+</body>
+</html>

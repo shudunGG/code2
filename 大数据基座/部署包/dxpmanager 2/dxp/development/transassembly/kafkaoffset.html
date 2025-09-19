@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>kafka位点</title>
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+
+<style>
+body, html {
+    overflow: auto !important; 
+}
+</style>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Topic名称" starred="true">
+					<input class="mini-textbox" required="true" id="topic" bind="topic"
+						name="topic" required="true"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="消费组名称" starred="true">
+					<input class="mini-textbox"  id="group" bind="group"
+						name="group" required="true"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var tableList = mini.get('tableName');
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var transGuid;
+
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			form.setData(nodeData);
+			var obj = Util.getUrlParams();
+			transGuid = obj.transGuid;
+			epoint.initPage('kafkaoffsetaction?nodeInfoKey=' + data.key,{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+	
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		// 关闭操作的回调
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function onlySave() {
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '', [ nodeInfo,nodeForm ], function(msg) {
+				});
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+			//重新给隐藏域赋值
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '', [ nodeInfo, nodeForm ], function(msg) {
+					if (msg == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+		
+	</script>
+</body>
+
+</html>

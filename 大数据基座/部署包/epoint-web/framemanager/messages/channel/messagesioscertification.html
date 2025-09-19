@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>ios证书上传</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="openAdd();" id="btnAddRecord">上传 </a>
+		<a id="btnSC" class="mini-button"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要生成的记录!', '', null, 'warning');} else {epoint.confirm('确认生成文件 ?','',createFile);}">
+			生成到服务端 </a> <a id="btnDel" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a> <a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			<em>如果文件路径一栏是空的,请点击生成到服务端</em><br>
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="appname" width="200">应用名称</div>
+				<div field="filename" width="200">文件名</div>
+				<div field="password" width="200">证书密码</div>
+				<div field="realpath" width="200">文件路径</div>
+				<div field="certype" width="200">证书类型</div>
+				<div field="uploadtime" width="200"
+					data-options='{"format":"yyyy-MM-dd HH:mm:ss"}'
+					dateFormat="yyyy-MM-dd HH:mm:ss">过期时间</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagescerlistaction');
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+		// 生成到本地
+		function createFile() {
+			epoint.execute("createFile", '', callback);
+		}
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		// 弹出新增窗口
+		function openAdd() {
+			var attr = Util.getUrlParams('appguid');
+			var appguid = attr == undefined ? '' : attr;
+			epoint.openDialog('新增记录',
+					"framemanager/messages/channel/messagesioscerupload?appguid="
+							+ appguid, searchData, {
+						'width' : 500,
+						'height' : 550
+					});
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+	</script>
+</body>
+</html>

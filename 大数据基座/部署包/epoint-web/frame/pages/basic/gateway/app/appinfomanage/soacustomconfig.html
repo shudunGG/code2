@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>自定义接入配置</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addClose" state="primary"
+			onclick="saveAndClose">确定</a> <a class="mini-button" id="delClose"
+			state="danger" onclick="deleteAndClose">删除</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			业务标签将作为业务标识，在业务端接入时传递过去，一般区实体类名，例如标签FrameUser，则业务端会接收到FrameUser=1<br>
+			订阅管理页面可以管理订阅范围，在主动推送自定义listener中，各自业务根据自己的订阅范围，过滤推送内容
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="业务标签" starred="true">
+						<input id="clienttag" bind="dataBean.clienttag"
+							class="mini-textbox" required="true" style="width: 90%"
+							requiredErrorText="业务标签不能为空" vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="业务名称" starred="true">
+						<input bind="dataBean.clientname" class="mini-textbox"
+							style="width: 90%" required="true" requiredErrorText="业务名称不能为空"
+							vtype="maxLength:10" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="订阅管理页">
+						<input bind="dataBean.subscribepage" class="mini-textbox"
+							style="width: 90%" vtype="maxLength:200" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		// 初始化页面
+		epoint.initPage('soacustomconfigaction', '', function(e) {
+			if (e.isadd) {
+				mini.get("delClose").hide();
+			}
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', closeCallback);
+			}
+		}
+		function deleteAndClose() {
+			epoint.confirm('将会清除所有应用针对此业务的同步，确认删除？', '', function() {
+				epoint.execute('delete', '', closeCallback);
+			});
+		}
+		function closeCallback(e) {
+			if (e.msg) {
+				epoint.showTips(e.msg, {state : 'info'});
+			} else if (e.data) {
+				epoint.closeDialog(e.data);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

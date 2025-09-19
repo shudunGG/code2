@@ -1,0 +1,1 @@
+select count(1) from frame_config where CONFIGNAME='INTERMEDIATE_PLATFORM_URL'

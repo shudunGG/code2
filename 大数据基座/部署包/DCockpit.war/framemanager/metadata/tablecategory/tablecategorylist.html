@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>子系统管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择子系统"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="add()">新增子系统</a>
+				<a class="mini-button" iconCls="icon-save" onclick="save()">保存子系统</a>
+				<a class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的子系统！', '', null, 'warning');} else {epoint.confirm('是否确定删除？','',deleteSelected);}">删除子系统</a>
+				<a class="mini-button" iconCls="icon-gear"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要导出的记录！', '', null, 'warning');} else {epoint.execute('export','',exportsql)}">脚本导出</a>
+			</div>
+			<input id="database" autoLoad="false" action="getDsTypes"
+				textField="text" valueField="id" class="mini-combobox mr10" />
+				
+			<!--添加隐藏域，用于树与表格的联动 -->
+			<input bind="tableCategory.categoryNum" id="category" class="mini-hidden" />
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="categoryID" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDataGridData" showPager="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="50">序</div>
+
+					<div field="categoryName" width="100%" headerAlign="center"
+						vtype="maxLength:50;required">
+						子系统名称 <input property="editor" class="mini-textbox" minWidth="200" />
+					</div>
+					<div field="categoryNum" width="150" headerAlign="center">
+						子系统编号</div>
+					<div field="orderNum" width="150" headerAlign="center"
+						align="right" vtype="int;range:0,99999999">
+						排序号 <input property="editor" class="mini-textbox" minWidth="80"  vtype="int;range:0,99999999"
+							inputStyle="text-align:right" maxlength="8"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//初始化页面
+		epoint.initPage("tablecategoryaction", '', initDataBase);
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle,B");
+			mini.get("database").setText("Oracle");
+		}
+		//树js对象
+		var tree = mini.get("tree");
+
+		var grid = mini.get("datagrid");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('category').setValue(id);
+			//刷新表格
+			searchData_treeExp();
+		});
+
+		// 新增
+		function add() {
+			var newRow = {
+				name : "newattachconfig"
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditRow(newRow);
+		}
+
+		// 保存
+		function save() {
+
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('save', '', msgCallBack);
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteSelected', '', msgCallBack);
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', function() {
+						epoint.refresh([ 'tree', 'datagrid', 'category' ], '',
+								true);
+					}, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				searchData();
+			}
+		}
+
+		// 表格，树的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'category' ]);
+		}
+
+		// 表格的搜索
+		function searchData_treeExp() {
+			epoint.refresh([ 'datagrid', 'category' ]);
+		}
+		// 导出sql语句
+		function exportsql(data) {
+			var combox = mini.get("database").getValue();
+			var obj = combox.split(",");
+			epoint.openDialog(mini.get("database").getText() + '脚本导出',
+					"framemanager/metadata/tablecategory/tablecategoryexport?codeID="
+							+ data.exportlist + "&databaseType=" + obj[0]
+							+ "&type=" + obj[1], '', {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+	</script>
+
+</body>
+
+</html>

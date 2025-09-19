@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>执行一次任务</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="control" label="业务日期">
+					<input id="dailyDagDate" bind="dailyDagDate" class="mini-datepicker" width="100%" emptyText="请选择业务日期" />
+				</div>
+				<br/>
+				<div role="control" label="节点标记">
+					<input id="categoryField" bind="categoryField" class="mini-textbox" width="100%" emptyText="可输入节点标记"/>
+				</div>
+			</div>
+			<a class="mini-button" state="primary" id="triggerBtn" style="display: block; margin: 20px auto">执行</a>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobdagtriggeraction', '@all', initPage);
+
+		//初始化页面回调		
+		function initPage(data) {
+			if(Util.getUrlParams('dagType') != '3'){
+				$('#dailyDagDate').parent().hide();
+				$('#dailyDagDate').parent().prev().hide();
+			}
+			
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+				return;
+			}
+			var type = data.type;
+				$('#triggerBtn').on('click', triggerDag);
+			// 根据type绑定不同的按钮事件，以此触发不同的方法
+		}
+
+		// 触发dag节点任务
+		var triggerDag = function() {
+			if (epoint.validate()) {
+				epoint.execute('triggerDag', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+	</script>
+</body>
+</html>

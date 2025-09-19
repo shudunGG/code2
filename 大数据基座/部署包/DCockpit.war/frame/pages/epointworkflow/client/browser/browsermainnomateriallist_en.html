@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Do not contain material list view the page</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="lczz" onclick="liuchengzhuizong">Process tracking</a>
+		</div>
+		<a>The name of the process:</a><div id="lcmc" bind="title" class="mini-output"></div>
+	</div>
+
+	<div id="fuiContent" class="fui-content">
+	   <div id="divOverlay" class="Overlay"></div>
+	   <tr>
+			<td style="width: 100%">
+			     <iframe id="main" frameborder="0" scrolling="no" width="100%" height="100%"></iframe>
+		    </td>
+	   </tr>
+	</div>
+	
+	<input class="mini-hidden" id="processVersionInstanceGuid" bind="processVersionInstanceGuid"/>
+	
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('handlemainaction','',initCallBack);
+		
+		function initCallBack(){
+			epoint.execute('BodyUrl','',function returnCallBack(data) {
+				if (data.url) {
+					document.getElementById("main").src = data.url;
+				}
+			});
+		}
+		
+		function liuchengzhuizong(){
+			var processVersionInstanceGuid=mini.get("processVersionInstanceGuid").getValue();
+			epoint.openDialog(
+					"Process page",
+					"frame/pages/epointworkflow/client/processoa9browser?processVersionInstanceGuid=" + processVersionInstanceGuid,
+					callBack,
+					{
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+		
+		function callBack(data){
+			epoint.refresh([ 'fuiContent' ]);
+		}
+		//]]>
+	</script>
+</body>
+</html>

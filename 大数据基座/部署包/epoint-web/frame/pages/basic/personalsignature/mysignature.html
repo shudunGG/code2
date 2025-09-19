@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新增签名</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<a id="addNew" class="mini-button" onclick="addNew">保存并新建</a> <a
+			class="mini-button" onclick="addClose" id="addClose">保存并关闭</a><a
+			class="mini-button" onclick="save" id="save">保存修改</a><a
+			class="mini-button" onclick="epoint.closeDialog">取消</a>
+
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="标题" starred="true">
+						<input id="txtSubject" class="mini-textbox" bind="txtSubject"
+							vtype="maxLength:50" required="true" requiredErrorText="标题不能为空" />
+					</div>
+					<div role="control" label="排序号">
+						<input id="orderNumber" class="mini-textbox" bind="orderNumber"
+							vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<textarea id="ewebeditor" class="mini-webeditor" readOnly="false"
+							bind="mainContent"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot">
+		
+	</script>
+
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("mysignatureaction", "", initCallback);
+
+		epoint.clear("fui-form");
+
+		//初始化回调事件
+		function initCallback(data) {
+			if (data.edit) {
+				mini.get("addNew").setVisible(false);
+				mini.get("addClose").setVisible(false);
+			} else {
+				mini.get("save").setVisible(false);
+			}
+		}
+
+		//保存并关闭回调事件
+		function addCloseback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, null, null, null, 'info');
+			}
+		}
+
+		//保存并关闭
+		function addClose() {
+			if (epoint.validate()) {
+				epoint.execute("add", "", "", addCloseback);
+			}
+		}
+
+		//保存并新建回调事件
+		function addNewback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+				epoint.clear("fui-form");
+				mini.get("orderNumber").setValue(0);
+			}
+		}
+
+		//保存并新建
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute("add", "", "", addNewback);
+			}
+		}
+
+		//保存修改
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute("save", "", "", addCloseback);
+			}
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

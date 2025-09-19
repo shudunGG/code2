@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>设备列表详细信息</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="用户姓名">
+						<input class="mini-textbox" bind="displayname" />
+					</div>
+					<div role="control" label="登录名">
+						<input class="mini-textbox" bind="loginid" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="userguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="displayname" headerAlign="center"
+					align="left" width="100%">用户姓名</div>
+				<div field="loginid" headerAlign="center" width="300"
+					align="left">登录名</div>
+				<div field="devicenum" headerAlign="center" align="center"
+					renderer="onDeviceNumRender" width="300">设备数</div>
+			</div>
+		</div>
+		<div id="datagridEx" class="mini-datagrid" idField="userguid"
+			action="getDataGridExData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="displayname" headerAlign="center" 
+					align="left" width="100%">用户姓名</div>
+				<div field="loginid" headerAlign="center" width="300"
+					align="left">登录名</div>
+				<div field="devicenum" headerAlign="center" align="center"
+					renderer="onDeviceNumRender" width="300">设备数</div>
+				<div field="enableStatus" name="enable" headerAlign="center"
+					renderer="onEnableRenderer" align="center" width="70">状态</div>
+				<div field="enablebutton" name="enablebutton" headerAlign="center"
+					renderer="onEnableBtnRenderer" align="center" width="70">操作</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('mobileuseraction', '', initGrid);
+
+		//soa需要隐藏列
+		function initGrid(e) {
+			if (e.isExternal == 0) {
+				$("#datagrid").show();
+				$("#datagridEx").hide();
+
+			} else {
+				$("#datagrid").hide();
+				$("#datagridEx").show();
+			}
+		}
+
+		var appguid = Util.getUrlParams('rowguid');
+
+		function onDeviceNumRender(e) {
+			var userGuid = e.row['userguid'];
+			var displayname = e.row['displayname'];
+
+			var styleStr = "<a style=\"cursor:pointer;color:blue;\"  onclick=\"showDeviceNum('"
+					+ userGuid
+					+ "','"
+					+ displayname
+					+ "')\" >"
+					+ e.value
+					+ "</a>";
+			return styleStr;
+		}
+
+		function showDeviceNum(userGuid, displayname) {
+			epoint.openDialog("设备列表-" + displayname,
+					'framemanager/mobile/device/mobiledevicedit?guid='
+							+ userGuid + "&appguid=" + appguid, function() {
+						epoint.refresh([ 'datagrid' ], '', true);
+					}, {
+						'width' : 1400,
+						'height' : 600
+					});
+		}
+
+		//绘制状态列
+		function onEnableRenderer(e) {
+			var enableValue = e.value;
+			if (enableValue == '已禁用') {
+				return "<span style=\"color:red;\">" + enableValue + "</span>";
+			}
+
+			return enableValue;
+		}
+
+		//启用禁用操作
+		function onEnableBtnRenderer(e) {
+			var userGuid = e.row['userguid'];
+			return "<a  style=\"cursor:pointer;color:blue;\"  onclick=\"enableBtn('"
+					+ userGuid + "')\">" + e.value + "</a>";
+		}
+
+		//启用禁用操作
+		function enableBtn(userGuid) {
+			epoint.execute('setUserEnable', '', '[' + userGuid + ']', callback);
+		}
+
+		// 启用禁用操作
+		function callback(data) {
+			if (data.success) {
+				epoint.refresh([ 'fuiContent', 'datagridEx' ], '', true);
+				epoint.alert(data.msg, '', null, 'success');
+			} else {
+				if (data.msg) {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'fuiContent', 'datagrid', 'datagridEx',
+							'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

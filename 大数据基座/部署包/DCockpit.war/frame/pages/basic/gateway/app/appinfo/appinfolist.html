@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用注册列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的左侧内容 -->
+	<div class="fui-left">
+		<!-- 左侧的内容区域 -->
+		<div role="head" title="应用注册"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+					新增应用 </a> <a id="btnDel" class="mini-button mini-btn-danger"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', null, null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选定 </a>
+			</div>
+			<a role="helper" class="mr10"></a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				<em><span class="text-danger">如果服务网关切换了服务器，则请先执行清理网关应用(清除服务网关上所有应用)操作再进行同步，以避免一些同步异常</span></em>
+			</p>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="应用名称">
+							<input class="mini-textbox" bind="appname" />
+						</div>
+					</div>
+				</div>
+				<input bind="classguid" id="classguid" class="mini-hidden" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="appname" width="100" headerAlign="center"
+						allowSort="true" sortOrder="desc">应用名称</div>
+					<div field="callbackurl" width="180" headerAlign="center"
+						allowSort="true" sortOrder="desc">回调地址</div>
+					<!-- <div field="appclassname" width="80" headerAlign="center">应用类别</div> -->
+					<div field="appkey" width="160" headerAlign="center">appKey</div>
+					<div field="ordernum" width="75" headerAlign="center" align="right"
+						allowSort="true" sortOrder="desc">排序号</div>
+					<div name="apptype" field="apptype" headerAlign="center"
+						renderer="onAppManageRenderer" align="center" width="75"
+						allowSort="true" sortOrder="desc">应用管理</div>
+					<div name="apptype" field="apptype" headerAlign="center"
+						renderer="onAppSearchRenderer" align="center" width="75"
+						allowSort="true" sortOrder="desc">预览</div>
+					<!-- <div name="apptype" field="apptype" headerAlign="center"
+						renderer="onMobileRenderer" align="center" width="120"
+						allowSort="true" sortOrder="desc">移动应用详情</div>
+					<div name="appparams" field="appparams" headerAlign="center"
+						renderer="onAppParamsRenderer" align="center" width="50"
+						allowSort="true" sortOrder="desc">参数</div> -->
+					<div width="45" align="center" headerAlign="center"
+						renderer="onEditRenderer">修改</div>
+					<!-- <div width="45" align="center" headerAlign="center"
+						renderer="onDetailRenderer">查看</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appinfolistaction', '', function(e) {
+			 pcModuleCode =e.pcmodulecode;
+		     mobileModuleCode=e.mobilemodulecode;
+		});
+		
+		var pcModuleCode ="";
+		var  mobileModuleCode="";
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+
+		// 弹出新增窗口
+		function syncgateway() {
+			epoint.execute("syncApp", '', callback);
+		}
+
+		function onDisplayExceptionRender(e) {
+			var val = e.value;
+			// if (val === '同步失败') {
+			var apiguid = e.row['rowguid'];
+			val = "<a style=\"cursor:pointer\" onclick=\"openOperationLog('"
+					+ apiguid + "')\" >" + val + "</a>";
+			// }
+			return val;
+		}
+
+		// 弹出新增窗口
+		function openOperationLog(apiguid) {
+			epoint.openDialog('查看操作日志',
+					"frame/pages/basic/gateway/api/log/apisyncloglist?clientid="
+							+ apiguid, "", {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var classguid = mini.get('classguid').getValue();
+			epoint.openDialog('新增记录',
+					"frame/pages/basic/gateway/app/appinfo/appinfoadd?classguid="
+							+ classguid, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"frame/pages/basic/gateway/app/appinfo/appinfoedit?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出明细窗口
+		function openDetail(id) {
+			epoint.openDialog('详细信息',
+					"frame/pages/basic/gateway/app/appinfo/appinfodetail?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function clearAllApp() {
+			epoint.execute("clearAllApp", '', callbackNoRefresh);
+		}
+
+		function iniGateWay() {
+			epoint.execute("iniGateWay", '', callbackNoRefresh);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'success');
+			}
+		}
+
+		function callbackNoRefresh(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', '', 'success');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], null, true);
+		}
+
+		var classguid = mini.get('classguid');
+		var tree = mini.get('tree');
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			//将左侧树点击的节点id放到隐藏域中
+			classguid.setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		//绘制移动应用详情
+		var onMobileRenderer = function(e) {
+			if ("1" == e.value) {
+				return epoint.renderCell(e, "action-icon icon-doc",
+						"openMobileSetting");
+			}
+		};
+
+		var onAppParamsRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-paper",
+					"openParamSetting");
+		};
+
+		//应用参数详情
+		function openParamSetting(id) {
+			epoint.openTopDialog('应用参数',
+					'frame/pages/basic/gateway/app/appparam/appparamlist?rowguid='
+							+ id, searchData, {
+						'width' : 1500,
+						'height' : 800
+					});
+		}
+
+		//绘制应用模块管理按钮
+		var onAppManageRenderer = function(e) {
+			if (e.record.apptype && e.record.apptype == 1) {
+				return epoint.renderCell(e, "action-icon modicon-18",
+						"setMobileModule");
+			} else {
+				return epoint.renderCell(e, "action-icon modicon-2",
+						"setModule");
+			}
+		};
+
+		var onAppSearchRenderer = function(e) {
+			if (e.record.apptype && e.record.apptype == 1) {
+				return epoint.renderCell(e, "action-icon icon-search",
+						"openShowList", "rowguid");
+			} else {
+				return "";
+			}
+		}
+
+		function openShowList(rowguid) {
+			var homeurl=btoa(Util.getRootPath()+"frame/fmui/showcase/comdto/homepage?appguid="
+					+ rowguid + "&platform=");
+			window.open(Util.getRootPath()+"frame/fmui/showcase/comdto/ejs_iframe?pageurl="+homeurl);
+
+		}
+
+		//移动应用详情
+		function setMobileModule(id) {
+			epoint.openTopDialog('移动应用详情',
+					'frame/pages/common/leftmenu?moduleCode='+mobileModuleCode+'&rowguid='
+							+ id + '&appguid=' + id, searchData, {
+						'width' : 1500,
+						'height' : 800
+					});
+		}
+
+		//PC应用详情
+		function setModule(id) {
+			epoint.openTopDialog('PC应用详情',
+					'frame/pages/common/leftmenu?moduleCode='+pcModuleCode+'&rowguid='
+							+ id + '&appguid=' + id, searchData, {
+						'width' : 1500,
+						'height' : 800
+					});
+		}
+	</script>
+</body>
+</html>

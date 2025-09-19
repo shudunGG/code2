@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Depots table</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+    .asLabel .mini-textbox-border,
+    .asLabel .mini-textbox-input,
+    .asLabel .mini-buttonedit-border,
+    .asLabel .mini-buttonedit-input,
+    .asLabel .mini-textboxlist-border
+    {
+        border:0;background:none;cursor:default;color:#d2322d;
+    }
+    .asLabel .mini-buttonedit-button,
+    .asLabel .mini-textboxlist-close
+    {
+        display:none;
+    }
+    .asLabel .mini-textboxlist-item
+    {
+        padding-right:8px;
+    }    
+    </style>
+</head>
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-save"
+				onclick="addNew">save and new</a> <a class="mini-button" id="addClose"
+				iconCls="icon-save" onclick="add">save and close</a> <a class="mini-button"
+				iconCls="icon-removecircle" onclick="epoint.closeDialog">shut down</a>
+				<a class="mini-button" id="btnshowTables" title="List all of the table in the end"
+				iconCls="icon-doc" onclick="showTables">see the table</a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">precautions</a>
+	</div>
+	
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				 See the table: list the table Existing configuration to generate all the table names.
+			</span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				  points(table/library)Keys: to sourcetablethe This field as a crosspointstheOn the basis of,Currently only supports a single bond, the field values are not allowed to be empty!
+			</span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				  pointstable-According to the years drawpoints: please make sure that the key values in the selectedtheIn these years
+			</span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				  The custompoints(table/library)Strategy: pointstablepointslibraryPolicy interface implementation class path(interface:SingleKeyTableShardingAlgorithm/SingleKeyDatabaseShardingAlgorithm)
+			</span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				  pointstableRules: select according to the first letterpointswhen Fill in the rowpointstabletheThe suffix,More than one to;separated ,Ex. :048c;159d;26ae;37bf;extra,The generatedthetablecalled XXX_048c;XXX_159d;...
+			</span>
+		</p>
+		<p style="text-indent: 6em;">
+			<span class="text-danger">
+				  Among themextratablein The dutytheThe rules do not conform to the frontthetheseThe suffixThe ruleswhenAnd deposit  XXX_extratableIn the,If you can make sure that allThe rulesCan be included,extraYou don't need to addthe
+			</span>
+		</p>
+		<p style="text-indent: 6em;">
+			<span class="text-danger">
+				  when chooseThe custompointstablestrategywhen , thiswhenpointstableThe rules Entirely by the usertheinterfacecontrol       
+			</span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				  pointslibrary-pointslibraryData sources: only showinAnd application startupthedatalibraryThe same typethedataThe source;Ex. :The frameworkdataThe source isoracle,Is there only showinoracletypethe。
+			</span>
+		</p>
+		<p style="text-indent: 8em;">
+			<span class="text-danger">
+				  pointslibrarytheThe rulesbydataName the source control;dataThe source name must start with '_XXX' At the end,XXXforlibraryspecificThe rules。similarpointstableThe rules, justThe rulesspecificDefine thedataOn the source name。
+			</span>
+		</p>
+		<p style="text-indent: 8em;">
+			<span class="text-danger">
+				 Ex. :message_center_historyNeed to press the yearspointslibrary, thendataThe source name configurationfor   YYYY_2016;YYYY_2017...;YYYYDon't limit yourselfpointsclass。
+			</span>
+		</p>
+	</div>
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="sourcedb" >
+					<input bind="dataBean.sourcedb" action="getDbList" onvaluechanged="saveSourceDb" showClose="true" oncloseclick="onCloseClick"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="name of sourcetable" starred="true">
+					<div class="mini-autocomplete" textField="text" id="sourcetable"
+						valueField="id" bind="dataBean.sourcetable" required="true" onvaluechanged="saveTableName"
+						requiredErrorText="The sourcedatatableThe name of theCan'tforempty" action="getTableName"></div>
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="pointstablepointslibrarytype">
+					<input autoLoad="false" id="shardingtype" action="getTypeList"
+						bind="dataBean.shardingtype" class="mini-combobox" onvaluechanged="onSharingTypeChanged" />
+				</div>
+			</div>
+			
+			<div role="row" id="shardingkeyRow">
+				<div role="control" label="pointstableKey name" starred="true">
+					<div class="mini-autocomplete" textField="text" 
+						valueField="id" bind="dataBean.shardingkey" required="true"
+						requiredErrorText="pointstableKey nameMust fill in the" action="getColumnName"></div>
+				</div>
+			</div>
+			
+			<div role="row" id="shardingInterRow">
+				<div role="control" label="pointstablestrategy" starred="true">
+					<div id="shardingInter" class="mini-combobox" textField="text" valueField="id" bind="shardingInter" required="true" 
+								action="getSharingInterList" requiredErrorText="pleasechoosepointstablestrategy" onvaluechanged="onInterChanged" ></div>
+				</div>
+			</div>
+			<div role="row" id="custiomShardingInterRow">
+				<div role="control" label="The custompointstablestrategy" starred="true">
+					<input class="mini-textbox" required="true" bind="custiomShardingInter" requiredErrorText="pleaseFill in thepointstablestrategyinterface" />
+				</div>
+			</div>
+			
+			<div role="row" id="shardingYearRow">
+				<div role="control" label="Start the year" starred="true">
+					<input class="mini-textbox" required="true" bind="startYear"  maxlength="4" vtype="int;rangeLength:4,4" requiredErrorText="pleaseFill in theStart the year" />
+				</div>
+				<div role="control" label="End of the year" starred="true">
+					<input class="mini-textbox" required="true" bind="endYear"  maxlength="4" vtype="int;rangeLength:4,4" requiredErrorText="pleaseFill in theEnd of the year" />
+				</div>
+			</div>
+			
+			<div role="row" id="shardingRuleRow">
+				<div role="control" label="pointstableThe rules" starred="true">
+					<input id="shardingrule" class="mini-textbox" required="true" bind="dataBean.shardingrule"  requiredErrorText="pleaseFill in thepointstableThe rules" />
+				</div>
+			</div>
+			
+			<div role="row" id="dbShardingkeyRow">
+				<div role="control" label="pointslibraryKey name" starred="true">
+					<div class="mini-autocomplete" textField="text"  id="dbShardingkey"
+						valueField="id" bind="dataBean.dbshardingkey" required="true"
+						requiredErrorText="pointslibraryKey nameMust fill in the" action="getColumnName"></div>
+				</div>
+			</div>
+			
+			<div role="row" id="targetdbRow">
+				<div role="control" label="The targetdataThe source" starred="true">
+					<input bind="dataBean.targetdb" action="getDbList"  multiSelect="true" required="true"
+						textField="text" valueField="id" class="mini-combobox" requiredErrorText="pleasechoosepointslibrarydataThe source"/>
+				</div>
+			</div>
+			
+			<div role="row" id="dbShardingInterRow">
+				<div role="control" label="pointslibrarystrategy" starred="true">
+					<div id="dbShardingInter" class="mini-combobox" textField="text" valueField="id" bind="dbShardingInter" required="true" 
+								action="getDbSharingInterList" requiredErrorText="pleasechoosepointslibrarystrategy" onvaluechanged="onDbInterChanged" ></div>
+				</div>
+			</div>
+			
+			<div role="row" id="dbCustiomShardingInterRow">
+				<div role="control" label="The custompointslibrarystrategy" starred="true">
+					<input class="mini-textbox" required="true" bind="dbCustiomShardingInter" onvalidation="onEnglishAndNumberValidation"  requiredErrorText="pleaseFill in thepointslibrarystrategyinterface" />
+				</div>
+			</div>
+			
+			<div role="row">
+					<div role="control" label="order no">
+						<input id="orderNumber" bind="dataBean.orderNumber"
+							maxLength="8" class="mini-textbox" vtype="int;maxLength:8" />
+					</div>
+			</div>
+			
+			<div role="row" id="shardingTableNameRow">
+				<div role="control" label="pointstabletableThe name">
+					<input id="tableNames" class="mini-textarea asLabel" bind="tableNames" style="height:80px;" />
+				</div>
+			</div>
+			
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('frameshardingaddaction', '', initCallBack);
+
+		// initializationthecallback
+		function initCallBack(data) {
+			$('#custiomShardingInterRow').hide();
+			$('#shardingRuleRow').hide();//By default, this does not need to showin
+			$('#dbShardingkeyRow').hide();
+			$('#shardingTableNameRow').hide();
+			
+			//pointslibraryDon't showin
+			$('#dbShardingkeyRow').hide();
+			$('#dbShardingInterRow').hide();
+			$('#dbCustiomShardingInterRow').hide();
+			$('#targetdbRow').hide();
+			
+		}
+		
+		//pointstablepointslibrarytypeChange the linefor
+		function onSharingTypeChanged(e){
+			if(e.value=='1'){//pointstable
+				$('#dbShardingkeyRow').hide();
+				$('#dbShardingInterRow').hide();
+				$('#dbCustiomShardingInterRow').hide();
+				$('#targetdbRow').hide();
+				
+				$('#shardingkeyRow').show();
+				$('#shardingInterRow').show();
+				var typeValue=mini.get('shardingInter').getValue();
+				var typeText=mini.get('shardingInter').getText();
+				initInterChange(typeValue,typeText);
+			}else{//pointslibrary
+				$('#shardingkeyRow').hide();
+				$('#shardingInterRow').hide();
+				$('#custiomShardingInterRow').hide();
+				$('#shardingYearRow').hide();
+				$('#shardingkeyRow').hide();
+				$('#shardingRuleRow').hide();
+				$('#shardingTableNameRow').hide();
+				
+				$('#dbShardingkeyRow').show();
+				$('#dbShardingInterRow').show();
+				$('#targetdbRow').show();
+				var dbtypeValue=mini.get('dbShardingInter').getValue();
+				initDbInterChange(dbtypeValue);
+			}
+		}
+		
+		//structurepointstableShow hidden area
+		function initInterChange(typeValue,typeText){
+			if(typeValue=='custom'){
+				$('#custiomShardingInterRow').show();
+			}else{
+				$('#custiomShardingInterRow').hide();
+			}
+			if(typeText.indexOf('years')>-1){//choosetheAccording to the years drawpoints
+				$('#shardingYearRow').show();
+				$('#shardingRuleRow').hide();
+			}else {
+				$('#shardingYearRow').hide();
+				if(typeText.indexOf('month')>-1){//According to themonthpoints
+					$('#shardingRuleRow').hide();
+				}else{
+					$('#shardingRuleRow').show();
+				}
+			}
+		}
+		
+		//pointstabletypeChange the lineforoperation
+		function onInterChanged(e){
+			if(e.selected.text.indexOf('The first letter')>-1){
+				mini.get('shardingrule').setValue('048c;159d;26ae;37bf;extra');
+			}
+			initInterChange(e.value,e.selected.text);
+		}
+		
+		//structurepointslibraryShow hidden area
+		function initDbInterChange(typeValue){
+			if(typeValue=='custom'){
+				$('#dbCustiomShardingInterRow').show();
+			}else{
+				$('#dbCustiomShardingInterRow').hide();
+			}
+		}
+		
+		//pointslibrarytypeChange the lineforoperation
+		function onDbInterChanged(e){
+			initDbInterChange(e.value);
+		}
+		
+
+		// new
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		// new
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// newoperationthecallback
+		function newCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// qingemptytablesingle
+					epoint.clear('fui-form');
+				}
+			}
+		}
+
+		// Shut downoperationthecallback
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success'
+);
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+		function showTablesCallback(data){
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}else{
+				if(mini.get("shardingtype").getValue()=='1'){
+					mini.get("tableNames").setValue(data.tableNames);
+					$('#shardingTableNameRow').show();
+				}
+			}
+		}
+		
+		//
+		function showTables(){
+			if (epoint.validate()) {
+				epoint.execute('showTables', 'fui-form', showTablesCallback);
+			}
+		}
+		
+		function saveTableName(e){
+			epoint.execute('saveSourceTable', 'fui-form',e.value);
+		}
+		
+		function saveSourceDb(e){
+			epoint.execute('saveSourceDb', 'fui-form',e.value);
+		}
+		
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+
+		//]]>
+	</script>
+</body>
+</html>

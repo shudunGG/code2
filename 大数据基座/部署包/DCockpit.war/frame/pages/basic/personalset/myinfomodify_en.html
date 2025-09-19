@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Personal information</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+<style>
+.img-view {
+	width: 120px;
+	height: 180px;
+	position: relative;
+}
+
+.img-view img {
+	display: block;
+}
+
+.img-view .img-del {
+	position: absolute;
+	right: -9px;
+	top: 0px;
+}
+
+.icons2020-delete:hover {
+	background-position: -384px -56px;
+}
+.mini-webuploader {
+	height: 17px;
+	vertical-align: text-top;
+}
+.mini-uploader-btns .webuploader-pick {
+	line-height: 17px;
+	background: transparent;
+	color: #d2322d;
+	font-weight: bold;
+	padding: 0 4px;
+}
+</style>
+
+</head>
+<body>
+	<!-- Wait for the tooltip -->
+	<div class="page-loading"></div>
+
+	<!-- Button area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="save">save changes</a>
+		</div>
+	</div>
+
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div id="test" class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="The basic information"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="login name">
+									<input class="mini-textbox"  allowInput="false" 
+										bind="myinfomodifyaction.user.loginId" vtype="maxLength:50" />
+								</div>
+								<div role="control" label="user name">
+									<input class="mini-textbox" vtype="maxLength:50" allowInput="false" 
+										bind="myinfomodifyaction.user.displayName" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="position">
+									<input class="mini-textbox" allowInput="false" 
+										bind="myinfomodifyaction.user.title" maxValue="100" />
+								</div>
+								<div role="control" label="office phone">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.user.telephoneOffice" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="home phone">
+									<input class="mini-textbox"
+										bind="myinfomodifyaction.user.telephoneHome"
+										vtype="maxLength:50" />
+								</div>
+								<div role="control" label="mobile phone">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.user.mobile" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="cornet">
+									<input class="mini-textbox"
+										bind="myinfomodifyaction.userExtendInfo.shortMobile"
+										vtype="maxLength:50" />
+								</div>
+								<div role="control" label="gender">
+									<div class="mini-radiobuttonlist" repeatItems="2"
+										bind="myinfomodifyaction.user.sex" textField="text"
+										valueField="id" value="false"
+										data="[{id:'male',text:'male'},{id:'female',text:'female'}]"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="to-do reminding">
+									<input class="mini-checkbox" text="Need a mobile phone reminder (by default)"
+										bind="myinfomodifyaction.chkwaithandleSms" trueValue="true"
+										falseValue="false"></input>
+								</div>
+								<div role="control" label="public phone number">
+									<input class="mini-checkbox" text="(by default)"
+										bind="chkShowMobile" trueValue="true" falseValue="false"></input>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="Extended information"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="birthday">
+									<input class="mini-datepicker"
+										bind="myinfomodifyaction.userExtendInfo.birthday"
+										dateFormat="yyyy-MM-dd" data-options="{'format':'yyyy-MM-dd'}"/>
+								</div>
+								<div role="control" label="id number">
+									<input class="mini-textbox" vtype="idCard"
+										bind="myinfomodifyaction.userExtendInfo.identityCardNum" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="QQ">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.qqnumber" />
+								</div>
+								<div role="control" label="MSN">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.msnnumber" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="zip code">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.postalCode" />
+								</div>
+								<div role="control" label="address">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.postalAddress" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="license plate">
+									<input class="mini-textbox" vtype="maxLength:10"
+										bind="myinfomodifyaction.userExtendInfo.carnum" />
+								</div>
+								<div role="control" label=""></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="photo"></div>
+				<div role="body">
+					<div style="position: relative; float: left;">
+						<span class="text-minor"  id="photo1">No personal photos, </span>
+						<div id="uploader" class="mini-webuploader"
+							action="myinfomodifyaction.getFileUploadModel" fileNumLimit="1"
+							fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp"
+							mimeTypes="image/*" showDefaultUI="false" auto="true" pickerText="Please upload" onfilesuccess="OnPhotoSuccess"></div>
+					</div>
+					<span class="text-minor" id="photo3">(the best image size:120px<em>*</em>180px)
+					</span>
+					<div class="img-view" id="photo" style="display: none;">
+						<img id="lblPicture" src="" width="120px" height="180px"
+							alt="Personal avatar images" /> <i class="action-icon icon-removecirclefilled"
+							style="position: absolute; left: 110px; top: 0px;"
+							onclick="delPhoto();" ></i>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="Individuality signature images"></div>
+				<div role="body">
+					<div style="position: relative; float: left;">
+						<span class="text-minor"  id="sign1">No signature image, </span>
+						<div id="uploader2" class="mini-webuploader"
+							action="myinfomodifyaction.getFileUploadModel2" fileNumLimit="1"
+							fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp"
+							mimeTypes="image/*" showDefaultUI="false" auto="true" pickerText="Please upload" onfilesuccess="OnSignFileSuccess"
+							></div>
+					</div>
+					<span class="text-minor" id="sign3">(the best image size:120px<em>*</em>180px)
+					</span>
+					<div class="img-view" id="picture" style="display: none;">
+						<img id="userSign" src="" width="120px" height="180px"
+							alt="Individuality signature images" /> <i class="action-icon icon-removecirclefilled"
+							style="position: absolute; left: 110px; top: 0px;"
+							onclick="delUserSign();" ></i>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+
+
+	<script>
+		//<![CDATA[  
+        //Initialize the page
+        epoint.initPage ("myinfomodifyaction", "", initCallback);
+        
+        function initCallback (data)
+        {
+	        if (data)
+	        {
+		        showPhoto (data.lblPicture);
+		        showSignPicture (data.signPicture);
+	        }
+        }
+
+        //Save the callback event
+        function saveCallback (data)
+        {
+	        epoint.alert (data.msg, null, null, 'info');
+        }
+
+        //save changes
+        function save ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("save", "", saveCallback);
+	        }
+        }
+
+        //Avatar uploaded successfully
+        function OnPhotoSuccess (args)
+        {
+	        if (args.data.extraDatas.lblPicture)
+	        {
+		        showPhoto (args.data.extraDatas.lblPicture);
+	        }
+        }
+
+        //Individuality signature imagesUploaded successfully
+        function OnSignFileSuccess (args)
+        {
+	        if (args.data.extraDatas.signPicture)
+	        {
+		        showSignPicture (args.data.extraDatas.signPicture);
+	        }
+        }
+
+        //deleteIndividuality signature images
+        function delPhoto ()
+        {
+	        epoint.execute ("myinfomodifyaction.delPhoto", "", function delPhotoCallback (data)
+	        {
+		        if (data.msg)
+		        {
+			        mini.get ("uploader").clearFile ();
+			        showPhoto ();
+		        }
+	        });
+        }
+
+        //deleteIndividuality signature images
+        function delUserSign ()
+        {
+	        epoint.execute ("myinfomodifyaction.delUserSign", "", function delUserSignCallback (data)
+	        {
+		        if (data.msg)
+		        {
+			        mini.get ("uploader2").clearFile ();
+			        showSignPicture ();
+		        }
+	        });
+        }
+
+        //controlphotoShow hidden
+        function showPhoto (url)
+        {
+	        if (url)
+	        {
+		        $ ("#lblPicture").attr ("src", url);
+		        mini.get ("uploader").setVisible (false);
+		        $ ("#photo1").hide ();
+		        $ ("#photo3").hide ();
+		        $ ("#photo").show ();
+	        }
+	        else
+	        {
+		        $ ("#photo").hide ();
+		        $ ("lblPicture").attr ("src", "");
+		        mini.get ("uploader").setVisible (true);
+		        $ ("#photo1").show ();
+		        $ ("#photo3").show ();
+	        }
+        }
+
+        //controlThe signature imageShow hidden
+        function showSignPicture (url)
+        {
+	        if (url)
+	        {
+		        $ ("#userSign").attr ("src", url);
+		        mini.get ("uploader2").setVisible (false);
+		        $ ("#sign1").hide ();
+		        $ ("#sign3").hide ();
+		        $ ("#picture").show ();
+	        }
+	        else
+	        {
+		        $ ("#picture").hide ();
+		        $ ("#userSign").attr ("src", "");
+		        mini.get ("uploader2").setVisible (true);
+		        $ ("#sign1").show ();
+		        $ ("#sign3").show ();
+	        }
+        }
+        
+        function onIDCardsValidation(e) {
+            if (e.isValid) {
+                var pattern = /\d*/;
+                if (e.value.length < 15 || e.value.length > 18 || pattern.test(e.value) == false) {
+                    e.errorText = "必须输入15~18位数字";
+                    e.isValid = false;
+                }
+            }
+        }
+
+        //]]>
+	</script>
+
+</body>
+</html>

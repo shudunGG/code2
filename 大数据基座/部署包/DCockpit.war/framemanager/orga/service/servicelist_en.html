@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Service management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<div class="page-loading"></div>
+
+		<div class="fui-left">
+			<div role="head" title="Service category">
+				<div class="btn-group r">
+					<a class="mini-button" iconCls="icon-gear" style="margin-top: 5px;"
+						onclick="openType()">service category</a>
+				</div>
+			</div>
+
+			<div role="body">
+				<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="servicelistaction.getTreeData" resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<!-- Right-side content area -->
+		<div class="fui-right">
+			<!-- Action button area -->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" onclick="openAdd" iconCls="icon-addcircle">new service</a>
+					<a class="mini-button" onclick="saveOrder" iconCls="icon-save">save sort</a>
+					<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm the deletion?','',deleteSelected);}" iconCls="icon-minuscircle">remove the service</a>
+					<a class="mini-button" onclick="epoint.confirm('A key generation will first remove all the service configuration,At the same time automatically insert the corresponding service module page,affirm?','',autoCreate);" iconCls="icon-gear">key generation</a>
+				</div>
+				<!--Help button -->
+				<a role="helper" class="mr10">precautions</a>
+			</div>
+			
+			<!-- Help information area Hidden by default-->
+		<div class="fui-notice hidden">
+			<p>
+				<span class="text-danger">
+				          A key generation:First remove all services configuration,At the same time automatically insert the corresponding service module page,(After performing this operation will delete all the existing configuration, commonly used in the first initialization background module corresponding service access)
+				</span>
+			</p>
+		</div>
+
+			<!-- Condition area -->
+			<div class="fui-condition">
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control" label="service name">
+								<input bind="servicelistaction.frameService.servicename"
+								class="mini-textbox" />
+							</div>
+							<div role="control" label="description">
+								<input bind="servicelistaction.frameService.description"
+								class="mini-textbox" />
+							</div>
+						</div>
+						<!-- Add a hidden field to the tree and the linkage of the table -->
+						<input bind="servicelistaction.frameService.servicetypeguid"
+						id="leftTreeNodeGuid" class="mini-hidden" />
+					</div>
+				</div>
+				<!-- Search button -->
+				<a role="searcher" callback="searchData"></a>
+			</div>
+
+			<!-- Table area -->
+			<div class="fui-content">
+				<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="serviceguid" multiSelect="true" allowResize="true" style="width: 100%; height: 100%;"
+				showPager="true" action="servicelistaction.getDataGridData" allowCellSelect="true" allowCellValid="true" allowCellEdit="true"
+				editNextOnEnterKey="true" editNextRowCell="true" ondrawcell="onCheckRender">
+					<div property="columns">
+						<div type="checkcolumn" width="50"></div>
+						<div type="indexcolumn" width="55" headerAlign="center">
+							order
+						</div>
+						<div field="servicename" headerAlign="center" >
+							service name
+						</div>
+						<div field="servicetag" headerAlign="center" align="center">
+							servicetag
+						</div>
+						<div field="moduleName" width="140" headerAlign="center" align="center">
+							associated module
+						</div>
+						<div field="relationurl"headerAlign="center" align="center" width="100%">
+							relationurl
+						</div>
+						<div field="orderNumber" width="120" allowSort="true" vtype="int" sortOrder="desc" headerAlign="center" align="right">
+							roworder
+							<input property="editor" class="mini-textbox" maxLength="6" style="width:100%" />
+						</div>
+						<div name="methodList" width="120" align="center" headerAlign="center"
+						renderer="onMethodRenderer">
+							configuration
+						</div>
+						<div name="edit" width="65" align="center" headerAlign="center"
+						renderer="onEditRenderer">
+							edit
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+		<!-- configurationvariable -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("servicelistaction",'',initCallback);
+			var codeId="";
+			
+			function initCallback(e) {
+				codeId=e.codeId;
+			}
+			// Table object
+			var grid = mini.get("datagrid");
+			
+			
+			grid.on("beforeselect", function (e) {
+				var belongOuGuid=e.record.moduleguid;
+	            if (belongOuGuid){
+	            	e.cancel = true;
+	            }
+	        });
+			
+			function onCheckRender(e){
+				//This function is only hidden selection box, but still can be selected to attention!!!!!!!!!! To cooperate withbeforeselectuse
+				var belongOuGuid=e.record.moduleguid;
+				if( belongOuGuid && e.cellCls === "mini-checkcolumn"){
+					e.cellHtml = "";
+				}
+			}
+			
+			// Load data in the table after open the table editor
+			//grid.on("load", function(e) {
+			//	var rows = e.sender.findRows();
+			//	for (var i = 0; i < rows.length; i++) {
+			//		grid.beginEditRow(rows[i]);
+			//	}
+			//});
+
+			//The treejsobject
+			var tree = mini.get("tree");
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				if (e.node) {
+					var id = e.node.id;
+					//To the leftThe treeClick on the nodeidIn a hidden field
+					mini.get('leftTreeNodeGuid').setValue(id == 'f9root' ? "" : id);
+				}
+				//Refresh the table
+				searchData();
+			});
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//Open the newactionThe window of the
+			function openAdd() {
+				//To obtainThe treeNode values
+				var itemid = mini.get("tree").getValue();
+				var settings = {
+					'width' : 800,
+					'height' : 500
+				};
+				epoint.openDialog('The new service', 'mis/sysconf/service/serviceadd?servicetypeguid=' + itemid, addCallBack, settings);
+			}
+
+			function addCallBack(data) {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+
+			function saveOrderCallBack(data) {
+				epoint.alert(data.msg, '', null, 'info');
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+
+			//Save the sorting
+			function saveOrder() {
+				grid.validate();
+	            if (grid.isValid() == false) {
+	                //alert("Please check the input content of cells");
+	                var error = grid.getCellErrors()[0];
+	                grid.beginEditCell(error.record, error.column);
+	                return;
+	            }
+				epoint.execute('servicelistaction.saveOrder', '', saveOrderCallBack);
+			}
+
+			//Delete the prompt and refresh
+			function deleteCallBack(data) {
+				epoint.alert(data.msg, '', null, 'info');
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+
+			//Delete the selected row
+			function deleteSelected() {
+				epoint.execute('servicelistaction.delete', 'datagrid', deleteCallBack);
+			}
+			
+			function autoCreateCallBack(data) {
+				epoint.alert(data.msg, '', null, 'info');
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+			//A key generation
+			function autoCreate() {
+				epoint.execute('servicelistaction.autoCreate', 'datagrid', autoCreateCallBack);
+			}
+
+			function editItems(serviceguid) {
+				var settings = {
+					'width' : 800,
+					'height' : 500
+				};
+				epoint.openDialog('editservice', 'mis/sysconf/service/serviceedit?serviceguid=' + serviceguid, addCallBack, settings);
+			}
+
+			// Draw Edit Columns button
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "editItems", "serviceguid")
+			};
+
+			function openMethod(serviceguid) {
+				epoint.openDialog('configurationmethods', 'mis/sysconf/service/servicemethodlist?serviceguid=' + serviceguid, '');
+			}
+
+			// drawconfigurationbutton
+			var onMethodRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-gear", "openMethod", "serviceguid");
+			};
+			
+			
+			// The refreshtree
+			function updateTree() {
+				epoint.refresh([ 'tree' ]);
+			}
+			
+			//Open theService category
+			function openType() {
+				epoint.openDialog('Service category',"framemanager/metadata/code/codeitemslist?codeID="+codeId,
+							updateTree, {'width' : 1000});
+			}
+			
+			//]]>
+		</script>
+	</body>
+</html>

@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>我的库表导入资源</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+ 	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="importtable"
+				onclick="importtable">导入数据库</a> <a class="mini-button mini-btn-primary"
+				onclick="startJob()">启动</a> <a class="mini-button mini-btn-warning"
+				onclick="stopJob()">停止</a>
+		</div>
+	</div>
+	<div class="fui-search" primaryControl="tableName" opened="false">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="数据名称" starred="false">
+						<input bind="tableName" id="tableName" class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 95%;" allowResize="true"
+			allowCellValid="true" action="getTableData" showPager="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" headerAlign="center" width="20">序</div>
+				<div field="fromtable" width="80" headerAlign="center"
+					align="center">来源表名称</div>
+				<div field="dsname" width="80" headerAlign="center" align="center">所属数据库</div>
+				<div field="tableName" width="80" headerAlign="center"
+					align="center">hive表名称</div>
+				<div field="status" width="40" headerAlign="center" align="center"
+					renderer="onStatusRender">导入状态</div>
+				<div field="tableCount" width="40" headerAlign="center"
+					align="center">记录数</div>
+				<div field="importDate" width="40" headerAlign="center"
+					align="center" dateFormat="yyyy-MM-dd HH:mm:ss"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}">导入时间</div>
+				<div field="userguid" width="40" headerAlign="center" align="center">创建人</div>
+				<!-- 				<div width="40" headerAlign="center" align="center"
+					renderer="onEditRenderer">修改</div> -->
+				<div width="40" headerAlign="center" align="center"
+					renderer="onScheduleRenderer">调度配置</div>
+				<div width="40" name="show" headerAlign="center" align="center"
+					renderer="onShowRenderer">数据结构</div>
+				<div width="40" headerAlign="center" align="center"
+					renderer="onDataRenderer">查看数据</div>
+				<div field="log" width="40" headerAlign="center" align="center"
+					renderer="onLogRenderer">作业日志</div>
+				<div field="tabletype" visible="false"></div>
+				<div field="dsid" visible="false"></div>
+				<div field="tableid" visible="false"></div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("importtablelistaction");
+
+		var grid = mini.get("datagrid");
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit",
+					"tableid,tabletype");
+		};
+
+		//修改
+
+		function openEdit(e) {
+			epoint.openDialog('修改数据表', './tablebasicinfoedit?tableID='
+					+ e.tableid, function() {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}, {
+				'width' : 1000,
+				'height' : 400
+			});
+
+		}
+
+		// 绘制表结构按钮
+		var onShowRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc", "tableStruct",
+					"tableid,tabletype");
+		};
+
+		//绘制查看数据按钮
+		var onDataRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"searchRecord", "tableid");
+		}
+
+		//查看数据
+		function searchRecord(e) {
+			if (e == "") {
+				epoint.alert("未查询到导入表元数据！请检查是否成功导入。");
+			} else {
+				epoint.openTopDialog('数据列表', './viewtabledata?tableID=' + e,
+						function(ret) {
+						});
+			}
+		}
+
+		// 表结构
+		function tableStruct(e) {
+			if (e.tableid == "") {
+				epoint.alert("未查询到导入表元数据！请检查是否成功导入。");
+			} else {
+				epoint.openDialog('数据表结构', './tablestructlist?tableID='
+						+ e.tableid, function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function searchData2() {
+			epoint.refresh([ 'datagrid', 'treecategorynum', 'fui-form' ], '',
+					true);
+		}
+
+		function callback(param) {
+			if ("close" == param) {
+				searchData2();
+			} else {
+				searchData();
+			}
+		}
+		//导入
+		function importtable() {
+			epoint.openTopDialog('导入数据选择', './importtable', searchData, {
+				'width' : 700,
+				'height' : 550
+			});
+		}
+
+		function onStatusRender(e) {
+			var color = 'red';
+			var value = '成功';
+			if (e.value == '2') {
+				color = '#00a65a';
+				value = '成功';
+			} else if (e.value == '3') {
+				color = '#dd4b39';
+				value = '导入失败';
+			} else if (e.value == '1') {
+				color = '#f39c12';
+				value = '导入中';
+			} else {
+				color = '#d2d6de';
+				value = '异常中断';
+			}
+			return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+					+ value + '</span>';
+		}
+
+		function startJob() {
+			// start标志变量启动作业
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择启动的作业!', '', null, 'warning');
+			} else {
+				mini.get('datagrid').getSelecteds()
+
+				epoint.execute('doJobWork', '', 'start', function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.alert(data.msg, '', function() {
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, 'success');
+					} else {
+						epoint.alert(data.msg, '', '', 'warning');
+					}
+				});
+			}
+		}
+
+		function stopJob() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择停止的作业!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要停止吗?', '', function() {
+					// stop 标志变量停用作业
+					epoint.execute('doJobWork', '', 'stop', function(data) {
+						if (data.msg.indexOf('成功') != -1) {
+							epoint.alert(data.msg, '', function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				});
+			}
+		}
+		var onLogRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-49",
+					"openLogList", "rowguid");
+		};
+
+		function openLogList(e) {
+			epoint.openDialog('作业日志', 'dxp/flowinfo/dxpschedulerloglist?guid='
+					+ e, null, {
+				'width' : 1000,
+				'height' : 600
+			});
+		}
+
+		var onScheduleRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-97",
+					"openScheduleList", "rowguid");
+		};
+
+		function openScheduleList(e) {
+			epoint.openDialog('调度配置', 'dxp/flowinfo/dxpmodeltaskconfigNew?guid=' + e, null, {
+				'width' : 700,
+				'height' : 400
+			});
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteSelected', '', function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg,'','','success');
+					searchData();
+				}
+			});
+		}
+
+		//_$t
+	</script>
+
+</body>
+</html>

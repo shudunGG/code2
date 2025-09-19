@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>版块管理列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+
+<link href="../../../../../frame/fui/css/HeaderFilter.css"
+	rel="stylesheet" type="text/css" />
+<script src="../../../../../frame/fui/js/HeaderFilter.js"
+	type="text/javascript"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="ouleft">
+		<div role="head" title="栏目管理">
+			<a id="openColumnIcon" class="action-icon icon-gear" title="栏目管理" onclick="openColumn()"></a>
+		</div>
+		<div role="body">
+			<ul id="outree" class="mini-tree" style="height: 100%" idField="id"
+				parentField="pid" textField="text" resultAsTree="false"
+				action="getOuCateTreeModel"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">信息发布</a>
+				<a class="mini-button" onclick="changestatus('',1)" id="start">发布所选</a>
+				<a class="mini-button" onclick="changestatus('',2)" id="stop">停止发布所选</a>
+				<a class="mini-button" onclick="topinfo('',1)" id="top">置顶所选</a>
+				<a class="mini-button" onclick="recommend('',1)" id="recommend">推荐所选</a>
+				<a class="mini-button hidden" onclick="updateBelongouguid()" id="updateBelongouguid">更新部门信息</a>
+
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选定 </a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-search" opened="false" primaryControl="search_title">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="标题">
+							<input id="search_title" class="mini-textbox"
+								bind="dataBean.title" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="categoryguid"
+					bind="dataBean.categoryGuid" /> <input class="mini-hidden"
+					id="belongouguid" bind="dataBean.belongouguid" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="15"></div>
+					<div type="indexcolumn" width="25" headerAlign="center">序</div>
+					<div field="title" headerAlign="center" width="70"
+						renderer="onNameRenderer">标题</div>
+					<div field="categoryname" name="categoryname" headerAlign="center"
+						align="center" width="50">所属栏目</div>
+					<div field="pubtime" headerAlign="center" align="center" width="60"
+						data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+						allowSort="true">发布日期</div>
+					<div field="publishenddate" headerAlign="center" align="center"
+						width="60" data-options="{'format':'yyyy-MM-dd'}"
+						dateFormat="yyyy-MM-dd" allowSort="true">截止有效期</div>
+					<div field="pubtime" headerAlign="center" align="center" width="60"
+						data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+						allowSort="true">创建日期</div>
+					<div field="status" name="status" headerAlign="center"
+						align="center" width="50">状态</div>
+					<div field="OrderNum" headerAlign="center" align="center"
+						width="40">排序号</div>
+					<div field="istop" visible="false"></div>
+					<div field="isrecommend" visible="false"></div>
+					<!-- 操作列 -->
+					<div type="actioncolumn" headerAlign="center" align="center"
+						renderer="onActionRenderer" width="200">
+						<!-- <span type="action" icon="icon-edit" onclick="editItems">修改</span> -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var gridTree = mini.get("datagrid");
+		var isadmin = false;
+		var ismanager = false;
+		// 初始化页面
+		epoint.initPage('webinfoinfomationlistaction', null, function(data) {
+			console.log(data);
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				buttonDisable();
+			}
+			if (mini.get('categoryguid').getValue() != '') {
+				gridTree.hideColumn('categoryname');
+			} else {
+				gridTree.showColumn('categoryname');
+			}
+			if (data.isadmin) {
+				isadmin = data.isadmin;
+			}
+			if (data.ismanager) {
+				ismanager = data.ismanager;
+			}
+			if (!data.ismanager && !data.isadmin) {
+				$("#openColumnIcon").css("display", "none");
+			}
+			if (mini.get('belongouguid').getValue() != '') {
+				gridTree.hideColumn('belongou');
+			} else {
+				if (!data.isadmin) {
+					gridTree.hideColumn('belongou');
+				} else {
+					gridTree.showColumn('belongou');
+				}
+			}
+			if(data.isShowModelSyncButton == '1'){
+				$('#updateBelongouguid').removeClass('hidden');
+			}
+		});
+
+		gridTree.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+
+		function buttonEnable() {
+			mini.get('start').enable();
+			mini.get('stop').enable();
+			mini.get('top').enable();
+			mini.get('recommend').enable();
+			mini.get('btnDel').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('start').disable();
+			mini.get('stop').disable();
+			mini.get('top').disable();
+			mini.get('recommend').disable();
+			mini.get('btnDel').disable();
+		}
+
+		var outree = mini.get("outree");
+		// 点击左侧树刷新右侧表格
+		outree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			if (e.node.textCls == 'isou') {
+				mini.get('belongouguid').setValue(id);
+				mini.get('categoryguid').setValue("");
+			}
+			if (e.node.textCls == 'iscate') {
+				mini.get('belongouguid').setValue("");
+				mini.get('categoryguid').setValue(e.node.id);
+			}
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var categoryguid = mini.get("categoryguid").getValue();
+			if (!categoryguid || categoryguid == "f9root") {
+				epoint.alert("请选择左侧栏目！");
+				return;
+			}
+			else{
+				epoint.execute("isCate", '', [ categoryguid ], function(data){
+					if(data.error){
+						epoint.alert("请选择左侧栏目！");
+						return;
+					}
+					else{
+						epoint.openDialog('信息发布', "./webinfoinfomationadd?categoryguid="
+								+ categoryguid, searchData, {
+							'width' : 1200,
+							'height' : 800
+						});
+					}
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function columnCallBack() {
+			epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+		}
+
+		// 栏目管理
+		function openColumn() {
+			epoint.openDialog('栏目管理', "./webinfocategorylist", columnCallBack,
+					{
+						'width' : 1280,
+						'height' : 960
+					});
+		}
+
+		// 弹出修改窗口
+		function editItems(e) {
+			epoint.openDialog("修改信息", './webinfoinfomationadd?guid=' + e,
+					callBack, {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+		function deleteSel() {
+			epoint.confirm('确认要删除吗?', '', deleteSelect);
+		}
+
+		function changestatus(rowguid, e) {
+			if (!epoint.validate()) {
+				return;
+			}
+			if(e == '1'){
+				//发布
+				if(!ismanager && !isadmin){
+					epoint.openTopDialog(
+						'信息发布审核',
+						"frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=35b6aa37-c571-4c91-ad85-17c61c283789&guid=" + rowguid,
+						searchData, {
+							'width' : 1200,
+							'height' : 800
+						});
+					return;
+				}
+			}
+
+			if (rowguid == '') {
+				if (mini.get('datagrid').getSelecteds() == 0) {
+					epoint.alert('请选择你要发布的记录!');
+				} else {
+					epoint.execute('changestatus', '', [ '', e ], callback);
+				}
+			} else {
+				epoint.execute('changestatus', '', [ rowguid, e ],callback);
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		function topinfo(rowguid, e) {
+			if (rowguid == '') {
+				if (mini.get('datagrid').getSelecteds().length > 1) {
+					epoint.alert('仅能置顶一条信息，请重新选择!');
+				} else {
+					if (epoint.validate()) {
+						epoint.execute('top', '', [ '', e ], callback);
+					}
+
+				}
+			} else {
+				if (epoint.validate()) {
+					epoint.execute('top', '', [ rowguid, e ], callback);
+				}
+			}
+		}
+
+		function recommend(rowguid, e) {
+			if (rowguid == '') {
+				if (mini.get('datagrid').getSelecteds() == 0) {
+					epoint.alert('请选择你要推荐的记录!');
+				} else {
+					if (epoint.validate()) {
+						epoint.execute('recommend', '', [ '', e ], callback);
+					}
+
+				}
+			} else {
+				if (epoint.validate()) {
+					epoint.execute('recommend', '', [ rowguid, e ], callback);
+				}
+			}
+		}
+
+		var grid = mini.get("datagrid");
+		var filter = new HeaderFilter(grid, {
+			columns : [ {
+				name : 'status'
+			} ],
+			callback : function(column, filtered) {
+			}
+		});
+		/* var filter = new HeaderFilter(grid, {
+			columns : [ {
+				name : 'categoryname'
+			} ],
+			callback : function(column, filtered) {
+				$('.filterwindow.mini-popup').css('display', 'none');
+			}
+		}); */
+
+		function openDetail(guid) {
+			epoint.openDialog('详细信息', "./webinfoinfomationdetail?guid=" + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function onNameRenderer(e) {
+			var title = e.row.title;
+			title = '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ title + '</a>';
+			if (e.row.istop == "1") {
+				title += '<span style=\"color:red\">[置顶]</span>';
+			}
+			if (e.row.isrecommend == '1') {
+				title += '<span style=\"color:blue\">[推荐]</span>';
+			}
+			return title;
+		}
+		function onActionRenderer(e) {
+			var title = "";
+			if (e.row.status == '草稿' || e.row.status == '停止发布') {
+				title += '<span type="action" style=\"color:blue\" onclick="editItems(\''
+						+ e.row.rowguid + '\')">编辑</span>' + '&nbsp&nbsp';
+				title += '<span type="action" style=\"color:blue\" onclick="changestatus(\''
+						+ e.row.rowguid + '\',1)">发布</span>'
+						+ '&nbsp&nbsp';
+				title += '<span type="action" style=\"color:red\" onclick="deleteSel()">删除</span>'
+						+ '&nbsp&nbsp';
+			} else if (e.row.status == "发布") {
+				if (e.row.istop == '1') {
+					title += '<span type="action" style=\"color:blue\" onclick="topinfo(\'' + e.row.rowguid + '\',0)">取消置顶</span>' + '&nbsp&nbsp';
+				} else {
+					title += '<span type="action" style=\"color:blue\" onclick="topinfo(\'' + e.row.rowguid + '\',1)">置顶</span>' + '&nbsp&nbsp';
+				}
+				if (e.row.isrecommend == '1') {
+					title += '<span type="action" style=\"color:blue\" onclick="recommend(\'' + e.row.rowguid + '\',0)">取消推荐</span>' + '&nbsp&nbsp';
+				} else {
+					title += '<span type="action" style=\"color:blue\" onclick="recommend(\'' + e.row.rowguid + '\',1)">推荐</span>' + '&nbsp&nbsp';
+				}
+				title += '<span type="action" style=\"color:red\" onclick="changestatus(\''
+						+ e.row.rowguid + '\',2)">停止发布</span>' + '&nbsp&nbsp';
+			} else if (e.row.status == '审核中') {
+				title += '<span type="action" style=\"color:blue\" onclick="see(\'' + e.row.pviurl + '\')">查看审核状态</span>'
+			}
+			return title;
+		}
+
+		function see(pviurl){
+			console.log(pviurl);
+			if(pviurl){
+				epoint.openTopDialog('查看审核状态', pviurl, searchData, {
+					'width' : 1200,
+					'height' : 800
+				});
+			}
+			else{
+				epoint.alert("当前用户不在审核流程中");
+			}
+		}
+
+		function updateBelongouguid() {
+			epoint.execute("updateBelongouguid", '', callBack);
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The process of new materials</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew"
+				iconCls="icon-save">sure add</a> <a class="mini-button"
+				onclick="epoint.closeDialog" iconCls="icon-removecircle">cancel the add</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="name" starred="true">
+					<input id="materialName" class="mini-textbox"
+						bind="wfpvMaterial.materialName" required="true"
+						requiredErrorText="The name of theCan't be empty!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="type">
+					<input id="materialtype" bind="wfpvMaterial.type"
+						data="[{text:'The form',id:'10'},
+							{text:'The attachment',id:'20'},{text:'Activities to checkThe form',id:'15'}]"
+						textField="text" valueField="id" class="mini-radiobuttonlist" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="app custom tag">
+					<input id="applicationConfig" bind="wfpvMaterial.clientTag"
+						class="mini-textarea" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="remark">
+					<input id="note" bind="wfpvMaterial.note" class="mini-textarea" />
+				</div>
+			</div>
+			<div role="row" id="isShowInGrid" style="display: none">
+				<div role="control" label="whether general list">
+					<input id="isShowInGrid" bind="wfpvMaterial.isShowInGrid"
+						data="[{text:'is',id:'10'},
+							{text:'no',id:'20'}]"
+						textField="text" repeatItems="2" valueField="id"
+						class="mini-radiobuttonlist" />
+				</div>
+			</div>
+			<div role="row" id="template">
+				<div role="control" label="blank template">
+					<div id="file" class="mini-webuploader"
+						action="processmaterialaddaction.getFileUploadModel" fileNumLimit="1"
+						fileSingleSizeLimit="5120"
+						limitType="doc,docx,txt,rar,zip,jpg,jpeg,pdf,xls,xlsx,gif,bmp,png"></div>
+				</div>
+			</div>
+			<div role="row" id="submitStyle" style="display: none">
+				<div role="control" label="submission">
+					<input id="submitType" bind="wfpvMaterial.submitType"
+						data="[{text:'Submit the electronic files',id:'10'},
+							{text:'Submit paper document',id:'20'}, {text:'Submit the electronic filesorSubmit paper document',id:'35'}, {text:'At the same timeSubmit the electronic filesandSubmit paper document',id:'40'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row" id="formAddress" style="display: block">
+				<div role="control" label="The formAccess to the address">
+					<input id="pageUrlReadAndWrite" style="width: 90%"
+						bind="wfpvMaterial.pageUrlReadAndWrite" class="mini-buttonedit"
+						emptyText="chooseThe formAccess to the address" onbuttonclick="selPage" selectOnFocus="true" />
+					<a class="action-icon icon-addcirclefilled"
+						onclick="setParValue();" style="width: 10%"></a>
+				</div>
+			</div>
+			<div role="row" id="trOnlyRead">
+				<div role="control" label="Read only a page" style="display: block">
+					<input id="pageUrlRead" class="mini-textbox"
+						bind="wfpvMaterial.pageUrlRead" />
+				</div>
+			</div>
+			<div role="row" id="trMisTable" style="display: block">
+				<div role="control" label="The formThe correspondingMIStable" style="display: block" starred="true">
+					<input id="selectedTableName" bind="tableName" class="mini-buttonedit"
+						emptyText="chooseThe formThe correspondingMIStable" onbuttonclick="selMisTable"
+						selectOnFocus="true" required="true" requiredErrorText="The formThe correspondingMIStableCan't be empty!" />
+				</div>
+			</div>
+			<div role="row" style="display: none">
+				<div role="control" label="isnoAutomatic initializationMIStable">
+					<input id="isInitMisTable" bind="wfpvMaterial.isInitMisTable"
+						data="[{text:'is',id:'10'},
+							{text:'no',id:'20'}]"
+						textField="text" repeatItems="2" valueField="id"
+						class="mini-radiobuttonlist" />
+				</div>
+			</div>
+			<div role="row" id="deleteRecord" style="display: block">
+				<div role="control" label="delete">
+					<div bind="isdelMisWhenDel" class="mini-checkbox">deleteWhen a process instance delete MIS table record</div>
+				</div>
+			</div>
+			<div role="row" id="formMobileAddress" style="display: block">
+				<div role="control" label="mobile terminalThe formAccess to the address">
+					<input id="pageMobileUrlReadAndWrite" style="width: 90%"
+						bind="wfpvMaterial.mobilePageUrl_ReadAndWrite" class="mini-textbox"/>
+					<a class="action-icon icon-addcirclefilled"
+						onclick="setParMobileValue();" style="width: 10%"></a>
+				</div>
+			</div>
+			<div role="row" id="trOnlyMobileRead">
+				<div role="control" label="mobile terminalThe formRead only a page" style="display: block">
+					<input id="pageMobileUrlRead" class="mini-textbox"
+						bind="wfpvMaterial.mobilePageUrl_Read" />
+				</div>
+			</div>
+			<div role="row" style="display: none;">
+                <input id="tableName" bind="tableName" class="mini-textbox"/> 
+				<input id="tableGuid" bind="tableGuid" class="mini-textbox"/> 
+			</div>
+		</div>
+	</div>
+	
+	<input bind="wfpvMaterial.processVersionGuid" id="processVersionGuid" class="mini-hidden" />
+	
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+	//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('processmaterialaddaction','',initCallBack);
+		
+		function initCallBack(){
+			var val=mini.get("materialtype").getValue();
+			inputShow(val);
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addMaterial', '', closeCallback);
+			}
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		mini.get("materialtype").on("valuechanged", function(e) {
+			inputShow(e.value);
+		});
+
+		function inputShow(value) {
+			if (value == "10" || value == "15") {
+				document.getElementById("formAddress").style.display = 'block';
+				document.getElementById("trOnlyRead").style.display = 'block';
+				document.getElementById("deleteRecord").style.display = 'block';
+				document.getElementById("trMisTable").style.display = 'block';
+
+				document.getElementById("isShowInGrid").style.display = 'none';
+				document.getElementById("template").style.display = 'none';
+				document.getElementById("submitStyle").style.display = 'none';
+			} else if (value == "20") {
+				document.getElementById("formAddress").style.display = 'none';
+				document.getElementById("trOnlyRead").style.display = 'none';
+				document.getElementById("deleteRecord").style.display = 'none';
+				document.getElementById("trMisTable").style.display = 'none';
+
+				document.getElementById("isShowInGrid").style.display = 'block';
+// 				document.getElementById("template").style.display = 'block';
+				document.getElementById("submitStyle").style.display = 'block';
+			}
+		}
+
+		function selMisTable() {
+			epoint.openDialog('chooseThe formThe correspondingMIStable',
+					'framemanager/workflow/manage/mistabletree?selecteditems=' + mini.get("tableGuid").getValue(), ReturnMis, {
+						'width' : 600
+					});
+
+		}
+		function ReturnMis(rtnValue) {
+			if (rtnValue && rtnValue!="close") {
+				var s = rtnValue.split(".");
+				mini.get("selectedTableName").setValue(s[0]);
+				mini.get("selectedTableName").setText(s[0]);
+				mini.get("tableName").setValue(s[0]);
+				mini.get("tableGuid").setValue(s[1]);
+			}
+		}
+
+		function selPage() {
+			epoint
+					.openDialog(
+							'chooseThe formAccess to the address',
+							'framemanager/workflow/design/designhelper?mode=activityPage&type=material',
+							ReturnselPage, {
+								'width' : 700
+							});
+		}
+
+		function ReturnselPage(rtnValue) {
+			if (rtnValue && rtnValue!= "close") {
+				mini.get("pageUrlReadAndWrite").setValue(rtnValue);
+				mini.get("pageUrlReadAndWrite").setText(rtnValue);
+			}
+		}
+
+		function setParValue() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint
+					.openDialog(
+							'chooseThe relevant data',
+							'framemanager/workflow/design/designhelper?mode=context&processVersionGuid='
+									+ processVersionGuid, setParValueOperJS, {
+								'width' : 600
+							});
+		}
+
+		function setParValueOperJS(data) {
+			if (data && data!="close") {
+				var s = mini.get("pageUrlReadAndWrite").getText() + "[#=" + data.split(';')[1] + "#]";
+				mini.get("pageUrlReadAndWrite").setValue(s);
+				mini.get("pageUrlReadAndWrite").setText(s);
+			}
+		}
+		
+		function setParMobileValue() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint
+					.openDialog(
+							'chooseThe relevant data',
+							'framemanager/workflow/design/designhelper?mode=context&processVersionGuid='
+									+ processVersionGuid, setParMobileValueOperJS, {
+								'width' : 600
+							});
+		}
+
+		function setParMobileValueOperJS(data) {
+			if (data && data!="close") {
+				var s = mini.get("pageMobileUrlReadAndWrite").getValue() + "[#=" + data.split(';')[1] + "#]";
+				mini.get("pageMobileUrlReadAndWrite").setValue(s);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>
+

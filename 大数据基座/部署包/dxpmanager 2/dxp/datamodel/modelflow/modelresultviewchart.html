@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>图表预览</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="resultinfo" style="width: 100%; height: 100%;"></div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="../../../dxp/js/echarts.min.js"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		epoint.initPage("dxpmodelresultviewchartaction", '', callbackinit);
+		
+		function callbackinit(data){
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			} else if (data.chartData) {
+				if (data.chartData.size == '0') {
+					epoint.alertAndClose("无图表数据,请检测数据是否正常导入！");
+				} else {
+					drawChartInfo(data.chartData);
+				}
+			}
+		}
+		
+		
+
+		/**
+		 * 画 echart 数据
+		 * @param data
+		 */
+		function drawChartInfo(chartData) {
+			// 基于准备好的 dom，初始化 echarts 实例
+			var resultinfo = echarts.init($('#resultinfo')[0]);
+			// 制定图标的配置项和数据
+			var option = {};
+			if (chartData.type == 'bar') {//柱状图
+				var xData = [], yData = [];
+				for (var i = 0, len = chartData.data.length; i < len; i++) {
+					xData.push(chartData.data[i][chartData.labelfield]);
+					yData.push(chartData.data[i][chartData.valuefield]);
+				}
+				option = {
+					xAxis : {
+						data : xData,
+						axisLine: {
+							lineStyle: { // 轴线的相关设置
+						        color: '#ffffff', // 轴线及轴上文字的颜色
+							}
+						}
+					},
+					yAxis : {
+						axisLine: {
+							lineStyle: { // 轴线的相关设置
+						        color: '#ffffff', // 轴线及轴上文字的颜色
+							}
+						}
+					},
+					series : [ {
+						type : 'bar',
+						data : yData
+					} ]
+				};
+				
+				console.log(option);
+			} else if (chartData.type == 'pie') {//饼图
+				// 对返回数据做一次处理
+				var $data = [];
+				for (var i = 0, len = chartData.data.length; i < len; i++) {
+					var _$data = {
+						name : chartData.data[i][chartData.labelfield],
+						value : chartData.data[i][chartData.valuefield]
+					}
+					$data.push(_$data);
+				}
+				option = {
+					series : [ {
+						type : "pie",
+						data : $data
+					} ]
+				};
+			} else if (chartData.type == 'line') {//曲线图
+				var xData = [], yData = [];
+				for (var i = 0, len = chartData.data.length; i < len; i++) {
+					xData.push(chartData.data[i][chartData.labelfield]);
+					yData.push(chartData.data[i][chartData.valuefield]);
+				}
+				option = {
+					xAxis : {
+						data : xData
+					},
+					yAxis : {},
+					series : [ {
+						type : 'line',
+						data : yData
+					} ]
+				};
+			}else if(chartData.type == 'scatter'){//散点图
+				var $data = [];
+				for (var i = 0, len = chartData.data.length; i < len; i++) {
+					var _$data = [];
+					_$data.push(chartData.data[i][chartData.labelfield]);
+					_$data.push(chartData.data[i][chartData.valuefield]);
+					$data.push(_$data);
+				}
+				option = {
+						 xAxis: [
+						        {
+						            type: 'value',
+						            scale: true,
+						            axisLabel: {
+						                formatter: '{value}'
+						            },
+						            splitLine: {
+						                show: false
+						            }
+						        }
+						    ],
+						    yAxis: [
+						        {
+						            type: 'value',
+						            scale: true,
+						            axisLabel: {
+						                formatter: '{value}'
+						            },
+						            splitLine: {
+						                show: false
+						            }
+						        }
+						    ],
+						    series: [
+						        {
+						            type: 'scatter',
+						            data : $data,
+						            markPoint: {
+						                data: [
+						                    {type: 'max', name: '最大值'},
+						                    {type: 'min', name: '最小值'}
+						                ]
+						            },
+						            markLine: {
+						                lineStyle: {
+						                    type: 'solid'
+						                },
+						                data: [
+						                    {type: 'average', name: '平均值'}
+						                ]
+						            }
+						        }
+						    ]
+				};
+			}else if(chartData.type == 'heatmap'){//热力图
+				var xData = [];
+				var yData = [];
+
+				var data = [];
+
+				for (var i = 0, len = chartData.data.length; i < len; i++) {
+					xData.push(chartData.data[i][chartData.labelfield]);
+					yData.push(chartData.data[i][chartData.valuefield]);
+					$data=[];
+					$data.push(chartData.data[i][chartData.valuefield]);
+					$data.push(chartData.data[i][chartData.labelfield]);
+					//热力值
+					$data.push(chartData.data[i][chartData.hotfield]);
+					data.push($data);
+				}
+				
+				
+				data = data.map(function (item) {
+				    return [item[1], item[0], item[2] || '-'];
+				});
+
+				option = {
+				    tooltip: {
+				        position: 'top'
+				    },
+				    animation: false,
+				    grid: {
+				        height: '50%',
+				        top: '10%'
+				    },
+				    xAxis: {
+				        type: 'category',
+				        data: xData,
+				        splitArea: {
+				            show: true
+				        }
+				    },
+				    yAxis: {
+				        type: 'category',
+				        data: yData,
+				        splitArea: {
+				            show: true
+				        }
+				    },
+				    visualMap: {
+				        min: 0,
+				        max: 10,
+				        calculable: true,
+				        orient: 'horizontal',
+				        left: 'center',
+				        bottom: '15%'
+				    },
+				    series: [{
+				        name: '',
+				        type: 'heatmap',
+				        data: data,
+				        label: {
+				            show: true
+				        },
+				        emphasis: {
+				            itemStyle: {
+				                shadowBlur: 10,
+				                shadowColor: 'rgba(0, 0, 0, 0.5)'
+				            }
+				        }
+				    }]
+				};
+			}else if(chartData.type == 'heatmap'){
+				
+			}
+			// 使用刚指定的配置项和数据显示图表
+			resultinfo.setOption(option);
+		}
+	
+		//]]>
+	</script>
+</body>
+</html>

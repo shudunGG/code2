@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>订阅管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div id="operate" class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增订阅人</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="delSelectSubscribe">移除所选 </a> 
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="userName" headerAlign="center" align="center" width="80">订阅人</div>
+				<div field="ouName" headerAlign="center" align="center" width="80">订阅人部门</div>
+				<div field="subscribeTime" headerAlign="center" align="center" width="100" allowSort="true"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" dateFormat="yyyy-MM-dd HH:mm:ss">订阅时间</div>
+				<!-- 操作列 -->
+				<div type="actioncolumn" headerAlign="center" align="center" renderer="onSubit">操作
+					<!-- <span type="action" icon="icon-trash" onclick="delSubscribe">移除</span> -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get('datagrid');
+		// 初始化页面
+		epoint.initPage('cockpitnormsubscribemanageaction');
+		
+		// 弹出新增窗口
+		function openAdd() {
+			var normGuid = Util.getUrlParams("guid");
+			epoint.openDialog('新增订阅人',
+					"./cockpitnormsubscribeadd?normGuid="
+							+ normGuid , searchData, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+		
+		function delSelectSubscribe(e) {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', delSubscribe);
+			}
+		}
+
+		// 删除订阅
+		function delSubscribe() {
+			epoint.confirm('确认要删除吗?', '', function(data){
+				epoint.execute("delSubscribe", '', function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData, 'info');
+					}
+				})
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+		
+		function onSubit(e) {
+			return '<span type="action" style=\"color:blue\" onclick="delSubscribe()">移除</span>'
+		}
+	</script>
+</body>
+</html>

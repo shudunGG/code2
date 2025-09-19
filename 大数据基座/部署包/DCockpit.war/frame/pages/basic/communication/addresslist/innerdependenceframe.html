@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>详细通讯录</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../frame/fui/js/cssboot.js"></script>
+		<script>
+			SrcBoot.output([ 'frame/pages/basic/communication/addresslist/contactdetails.css']);
+		</script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<div class="fui-left">
+			<div role="head" title="选择部门"></div>
+
+			<div role="body">
+				<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="getTreeData" resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right">
+			<div class="fui-condition">
+				<!-- 表单布局 -->
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<!-- 2列 -->
+						<div role="row">
+							<div role="control" label="姓名">
+								<input bind="txtDisplayName" class="mini-textbox" />
+
+							</div>
+							<div role="control" label="联系号码">
+								<input bind="txtLink" class="mini-textbox" />
+							</div>
+						</div>
+						<!-- 添加隐藏域，用于树与表格的联动 -->
+						<input bind="ouguid"
+						id="ouguid" class="mini-hidden" />
+					</div>
+				</div>
+				<!-- 搜索按钮 -->
+				<a role="searcher" callback="searchData"></a>
+			</div>
+			<div class="fui-content">
+				<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="userguid" style="width: 100%; height: 100%;" 
+				action="getDataGridData" showPager="true">
+					<div property="columns">
+						<div type="indexcolumn" headerAlign="center" width="40">
+							序
+						</div>
+						<div headerAlign="center" width="100%" renderer="onDetailRenderer">
+							详细信息
+						</div>
+						<div field="displayname" visible="false">
+						</div>
+						<div field="ouname" visible="false">
+						</div>
+						<div field="ntx_extnumber" visible="false">
+						</div>
+						<div field="telephonehome" visible="false">
+						</div>
+						<div field="qqnumber" visible="false">
+						</div>
+						<div field="postaladdress" visible="false">
+						</div>
+						<div field="carnum" visible="false">
+						</div>
+						<div field="title" visible="false">
+						</div>
+						<div field="telephoneoffice" visible="false">
+						</div>
+						<div field="usermobile" visible="false">
+						</div>
+						<div field="shortmobile" visible="false">
+						</div>
+						<div field="postalcode" visible="false">
+						</div>
+						<div field="email" visible="false">
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../../../rest/resource/jsboot"></script>
+		
+		<!-- 配置变量 -->
+		<script>
+			//<![CDATA[
+			//初始化页面
+			epoint.initPage("innerdependenceframeaction","", initCallback);
+
+			var SendMailAddress;
+			var OpenType;
+
+			function initCallback(data) {
+				if (data) {
+					SendMailAddress = data.SendMailAddress+"&ToUserGuid=";
+					OpenType = data.OpenType;
+				}
+			}
+			//树js对象
+			var tree = mini.get("tree");
+			// 点击左侧树刷新右侧表格
+			tree.on("nodeselect", function(e) {
+				var id = e.node.id == 'f9root' ? '' : e.node.id;
+				// 将左侧树点击的节点id放到隐藏域中
+				// 在表格发二次请求时，会自动带上条件区域中的内容
+				mini.get('ouguid').setValue(id);
+				//刷新表格
+				searchData_treeExp();
+			});
+
+			function onDetailRenderer(e) {
+				var displayname = e.record.displayname;
+				var midKey = new Array("所在部门：", "NTX分机号：", "家庭电话：", "QQ号码：", "地址：",
+						"车牌：", "发送邮件：");
+				//系统参数配置了邮件地址，这边图标才打开
+				if (SendMailAddress) {
+					var midValue = new Array(e.record.ouname,
+							e.record.ntx_extnumber, e.record.telephonehome,
+							e.record.qqnumber, e.record.postaladdress,
+							e.record.carnum,
+							"<a class=\"action-icon icon-mail\" href=\"javascript:sendMail('"
+									+ e.record.userguid + "')\"></a>");
+				} else {
+					var midValue = new Array(e.record.ouname,
+							e.record.ntx_extnumber, e.record.telephonehome,
+							e.record.qqnumber, e.record.postaladdress,
+							e.record.carnum, "");
+				}
+
+				var rightKey = new Array("职务：", "办公电话：", "手机：", "短号码：", "邮编：",
+						"Email：", "发送信息：");
+				var rightValue = new Array(e.record.title,
+						e.record.telephoneoffice, e.record.usermobile,
+						e.record.shortmobile, e.record.postalcode, e.record.email,
+						"<a class=\"action-icon icon-chat\" href=\"javascript:chat('" + e.record.userguid + "')\"></a>");
+				var cellHtml = '';
+				//　图片区
+				cellHtml += "<div class=\"detail-contact\"><div class=\"profile\">";
+				cellHtml += "<img src=\"readpictureaction.action?cmd=getMyPicture&cliengGuid="+ e.record.userguid + "\" />";
+				cellHtml += "<p title='" + displayname + "' class=\"user-name text-ellipsis\">" + displayname + "</p></div>";
+	
+				// 中间部分
+				cellHtml += "<div class=\"mid-col-info\">";
+				for (var i = 0; i < midKey.length; i++) {
+					var text = midValue[i] == undefined ? '' : midValue[i];
+					var title = text;
+					cellHtml += "<div class=\"clearfix\">";
+					cellHtml += "<div class=\"user-info-key\">";
+					cellHtml += midKey[i];
+					cellHtml += "</div>";
+					//cellHtml += "<div class=\"user-info-val text-special\">";
+					//cellHtml += midValue[i] == undefined ? '' : midValue[i];
+					if ((i + 1) != midKey.length) {
+						cellHtml += "<div class=\"user-info-val text-special text-ellipsis\" title=\""+title+"\">";
+					} else {
+						cellHtml += "<div class=\"user-info-val text-special\">";
+					}
+					cellHtml += text == undefined ? '' : text;
+
+					cellHtml += "</div>";
+					cellHtml += "</div>";
+				}
+				cellHtml += "</div>";
+
+				// 右边部分
+				cellHtml += "<div class=\"right-col-info\">";
+				for (var i = 0; i < rightKey.length; i++) {
+					var text = rightValue[i] == undefined ? '' : rightValue[i];
+					var title = text;
+					
+					cellHtml += "<div class=\"clearfix\">";
+					cellHtml += "<div class=\"user-info-key\">";
+					cellHtml += rightKey[i];
+					cellHtml += "</div>";
+					//cellHtml += "<div class=\"user-info-val text-special\">";
+					//cellHtml += rightValue[i] == undefined ? '' : rightValue[i];
+
+					if ((i + 1) != rightKey.length) {
+						cellHtml += "<div class=\"user-info-val text-special text-ellipsis\" title=\""+title+"\">";
+					} else {
+						cellHtml += "<div class=\"user-info-val text-special\">";
+					}
+					cellHtml += text == undefined ? '' : text;
+
+					cellHtml += "</div>";
+					cellHtml += "</div>";
+				}
+				cellHtml += "</div>";
+				return cellHtml;
+			}
+
+			function formatShow(content, length) {
+				if (content == undefined) {
+					return '';
+				}
+				if (content.length > length) {
+					return content.substring(0, length) + "...";
+				}
+				return content;
+			}
+
+			function onSendMailRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-mail", "sendMail");
+			}
+
+			function onChatRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-chat", "chat");
+			}
+
+			// 表格，树的搜索
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			// 表格的搜索
+			function searchData_treeExp() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+			
+			function chat(e) {
+				top.OpenEMsg(e);
+			}
+			
+			//发送邮件 
+			// 注：发送邮件功能在oa框架才会启动
+			function sendMail(e) {
+				if (SendMailAddress) {
+					if (OpenType == "div") {
+						epoint.openDialog("发送邮件", SendMailAddress + e);
+					} else if (OpenType == "tab") {
+						top.TabsNav.addTab({
+							'url' : SendMailAddress + e,
+							'name' : "发送邮件",
+							'id' : Math.round(Math.random() * 1000),
+							'maxIcon' : true,
+							'closeIcon' : true
+						});
+					}
+
+				}
+			}
+			
+			//]]>
+		</script>
+	</body>
+
+</html>

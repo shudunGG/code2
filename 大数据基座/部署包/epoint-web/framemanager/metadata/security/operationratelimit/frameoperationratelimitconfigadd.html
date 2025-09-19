@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>频繁操作验证配置表添加</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew"
+				state="primary">保存并新建</a> <a class="mini-button" id="addClose"
+				onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="描述">
+						<input id="policyremark" class="mini-textbox"
+							bind="dataBean.policyremark" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="目标用户">
+						<input id="targetusername" class="mini-buttonedit"
+							selectOnFocus="true" bind="dataBean.targetusername"
+							onbuttonclick="selectPerson" allowInput="false" showClose="true"
+							requiredErrorText="所属人员不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="地址" starred="true">
+						<input id="pageurl" class="mini-textbox" bind="dataBean.pageurl"
+							required="true" requiredErrorText="地址不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="单位时间(秒)" starred="true">
+						<input id="timeinterval" class="mini-textbox"
+							bind="dataBean.timeinterval" required="true"
+							vtype="int;range:1,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="最大上限次数" starred="true">
+						<input id="maxcount" class="mini-textbox" bind="dataBean.maxcount"
+							required="true" vtype="int;range:1,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="超频免验证模式" starred="true">
+						<input name="verificationmode" bind="dataBean.verificationmode"
+							popupHeight="80" allowInput="false" action="getVerificationModes"
+							required="true" requiredErrorText="验证模式不能为空" autoLoad="false"
+							class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="持续有效期(秒)" starred="true">
+						<input id="policyvalidperiod" class="mini-textbox"
+							bind="dataBean.policyvalidperiod" required="true"
+							vtype="int;range:1,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="黑名单记入">
+						<div class="mini-checkbox" bind="dataBean.policyenabled"
+							readOnly="false"></div>
+						<span class="text-assist">系统操作超频情况下,使用黑名单记录超频对象(系统用户手机号码、IP地址)后，将失去当前相同系统操作的超频免验证功能。</span>
+					</div>
+				</div>
+				<input bind="dataBean.targetuserguid" id="targetuserguid"
+					class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameoperationratelimitconfigaddaction');
+
+		// 保存并新建
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		// 保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新建操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") != -1) {
+					epoint.showTips(data.msg, {
+						state : 'success'
+					});
+					// 清空表单
+					epoint.clear('fui-form');
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'warning'
+					});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		// 选择目标用户
+		function selectPerson() {
+			epoint.openDialog('选择对应限频的人员',
+					"framemanager/orga/orga/user/selectuser", openiconOperJS, {
+						width : 850,
+						height : 900
+					});
+		}
+
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split("_SPLIT_");
+				mini.get("targetuserguid").setValue(s[0]);
+				mini.get("targetusername").setValue(s[1]);
+				mini.get("targetusername").setText(s[1]);
+				mini.get("targetusername").validate(s[1]);
+			}
+		}
+	</script>
+</body>
+</html>

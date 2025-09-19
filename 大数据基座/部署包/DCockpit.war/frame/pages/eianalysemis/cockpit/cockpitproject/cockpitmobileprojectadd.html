@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>新增专题</title>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<link rel="stylesheet" type="text/css" href="../css/cockpitprojectlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose" onclick="saveAndClose()">保存并关闭</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-form" style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="专题名称" starred="true">
+									<input class="mini-textbox" bind="dataBean.projectName" required="required"
+										requiredErrorText="专题名称不能为空" emptyText="请填写专题名称..." vtype="maxLength:50;" />
+								</div>
+								<div role="control" label="ApiCode">
+									<input class="mini-textbox" readonly="true" emptyText="提交后自动生成">
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题图标">
+									<div id="uploader" class="mini-webuploader" pickerText="图标上传"
+										action="getIconModel"  onbeforefilequeued="onBeforeFileQueued"
+										limitType="jpeg,jpg,gif,png,bmp" auto="true" fileNumLimit="1"  
+										onfilesuccess="OnPictureSuccess" fileSizeLimit="50k"></div>
+									<div class="img-view" id="picture" style="display: none;"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题描述">
+									<input class="mini-textarea" bind="dataBean.remark" emptyText="请填写专题描述..." />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题模式" starred="true">
+									<input class="mini-radioButtonList" valueField="id" textField="text"
+										data="[{id:0,text:'小程序'},{id:1,text:'外链(H5)'}]" bind="dataBean.projectmode"  onvaluechanged="changeProgram" required="true" requiredErrorText="专题模式不能为空"/>
+								</div>
+							</div>
+							<div role="row" id="cx">
+								<div role="control" label="小程序" starred="true">
+									<!-- <input class="mini-combobox" multiSelect="true" action="getCXList" bind="dataBean.program"> -->
+									<input class="mini-textbox" bind="dataBean.program" required="true" requiredErrorText="小程序不能为空" />
+								</div>
+								<div role="control">
+								</div>
+							</div>
+							<div role="row" id="wl">
+								<div role="control" label="外链URL" starred="true">
+									<input class="mini-textbox" bind="dataBean.externalLinks" required="true" requiredErrorText="外链URL不能为空" vtype="url" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="所属部门" starred="true">								
+									<input id="createou" class="mini-treeselect"
+										action="getOuTreeModel" bind="dataBean.createou"
+										showFolderCheckBox="true" showRadioButton="true"
+										showTreeIcon="true" textField="text" idField="id"
+										expandOnLoad="true" required="required"
+										requiredErrorText="所属部门不能为空"/>
+								</div>
+								<div role="control" label="创建人">
+									<input class="mini-textbox" readonly="true" id="createusername">
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="负责人">
+									<input id="liableperson" class="mini-textbox" maxlength="100"
+										bind="dataBean.liableperson" />
+								</div>
+								<div role="control" label="联系电话">
+									<input id="phone" class="mini-textbox" maxlength="100" bind="dataBean.phone" onvalidation="onPhoneValidation"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="开放状态">
+									<input id="isPublic" class="mini-radioButtonList" valueField="id" textField="text"
+										data="[{id:1,text:'公开'},{id:2,text:'私有'}]" bind="dataBean.isPublic" />
+								</div>
+								<div role="control" label="排序号">
+									<input id="ordernum" class="mini-textbox" bind="dataBean.ordernum" vtype="int;range:0,99999" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="指标信息"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="指标分类">
+									<!-- <input class="mini-combobox" id="setguid" multiSelect="true" action="getNormSetList" bind="dataBean.normsetguid"> -->
+									<div id="setguid" bind="dataBean.normsetguid" multiSelect="true"
+										parentField="pid" autoCheckParent="true" checkRecursive="true" 
+										showFolderCheckBox="true" expandOnLoad="true" oncloseclick="onCloseClick"
+										cantChecked="true" showClose="true" expandOnNodeClick="true"
+										action="getOuSetTreeModel" class="mini-treeselect"
+										textField="text" valueField="id"></div>
+								</div>
+							</div>
+							<!-- <div role="row">
+								<div role="control" label="额外指标">
+									<div class="btn-group">
+										<a class="mini-button mini-btn-primary" onclick="openNormConfig">配置指标</a>
+										<a class="mini-button" onclick="">删除所选</a>
+									</div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">
+									<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData"
+										sortOrder="desc" showPager="true" allowResize="true"
+										multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+										editNextOnEnterKey="true" editNextRowCell="true">
+										<div property="columns">
+											<div type="checkcolumn" width="20"></div>
+											<div type="indexcolumn" width="40" headerAlign="center" align="center">序</div>
+											<div field="normname" headerAlign="center" align="center" width="120">指标名称</div>
+											<div field="apicode" headerAlign="center" align="center" width="100">ApiCode</div>
+											<div field="sourcetype" headerAlign="center" align="center" width="80">来源</div>
+											<div field="statusText" headerAlign="center" align="center" width="80">状态</div>
+										</div>
+									</div>
+								</div>
+							</div> -->
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<script type="text/templ" id="row-tpl">
+		<div class="adddprow form-row" >
+			<div class="resolution">
+				<span>分辨率：</span> <input class="mini-textbox" name="dpresolution" />
+			</div>
+			<div class="resolution">
+				<span>地址：</span> <input class="mini-textbox" name="dpurl" vtype="url" />
+				<a class="mini-button mini-btn-danger operate-minus" iconCls="icon-minuscircle" ></a>
+			</div>
+		</div>
+    </script>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var $bgrow = $("#bgrow");
+		var rowTpl = $('#row-tpl').html();
+		//var bigscreen;
+		// 初始化页面
+		epoint.initPage('cockpitmobileprojectaddaction', null, function (data) {
+			mini.get("createusername").setValue(data.createusername);
+			if(data.dataBean){
+				mini.get('createou').setEnabled(false);
+			}
+			if (data.obj) {
+				showPicture(data.obj);
+			}
+			
+			if(data.projectmode){
+				var projectmode = data.projectmode;
+				if(projectmode==0){
+					$('#wl').css('display', 'none');
+				}
+				else{
+					$('#cx').css('display', 'none');
+				}
+			}else{
+				$('#wl').css('display', 'none');
+				$('#cx').css('display', 'none');
+			}
+			
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+		});
+		
+		var outree = mini.get('createou');
+		outree.on('beforenodeselect', function(obj) {
+			if (obj.node.id == "f9root") {
+				obj.cancel = true;
+			} else {
+				obj.cancel = false;
+			}
+		});
+
+		function changeProgram(e){
+			if(e.value=='0'){
+				$('#cx').css('display', 'block');
+				$('#wl').css('display', 'none');
+			}else if(e.value=='1'){
+				$('#wl').css('display', 'block');
+				$('#cx').css('display', 'none');
+			}
+			
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form',closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		//打开指标配置
+		function openNormConfig(){
+			var setguid = mini.get("setguid").getValue();
+			epoint.openDialog("配置额外指标", "./cockpitprojectnorm?setguid=" + setguid, searchData, {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	
+		//展示图标
+		function OnPictureSuccess(args) {
+			if (args.data.extraDatas.obj) {
+				showPicture(args.data.extraDatas.obj);
+			}
+		}
+		
+		//展示图标
+		function showPicture(tb) {
+			$(".mini-uploader-list").empty();
+			$("#picture").show();
+			$("#picture").html('<img id="tb" src="" width="120px" height="180px" alt="图标" /> <i class="action-icon icon-error" style="position: absolute; left: 110px; top: 0px;" onclick="delPicture(\''+tb.filepath+'\');" ></i>');
+			$("#tb").attr("src", tb.picture);
+			mini.get("uploader").setVisible(false);
+		}
+		
+		//删除图标
+		function delPicture(filepath) {
+			epoint.execute('deletePicture', '', filepath, function(data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					$("#picture").hide();
+					mini.get("uploader").setVisible(true);
+					epoint.refresh('uploader');
+				}
+			});
+		}
+		
+		function onPhoneValidation(e) {
+            if (e.value != '' &&!(/^[1](([3][0-9])|([4][5-9])|([5][0-3,5-9])|([6][5,6])|([7][0-8])|([8][0-9])|([9][1,8,9]))[0-9]{8}$/.test(e.value))){
+            	 e.errorText = "联系电话格式不正确";
+                 e.isValid = false;
+            }
+        }
+		
+		// 点击关闭按钮
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+		
+		function onBeforeFileQueued(e) { 
+			if (e.file.name.length > 100) { 
+				epoint.alert("文件名过长！") 
+				e.cancel = true; 
+			} 
+		}
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择人员</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+    <div class="fui-toolbar" id="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="saveAndClose">确定选择</a>
+            <a class="mini-button" onclick="epoint.closeDialog">取消选择</a>
+        </div>
+    </div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getTreeModel" onbeforenodeselect="beforenodeselect"
+			resultAsTree="false" showRadioButton="true">
+		</ul>
+		<div id="tree1" class="mini-tabstreeselect" action="getTreeModel">
+			<div tabText="供选择记录"></div>
+			<div tabText="已选择记录"></div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+	    var selectionMode = 'single'
+		//初始化请求
+    	epoint.initPage('selectouuseraction','',initCallBack);
+		function initCallBack(e){
+			if(e.selectionMode=='single'){
+				$("#fui-toolbar").hide();
+				mini.get('tree1').setVisible(false);
+			}else{
+				selectionMode = 'multiple'
+				mini.get('tree').setVisible(false);
+			}
+			
+			if(e.withoutSelectedTab){
+				$("li.active").next().remove();
+			}
+		}
+		
+		function beforenodeselect(e) {
+            //禁止选中 ckr=false节点
+            if (e.node.ckr == false) e.cancel = true;
+        }
+		
+		function saveAndClose() {
+			var treeId = 'tree';
+			if(selectionMode!='single'){
+				treeId = 'tree1';
+            }
+    		epoint.execute('userlist', treeId,saveCallback);
+    	}
+    	
+    	//回调
+    	function saveCallback(data){
+    		if (data.nameandguidlist) {
+    			epoint.closeDialog(data.nameandguidlist);
+    		}else{
+    			epoint.alert('您还没有选择任何记录！', '', null, 'warning');
+    		}
+    	}
+		
+		//树js对象
+		var tree = mini.get("tree");
+		if(tree){
+			// 点击左侧树刷新右侧表格
+			tree.on("nodeselect", function(e) {
+				if (e.node) {
+					var id = e.node.id;
+					epoint.closeDialog(e.node.text+";"+e.node.id);
+				}
+			});
+		}
+		
+	</script>
+
+
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>树控件</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <script>
+    document.write(
+      "<script src='../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>"
+    );
+  </script>
+
+  <script>
+    SrcBoot.output([
+      './css/treeselect.css'
+    ]);
+  </script>
+</head>
+
+<body>
+  <div id="app" class="hidden">
+    <div class="page-loading"></div>
+    <header class="mui-bar mui-bar-nav">
+      <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+      <h1 class="mui-title">树控件</h1>
+    </header>
+    <!-- 内容区域 -->
+    <div class="mui-content">
+      <!-- 顶部导航区域 -->
+      <div v-if="!showCheckFlag" class="nav">
+        <ul class="nav-list" id="nav">
+          <li v-for="(item,i) in navList" :key="i" class="nav-list-item" @click="onClickNav(item)">{{item.text}}</li>
+        </ul>
+      </div>
+      <!-- 数据组 -->
+      <div v-if="!showCheckFlag" class="mui-input-group mt10" id="category-group">
+        <div v-for="(item,i) in itemList" :key="i"
+          class="mui-input-row mui-checkbox mui-left" :class="[{'context': !(item.children && item.children.length)}]">
+          <span class="category-title" @click="changeList(item)">{{item.text}}</span>
+          <input name="checkbox" v-model="item.checked" @change="onClickCheckBox(item.children,item.checked)" type="checkbox">
+        </div>
+      </div>
+      <div v-if="showCheckFlag" class="check-list">
+        <div class="check-item" v-for="(item,i) in checkList">
+          <span class="check-item-title">{{item.text}}</span>
+          <span class="check-item-delete" @click="removeCheckItem(item)">x</span>
+        </div>
+      </div>
+    </div>
+    <!-- 已选人员 -->
+    <div class="selected">
+      <button type="button" class="mui-btn btn-back" v-if="showCheckFlag" @click="back()">返回</button>
+      <span v-if="checkList.length" id="edit-selected" @click="editChecked">
+        编辑已选人员
+        <span class="mui-icon mui-icon-arrowup"></span>
+      </span>
+      <div class="mui-btn mui-btn-primary btn-confirm" id="btn-confirm" @click="onSubmit()">确定</div>
+    </div>
+  </div>
+
+  <script>
+    document.write(
+      "<script src='../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>"
+    );
+  </script>
+
+  <script>
+    SrcBoot.output([
+      '../../js/libs/vue.js'
+    ]);
+  </script>
+
+  <script>
+    var vm = new Vue({
+      el: '#app',
+      data: {
+        storageId: '',
+        storageData: {},
+        rootName: '',
+        navList: [],
+        itemList: [],
+        checkList: [],
+        showCheckFlag: false,
+      },
+      created() {
+        this.init();
+      },
+      mounted() {
+        this.$el.className = '';
+      },
+      methods: {
+        init() {
+          Util.loadJs(() => {
+            this.storageId = Util.getExtraDataByKey('id');
+            this.storageData = JSON.parse(this.getStorage(this.storageId));
+            this.rootName = Util.getExtraDataByKey('rootname') || '根';
+            
+            if (typeof this.storageId !== 'string') {
+              Util.ejs.ui.toast('请传入 storageId');
+              return;
+            }
+            this.navList.push({id: 'treeselectRoot', text: this.rootName, children: this.storageData.data})
+            this.itemList = this.storageData.data;
+            this.getCheckList(this.storageData.data);
+          });
+        },
+        /**
+         * 获取缓存数据
+         * @param {String} id 缓存ID 
+         * @retutns {String} 缓存数据
+         */
+        getStorage(id) {
+          return localStorage.getItem(id + '_comdto');
+        },
+        /**
+         * 设置缓存数据
+         * @param {String} id 缓存ID 
+         * @param {Object} val 缓存值 
+         */
+        setStorage(id,val) {
+          localStorage.setItem(id + '_comdto',val);
+        },
+        /**
+         * 改变展示的列表
+         * @param {Object} item 父节点
+         */
+        changeList(item) {
+          if (item.checked) {
+            return;
+          }
+          if (item.children && item.children.length) {
+            this.itemList = item.children;
+            this.navList.push({id: item.id, text: item.text, children: item.children});
+          }
+        },
+        /**
+         * 点击顶部导航条
+         * @param {Object} item 父节点
+         */
+        onClickNav(item) {
+          const index = this.navList.findIndex((navItem, i) => {
+            return navItem.id === item.id;
+          });
+          this.navList.splice(index + 1);
+          this.itemList = item.children;
+        },
+        /**
+         * 点击checkbox
+         * @param {Array} list 子节点列表
+         * @param {Boolean} checked 设置的boolean类型值
+         */
+        onClickCheckBox(list,checked) {
+          this.checkChildren(list,checked);
+          this.checkList = [];
+          this.getCheckList(this.storageData.data);
+        },
+        /**
+         * 改变父节点选中状态后设置子节点
+         * @param {Array} list 子节点列表
+         * @param {Boolean} checked 设置的boolean类型值的相反值
+         */
+        checkChildren(list,checked) {
+          if (list && list.length) {
+            list.forEach((item,i) => {
+              item.checked = checked;
+              if (item.children && item.children.length) {
+                this.checkChildren(item.children,checked);
+              }
+            });
+          }
+        },
+        /**
+         * 获取被选中的节点（不包含子节点）
+         * @param {Array} list 节点列表
+         * @param {Boolean} checked 设置的boolean类型值的相反值
+         */
+        getCheckList(list) {
+          list.forEach((item,i) => {
+            if (item.checked) {
+              this.checkList.push(item);
+            } else if (item.children && item.children.length) {
+              this.getCheckList(item.children);
+            }
+          });
+        },
+        /**
+         * 点击编辑已选人员
+         */
+        editChecked() {
+          this.showCheckFlag = true;
+        },
+        /**
+         * 移除选中的节点
+         * @param {Object} item 节点对应的对象
+         */
+        removeCheckItem(item) {
+          item.checked = false;
+          if (item.children && item.children.length) {
+            this.checkChildren(item.children,false);
+          }
+          this.checkList = this.checkList.filter((item) => {
+            return item.checked;
+          })
+        },
+        /**
+         * 获取所有被选中节点（包含子节点）
+         * @param {Array} list 节点列表
+         * @retutns {objList} 所有被选中节点
+         */
+        getAllCheckList(list) {
+          let objList = [];
+          list.forEach((item) => {
+            objList.push({id: item.id,text: item.text});
+            if (item.children && item.children.length) {
+              objList = objList.concat(this.getAllCheckList(item.children));
+            }
+          })
+          return objList;
+        },
+        /**
+         * 提交数据
+         */
+        onSubmit() {
+          let obj = {
+            id: [],
+            text: [],
+          };
+          const allCheckList = this.getAllCheckList(this.checkList);
+          allCheckList.forEach(item => {
+            obj.id.push(item.id);
+            obj.text.push(item.text);
+          });
+          const objStr = {
+            id: obj.id.join(','),
+            text: obj.text.join(','),
+          }
+          this.setStorage(this.storageId,JSON.stringify(this.storageData));
+          ejs.page.close(JSON.stringify({value: objStr.id, text: objStr.text}));
+        },
+        /**
+         * 返回
+         */
+        back() {
+          this.showCheckFlag = false;
+        },
+      }
+    });
+  </script>
+</body>
+
+</html>

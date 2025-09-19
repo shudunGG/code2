@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>流程转换</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a>
+		</div>
+	</div>
+	
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="流程名称" starred="true">
+				<input id=changeName name="changeName" class="mini-textbox"
+					required="true" emptyText="请输入流程名称" />
+			</div>
+		</div>
+		<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false" >
+			<div name="tabs1" title="一般">
+				<span>源hadoop设置 :</span>
+<!-- 					<div role="row">
+						<div role="control" label="来源数据源名称" starred="true">
+							<input id="fromHadoopCluster" name="fromHadoopCluster" class="mini-combobox"
+								allowInput="true" showClose="false" style="width: 100%"
+								textField="text" valueField="id" action="getDataSourceList" 
+								required="true"/>
+						</div>
+					</div> -->
+					<div role="row">
+						<div role="control" label="文件/文件夹" starred="true">
+							<input id="fromFilePath" name="fromFilePath" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="通配符" starred="false">
+							<input id="wildCard" name="wildCard" class="mini-textbox" required="false" />
+						</div>
+					</div>						
+					<hr style="height:1px;border:none;border-top:1px solid #ebebeb;" />
+					
+					<span >目标hadoop设置 :</span>
+<!-- 					<div role="row">
+						<div role="control" label="目标数据源名称" starred="true">
+							<input id="targetHadoopCluster" name="targetHadoopCluster" class="mini-combobox"
+								allowInput="true" showClose="false" style="width: 100%"
+								textField="text" valueField="id" action="getDataSourceList" 
+								required="true"/>						
+						</div>
+					</div> -->
+					<div role="row">
+						<div role="control" label="文件/文件夹" starred="true">
+							<input id="targetFilePath" name="targetFilePath" class="mini-textbox" required="true" />
+						</div>
+					</div>
+				</div>
+		</div>
+	</div>
+
+
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('changeName');
+		var nodeData;
+		var nodeInfo;
+		
+		
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('hadoopcopyfilesaction', '', '');
+			console.log(nodeData);
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.changeName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+		
+		//获取form表单数据
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate()) {
+				var data = form.getData(true, false);
+				epoint.closeDialog(mini.encode(data));
+			}
+		}
+
+	</script>
+</body>
+
+</html>

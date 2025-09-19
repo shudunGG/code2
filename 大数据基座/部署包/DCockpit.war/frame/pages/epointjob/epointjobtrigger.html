@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>执行一次任务</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="control" label="任务参数">
+					<input id="executorParam" bind="executorParam" class="mini-textbox"
+						emptyText="可输入任务参数" width="100%"/>
+				</div>
+				<div role="control" style="display: none">
+					<input id="guid" bind="guid" class="mini-textbox" />
+				</div>
+			</div>
+			<a class="mini-button" state="primary" id="triggerBtn" style="display: block; margin: 20px auto">执行</a>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobtriggeraction', '@all', initPage);
+
+		//初始化页面回调		
+		function initPage(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+				return;
+			}
+			var type = data.type;
+			// 根据type绑定不同的按钮事件，以此触发不同的方法
+			if (type == "0") {
+				$('#triggerBtn').on('click', triggerJob);
+			} else if (type == "2") {
+				$('#triggerBtn').on('click', triggerTask);
+			} else {
+				epoint.alert("type数据异常", '提示', null, 'warning');
+			}
+		}
+
+		// 触发dag节点任务
+		var triggerTask = function() {
+			if (epoint.validate()) {
+				epoint.execute('triggerTask', 'fui-form', closeCallback);
+			}
+		}
+
+		// 触发dag普通任务
+		var triggerJob = function() {
+			if (epoint.validate()) {
+				epoint.execute('triggerJob', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+	</script>
+</body>
+</html>

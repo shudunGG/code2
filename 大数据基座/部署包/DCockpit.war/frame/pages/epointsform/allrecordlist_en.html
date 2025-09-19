@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Process management</title>
+<script src="../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="startprocess" onclick="startProcess();">Initiate the process</a>
+			<a class="mini-dataexport l" id="dataexport" gridId="datagrid"  fileName="Record information" 
+			    action="getExcelExportModel" ></a> 
+		</div>
+		<input class="mini-output" bind="name" />
+	</div>
+	
+	<!-- condition area -->
+	<div class="fui-condition" id="fuiCondition">
+		<a id="searchBtn" role="searcher" callback="searchData"></a>
+	</div>
+	
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid" allowResize="true"
+			idField="rowguid" multiSelect="true" action="getDefaultDataModel"
+			style="width: 100%; height: 100%;">
+		</div>
+	</div>
+	
+	<div class="display:none"><input class="mini-textbox" id="params" bind="params" /></div>
+
+	<input class="mini-hidden" id="processGuid" bind="processGuid"/>
+	<input class="mini-hidden" id="tableId" bind="tableId"/>
+
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+ 	<script src="../../frame/mis/tableinfo/js/epoint.controlconfig.js"></script>
+	<script src="../../frame/mis/tableinfo/js/epoint.form.js"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('allrecordlistaction','',initCallBack);
+		
+		// Table object
+		var grid = mini.get("datagrid");
+		
+		var tId = "";
+		
+		var fieldMaps = null, params = mini.get('params');
+		
+		// Initialize the back off, dynamically generated columns
+		function initCallBack(data){
+			if(data.msg){
+				epoint.alertAndClose(data.msg, null, null, null, 'info');
+			}else{
+				//adjustContentHeight();//hidden condition Come out To recount a height
+				if (data && data.controls) {
+					appearCondition(data);
+					drawDynamicColumn(data);
+					if(data.fields){
+						fieldMaps = data.fields;
+					}
+					mini.parse();
+				}
+			}
+			tId= mini.get("tableId").getValue();
+		}
+		
+		//Load search area
+		function appearCondition(data) {
+			var html = epoint.parseForm(data.controls);
+			$('#fuiCondition').prepend(html);
+			initCondition();
+		}
+		
+		// Draw the dynamic column
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = eval('(' + tmp + ')');
+			grid.set(columns);
+		}
+		
+		// Load data in the table after open the table editor
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+		
+		function startProcess(){
+			var processGuid=mini.get("processGuid").getValue();
+			var url = "processsformcreateinstance?ProcessGuid=" + processGuid;
+			if (!processGuid) {
+				epoint.alert("No bootable process!", null, null, 'error');
+				return false;
+			}
+			epoint.openDialog("The new work flow","frame/pages/epointsform/" + url, searchData);
+		}
+		
+		//The callback for the add operation
+		function callBack(param) {
+			if (param != 'close') {
+				searchData();
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			// Get the value of search area and put it to params
+			if(fieldMaps){
+				$.each(fieldMaps, function(k, v){
+					var control = mini.get(k);
+					if(control){
+						fieldMaps[k] = control.getValue();
+					}
+				});
+				params.setValue(JSON.stringify(fieldMaps));
+			}
+			epoint.refresh(['datagrid', 'params']);
+		}
+		
+		function onSearchRenderer(e){
+			return epoint.renderCell (e, "action-icon icon-search", "openViewDialog", "rowguid");
+		}
+		
+		function openViewDialog(rowGuid) {
+			epoint.execute('getPreviewUrl', '', [ tId, rowGuid ], showUrl);
+        }
+		
+		function showUrl(args) {
+			if (args.previewUrl) {
+				epoint.openDialog("表单详细信息", args.previewUrl, callBack);
+			} else {
+				epoint.alertAndClose("当前记录没有查询到对应数据", null, null, null, 'error');
+			}
+		}
+		
+		function onZhuiZongRenderer(e){
+			return epoint.renderCell (e, "action-icon icon-edit", "openFlowChartDialog","processversioninstanceguid");
+		}
+		
+		function openFlowChartDialog(pviGuid) {
+			epoint.openDialog(
+					"Process page",
+					"frame/pages/epointworkflow/client/processoa9browser?processVersionInstanceGuid=" + pviGuid,
+					callBack,
+					 {
+						'width' : 1000,
+						'height' : 700
+					});
+        }
+		
+		function onDelRenderer(e){
+			return epoint.renderCell (e, "action-icon icon-removecircle", "del", "rowguid,processversioninstanceguid");
+		}
+		
+		function del(data){
+			//decoding json String for the object
+			data = epoint.decodeJson(data);
+			var rowguid = data.rowguid;
+			var processversioninstanceguid = data.processversioninstanceguid;
+			epoint.execute('deleteitem', '', [rowguid,processversioninstanceguid], searchData);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

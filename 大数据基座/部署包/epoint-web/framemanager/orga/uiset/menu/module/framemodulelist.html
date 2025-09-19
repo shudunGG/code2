@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>模块管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="模块管理"></div>
+
+		<div role="body">
+			<ul id="tree" name="tree" class="mini-tree"
+				style="width: 100%; height: 100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"
+				action="getTreeModel" resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a id="add" class="mini-button" state="primary" onclick="addModule">新增模块</a>
+			<a id="save" class="mini-button" onclick="saveAll()">保存修改</a> <a
+				id="delete" class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的模块！',  {state : 'warning'});} else {epoint.confirm('确定要删除吗？','',function(){epoint.execute('deleteSelect','datagrid',callback);});}">删除选中</a>
+			<a class="mini-button"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！',  {state : 'warning'});} else {epoint.execute('export','',exportsql)}">脚本导出</a>
+
+			<input id="database" autoLoad="false" action="getDsTypes"
+				textField="text" valueField="id" class="mini-combobox mr10" />
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="name" bind="frameModule.moduleName"
+					emptyText="请输入模块名称搜索" onenter="updateTable" /> <input
+					class="mini-hidden" bind="frameModule.moduleCode" id="moduleCode" />
+				<a class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="updateTable" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="moduleCode" multiSelect="true" action="getDataGridData"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" allowCellValid="true" allowCellEdit="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true" ondrawcell="onCheckRender"
+				oncellbeginedit="cellBeginEdit">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+
+					<div field="moduleName" width="150" allowSort="true"
+						vtype="required;maxLength:50">
+						模块名称 <input property="editor" class="mini-textbox"
+							style="width: 100%;" maxLength="50" />
+					</div>
+					<div field="moduleCode" width="80" renderer="onCodeRenderer">模块代码</div>
+					<div field="moduleUrl" width="100%" vtype="maxLength:800"
+						maxLength="800">
+						模块地址 <input property="editor" class="mini-textbox"
+							style="width: 100%;" vtype="maxLength:800" maxLength="800" />
+					</div>
+					<div field="orderNumber" width="80" vtype="int;range:0,99999999"
+						allowSort="true">
+						排序 <input property="editor" class="mini-textbox"
+							vtype="int;range:0,99999999" inputStyle="text-align:right"
+							style="width: 100%;" />
+					</div>
+					<div field="isAddOu" name="isAddOu" width="60"
+						type="checkboxcolumn" truevalue="1" falsevalue="0">隐藏</div>
+					<div field="isDisable" name="isDisable" width="60"
+						type="checkboxcolumn" truevalue="1" falsevalue="0">禁用</div>
+					<div field="isBlank" width="60" name="isBlank"
+						type="checkboxcolumn" truevalue="1" falsevalue="0">弹出</div>
+					<div width="60" name="edit" renderer="onEditRenderer">修改</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+
+		epoint.initPage("framemodulelistaction", '', initDataBase);
+
+		var grid = mini.get("datagrid");
+		var userRole;
+		var isThreeManage = false;
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+
+			if (e.enableThreeManage) {
+				isThreeManage = true;
+				if (e.role) {
+					if (e.role == 'systemadmin') {
+						userRole = 'systemadmin';
+					} else if (e.role == 'securityadmin') {
+						userRole = 'securityadmin';
+						mini.get('add').setVisible(false);
+						mini.get('delete').setVisible(false);
+						grid.hideColumn('isAddOu');
+						grid.hideColumn('isBlank');
+						grid.hideColumn('edit');
+					}
+				}
+			}
+		}
+
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+		var grid = mini.get('datagrid');
+
+		grid.on("beforeselect", function(e) {
+			var moduleCode = e.record.moduleCode;
+			if (moduleCode == '9991' || moduleCode == '9992'
+					|| moduleCode == '9998' || moduleCode == '9999') {
+				e.cancel = true;
+			}
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			//将左侧树点击的节点id放到隐藏域中
+			mini.get('moduleCode').setValue(id);
+			//刷新表格
+			updateTable_tree();
+		});
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editModule",
+					"moduleCode");
+		};
+
+		function cellBeginEdit(e) {
+			if (isThreeManage && userRole && userRole.indexOf('securityadmin') >= 0
+					&& userRole.indexOf('systemadmin') == -1
+					&& e.field != 'isDisable') {
+				e.cancel = true;
+			} else if (isThreeManage && userRole.indexOf('systemadmin') >= 0
+					&& userRole.indexOf('securityadmin') == -1
+					&& e.field == 'isDisable') {
+				e.cancel = true;
+			}
+		};
+
+		function onCodeRenderer(e) {
+			return e.value + "&#160;&#160;";
+		}
+
+		function addModule() {
+			var moduleCode = mini.get('moduleCode').getValue();
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint.openDialog('新增模块',
+					'framemanager/orga/uiset/menu/module/framemodule?parentModuleCode='
+							+ moduleCode, addCallBack, settings);
+		}
+
+		function editModule(moduleCode) {
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint.openDialog('修改模块',
+					'framemanager/orga/uiset/menu/module/framemodule?moduleCode='
+							+ moduleCode, addCallBack, settings);
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param,  {state : 'success'});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form', 'tree' ], '', true);
+			}
+		}
+
+		// 保存
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				// 	                console.log(error);
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+
+			//if(epoint.validate("datagrid")){
+			//	epoint.execute('saveAll', '', callback);
+			//}
+		}
+
+		// 导出sql语句
+		function exportsql(moduleIDs) {
+			var databaseType = mini.get("database").getValue();
+			epoint.openDialog(mini.get("database").getText() + '脚本导出',
+					"framemanager/orga/uiset/menu/module/framemoduleexport?moduleIDs="
+							+ moduleIDs.exportlist + "&databaseType="
+							+ databaseType, '', {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		//回调
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				epoint.refresh([ 'datagrid', 'fui-form', 'tree' ], '', true);
+			}
+		}
+
+		function updateTable_tree() {
+			epoint.refresh([ "datagrid", "fui-form" ]);
+		}
+
+		function updateTable() {
+			epoint.refresh([ "datagrid", "fui-form", "tree" ]);
+		}
+
+		function onCheckRender(e) {
+			//此功能只是隐藏掉选择框，但是还是可以被选到的，注意！！！！，要配合beforeselect使用
+			var moduleCode = e.record.moduleCode;
+			if ((moduleCode == '9991' || moduleCode == '9992'
+					|| moduleCode == '9998' || moduleCode == '9999')
+					&& e.cellCls === "mini-checkcolumn") {
+				e.cellHtml = "";
+			}
+		}
+
+		//]]>
+	</script>
+
+</body>
+
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>data source management child pages</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" id="add"
+				onclick="saveAndClose()">sure add</a><a class="mini-button"
+				id="addCancel" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">cancel the add</a><a class="mini-button"
+				iconCls="icon-addcircle" id="edit" onclick="saveAndClose()">save changes</a>
+				<a class="mini-button" iconCls="icon-minuscircle" id="editCancel"
+				onclick="epoint.closeDialog">cancel the change</a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="data source name" starred="true">
+							<input class="mini-textbox"
+							bind="dataSource.dsName" required="true"
+							requiredErrorText="The data source nameCan't be empty" vtype="maxLength:50" />
+						</div>
+						<div role="control" label="data source type">
+							<input name="dsType" bind="dataSource.dsType" popupHeight="150"
+							allowInput="false" action="getDsTypes" value="SQL Server"
+							autoLoad="false" class="mini-combobox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="login account" starred="true">
+							<input class="mini-textbox"
+							bind="dataSource.loginUser" required="true"
+							requiredErrorText="Login accountCan't be empty" />
+						</div>
+						<div role="control" label="login password" starred="true">
+							<input class="mini-textbox"
+							bind="dataSource.loginPwd" required="true"
+							requiredErrorText="The login passwordCan't be empty" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="server name or add" starred="true">
+							<input class="mini-textbox"
+							bind="dataSource.serverName" required="true"
+							requiredErrorText="The server name or addressCan't be empty" />
+						</div>
+						<div role="control" label="database name">
+							<input class="mini-textbox"
+							bind="dataSource.dbname" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="describes">
+							<input class="mini-textbox"
+							bind="dataSource.dsDesc" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			// Initialize the page
+			epoint.initPage('datasourceaction', '', initCallBack);
+
+			// Initialization callback
+			function initCallBack(data) {
+				if (data.add) {
+					//Hide the modify button
+					mini.get('edit').setVisible(false);
+					mini.get('editCancel').setVisible(false);
+				} else {
+					//Hide the new button
+					mini.get('add').setVisible(false);
+					mini.get('addCancel').setVisible(false);
+				}
+			}
+
+			// save and close
+			function saveAndClose() {
+				if (epoint.validate()) {
+					if (mini.get('add').getVisible()) {
+						epoint.execute('add', 'fui-form', closeCallback);
+					} else if (mini.get('edit').getVisible()) {
+						epoint.execute('save', 'fui-form', closeCallback);
+					}
+				}
+			}
+
+			// The callback for the close operation
+			function closeCallback(data) {
+				if (data.msg) {
+					eval(data.msg);
+				}
+			}
+		</script>
+
+	</body>
+
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>配置专题</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="专题分类"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getTreeModel"></div>
+		</div>
+	</div>
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">配置专题</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要解绑的专题!');} else {epoint.confirm('确认要解绑吗?','',deleteSelect);}">
+					解除绑定 </a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="专题名称">
+							<input class="mini-textbox" bind="dataBean.projectName" />
+						</div>
+						<div role="control" label="是否启用">
+							<input id="search_Status" class="mini-combobox" valueField="id"
+								textField="text" data="[{id:'1',text:'启用'},{id:'0',text:'停用'}]"
+								bind="dataBean.status" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+						<input id="columnguid" class="mini-hidden"
+							bind="dataBean.columnguid" /> <input id="projectcateguid"
+							class="mini-hidden" bind="dataBean.projectcateguid" />
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center"
+						align="center">序</div>
+					<div field="projectName" headerAlign="center" align="center"
+						width="120">专题名称</div>
+					<div field="apicode" headerAlign="center" align="center"
+						width="100">ApiCode</div>
+					<div field="catename" headerAlign="center" align="center"
+						width="100">所属分类</div>
+					<div field="sourcetypetext" headerAlign="center" align="center"
+						width="100">来源</div>
+					<div field="statustext" headerAlign="center" align="center"
+						width="100">状态</div>
+					<div field="OrderNum" headerAlign="center" align="center">排序号</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitprojectconfaction', '@all', function(data) {
+			mini.get("columnguid").setValue(data.columnguid);
+		});
+
+		function openAdd() {
+			var columnguid = mini.get("columnguid").getValue();
+			var categuid = mini.get("projectcateguid").getValue();
+			epoint.openDialog("配置专题", './cockpitprojectbind?columnguid='
+					+ columnguid + "&categuid=" + categuid, searchData, {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg);
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			// console.log(e.node);
+			var id = e.node.id;
+			var type = e.node.type;
+			mini.get("projectcateguid").setValue("");
+			if (type == 'cate') {
+				mini.get("projectcateguid").setValue(id);
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		function deleteSelect() {
+			epoint.execute("deleteSelect", 'datagrid', null, callBack);
+		}
+		
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+	</script>
+</body>
+</html>

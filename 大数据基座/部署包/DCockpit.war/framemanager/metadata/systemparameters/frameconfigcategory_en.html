@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>System parameter category</title>
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<!-- This must have,it is loaded with some loading effect -->
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" onclick="addConfigCateGory" iconCls="icon-save">new classification </a>
+				<a class="mini-button" id="addClose" onclick="save" iconCls="icon-save"> save changes </a>
+				<a class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle"> cancel the change </a>
+			</div>
+		</div>
+		<!-- content area -->
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="categoryguid" multiSelect="true"
+			style="width: 100%; height: 100%;"
+			allowCellValid="true" action="getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" showPager="false"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" headerAlign="center" width="50">
+						order
+					</div>
+					<div field="categoryname" width="100%" headerAlign="center" vtype="required;maxLength:50">
+						category name
+						<input property="editor" class="mini-textbox" maxLength="50" style="width:100%" />
+					</div>
+					<div field="categorydes" width="300" headerAlign="center" vtype="maxLength:50">
+						note
+						<input property="editor" class="mini-textbox" maxLength="50" style="width:100%" />
+					</div>
+					<div field="ordernumber" width="80" headerAlign="center" align="right" vtype="int">
+						roworderNo.
+						<input property="editor" class="mini-textbox" maxLength="8" inputStyle="text-align:right" style="width:100%"/>
+					</div>
+					<div width="80" align="center" headerAlign="center"
+					renderer="onDeleteRenderer">
+						delete
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//Initialization request 
+			epoint.initPage('frameconfigcategoryaction');
+			
+			// Table object
+			var grid = mini.get("datagrid");
+
+			function onDeleteRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-remove", "deleteCage");
+			}
+
+			// The new classification
+			function addConfigCateGory() {
+				epoint.openDialog('newSystem parameter category', 'mis/sysconf/systemparameters/frameconfigcategoryadd', searchData, {
+					'width' : 1000,
+					'height' : 350
+				});
+			}
+
+			// save changes
+			function save() {
+				grid.validate();
+	            if (grid.isValid() == false) {
+	                //alert("Please check the input cellscontent");
+	                var error = grid.getCellErrors()[0];
+	                grid.beginEditCell(error.record, error.column);
+	                return;
+	            }
+				epoint.execute('save', 'datagrid', msgCallBack);
+			}
+
+			//deleteThe selected
+			function deleteCage(categoryguid) {
+				epoint.confirm('confirmdelete??', '', function() {
+					epoint.execute('deleteCage', 'datagrid', [categoryguid], searchData);
+				});
+			}
+
+			// Back off to remind
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', searchData(), 'success');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+				searchData();
+			}
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid'],'',true);
+			}
+		</script>
+	</body>
+
+</html>

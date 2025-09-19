@@ -1,0 +1,1 @@
+select count(*) from sysobjects where name = 'fun_getPY'

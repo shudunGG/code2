@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>列表修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="数据表" starred="true">
+						<!-- 						<div class="mini-combobox" repeatItems="2" id="tableid"
+							bind="dataBean.tableid" textField="text" valueField="id"
+							value="0" action="gettableid" onvaluechanged="changtype"
+							enabled="false" width="320px"></div> -->
+						<input id="formTree" class="mini-treeselect"
+							bind="dataBean.tableid" action="getTreeModal" multiSelect="false"
+							required="true" onbeforenodeselect="beforenodeselect"
+							enabled="false" />
+					</div>
+				</div>
+				<div role="row" id="form1">
+					<div role="control" label="列表名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.pagename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="列表类型" starred="true">
+						<div id="listType" class="mini-combobox" textField="text"
+							valueField="id" bind="dataBean.listtype" action="getListTypeList"
+							required="true" requiredErrorText="列表类型不能为空!"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row" id="form2">
+					<input class="mini-hidden" bind="dataBean.tabletype" /> <input
+						class="mini-hidden" bind="dataBean.sqltablename" />
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('epointsformtableeditaction', '', function(data) {
+
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alertAndClose(data.msg);
+				} else {
+					epoint.alert(data.msg, '', '', 'warning');
+				}
+
+			}
+		}
+
+		//选择类型的时候触发事件
+		function changtype() {
+			var templatetype = mini.get("tableid").getValue();
+			epoint.execute('searchuser', '', [ templatetype ], function(data) {
+				var scores = data.split(";");
+				mini.get("sqltablename").setValue(scores[0]);
+				mini.get("tabletype").setValue(scores[1]);
+
+			});
+		}
+	</script>
+</body>
+</html>

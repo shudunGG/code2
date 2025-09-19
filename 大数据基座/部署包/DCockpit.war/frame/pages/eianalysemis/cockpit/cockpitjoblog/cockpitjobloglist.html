@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标任务执行日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="指标分类"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action=getNormDomainTreeModel style="height: 100%"></div>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="指标名称">
+							<input id="search_NormName" class="mini-textbox"
+								bind="dataBean.normname" />
+						</div>
+						<div role="control" label="运行状态">
+							<input id="search_JobStatus" class="mini-combobox"
+								bind="dataBean.jobstatus" valueField="id" textField="text"
+								data="[{id:'1',text:'执行成功'},{id:'2',text:'执行失败'}]"
+								showClose="true" oncloseclick="onCloseClick" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="treeid" bind="dataBean.treeid" /> <input
+					class="mini-hidden" id="treeparentid" bind="dataBean.treeparentid" />
+				<input class="mini-hidden" id="treetype" bind="dataBean.treetype" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="normName" headerAlign="center">指标名称</div>
+					<div field="jobStartTime" name="jobStartTime" width="75"
+						headerAlign="center" align="center"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+						dateFormat="yyyy-MM-dd HH:mm:ss">运行开始时间</div>
+					<div field="jobEndTime" name="jobEndTime" width="75"
+						headerAlign="center" align="center"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+						dateFormat="yyyy-MM-dd HH:mm:ss">运行结束时间</div>
+					<div field="jobStatusText" headerAlign="center" align="center">运行状态</div>
+					<div width="50" align="center" headerAlign="center"
+						renderer="onDetailRenderer">查看运行日志</div>
+					<div visible="false" field="normGuid"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitjobloglistaction');
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return '<span type="action" style=\"color:blue\" onclick="openDetail(\''
+			+ e.row.rowguid + '\')">查看</span>';
+			
+		};
+
+		// 弹出明细窗口
+		function openDetail(id) {
+			epoint.openDialog('详细信息',
+					"frame/pages/eianalysemis/cockpit/cockpitjoblog/cockpitjoblogdetail?guid="
+							+ id, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'fui-form', 'datagrid' ], '', true);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			var pid = e.node.pid;
+			var type = e.node.type;
+			console.log(id + "---" + pid + "---" + type)
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('treeid').setValue(id === 'root' ? "" : id);
+			mini.get('treeparentid').setValue(pid === 'root' ? "" : pid);
+			mini.get('treetype').setValue(type);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+	</script>
+</body>
+</html>

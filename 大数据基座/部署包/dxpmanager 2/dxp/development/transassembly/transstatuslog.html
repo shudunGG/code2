@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>值映射</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body style="overflow: auto;">
+
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save" onclick="save">保存并关闭</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+<div class="fui-content">
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepName" name="stepName" class="mini-textbox"
+					required="true" emptyText="请输入步骤名称"  vtype="maxLength:20"/>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="交换状态" field="transStatus" starred="true">
+				<input class="mini-combobox" id="transStatus" name="transStatus"
+					textField="text" action="getStatusList" valueField="id"
+					showClose="true" required="true"/>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="表名" starred="true">
+				<input class="mini-textbox" id="tableName" name="tableName" required="true">
+			</div>
+		</div>
+
+		<input id="columnTableData" name="columnTableData"
+			style="display: none;" class="mini-textbox"> <input id="flag"
+			bind="flag" name="flag" class="mini-hidden">
+	</div>
+
+	<div class="fui-toolbar" id="btns" style="padding-top: 1px">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary"
+				onclick="if(Object.keys(mini.get('datagrid').getData()).length==0){getkeymapper()} else{epoint.confirm('是否清除原字段映射?','确认清除',isclearmapper,getkeymapper);}"
+				style="margin-left: 20px">获取字段</a> <a id="savetype"
+				class="mini-button mini-btn-primary" onclick="add">添加映射</a> <a
+				id="deletetype" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content" style="padding-top: 1px">
+		<div id="datagrid" name="datagrid" class="mini-datagrid" idField="id"
+			multiSelect="true" allowCellValid="true" allowCellEdit="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="sourceField" headerAlign="center" vtype="required"
+					align="center">
+					字段<input property="editor" class="mini-combobox"
+						emptyText="请输入字段..." textField="text" data="sourceFieldList"
+						valueField="id" inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="isPk" headerAlign="center" align="center"
+					type="checkboxcolumn" truevalue="true" falsevalue="false">
+					是否为主键</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+
+	<script>
+		var form = new mini.Form("#form");
+		var grid = mini.get("datagrid");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var flag = mini.get("flag");
+		var sourceFieldList;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('transstatuslogaction?stepId=' + data.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initGrid);
+		}
+
+		function initGrid(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			if (e.sourceFieldList) {
+				sourceFieldList = e.sourceFieldList;
+			}
+			stepNameForm.setValue(nodeInfo.name);
+		}
+
+		function setGridData() {
+			var datas = grid.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"sourceField" : row.sourceField,
+					"isPk" : row.isPk
+				});
+			}
+			mini.get('columnTableData').setValue(JSON.stringify(array));
+		}
+
+		function isclearmapper() {
+			flag.setValue("clearAndMapper");
+			grid.clearRows();
+			refreshDatagrid();
+		}
+
+		function getkeymapper(e) {
+			flag.setValue("onlyMapper");
+			refreshDatagrid();
+		}
+
+		function refreshDatagrid() {
+			var datas = grid.getData();
+			epoint.refresh([ 'datagrid', 'flag' ], function(data) {
+				if (Object.keys(datas).length > 0) {
+					grid.addRows(datas);
+				}
+				if (data.msg == 'warn') {
+					epoint.alert("没有发现字段！", '', null, 'warning');
+				}
+
+			}, true);
+		}
+
+		function add() {
+			var newRow = {};
+			grid.addRow(newRow, 0);
+			grid.getCellEditor(2, 0);
+		}
+
+		//删除选中
+		function deleteSelected() {
+			grid.removeRows(grid.getSelecteds(), false);
+			setGridData();
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			grid.validate();
+			nodeInfo.name = mini.get("stepName").getValue();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				nodeInfo.id = nodeForm;
+				epoint.execute('save', '@none', [ nodeInfo ], function(data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+	</script>
+</body>
+
+</html>

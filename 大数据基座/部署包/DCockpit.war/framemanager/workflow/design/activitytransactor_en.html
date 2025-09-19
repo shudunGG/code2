@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Process activities dealing with people</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<!-- Add a hidden field -->
+		<input bind="activityGuid" id="activityGuid" class="mini-hidden" /> <input
+			bind="processVersionGuid" id="processVersionGuid" class="mini-hidden" />
+		<input bind="belongToParam" id="belongToParam" class="mini-hidden" />
+		<input bind="belongToParamFilter" id="belongToParamFilter"
+			class="mini-hidden" />
+		<div class="fui-accordions">
+			<div id="contentA" role="accordion" opened="true">
+				<div role="head" title="Activity default processing"></div>
+				<div role="body">
+					<!-- toolbar area -->
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<a class="mini-button" onclick="addATransactor"
+								iconCls="icon-addcircle">New Deal with people</a><a
+								class="mini-button" onclick="delATransactor"
+								iconCls="icon-minuscircle">delete selected</a>
+						</div>
+					</div>
+					<div>
+
+						<div id="datagridA" class="mini-datagrid" sortOrder="desc"
+							idField="participatorGuid" multiSelect="true"
+							style="height: auto;" allowResize="true"
+							action="getDefaultModelA" showPager="false" allowCellEdit="true"
+							allowCellSelect="true" editNextOnEnterKey="true"
+							editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="40"></div>
+								<div type="indexcolumn" width="40" headerAlign="center">
+									order</div>
+								<div field="participatorName" width="200" headerAlign="center"
+									align="center">Handle staff types</div>
+								<div field="dataName" width="200" headerAlign="center"
+									align="center">Processing staff name</div>
+								<div name="belongDept" field="belongDept" width="200"
+									headerAlign="center" align="center">department</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="contentB" role="accordion" opened="true">
+				<div role="head"
+					title="Event processing options(Personnel selection tree set to filter according to this list)"></div>
+				<div role="body">
+					<!-- toolbar area -->
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<a class="mini-button" onclick="addBTransactor"
+								iconCls="icon-addcircle">The new range</a><a class="mini-button"
+								onclick="delBTransactor" iconCls="icon-minuscircle">delete
+								selected</a>
+						</div>
+					</div>
+					<div>
+						<div id="datagridB" class="mini-datagrid" sortOrder="desc"
+							idField="participatorGuid" multiSelect="true"
+							style="height: auto;" allowResize="true"
+							action="getDefaultModelB" showPager="false" allowCellEdit="true"
+							allowCellSelect="true" editNextOnEnterKey="true"
+							editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="40"></div>
+								<div type="indexcolumn" width="40" headerAlign="center">
+									order</div>
+								<div field="participatorName" width="200" headerAlign="center"
+									align="center">Handle staff types</div>
+								<div field="dataName" width="200" headerAlign="center"
+									align="center">Processing staff name</div>
+								<div name="relation" field="relation" width="200"
+									headerAlign="center" align="center">Contains the
+									relationship</div>
+								<div name="belongDept" field="belongDept" width="200"
+									headerAlign="center" align="center">department</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+
+
+	<script type="text/javascript">
+		var miniLocal = 'en_US.js';
+	</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitytransactoraction');
+
+		// form A The refresh
+		function searchData() {
+			epoint.refresh();
+		}
+		//The callback for the add operation-Dealing with people
+		function addCallBack(data) {
+			if (data != "close")
+				searchData();
+		}
+		//Choose department callbackB-They can handle
+		// 		function editCallBack(param) {
+		// 			if (param)
+		// 				searchData();
+		// 		}
+		//delete selectedline A- Dealing with people
+		function delATransactor() {
+			var datagrid = mini.get('datagridA');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.confirm("determinedelete selectedRecord?", "", function(
+						action) {
+					epoint.execute("deleteSelectA", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, '', null, 'info');
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("Please choose to delete records!", '', null, 'warning');
+			}
+		}
+		//delete selectedline B- Dealing with peopleThe scope of
+		function delBTransactor() {
+			var datagrid = mini.get('datagridB');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.confirm("determinedelete selectedRecord?", "", function(
+						action) {
+					epoint.execute("deleteSelectB", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, '', null, 'info');
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("Please choose to delete records!", '', null, 'warning');
+			}
+		}
+
+		//New Deal with people
+		function addATransactor() {
+			var activityGuid = mini.get('activityGuid').getValue();
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var belongTo = mini.get('belongToParam').getValue();
+			epoint.openDialog("chooseDealing with people",
+					'framemanager/workflow/design/workflowselectuser?activityGuid='
+							+ activityGuid + '&belongTo=' + belongTo
+							+ '&processVersionGuid=' + processVersionGuid,
+					addCallBack, {
+						'width' : 900,
+						'height' : 600
+					});
+		}
+		//newThey can handle
+		function addBTransactor() {
+			var activityGuid = mini.get('activityGuid').getValue();
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var belongToFilter = mini.get('belongToParamFilter').getValue();
+			epoint.openDialog("chooseDealing with people",
+					'framemanager/workflow/design/workflowselectuser?activityGuid='
+							+ activityGuid + '&belongTo=' + belongToFilter
+							+ '&processVersionGuid=' + processVersionGuid,
+					addCallBack, {
+						'width' : 900,
+						'height' : 600
+					});
+		}
+		function getIsShow(data) {
+			isShow = data;
+		}
+		//Apply colours to a drawing datagridA linebutton-Dealing with people
+		var grida = mini.get("datagridA");
+		grida
+				.on(
+						"drawcell",
+						function(e) {
+							var record = e.record, column = e.column, field = e.field, value = e.value;
+							//belongDept The column,button
+							if (column.name == "belongDept") {
+								e.cellStyle = "text-align:center;";
+								if (record.type == '20') {
+									if (record.belongDept == undefined) {
+										record.belongDept = "";
+									}
+									e.cellHtml = '<a id="'
+											+ record.participatorGuid
+											+ '" class="mini-button" onclick="javascript:editDepA(\''
+											+ record.participatorGuid + '\',\''
+											+ record.belongDept + '\',\''
+											+ record.type
+											+ '\')" >department</a>';
+								}
+							}
+						});
+		//Dealing with peoplechoosedepartment
+		function editDepA(particpatorGuid, belongDept, type) {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var url = "framemanager/workflow/design/selectoupaticpator?particpatorGuid="
+					+ particpatorGuid
+					+ "&type="
+					+ type
+					+ "&processVersionGuid="
+					+ processVersionGuid
+					+ "&belongDept=" + belongDept;
+			epoint.openDialog("chooseDealing with peopledepartment", url, '', {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+
+		//Apply colours to a drawing datagridB linebutton-They can handle
+		var gridb = mini.get("datagridB");
+		gridb
+				.on(
+						"drawcell",
+						function(e) {
+							var record = e.record, column = e.column, field = e.field, value = e.value;
+							//relation The column,button
+							if (column.name == "relation") {
+								e.cellStyle = "text-align:center;";
+								e.cellHtml = '<a class="mini-button" onclick="javascript:changeTransactorFilter(\''
+										+ record.participatorGuid
+										+ '\') ">'
+										+ record.relation + '</a>'
+							}
+
+							//belongDept The column,button
+							if (column.name == "belongDept") {
+								e.cellStyle = "text-align:center;";
+								//Is the role thatdepartmentbutton
+								if (record.type == '20') {
+									if (record.belongDept == undefined) {
+										record.belongDept = "";
+									}
+									e.cellHtml = '<a id="'
+											+ record.participatorGuid
+											+ '" class="mini-button" onclick="javascript:editDepB(\''
+											+ record.participatorGuid + '\',\''
+											+ record.belongDept + '\',\''
+											+ record.type
+											+ '\')" >department</a>';
+								}
+							}
+						});
+		//Dealing with peopleThe scope ofchoosedepartment
+		function editDepB(particpatorGuid, belongDept, type) {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var url = "framemanager/workflow/design/selectoupaticpator?particpatorGuid="
+					+ particpatorGuid
+					+ "&type="
+					+ type
+					+ "&processVersionGuid="
+					+ processVersionGuid
+					+ "&belongDept=" + belongDept;
+			epoint.openDialog("chooseDealing with peopledepartment", url, '', {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+		//Eliminate containsbutton
+		function changeTransactorFilter(participatorGuid) {
+			epoint.execute('changeTransactorFilter', [ 'contentB' ],
+					[ participatorGuid ], searchData);
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

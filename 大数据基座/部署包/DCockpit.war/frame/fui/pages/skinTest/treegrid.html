@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="../../js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <span class="mini-button" onclick="changeTo('default')">蓝</span>
+            <span class="mini-button" onclick="changeTo('red')">红</span>
+            <span class="mini-button" onclick="changeTo('bluegreen')">绿</span>
+        </div>
+        <div class="btn-group ">
+            <span class="mini-button" onclick="toggleShowBorder">切换表格线</span>
+        </div>
+    </div>
+    <div class="fui-content">
+        <div id="datagrid" class="mini-treegrid" showHGridLines="true" showVGridLines="true" url="http://fe.epoint.com.cn:8080/miniui_dev/demo/data/tasks.txt"
+            showTreeIcon="true" treeColumn="taskname" idField="UID" parentField="ParentTaskUID" resultAsTree="false"
+            allowResize="true" expandOnLoad="false" ondrawcell="onDrawCell" style="height:100%">
+            <div property="columns">
+                <div type="indexcolumn" field="index"></div>
+                <div name="taskname" field="Name" width="160">任务名称</div>
+                <div field="PercentComplete" width="80">进度</div>
+                <div field="Duration" width="60" align="right">工期</div>
+                <div field="Start" width="80" dateFormat="yyyy-MM-dd">开始日期</div>
+                <div field="Finish" width="80" dateFormat="yyyy-MM-dd">完成日期</div>
+            </div>
+        </div>
+    </div>
+    <script src="../../js/jsboot.js"></script>
+    <script>
+        // $('<style>.mini-tree-nodes-tr{background:#e6f1ff}.mini-treegrid-expandRow{background:#b7d6ff;}</style>').appendTo('head');
+
+        function changeTo(v) {
+            $.cookie('_theme_', 'grace', {
+                path: '/',
+                expires: 365
+            });
+            Util.skinSwitcher.updateSkin(v);
+        }
+        function toggleShowBorder() {
+            tree.setShowHGridLines(!tree.getShowHGridLines());
+            tree.setShowVGridLines(!tree.getShowVGridLines());
+        }
+
+        var tree = mini.get("datagrid");
+        tree.load();
+
+        function onDrawCell(e) {
+            var record = e.record;
+
+            if (e.field == "index") {
+
+                var parentNodes = tree.getAncestors(record);
+                parentNodes.push(record);
+                var indexs = [];
+                for (var i = 0, l = parentNodes.length; i < l; i++) {
+                    var pNode = parentNodes[i];
+                    var parentNode = tree.getParentNode(pNode);
+                    var childNodes = tree.getChildNodes(parentNode);
+                    var index = childNodes.indexOf(pNode) + 1;
+                    indexs.push(index);
+                }
+                e.cellHtml = indexs.join(".");
+            }
+
+        }
+
+        function doAltRow() {
+            var $tbody = $(tree._contentEl).find('.mini-grid-rows-content > .mini-grid-table > tbody');
+            // 增加奇偶行标识
+            $tbody.find('> .mini-grid-row').each(
+                function (i, item) {
+                    if (i % 2 == 1) {
+                        $(item).addClass('mini-grid-row-alt');
+                    }
+                });
+            // 添加展开行的cls
+            $tbody.find('> .mini-tree-nodes-tr').each(function (i, tr) {
+                $(tr).prev().addClass('mini-treegrid-expandRow')
+            });
+        }
+        // tree.on('layout', doAltRow);
+    </script>
+</body>
+
+</html>

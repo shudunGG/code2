@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新建列表</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="关联数据表" starred="true">
+						<input id="formTree" class="mini-treeselect" showFilter="true"
+							bind="dataBean.tableid" action="getTreeModal" multiSelect="false"
+							required="true" onbeforenodeselect="beforenodeselect"
+							showRadioButton="true" onvaluechanged="changtype"
+							filterMode="server" />
+					</div>
+
+				</div>
+				<div role="row" id="form1">
+					<div role="control" label="列表名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.pagename"
+							required="true" id="pagename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="列表类型" starred="true">
+						<div id="listType" class="mini-combobox" textField="text"
+							value="0" valueField="id" bind="dataBean.listtype"
+							action="getListTypeList" required="true"
+							requiredErrorText="列表类型不能为空!"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="子系统分类">
+						<input id="tabletypeTree" class="mini-treeselect"
+							bind="dataBean.tabletype" action="getTreeData" showClose="true"
+							multiSelect="false" onbeforenodeselect="tabletypeselect"
+							oncloseclick="onCloseClick" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999999" id="ordernum" />
+					</div>
+				</div>
+				<div role="row" id="form2">
+
+					<!-- <input class="mini-hidden" bind="dataBean.sqltablename"
+						id="sqltablename" /> -->
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('epointsformtableaddaction', '', function(data) {
+			mini.get('listType').setValue("0");
+		});
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if(data.msg.indexOf("成功")!=-1){
+					epoint.showTips(data.msg, {state : 'success'});
+					// 清空表单
+					epoint.clear('pagename');
+					//epoint.clear('listType');
+					epoint.clear('ordernum');
+				}else{
+					epoint.showTips(data.msg, {state : 'error'});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+
+			}
+		}
+
+		//选择类型的时候触发事件
+		function changtype() {
+			mini.get("pagename").setValue(mini.get("formTree").getText());
+		}
+
+		function beforenodeselect(e) {
+			if (e.isLeaf == false || e.record.ckr == false
+					|| e.record.path == 'parent' || e.record.noClick == true) {
+				e.cancel = true;
+			}
+		}
+
+		function tabletypeselect(e) {
+			if (e.record._pid == "-1") {
+				e.cancel = true;
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

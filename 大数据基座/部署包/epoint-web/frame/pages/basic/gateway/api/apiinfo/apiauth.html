@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>反向授权</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">保存设置</a> <a
+			class="mini-button" id="btnClose" onclick="epoint.closeDialog">取消设置</a>
+	</div>
+
+	<div class="fui-toolbar" id="toolbar2">
+		<a class="mini-button" state="primary" onclick="saveChoose">保存选择</a> <a
+			class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="control" label="多tab树" starred="true">
+				<div id="tabstreeselect" class="mini-tabstreeselect"
+					selectedPanelTitle="已选应用" filterMode="server" checkRecursive="true"
+					action="getTreeModel" style="width: 990px;" loadWhenChecked="true"
+					showBorder="true">
+					<div tabText="授权应用" tabKey="class"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiauthaction', null, function(data) {
+			if (data.flag) {
+				$("#toolbar1").hide();
+			} else {
+				$("#toolbar2").hide();
+			}
+		});
+
+		//保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, null, null, null, 'info');
+				} else {
+					epoint.alert(msg, null, null, 'info');
+				}
+			}
+		}
+
+		function saveChoose() {
+			var selectNodes = mini.get('tabstreeselect').getSelectedNodes();
+			var length = selectNodes.length;
+			if (epoint.validate()) {
+				epoint.execute('saveChoose', '', length, function(data) {
+					epoint.alertAndClose("选择成功", null, null, {
+						backParam : {
+							"guid" : data.guid,
+							"text" : data.text
+						}
+					}, 'info');
+				});
+			}
+		}
+		
+	</script>
+</body>
+</html>

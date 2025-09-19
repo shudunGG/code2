@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>导入数据检验</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div id="dataImport" class="mini-webuploader" pickerText="导入XML"
+			action="importdatacheckaction.getDataImportModel"
+			showDefaultUI="false" limitType="xml"
+			dataImport="true" onuploadfinished="searchData" auto="true"
+			onuploadaccept="UploadSuccess" onstartupload="startUpload"></div>
+		<a class="mini-button" state="primary" onclick="importAll" id="btnImport" style="display:none;">继续导入 </a>
+		<a class="mini-button" onclick="ignoreAll" id="btnIgnore" style="display:none;">全部忽略</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content" >
+		<div role="control" id="tip" style="display: none">
+			<span class="text-assist">注:当前导入数据无重复内容，请操作继续导入完成导入操作&nbsp;&nbsp;</span>
+		</div>
+		<div id="datagrid" class="mini-datagrid" idField="tableid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" allowCellValid="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40" name="check"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="oldsqltablename" width="200">原SqlTableName</div>
+				<div field="newsqltablename" width="auto">
+					新SqlTableName <input property="editor" class="mini-textbox"
+						minWidth="80" inputStyle="text-align:right" required="true" />
+				</div>
+				<div field="remarks" width="150">备注(所属表)</div>
+				<div width="80" renderer="ignoreItem" name="ignoreOperation">忽略</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="ignoreData" />
+	<input class="mini-hidden" id="dulpNameData" />
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		epoint.initPage('importdatacheckaction', '', initCallback);
+
+		var datagrid = mini.get("datagrid");
+
+		var ignoreData = mini.get("ignoreData").getValue();
+
+		var dulpNameData = mini.get("dulpNameData").getValue();
+
+		var tip = document.getElementById("tip");
+
+		function initCallback(data) {
+			if (data && data.dulpNamesList) {
+				var dulpList = JSON.parse(data.dulpNamesList);
+				for (var i = 0; i < dulpList.length; i++) {
+					if (datagrid) {
+						var index = datagrid.data.length;
+						datagrid.addRow(dulpList[i], index);
+					}
+				}
+				tip.style.display = "none";
+			}
+		}
+
+		//忽略一个
+		function ignoreItem(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"ignoreChange");
+		}
+
+		function ignoreChange(e) {
+			epoint.confirm("是否确认忽略?", '', function() {
+				ignoreData += datagrid.getSelected().oldsqltablename + ";";
+				datagrid.removeRow(datagrid.getSelected(), false);
+			});
+		}
+
+		//忽略全部
+		function ignoreAll() {
+			console.log(datagrid.getSelecteds());
+			if (datagrid.getSelecteds() == null
+					|| datagrid.getSelecteds().length == 0) {
+				epoint.showTips("请先选择要忽略的记录!", {
+					state : 'info'
+				});
+			} else {
+				epoint.confirm("是否确认全部忽略?", '', function() {
+					// 记录忽略的sqlTableName,；分隔
+					var selectedRows = datagrid.getSelecteds();
+					for (var i = 0; selectedRows != null
+							&& i < selectedRows.length; i++) {
+						ignoreData += selectedRows[i].oldsqltablename + ";";
+					}
+					datagrid.removeRows(datagrid.getSelecteds(), false);
+				});
+			}
+		}
+
+		// 继续导入全部
+		function importAll() {
+			epoint.confirm("是否确认继续导入?", '', function() {
+				dulpNameData = "";
+				for (var n = 0; n < datagrid.data.length; n++) {
+					if ((datagrid.data[n].newsqltablename == "")
+							|| (datagrid.data[n].newsqltablename == null)) {
+						epoint.showTips("存在未修改新sqltablename数据，请先检查!", {
+							state : 'info'
+						});
+						return;
+					}
+				}
+				// 整理重名修改数据旧名,新名;旧名,新名
+				for (var i = 0; i < datagrid.data.length; i++) {
+					dulpNameData += datagrid.data[i].oldsqltablename + ","
+							+ datagrid.data[i].newsqltablename;
+					dulpNameData += ";";
+				}
+				console.log("dulpNameData=" + dulpNameData);
+				console.log("ignoreData=" + ignoreData);
+				epoint.execute('importAll', '', [ dulpNameData, ignoreData ],
+						msgCallBack);
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data && data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+		
+		function startUpload() {
+			epoint.showLoading();
+		}
+
+		function UploadSuccess(args) {
+			epoint.hideLoading();
+			if (args.ret.extraDatas.msg) {
+				if (args.ret.extraDatas.msg == "导入成功！") {
+					tip.style.display = "block";
+				} else {
+					var data = args.ret.extraDatas.msg;
+					var dulpList = JSON.parse(data);
+					if (dulpList != null && dulpList.length > 0) {
+						tip.style.display = "none";
+						for (var i = 0; dulpList != null && i < dulpList.length; i++) {
+							if (datagrid) {
+								var index = datagrid.data.length;
+								datagrid.addRow(dulpList[i], index);
+							}
+						}
+						datagrid.show();
+						mini.get("btnIgnore").show();
+					} else {
+						tip.style.display = "block";
+					}
+				}
+				mini.get("dataImport").clearFile();
+				mini.get("dataImport").hide();
+				mini.get("btnImport").show();
+			}
+		}
+	</script>
+</body>
+</html>

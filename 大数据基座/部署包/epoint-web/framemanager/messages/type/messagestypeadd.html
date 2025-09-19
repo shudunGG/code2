@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>消息类型表添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+
+<style>
+.bg-color-list {
+	width: 100%;
+}
+
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+
+.bg-color-item {
+	float: left;
+	margin-top: 1px;
+	width: 20px;
+	height: 20px;
+	border-radius: 4px;
+	border: 2px solid transparent;
+	opacity: .6;
+	position: relative;
+	cursor: pointer;
+}
+
+.bg-color-item+.bg-color-item {
+	margin-left: 4px;
+}
+
+.bg-color-item:hover, .bg-color-item.active {
+	box-shadow: 0 0 3px rgba(0, 0, 0, .15);
+	opacity: 1;
+}
+
+.bg-color-item:hover:after, .bg-color-item.active:after {
+	content: "";
+	display: block;
+	height: 100%;
+	width: 100%;
+	background:
+		url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJCAYAAAAGuM1UAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFHGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDIgNzkuMTYwOTI0LCAyMDE3LzA3LzEzLTAxOjA2OjM5ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOCAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDE4LTA5LTIxVDE2OjE2OjA2KzA4OjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAxOC0wOS0yMVQxNjoxNzoxMiswODowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAxOC0wOS0yMVQxNjoxNzoxMiswODowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2YjQxZjFiNC03NmUyLTc5NGMtOTBhYy1kN2MyNGYzNGQ3NzMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NmI0MWYxYjQtNzZlMi03OTRjLTkwYWMtZDdjMjRmMzRkNzczIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NmI0MWYxYjQtNzZlMi03OTRjLTkwYWMtZDdjMjRmMzRkNzczIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo2YjQxZjFiNC03NmUyLTc5NGMtOTBhYy1kN2MyNGYzNGQ3NzMiIHN0RXZ0OndoZW49IjIwMTgtMDktMjFUMTY6MTY6MDYrMDg6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKSIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5jstTzAAAAgElEQVQYGWP4//8/A5E4CojZiFHICMQ9/yFgDSHFTEA8Har4ExA7wCQ8gXg2EDMjKQaxF0MVvwNic5A4SIILiB9DJdaB3AnF66BiL4FYH2YQzDQNJE3boPg/VEwD2ZnI7lUE4nv/EeAeVIwBlwYQlgLi61AshS0gsIWMGBRjDTkAVihc1I/Fdr4AAAAASUVORK5CYII=")
+		center no-repeat;
+}
+</style>
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			消息类型作为消息发送的第一步,发送消息首先需要传递类型编号<br>
+			已知的类型编号有待办通知:waithandle,邮件提醒:newmail,邮件反馈:mailfb,系统提醒:sysremind
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="类型编号" starred="true">
+						<input bind="dataBean.typeID" class="mini-textbox" required="true"
+							style="width: 90%" requiredErrorText="类型编号不能为空"
+							vtype="maxLength:50" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="类型名称" starred="true">
+						<input bind="dataBean.typeName" class="mini-textbox"
+							style="width: 90%" required="true" requiredErrorText="类型名称不能为空"
+							vtype="maxLength:7" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input id="orderNumber" bind="dataBean.orderNumber"
+							style="width: 90%" class="mini-textbox"
+							vtype="int;range:0,99999999" allowSort="true" />
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="类型url">
+						<input bind="dataBean.typeUrl" class="mini-textbox"
+							style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联表字段名">
+						<input bind="dataBean.relatedfield" class="mini-textbox"
+							style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联表字段值">
+						<input bind="dataBean.relatedvalue" class="mini-textbox"
+							style="width: 90%" />
+					</div>
+				</div> -->
+				<div role="row">
+					<div role="control" label="图标">
+						<div style="position: relative; float: left;">
+							<span class="text-minor" id="sign1">暂无图标， </span>
+							<div id="uploader2" class="mini-webuploader"
+								action="messagestypeaddaction.getFileUploadModel2"
+								fileSingleSizeLimit="2048" limitType="jpeg,jpg,gif,png,bmp"
+								mimeTypes="image/*" showDefaultUI="false" auto="true"
+								pickerText="请上传" onfilesuccess="OnSignFileSuccess"></div>
+						</div>
+						<span class="text-minor" id="sign3">（最佳图片尺寸：120px<em>*</em>180px）
+						</span>
+						<div class="img-view" id="picture"
+							style="display: none; position: relative;">
+							<img id="userSign" src="" width="120px" height="180px"
+								alt="app图标" /> <i class="action-icon icon-removecirclefilled"
+								style="position: absolute; right: -16px; top: 0px;"
+								onclick="delUserSign();"></i>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="小图标">
+						<input id="smallIcon" bind="dataBean.smallIcon"
+							class="mini-buttonedit" style="width: 90%"
+							onbuttonclick="openicon('big')" selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="图标背景颜色">
+						<div id="bg-color-select" class="bg-color-list clearfix"></div>
+						<input id="bg-color-hidden" class="mini-hidden"
+							bind="dataBean.iconbgcolor" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="打开方式">
+						<input id="openType" bind="dataBean.openType" style="width: 90%"
+							action="getOpenType" class="mini-radiobuttonlist" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="更新模式">
+						<input id="updatemode" bind="dataBean.updatemode"
+							style="width: 90%" action="getUpdateMode"
+							class="mini-radiobuttonlist" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		var $bgSelectWrap = $('#bg-color-select');
+		var bgColor = mini.get('bg-color-hidden');
+		var colorsArr = [ '#3391e5', '#58cece', '#f16caa', '#7d9459',
+				'#298aae', '#58cece', '#ffce3d', '#fe5d58', '#3391e5',
+				'#f16caa' ];
+		var COLOR_ITEM_TPL = '<span class="bg-color-item" id="bg-color-item-{{id}}" style="background-color:{{text}};" title="{{text}}"></span>';
+		var colorHTML = [];
+		$.each(colorsArr, function(i, item) {
+			colorHTML.push(Mustache.render(COLOR_ITEM_TPL, {
+				id : item.substr(1),
+				text : item
+			}));
+		});
+		$(colorHTML.join('')).appendTo($bgSelectWrap.empty());
+
+		$bgSelectWrap.on('click', '.bg-color-item', function() {
+			var $this = $(this);
+			var c = $this[0].title;
+			bgColor.setValue(c);
+			$this.addClass('active').siblings().removeClass('active');
+		});
+
+		function epoint_preload(controls) {
+			// 获取设置颜色
+			$.each(controls, function(i, item) {
+				if (item.id == 'bg-color-hidden') {
+					try {
+						var c = item.value || item.text;
+
+						c
+								&& $bgSelectWrap.find(
+										'#bg-color-item-' + c.substr(1))
+										.addClass('active').siblings()
+										.removeClass('active');
+					} catch (error) {
+
+					}
+				}
+			})
+		}
+
+		// 初始化页面
+		epoint.initPage('messagestypeaddaction', '', function() {
+			mini.get("bg-color-hidden").setValue("#3391e5");
+			$("#bg-color-item-3391e5").addClass('active').siblings()
+					.removeClass('active');
+			mini.get("smallIcon").setValue("modicon-1");
+			mini.get("smallIcon").setText("modicon-1");
+		});
+		//个性签名图片上传成功
+		function OnSignFileSuccess(args) {
+			if (args.data.extraDatas.signPicture) {
+				showSignPicture(args.data.extraDatas.signPicture);
+			}
+		}
+
+		//删除个性签名图片
+		function delUserSign() {
+			epoint.execute("messagestypeaddaction.delUserSign", "",
+					function delUserSignCallback(data) {
+						if (data.msg) {
+							mini.get("uploader2").clearFile();
+							showSignPicture();
+						}
+					});
+		}
+
+		//控制签名图片显隐
+		function showSignPicture(url) {
+			if (url) {
+				$("#userSign").attr("src", url);
+				mini.get("uploader2").setVisible(false);
+				$("#sign1").hide();
+				$("#sign3").hide();
+				$("#picture").show();
+			} else {
+				$("#picture").hide();
+				$("#userSign").attr("src", "");
+				mini.get("uploader2").setVisible(true);
+				$("#sign1").show();
+				$("#sign3").show();
+			}
+		}
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					mini.get('openType').setValue('dialog');
+					mini.get('updatemode').setValue('client');
+					mini.get("bg-color-hidden").setValue("#3391e5");
+					$("#bg-color-item-3391e5").addClass('active').siblings()
+							.removeClass('active');
+					mini.get("smallIcon").setValue("modicon-1");
+					mini.get("smallIcon").setText("modicon-1");
+					epoint.showTips(data.msg, {state : 'success'});
+					showSignPicture();
+				}else{
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+				
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+			}
+		}
+		function openicon(type1) {
+			type = type1;
+			epoint.openDialog('选择图标',
+					"framemanager/orga/uiset/menu/module/selectoa8icon?type="
+							+ type1, openiconOperJS, {
+						'width' : 1000,
+						'height' : 420
+					});
+		}
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				if (type == "big") {
+					mini.get("smallIcon").setText(rtnValue);
+					mini.get("smallIcon").setValue(rtnValue);
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

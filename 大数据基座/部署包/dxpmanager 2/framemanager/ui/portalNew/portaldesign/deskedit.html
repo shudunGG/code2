@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>门户展示</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output(['framemanager/ui/portalNew/mCustomScrollbar/jquery.mCustomScrollbar.min.css',
+            './css/desk.css',
+            './css/ruler.css'
+            // 'framemanager/ui/portalNew/deskmanagement/deskmanagement.css'
+        ]);
+    </script>
+</head>
+
+<body class="edit">
+    <div class="top">
+        <span class="title" id="title"></span>
+        <div class="r">
+            <a class="mini-button cancel" onclick="cancel()">取消</a>
+            <a class="mini-button" onclick="save()">保存</a>
+
+        </div>
+    </div>
+    <div class="main relative" id="main">
+        <!-- 左侧面板 -->
+        <div class="sidebar-panel" id="sidebar-panel">
+            <ul class="types-detail">
+                <!-- 元件的详情 -->
+                <li class="type-detail h-full element-detail">
+                    <div class="element-box h-full relative">
+                        <ul class="mt-10">
+                            <!-- 仓库 -->
+                            <li class="lib-panel">
+                                <div class="clearfix">
+                                    <input class="detail-search relative" id="lib-search" type="text" placeholder="搜索模板">
+                                    <div class="search-menu"></div>
+                                </div>
+
+                                <div class="mt-10 element-detail-container" id="lib-list-container">
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <!-- 右侧内容 -->
+        <div class="container-panel" id="container-panel">
+            <div class="painting-area" id="painting-area">
+                <div class="grid-container gridster row-line ui-droppable" id="grid-container">
+                    <ul>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 存为模板 -->
+    <div id="htmlContent" class="diy-html" style="display:none;">
+        <input id="portal-name" class="portal-name" placeholder="请输入模板名称" />
+    </div>
+
+    <!-- 模板重命名 -->
+    <div id="tempRename" class="diy-html" style="display:none;">
+        <input id="temp-name" class="portal-name" placeholder="" />
+    </div>
+
+    <!-- 仓库更多-->
+    <ul id="lib-more-menu" class="more-menu">
+        <li class="menu-item" data-ref="create"> + 存为模板</li>
+        <ul id="menu-items">
+        </ul>
+    </ul>
+
+    <!-- <div class="clock"></div> -->
+
+    <!-- 元件（仓库） -->
+    <script type="x-tmpl-mustache" id="lib-item-tpl">
+        <ul>
+            {{#list}}
+            <li id="lib-item-{{id}}" class="lib-item drag-item{{#visible}} active{{/visible}}" data-id="{{id}}" data-orginal-ele-guid="{{orginalEleGuid}}"  data-title="{{title}}" data-other="{{other}}" data-url="{{url}}" data-sizex="{{sizex}}" data-sizey="{{sizey}}">
+                <div class="lib-content text-ellipsis" title="{{title}}">
+                    {{title}}
+                </div>
+            </li>
+            {{/list}}
+        </ul>
+    </script>
+    <!-- 元件（搜索仓库） -->
+    <script type="x-tmpl-mustache" id="lib-item-search-tpl">
+        <ul>
+            {{#list}}
+            {{#result}}<li id="lib-item-{{id}}" class="lib-item drag-item{{#visible}} active{{/visible}}" data-id="{{id}}" data-orginal-ele-guid="{{orginalEleGuid}}"  data-title="{{title}}"  data-other="{{other}}" data-url="{{url}}" data-sizex="{{sizex}}" data-sizey="{{sizey}}">
+                <div class="lib-content text-ellipsis" title="{{title}}">
+                    {{{result}}}
+                </div>
+            </li>{{/result}}
+            {{/list}}
+        </ul>
+    </script>
+
+    <!-- 模板 -->
+    <script type="x-tmpl-mustache" id="temp-item-tpl">
+        <li class="menu-item menu-template-item text-ellipsis" title="{{name}}" data-public="{{public}}" data-id="{{id}}" data-name="{{name}}"><span class="template-name">{{name}}</span> {{^public}}<span data-id="{{id}}" data-name="{{name}}" class="text-blue template-edit r mr-10">编辑</span>{{/public}}</li>
+    </script>
+
+    <!-- 右侧移动的元件 -->
+    <script type="x-tmpl-mustache" id="element-tpl">
+        <li id="element-{{id}}" class="widget elem-item element-item {{#showHeader}} showHeader{{/showHeader}} showToolbar" 
+            {{^themeCheck}}
+            style="{{#borderColor}}border-color: {{borderColor}};{{/borderColor}}
+                {{#border}}border-width: {{border}}px;{{/border}}
+                {{#bg}}background-color: {{bg}};{{/bg}} 
+                border-style: solid;
+                {{#shadow}}box-shadow: 0 0 6px 2px {{shadow}};{{/shadow}}
+                {{#radius}}border-radius: {{radius}}px;{{/radius}}
+            " 
+            {{/themeCheck}}
+            data-id="{{id}}" 
+            data-orginal-ele-guid="{{orginalEleGuid}}"
+            data-max-start="{{maxStart}}"
+            data-max-end="{{maxEnd}}"
+            data-min-start="{{minStart}}"
+            data-min-end="{{minEnd}}"
+            data-link-open-type="{{linkOpenType}}"
+            data-theme-check="{{themeCheck}}"
+            data-border="{{border}}"
+            data-border-color="{{borderColor}}"
+            data-bg="{{bg}}"
+            data-shadow="{{shadow}}"
+            data-radius="{{radius}}"
+            data-show-header="{{showHeader}}" 
+            data-title="{{title}}" 
+            data-title-color="{{titleColor}}" 
+            data-title-bg-color="{{titleBgColor}}" 
+            data-icon="{{icon}}" 
+            data-icon-color="{{iconColor}}"
+            data-show-more-btn="{{showMoreBtn}}" 
+            data-more-url="{{moreOpenUrl}}" 
+            data-show-refresh-btn="{{showRefreshBtn}}" 
+            data-show-add-btn="{{showAddBtn}}" 
+            data-add-url="{{addUrl}}"
+            data-url="{{url}}" 
+            data-manage-url="{{manageUrl}}" 
+            data-item-num="{{itemNum}}"
+        >
+            {{#showHeader}}
+            <div class="element-header"
+                style ="
+                {{#titleColor}}color:{{titleColor}};{{/titleColor}}
+                {{#titleBgColor}}background:{{titleBgColor}};{{/titleBgColor}}
+                ">
+                <!-- {{#icon}}<i style="color: {{iconColor}}" class="title-icon modicon-{{icon}}"></i>{{/icon}} -->
+                {{#icon}}<div class="l title-icon mr-5" id="icon-set" style="background: url({{titleIcon}}) no-repeat;"></div>{{/icon}}
+                <span style="{{#icon}}padding-left: 0;{{/icon}}" class="name">{{title}}</span>
+                <div class="header-operations">
+                    {{#showAddBtn}}<span data-url="{{addUrl}}" class="icon add"></span>{{/showAddBtn}}
+                    {{#showMoreBtn}}<span data-url="{{moreUrl}}" class="icon open"></span>{{/showMoreBtn}}
+                    {{#showRefreshBtn}}<span class="icon refresh"></span>{{/showRefreshBtn}}
+                </div>
+            </div>
+            {{/showHeader}}
+            {{#hasChildColumn}}
+                {{#column}}
+                <div class="element-columns">
+                    <div class="scroll-left scroll-btn"></div>
+                    <div class="scroll-wrap">
+                        <ul class="clearfix column-box">
+                            {{#columnItems}}
+                                <li class="column-item-{{id}} element-column-item{{#default}} active{{/default}}" data-is-diy="{{isDiy}}"  data-id="{{id}}" data-name="{{name}}" title="{{name}}" data-url="{{url}}" data-default="{{default}}" data-show-num="{{showNum}}">{{name}}</li>
+                            {{/columnItems}}
+                        </ul>
+                    </div>
+                   
+                    <div class="scroll-right scroll-btn"></div>
+                </div>
+            {{/column}}
+            {{/hasChildColumn}}
+            <div class="element-toolbar">
+                <span class="split"></span>
+                <!-- <span class="icon elem-icon setting" data-ref="set"></span> -->
+                <span class="icon elem-icon delete" data-ref="delete"></span>
+            </div>
+            <div class="element-body" id="element-body-{{id}}" style="{{^showHeader}}height: 100%;{{/showHeader}} {{#hasChildColumn}}height: calc(100% - 80px); {{/hasChildColumn}}">
+            </div>
+            <span class="spots spot-lt"></span>
+            <span class="spots spot-lb"></span>
+            <span class="spots spot-rt"></span>
+            <span class="spots spot-rb"></span>
+        </li>
+    </script>
+
+    <script type="x-tmpl-mustache" id="element-content-tpl">
+        <ul class="element-body-list">
+            {{#itemList}}
+            <li class="todo-item">
+                <a href="javascript:;" class="todo-item-link" title="{{title}}" data-url="{{url}}" data-id="{{id}}">{{{content}}}</a>
+                <span class="todo-item-date">{{date}}</span>
+            </li>
+            {{/itemList}}
+        </ul>
+    </script>
+
+
+    <script type="x-tmpl-mustache" id="cache-element-tpl">
+        
+        <li class="widget cache-elem-item element-item" 
+            id="cache-element-{{id}}"
+            data-name="{{title}}" 
+            data-row="{{row}}" 
+            data-col="{{col}}" 
+            data-sizex="{{sizex}}" 
+            data-sizey="{{sizey}}"
+        >
+        </li>
+    </script>
+    <!-- js -->
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+	    var domain = "rest/portaldeskaction/",
+	    portalGuid = Util.getUrlParams('portalGuid'), // 门户ID
+	    portalConfig = {
+	        deskSave: domain + 'deskSave?isCommondto=true',
+	        getTemplateList: domain + 'getTemplateList?isCommondto=true', // 模板数据获取地址
+	        setEleVisible: domain + 'setElementVisible?isCommondto=true', // 设置元件仓库模板是否可见
+	        getTemplateById: domain + 'getTemplateById?isCommondto=true', // 根据id 查询模板数据
+            saveToTemplate: domain + 'saveToTemplate?isCommondto=true', // 存为模板
+            renameTemplate: domain + 'renameTemplate?isCommondto=true' // 重命名模板
+	    };
+    </script>
+
+    <script>
+            SrcBoot.output([
+                './js/jquery.gridster.min.js',
+                './js/jquery.ruler.js',
+                './js/deskedit.js'
+            ]);
+        </script>
+
+    <script>
+        epoint.initPage('portaldeskaction', '@all', function (data) {
+            $('#title').html(data.title || '首页');
+            // 初始化内容
+            console.log(data);
+            var tableData = data.tableData;
+            gridster.remove_all_widgets();
+            $.each(tableData, function (index, item) {
+                ElementManage.addElementItem(item, true);
+            });
+
+            var pageData = data.pageData;
+            // 元件移动
+            if(!pageData.canMove) {
+                gridster.disable();
+            }
+
+            // 元件缩放
+            if(!pageData.canScale) {
+                gridster.disable_resize();
+                $('.edit .element-item').addClass('no-change');
+            }
+
+            // 元件显隐
+            if(!pageData.canShow) {
+                $('.edit .elem-icon').hide();
+                $('#lib-list-container').addClass('edit-cover');
+                $('.menu-template-item').addClass('edit-disable')
+            }
+
+            if(pageData.widthType == '2') {
+                $('#painting-area').css('width', pageData.pageWidth + 'px');
+                resetBaseDimensions();
+            } else {
+                $('#painting-area').css('width', pageData.pagePercent + '%');
+                resetBaseDimensions();
+            }
+
+        });
+    </script>
+
+</body>
+
+</html>

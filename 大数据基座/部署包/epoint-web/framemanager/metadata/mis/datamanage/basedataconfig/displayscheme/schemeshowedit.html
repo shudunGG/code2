@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增</title>
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addClose" onclick="saveModify">保存</a>
+	</div>
+
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="方案名称" starred="true">
+						<input id="schemename" class="mini-textbox"
+							bind="dataBean.schemename" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号" starred="true">
+						<input id="ordernumber" class="mini-textbox"
+							bind="dataBean.ordernumber" required="true" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row" id="isCommonRow">
+					<div role="control" label="是否通用" starred="true">
+						<input class="mini-radiobuttonlist" action="yesNoModel"
+							textField="text" valueField="id" id="iscommon"
+							bind="dataBean.iscommon" required="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		epoint.initPage('schemeshoweditaction', null, function(data) {
+			if (data && data.isAdmin) {
+				$("#isCommonRow").show();
+			} else {
+				$("#isCommonRow").hide();
+			}
+		});
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		function closeCallback(data) {
+			if (data && data.msg) {
+				epoint.alertAndClose(data.msg, "", null, "info");
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

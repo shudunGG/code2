@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where table_schema = database() and table_name = 'api_sync_log' and column_name = 'description' and data_type = 'text'

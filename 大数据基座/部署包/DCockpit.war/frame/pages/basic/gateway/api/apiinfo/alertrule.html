@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>预警监控</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">新增规则</a>
+			<a class="mini-button" id="btnClose" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<div class="fui-toolbar" id="toolbar2">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="editClose" onclick="editAndClose">修改规则</a>
+			<a class="mini-button" id="btnClose" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="关联资源"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="资源范围">
+									<input id="vdoing" class="mini-combobox" action="getVdoing"
+										bind="dataBean.vdoing" onvaluechanged="vdoingChanged"
+										style="width: 500px;" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control">
+									<input id="selectApi" class="mini-treeselect" bind="selectApi"
+										action="getApiTreeModel" style="width: 500px; display: none"
+										multiSelect="true" />
+									<input id="selectApp"
+										class="mini-treeselect" bind="selectApp"
+										action="getAppTreeModel" style="width: 500px; display: none"
+										multiSelect="true" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="设置报警规则"></div>
+				<div role="body">
+					<div id="fui-form1" class="fui-form">
+						<div role="form">
+							<div id="container">
+								<div role="row">
+									<div role="control" label="规则名称" starred="true">
+										<input id="rulename" class="mini-textbox" required="true"
+											requiredErrorText="规则名称不能为空!" bind="dataBean.rulename"
+											style="width: 500px;" />
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="规则描述">
+										<input id="metric" class="mini-combobox"
+											bind="dataBean.metric" action="getMetric"
+											style="width: 300px; margin-right: 10px;"
+											onvaluechanged="metricValueChanged" />
+										<input id="watchtime"
+											class="mini-combobox" bind="dataBean.watchtime"
+											action="getWatchtime"
+											style="width: 100px; margin-right: 10px;" />
+										<input id="watchvaluetype" class="mini-combobox"
+											onvaluechanged="typeValueChanged" action="getWatchvaluetype"
+											bind="dataBean.watchvaluetype"
+											style="width: 100px; margin-right: 10px;" />
+										<input id="symbol" class="mini-combobox" bind="dataBean.symbol"
+											onvaluechanged="symbolValueChanged" action="getSymbol"
+											style="width: 120px; margin-right: 10px;" />
+										<input id="thresholdvalue1" class="mini-textbox" vtype="range:0,100"
+										 bind="thresholdvalue1" required="true" requiredErrorText="阈值不能为空!"
+											style="width: 120px; margin-right: 10px;" emptyText="阈值最大值为100"/>
+										<input id="thresholdvalue2" class="mini-textbox" vtype="range:0,100"
+										 bind="thresholdvalue2" required="true" requiredErrorText="阈值不能为空!"
+											style="width: 110px; margin-right: 10px; display: none"  emptyText="阈值最大值为100"/> <span
+											id="unit" style="width: 30px;"></span>
+									</div>
+									<input class="mini-hidden" id="metricflag" bind="metricflag">
+								</div>
+							</div>
+							<!-- 							<div role="row"> -->
+							<!-- 								<div role="control"> -->
+							<!-- 									<a href='javascript:addClick();' style="width: 300px">＋添加报警规则</a> -->
+							<!-- 									<a href='javascript:deleteClick();' style="width: 100px">-删除</a> -->
+							<!-- 								</div> -->
+							<!-- 							</div> -->
+							<div role="row">
+								<div role="control" label="通道沉默时间">
+									<input id="dumbperiod" class="mini-combobox"
+										bind="dataBean.dumbperiod" action="getDumbperiod"
+										style="width: 500px;" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="连续几次超过阈值后报警">
+									<input id="watchlength" class="mini-combobox"
+										bind="dataBean.watchlength" action="getWatchlength"
+										style="width: 500px;" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="生效时间">
+									<table>
+										<tr>
+											<th style="width: 200px;"><input id="starttime"
+												onvaluechanged="timeValueChanged"
+												action="getSelectStartTime" class="mini-combobox"
+												bind="starttime" /></th>
+											<th>至</th>
+											<th><input id="endtime" class="mini-combobox"
+												onvaluechanged="timeValueChanged" action="getSelectEndTime"
+												bind="endtime" /></th>
+										</tr>
+									</table>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="通知方式"></div>
+				<div role="body">
+					<div id="fui-form2" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="通知对象">
+									<input id="targetusers" class="mini-treeselect"
+										bind="dataBean.targetusers" multiSelect="true"
+										style="width: 500px;" action="getUserTreeModel" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="消息类型">
+									<input id="messagetype" class="mini-combobox"
+										bind="dataBean.messagetype" style="width: 500px;"
+										action="getMessageType" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="报警级别">
+									<input id="alertlevel" class="mini-combobox"
+										bind="dataBean.alertlevel" action="getAlertlevel"
+										style="width: 500px;" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="处理规则"></div>
+				<div role="body">
+					<div id="fui-form2" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="处理规则">
+									<input id="handlerule" class="mini-combobox"
+										bind="dataBean.handleruleguid" style="width: 500px;"
+										action="getHandleRule" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('alertruleaction', '', initCallBack);
+
+		function initCallBack(data) {
+			if (data) {
+				if (data.opentype == "add") {
+					$("#toolbar2").hide();
+				}
+				if (data.opentype == "edit") {
+					if ("between" == mini.get("symbol").getValue()) {
+						$("#thresholdvalue2").show();
+					}
+
+					$("#toolbar1").hide();
+
+					var vdoing = mini.get("vdoing").getValue();
+					if ("0" == vdoing) {
+						$("#selectApp").show();
+					}
+					if ("1" == vdoing) {
+						$("#selectApi").show();
+					}
+
+					handleRuleDesc();
+					
+					var type = watchvaluetype.getValue();
+					if ("占比" == type) {
+						$("#unit").text("%");
+					}
+				}
+			}
+		}
+
+		//保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', '@all', closeCallback);
+			}
+		}
+
+		function editAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('edit', '@all', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var subjects = mini.get("vdoing").getValue();
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, null, null, null, 'info');
+				} else {
+					epoint.alert(msg, null, null, 'info');
+				}
+			}
+		}
+
+		function vdoingChanged(e) {
+			if (e.value == "1") {
+				$("#selectApp").hide();
+				$("#selectApi").show();
+			}
+			if (e.value == "0") {
+				$("#selectApi").hide();
+				$("#selectApp").show();
+			}
+			if (e.value == "2") {
+				$("#selectApi").hide();
+				$("#selectApp").hide();
+			}
+		}
+
+		var metric = mini.get("metric");
+		var watchvaluetype = mini.get("watchvaluetype");
+
+		function metricValueChanged() {
+			handleRuleDesc();
+			epoint.refresh([ 'watchvaluetype', 'metricflag' ]);
+		}
+
+		function handleRuleDesc(){
+			var id = metric.getValue();
+			if ("code2xx" == id || "code4xx" == id || "code5xx" == id) {
+				mini.get("metricflag").setValue("iscode");
+				$("#unit").text("次");
+			}
+			if ("inputflow" == id || "outputflow" == id) {
+				mini.get("metricflag").setValue("iscount");
+				$("#unit").text("byte");
+			}
+			if ("responsetime" == id) {
+				mini.get("metricflag").setValue("");
+				$("#unit").text("ms");
+			}
+			if ("requestrate" == id || "requestsuccessrate" == id) {
+				mini.get("metricflag").setValue("iscode");
+				$("#unit").text("%");
+			}
+		}
+		
+		function typeValueChanged(e) {
+			if ("占比" == e.value) {
+				$("#unit").text("%");
+			} else {
+				metricValueChanged();
+			}
+		}
+
+		function test(test) {
+			test.parentNode.parentNode.removeChild(test.parentNode);
+		}
+
+		var container = document.getElementById('container');
+		var node = container.nextSibling;
+
+		//点击添加div
+		function addClick() {
+			oDiv = document.createElement('div');
+			oDiv.innerHTML = '<div id="container1">'
+					+ ' <div class="form-row"><label class="form-label" >规则名称：</label><input id="rulename" class="mini-textbox" bind="dataBean.rulename" style="width: 500px; margin-right: 10px;" /></div>'
+					+ ' <div class="form-row"><label class="form-label" >规则描述：</label><input id="metric1" class="mini-combobox" bind="dataBean.metric" action="getMetric" style="width: 300px; margin-right: 10px;" onvaluechanged="metricValueChanged" />'
+					+ ' <input id="watchtime1" class="mini-combobox" bind="dataBean.watchtime" action="getWatchtime" style="width: 100px; margin-right: 10px;" />'
+					+ ' <input id="watchvaluetype1" class="mini-combobox" action="getWatchvaluetype" bind="dataBean.watchvaluetype" style="width: 100px; margin-right: 10px;" />'
+					+ ' <input id="symbol1" class="mini-combobox" bind="dataBean.symbol" action="getSymbol" style="width: 100px; margin-right: 10px;" />'
+					+ ' <input id="thresholdvalue1" class="mini-spinner" bind="dataBean.thresholdvalue" minValue="0" maxValue="200" style="width: 100px; margin-right: 10px;" />'
+					+ ' <span id="unit1" style="width: 30px; padding-left: 10px"></span></div> '
+					+ ' <input class="mini-hidden" id="metricflag" bind="metricflag"></div>';
+			container.parentNode.insertBefore(oDiv, node)
+			node = oDiv.nextSibling;
+			mini.parse();
+			epoint.refresh('container1');
+		}
+
+		//点击删除div
+		function deleteClick() {
+			$("#container1:last").remove();
+		}
+
+		function symbolValueChanged(e) {
+			if ("between" == e.value) {
+				$("#thresholdvalue2").show();
+			} else {
+				$("#thresholdvalue2").hide();
+			}
+		}
+
+		function timeValueChanged() {
+			var start = mini.get("starttime").getValue();
+			var end = mini.get("endtime").getValue();
+			if (start > end && end && start) {
+				epoint.alert("结束时间不能比开始时间小！")
+				mini.get("endtime").setValue("");
+			}
+		}
+	</script>
+</body>
+</html>

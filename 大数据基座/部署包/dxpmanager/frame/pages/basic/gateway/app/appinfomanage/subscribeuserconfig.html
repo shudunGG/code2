@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>订阅用户配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openSelect">选择参数</a> 
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+			<a class="mini-button" id="add" onclick="showAtPos">直接添加</a>
+		</div>
+
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">查看帮助</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<em>可直接通过输入用户配置名字添加订阅关系</em>
+		</p>
+	</div>
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 428px;" allowResize="true" multiSelect="true">
+				<div property="columns">
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="configname" headerAlign="center">用户配置名称</div>
+					<div width="50" align="center" headerAlign="center"
+						renderer="onDelRenderer">删除</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="win1" class="mini-window" title="直接订阅"
+		style="width: 600px; height: 150px;" showMaxButton="true"
+		showCollapseButton="true" showShadow="true" showToolbar="true"
+	    showModal="false" allowDrag="true">
+		<div class="fui-form" id="fui-form2">
+			<div role="row">
+				<div role="control" label="用户配置名称">
+					<input class="mini-textbox mr10" id="userConfigName" width="300" />
+					<a class="mini-button" onclick="subscribeConfig" width="80">直接订阅</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('subscribeuserconfigaction', null, null);
+
+		function subscribeConfig() {
+			var userConfigName = mini.get("userConfigName").getValue();
+			if(userConfigName == '') {
+				epoint.alert("请填写用户配置", null, null, 'warning');
+				return;
+			}
+			else if(userConfigName.length > 50){
+				epoint.alert("输入字数不能超过50", null, null, 'warning');
+				return;
+			}
+			else {
+				epoint.execute('subscribeConfig', '', userConfigName, function(data) {
+					var msg = data.msg;
+					if (msg) {
+						if (data.success) {
+							mini.get("win1").hide();
+							mini.get("userConfigName").setValue("");
+							epoint.alert(data.msg, '', null, 'success');
+							epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+						} else {
+							epoint.alert(msg, null, null, 'warning');
+						}
+					}
+				});
+			}
+		}
+		
+		function showAtPos() {
+	        var win = mini.get("win1");            
+	        win.showAtPos('center','middle');
+	    }
+
+		// 关闭操作的回调
+		function callback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(data.msg, '', null, 'success');
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				} else {
+					epoint.alert(msg, null, null, 'warning');
+				}
+			}
+		}
+
+		// 绘制行删除按钮
+		var onDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"deleteRelation", "rowguid");
+		};
+
+		// 删除一行数据
+		function deleteRelation(rowguid) {
+			// 弹出确认框
+			epoint.confirm("确定删除订阅吗?", '', function() {
+				epoint.execute("delete", '', [ rowguid ], callback);
+			});
+		}
+
+		function openSelect() {
+			epoint.openDialog('用户配置订阅',
+					'frame/pages/basic/gateway/app/appinfomanage/selectuserconfig?appguid='
+							+ Util.getUrlParams('appguid'), function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+</body>
+</html>

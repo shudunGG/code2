@@ -1,0 +1,2 @@
+select count(*) from information_schema.columns
+            where table_schema = database() and table_name = 'frame_exttabsconfig' and column_name = 'exturl' and data_type = 'varchar' and character_maximum_length=200

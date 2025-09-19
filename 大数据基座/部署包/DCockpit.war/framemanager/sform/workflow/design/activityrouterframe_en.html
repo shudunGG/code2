@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Routing activities page</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle"
+				onclick="btnSaveClick();" id="btnAddRecord">Confirm to save </a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="The name of the event" starred="true">
+					<input id="acName" class="mini-textbox"
+						bind="workflowActivity.activityName" required="true"
+						requiredErrorText="The name of the eventCan't be empty!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Branch way">
+					<div bind="workflowActivity.splitType" class="mini-radiobuttonlist"
+						repeatItems="2" value="10" textField="text" valueField="id"
+						data="[{text:'Multiple branch',id:'20'},
+							{text:'A single branch',id:'30'}]">
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Way to meet">
+					<div bind="workflowActivity.joinType" class="mini-radiobuttonlist"
+						repeatItems="2" value="10" textField="text" valueField="id"
+						data="[{text:'Multi-channel rendezvous',id:'20'},
+							{text:'A single rendezvous',id:'30'}]">
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="remark">
+					<input class="mini-textbox" bind="workflowActivity.note" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Activity id">
+					<input class="mini-textbox"
+						bind="workflowActivity.activityDispName" /> <span
+						class="text-danger">(Used to only positioning to the activity,Once the setting is not allowed to change,With active objectsactivityDispNameassociated)</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activityrouterframesformaction');
+
+		function btnSaveClick() {
+			if (epoint.validate()) {
+				epoint.execute('btnSaveClick', 'fui-form', closeCallback);
+			}
+		}
+
+		function setDialogValue(param) {
+			parent.dialogvalueset(param);
+		}
+
+		function updateTab() {
+			tabshow();
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.msg) {
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				}else{
+					epoint.alert(data.msg, '', null, 'info');
+				}
+				var textValue = mini.get('acName').getValue();
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : Util.getUrlParams('MaxID'),
+					NodeType : 'Router',
+					Text : textValue
+				};
+				parent.dialogvalueset(param);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

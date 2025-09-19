@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"></meta>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+    <title>METRO主题-主界面</title>
+    <script src="../../../js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            'fui/js/lib/epdialog/epdialog.css',
+            'fui/js/lib/epcontextmenu/epcontextmenu.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <!-- <div class="page-loading"></div> -->
+    <!-- 背景图片 -->
+    <img src="images/skinbg/new.jpg" alt="" class="metro-skin-bg" />
+    <!-- 顶部工具栏 -->
+    <div class="metro-top-bar clearfix" id="metro-top-bar">
+        <img src="images/Images_epoint_title.png" alt="" class="sys-logo l" />
+        <div class="r clearfix mr10">
+            <!-- 当前用户 -->
+            <p class="sys-user l mr20">
+                当前用户：
+                <a id="user-info" href="javascript:void(0);" title="切换登录身份">系统管理员（系统管理部）</a>
+            </p>
+            <div class="l top-btns clearfix">
+                <a href="javascript:void(0);" class="emsg-chat l mr10" id="msgTrigger" title="E讯提醒"></a>
+                <a href="javascript:void(0);" class="appstore l mr10 default-app-btn" data-id="sys-app-store" title="应用仓库"></a>
+                <a href="javascript:void(0);" id="theme-btn" class="portal l mr10" title="主题切换"></a>
+                <a href="javascript:void(0);" class="online l mr10 default-app-btn" data-id="sys-online-user" title="在线0人"></a>
+                <a href="javascript:void(0);" class="setting l mr10 default-app-btn" data-id="sys-user-setting" title="个人设置"></a>
+                <a href="javascript:void(0);" class="message l mr10 default-app-btn" data-id="sys-msg-reminder" title="消息提醒"></a>
+                <a href="javascript:void(0);" class="logout tool-btn l" title="退出系统"></a>
+            </div>
+        </div>
+    </div>
+    <!-- 左侧导航 -->
+    <div class="left-nav-wrap" id="left-nav-wrap">
+        <div class="left-scroll-up invisible"></div>
+        <div class="left-nav">
+            <ul class="left-nav-list" id="left-nav-list">
+                <!-- 模板填充 -->
+            </ul>
+        </div>
+        <div class="left-scroll-down invisible"></div>
+    </div>
+    <!-- metro分屏 -->
+    <div class="metro-screens" id="metro-screens">
+        <!-- 分屏 -->
+        <div class="screen-list clearfix">
+        </div>
+        <!-- 分屏页码 -->
+        <!-- <div class="screen-nav clearfix"> -->
+        <!-- </div> -->
+    </div>
+    <!-- 底部任务栏 -->
+    <div class="metro-task-bar" id="metro-task-bar">
+        <div class="scroll-wrap l hidden">
+            <a href="javascript:void(0);" class="scroll-l"></a>
+        </div>
+        <div class="tasks-wrap l">
+            <div class="task-list clearfix">
+            </div>
+        </div>
+        <div class="scroll-wrap l hidden">
+            <a href="javascript:void(0);" class="scroll-r"></a>
+        </div>
+    </div>
+    <!-- 快捷菜单按钮-->
+    <a href="javascript:void(0);" class="metro-quick-menu-trigger" id="metro-quick-menu-trigger"></a>
+    <!-- 快捷菜单 -->
+    <div class="metro-quick-menu hidden-accessible">
+        <ul>
+        </ul>
+    </div>
+    <!-- 声音提示 js动态添加IE加载iframe 非IE使用audio -->
+    <div id="msg-sound"></div>
+    <div id="msgEMsg" class="msg-panel-detail">
+        <h2 class="msg-panel-head">
+            E讯提醒
+            <i class="msg-panel-hide"></i>
+        </h2>
+        <div class="msg-panel-content">
+            <ul class="emsg-recent-list empty"></ul>
+        </div>
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <!-- 配置变量 -->
+    <script>
+        // 获取用户信息
+        var userInfoUrl = 'metrodataaction.action?cmd=initData',
+            // 获取消息提醒数
+            msgCountUrl = epoint.dealRestfulUrl('themedataaction/getMsgCount'),
+            // 获取在线人数
+            onlineUserCountUrl = 'imacdataaction.action?cmd=initData',
+            // 快捷菜单请求
+            quickMenuUrl = 'metrodataaction.action?cmd=initData',
+            // 获取分屏信息、应用信息
+            screenInfoUrl = 'metrodataaction.action?cmd=initData',
+            // 更新应用信息请求：移动、卸载、安装
+            updateAppUrl = 'metrodataaction.action?cmd=initData',
+            // 默认应用中消息提醒应用的url需用从后端取值，获取此url的请求地址
+            getMsgAppUrl = 'metrodataaction.action?cmd=getSoaRemindUrl',
+            //getMsgAppUrl =epoint.dealRestfulUrl('metrodataaction/getSoaRemindUrl'),
+            // 默认应用配置，如主题设置、应用商店等
+            defaultApps = [{
+                id: 'sys-user-setting',
+                name: '个人设置',
+                url: 'frame/dreamframe/f9settingscenter'
+            }, {
+                id: 'sys-msg-reminder',
+                name: '消息提醒',
+                url: 'frame/metroframe/messagereminder'
+            }, {
+                id: 'sys-online-user',
+                name: '在线沟通',
+                url: 'frame/communication/exun/exunmsg'
+            }, {
+                id: 'sys-app-store',
+                name: '应用仓库',
+                url: 'frame/uiset/menu/app/appmarket?type=metro'
+            }],
+            // 注销账户的回调方法
+            onLogout = function () {
+                //console.log('logout');
+                window.location.href = Util.getRootPath() + "rest/logout?isCommondto=true";
+            };
+
+
+
+        // metro界面的行数、列数配置
+        var METRO_COLUMN_NUM = 4;
+        var METRO_ROW_NUM = 4;
+
+        // 默认显示的分屏页，从1开始
+        var DEFAULT_ACTIVE_PAGE = 1;
+
+        // [x, y] dialog打开时 宽高相对于视窗大小的比列
+        var DIALOG_SIZE_RATIO = [0.6, 0.6];
+        var EmsgConfig = {
+            baseUrl: epoint.dealRestfulUrl('exundataaction/eXun'),
+            treeUrl: epoint.dealRestfulUrl("exundataaction/getTree"),
+            websocketUrl: "../../../../websocket/eXun",
+            historyUrl: "frame/communication/exun/exunmsg",
+            groupImg: "../../emsg/images/emsg-group-bg.png",
+            userImg: "../../emsg/images/emsg-user-error.jpg",
+            // 发送邮件的地址，如果配置了将显示E讯窗口上方显示发送邮件 经在URL后自动拼接收件人guid，多个以“;”分隔
+            // 约定 如果有多人，参数名为ToUserGuidList 一个人则参数名为ToUserGuid
+            sendEmailUrl: 'oa/epointdbmail/InnerEmailLeftMenuTree.jspx?moduleCode=00690002',
+            showErrorMsg: true
+        };
+
+        // 新增配置 是否启用桌面应用上的右键菜单
+        var appContextmenu = true;
+
+
+        // 获取数据的通用请求地址，后面直接+/方法名即可
+        var getDataUrl = 'themedataaction';
+        // 主题获取
+        var getThemesUrl = epoint.dealRestfulUrl(getDataUrl + '/getThemes');
+        // 主题保存
+        var saveThemeUrl = epoint.dealRestfulUrl(getDataUrl + '/saveTheme');
+    </script>
+    <script>
+        SrcBoot.output([
+            'fui/js/lib/epdialog/epdialog.js',
+            'fui/js/lib/epcontextmenu/epcontextmenu.js',
+            'fui/pages/themes/metro/metro' + (SrcBoot.debug ? '' : '.min') + '.js'
+        ]);
+    </script>
+
+</body>
+
+</html>

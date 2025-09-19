@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a id="btnAddRecord" class="mini-button" state="primary"
+			onclick="openAdd">新增记录</a><a id="saveModify" class="mini-button "
+			iconCls="icon-save" onclick="saveModify">保存修改</a> <a id="btnDel"
+			class="mini-button" state="danger" onclick="deleteSelect">删除选定</a>
+	</div>
+
+
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="schemename" width="100%">
+					方案名称<input property="editor" class="mini-textbox"
+						style="width: 100%" maxLength="50" />
+				</div>
+				<div field="ordernumber" width="100">
+					排序号<input property="editor" class="mini-textbox" maxLength="50"
+						style="width: 100%" vtype="int" />
+				</div>
+				<div width="100" renderer="onSchemeManageRender">方案管理</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		var tableId = Util.getUrlParams("tableId");
+		var changeRow = {};
+		var changeData = [];
+		var grid = mini.get("datagrid");
+
+		epoint.initPage('schemeorderlistaction', null, function(data) {
+			if ((tableId == "" || typeof (tableId) == "undefined") && data
+					&& data.tableId) {
+				tableId = data.tableId;
+			}
+		});
+
+		//保存修改
+		function saveModify() {
+			for ( var key in changeRow) {
+				var row = grid.getRowByUid(key);
+				changeData.push({
+					rowguid : row.rowguid,
+					schemename : row.schemename,
+					ordernumber : row.ordernumber
+				})
+			}
+			epoint.execute('saveModify', null, [ changeData ], closeDialog);
+		}
+
+		//只要行编辑启动就记录下来
+		grid.on("cellendedit", function(e) {
+			changeRow[e.row._uid] = "modify";
+		})
+
+		function openAdd() {
+			epoint
+					.openTopDialog(
+							'新增记录',
+							"framemanager/metadata/mis/datamanage/basedataconfig/orderscheme/schemeorderadd?tableId="
+									+ tableId, searchData, {
+								'width' : 600,
+								'height' : 350
+							});
+		}
+
+		//方案管理
+		function onSchemeManageRender(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "openManage",
+					"epoint_total");
+		}
+
+		function openManage(e) {
+			epoint
+					.openTopDialog(
+							'方案管理',
+							"framemanager/metadata/mis/datamanage/basedataconfig/orderscheme/schemeorderinfomanage?schemeGuid="
+									+ e.rowguid + "&tableId=" + tableId,
+							searchData, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		function deleteSelect() {
+			epoint.execute('deleteSelect', [ 'datagrid' ], closeDialog);
+		}
+
+		//回调
+		function closeDialog(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+				searchData();
+			}
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+		//]]>
+	</script>
+</body>
+</html>

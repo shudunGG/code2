@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+        文档编辑器
+    </title>
+    <script src="../../cssboot.js"></script>
+</head>
+
+<body>
+    <a style="font-size: 18px;" target="_blank" href="readme.html">组件使用说明</a>
+    <div style="width: 100%;height: 300px;">
+        <div id="editormd"></div>
+    </div>
+    
+    <script src="../../jsboot.js"></script>
+
+    <script src="mdConfig.js"></script>
+    <script type="text/javascript">
+        // var domain = 'http://192.168.201.159:1199/mock/49/';
+        //'http://fdoc.epoint.com.cn:8089/framedoc_bak';
+        var domain = 'http://localhost:2001/';
+
+        var mdEditor = new MDEditor({
+            id: "editormd",
+            bookId: 2,
+            articleId: 3,
+            useStorage: false, // 是否启用本地存储
+            clipImageUrl: domain + 'upload', // 图片上传地址
+            getReferInfoList: domain + 'getReferInfoList', //获取文章列表
+            imgUploadSuccess: function (file) {
+                // 图片上传成功
+                // console.log(file);
+            },
+            imgUploadFaild: function (file) {
+                // 图片上传失败
+                // console.log(file);
+            },
+            onMdLoad: function () {
+                // 编辑器初始化结束的回调
+                // console.log('加载完毕');
+            },
+            onMdChange: function (editor) {
+                // 监听文档内容变化
+                console.log(editor.getMarkdown());
+            }
+        });
+
+        // 用于项目组修改图片上传路径参数
+        mdEditor.updateImageUrl({
+            clipImageUrl: domain + 'upload?id=2'
+        })
+
+        // 渲染编辑器内容
+        mdEditor.renderEditor({
+            content: '编辑器内容'
+        })
+    </script>
+</body>
+
+</html>

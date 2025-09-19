@@ -1,0 +1,33 @@
+<!-- 大元件模版 -->
+<script type="text/x-template" id="waithadletempl-large">
+<li class="portalitem-item">
+	<p class="portalitem-item-title" {{#url}}onclick="top.epoint.openDialog('{{title}}','{{url}}',init)" title="{{title}}">{{content}}</p>
+	<span class="portalitem-item-date">{{date}}</span>
+</li>
+</script>
+
+
+<script type="text/x-template" id="buttontempl-large">
+<span class="portalitem-remind-type">
+	{{name}}
+	(<span class="portalitem-header-num" style="text-decoration: underline; cursor: pointer" onclick="top.TabsNav.addTab({'url':'{{url}}','name':'{{name}}','id':'{{guid}}','maxIcon':true,'closeIcon':true});">
+		{{count}}
+	</span>)
+</span>
+</script>
+
+
+<!-- 中等元件模版 -->
+<script type="text/x-template" id="waithadletempl-medium">
+<li class="portalitem-item">
+	<p class="portalitem-item-title" {{#url}}onclick="top.epoint.openDialog('{{title}}','{{url}}',init)" title="{{title}}">{{content}}</p>
+	<span class="portalitem-item-date">{{date}}</span>
+</li>
+</script>
+
+
+<script type="text/x-template" id="buttontempl-medium">
+(<span class="portalitem-header-num" style="text-decoration: underline; cursor: pointer" onclick="top.TabsNav.addTab({'url':'{{url}}','name':'{{name}}','id':'{{guid}}','maxIcon':true,'closeIcon':true})" title="{{title}}">{{count}}</span>)
+</script>
+
+

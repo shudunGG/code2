@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>变迁线条件设置</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" onclick="addTransition"
+				style="display: none;">确定新增</a><a class="mini-button" id="save"
+				onclick="saveTransition" style="display: none;">保存修改</a> <a
+				class="mini-button mini-btn-danger" id="delete" onclick="deleteTransition"
+				style="display: none;">删除条件</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="条件表达式类型">
+						<input class="mini-combobox" id="conditionExpressionType"
+							bind="workflowTransitionCondition.conditionExpressionType"
+							data="[{text:'复合表达式',id:'20'},{text:'通过调用方法',id:'30'}]" />
+					</div>
+				</div>
+				<div role="row" id="mulitiRow">
+					<div role="control" label="复合表达式">
+						<input class="mini-textarea"
+							bind="workflowTransitionCondition.conditionExpression" />
+					</div>
+				</div>
+				<div role="row" id="methodRow" style="display: none;">
+					<div role="control" label="比较方法">
+						<input id="methodName"
+							bind="workflowTransitionCondition.methodGuid"
+							class="mini-buttonedit" onbuttonclick="selectMethod"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row" id="DivExplain" style="display: none; ">
+					<div role="control">
+						<span class="text-danger">说明：复合表达式的内容是由：[序号]、AND、OR、英文()构成，例：[1] AND ([2] OR [3])。</span>
+					</div>
+				</div>
+				<div role="row" id="ComplexConditionList" style="display: none; ">
+					<div role="control" label="">
+						<!-- toolbar区域 -->
+						<div class="fui-toolbar">
+							<div class="btn-group mr10">
+								<a class="mini-button" iconCls="icon-addcircle"
+									onclick="openAdd();" id="btnAddRecord"> 新增条件 </a> <a
+									id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+									onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+									删除选中 </a>
+							</div>
+						</div>
+						<div id="datagrid" class="mini-datagrid" idField="ConditionGuid"
+							action="getResultListModel" sortOrder="desc" showPager="true"
+							style="height: 300px;" allowResize="true" multiSelect="true"
+							allowCellEdit="true" allowCellSelect="true"
+							editNextOnEnterKey="true" editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="20"></div>
+								<div type="indexcolumn" width="20" headerAlign="center">序</div>
+								<div field="ConditionName" headerAlign="center">名称</div>
+								<div width="20" align="center" headerAlign="center"
+									renderer="onEditRenderer">修改</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="transitionGuid" bind="transitionGuid" />
+	<input class="mini-hidden" id="processVersionGuid" bind="processVersionGuid" />
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activitytransitioncomplexconditionaction', null, initCallBack);
+		
+		var processVersionGuid;
+
+		//初始化回调事件
+		function initCallBack(data) {
+			processVersionGuid = data.processVersionGuid;
+			if (data.conditionExpressionType) {
+				inputShow(data.conditionExpressionType);
+			}
+			if (data.methodName) {
+				mini.get("methodName").setText(data.methodName);
+			}
+			buttonShow(data.type);
+		}
+		
+		mini.get("conditionExpressionType").on("valuechanged", function(e) {
+			inputShow(e.value);
+		});
+		
+		//复杂表达式、方法的显隐
+		function inputShow(type) {
+			if (type == '20') {
+				show('', 'none');
+			} else if (type == '30') {
+				show('none', '');
+			}
+		}
+
+		//复杂表达式、方法的显隐
+		function show(mulitiRow, methodRow) {
+			document.getElementById("ComplexConditionList").style.display = mulitiRow;//和复杂表达式框的显隐保持一致
+			document.getElementById("DivExplain").style.display = mulitiRow;//和复杂表达式框的显隐保持一致
+			document.getElementById("mulitiRow").style.display = mulitiRow;
+			document.getElementById("methodRow").style.display = methodRow;
+		}
+
+		//控制显隐
+		function buttonShow(type) {
+			if (type == "add") {
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+				document.getElementById("delete").style.display = "none";
+			} else if (type == "edit") {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("save").style.display = "";
+				document.getElementById("delete").style.display = "";
+			}
+		}
+		//选择方法
+		function selectMethod() {
+			epoint
+					.openDialog(
+							'选择外部方法',
+							"framemanager/sform/workflow/design/designhelper?mode=function&processVersionGuid="
+									+ processVersionGuid, selectCallBack, {
+								width : 480,
+								height : 300
+							});
+		}
+		//选择外部方法后CallBack
+		function selectCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("methodName").setValue(datas[1]);
+				mini.get("methodName").setText(datas[0]);
+			}
+		}
+
+		//新增
+		function addTransition() {
+			epoint.execute('addTransition', 'fui-content', function(data) {
+				epoint.alert("新增成功！", '', null, 'success');
+				buttonShow("edit");
+				
+			});
+		}
+
+		//保存
+		function saveTransition() {
+			epoint.execute('saveTransition', 'fui-content', function(data) {
+				epoint.alert(data.message, '', null, 'info');
+			});
+		}
+
+		//删除
+		function deleteTransition() {
+			epoint.execute('delTransition', 'fui-content', function(data) {
+				epoint.alert(data.message, '', null, 'info');
+				inputShow(20);
+				buttonShow('add');
+				epoint.clear("fui-form");
+				mini.get("conditionExpressionType").setValue(20);
+				searchKeepPage();
+			});
+		}
+
+		// 新增单一表达式
+		function openAdd() {
+			var transitionGuid = mini.get("transitionGuid").getValue();
+
+			epoint.openDialog('新增单一表达式',
+					"framemanager/sform/workflow/design/activitytransitioncondition?transitionGuid="
+							+ transitionGuid + "&processVersionGuid="
+							+ processVersionGuid, searchKeepPage, {
+						'width' : 600,
+						'height' : 500
+					});
+		}
+		
+		// 绘制单一表达式行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"editCondition", "ConditionGuid");
+		};
+		
+		//修改单一表达式
+		function editCondition(conditionGuid) {
+			var transitionGuid = mini.get("transitionGuid").getValue();
+
+			epoint.openDialog('修改单一表达式',
+					"framemanager/sform/workflow/design/activitytransitioncondition?ConditionGuid="
+							+ conditionGuid + "&transitionGuid="
+							+ transitionGuid + "&processVersionGuid="
+							+ processVersionGuid, searchKeepPage, {
+						'width' : 600,
+						'height' : 500
+					});
+		}
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ]);
+		}
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid', 'fui-content' ],'',true);
+		}
+		// 删除单一表达式
+		function deleteSelect() {
+			epoint.execute("delTCondition", '', searchKeepPage);
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>新点网上协同办公平台V9.0</title>
+    <script src="../../../js/cssboot.js"></script>
+    <!-- 框架页面还没完全翻译完，为了保证老的页面能运行临时引入f8中的dialog组件 -->
+    <script>
+        SrcBoot.output(['frame/fui/js/lib/epdialog/epdialog.css']);
+    </script>
+
+</head>
+
+<body>
+    <img id="bg-img" src="../../../../image/f9/classic/bg/蓝.png" class="fui-bgimg">
+    <!-- 顶部 -->
+    <div id="fuiHeader" class="fui-header clearfix">
+        <div class="fui-header-brand l">
+            <img id="logo-img" src="images/top/top-title.png">
+        </div>
+        <div id="headerUser" class="fui-header-user r">
+            <img src="images/top/defaultpic.png" id="fui-myPicture" class="fui-header-userimg">
+            <div class="header-user-info">
+                <span class="fui-user-hello"></span>
+                <span class="fui-user-org"></span>
+            </div>
+            <!-- 用户下拉信息 -->
+            <div id="userDropdown" class="fui-user-dropdown hidden">
+                <div class="fui-user-info">
+                    <div class="fui-userinfo-photo l">
+                        <img src="images/top/defaultpic.png" />
+                    </div>
+                    <div class="fui-userinfo-detail l">
+                        <p class="fui-userinfo-name"></p>
+                        <p class="fui-userinfo-org"></p>
+                        <!--<p class="fui-userinfo-signature">
+                            <span></span><i class="fui-userinfo-editicon"></i>
+                        </p>
+                        <p class="fui-userinfo-editor">
+                            <input type="text" />
+                        </p>-->
+                    </div>
+                </div>
+                <div class="fui-user-link clearfix">
+                    <a href="javascript:void(0);" class="fui-user-linkitem" data-url="frame/pages/dreamframe/f9settingscenterpersonal.jspx">
+                        <i class="fui-user-icon modicon-6"></i> <span>个人资料</span>
+                    </a>
+                    <a href="javascript:void(0);" class="fui-user-linkitem" data-url="frame/pages/dreamframe/f9settingscenterinterface.jspx">
+                        <i class="fui-user-icon modicon-117"></i> <span>界面配置</span>
+                    </a>
+                    <a href="javascript:void(0);" class="fui-user-linkitem" data-url="frame/pages/dreamframe/f9settingscenterfunc.jspx"><i class="fui-user-icon modicon-8"></i><span>功能配置</span></a>
+                </div>
+                <div id="user-btns" class="fui-user-btns clearfix">
+                    <button type="button" class="fui-user-switch">
+                        兼职切换
+                    </button>
+                    <button type="button" class="fui-user-logout">
+                        注&#160;&#160;销
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="headerHelp" class="fui-header-help r mr20 hidden">
+            <a href="javascript:void(0);" target="_blank" title="在线帮助"></a>
+        </div>
+        <div id="headerSearch" class="fui-nav-search trans r hidden">
+            <input type="text" placeholder="搜索">
+            <i class="fui-search-icon"></i>
+        </div>
+    </div>
+    <!-- 内容区域 -->
+    <div id="fuiBody" class="fui-body">
+        <!-- 左侧菜单 -->
+        <div id="sidebar" class="fui-sidebar big">
+            <div id="navOverall" class="fui-overall">
+                <a href="javascript:void(0);" class="fui-overall-link" title="全局导航">
+                    <i class="fui-overall-icon"></i><span class="fui-overall-text">全局导航</span>
+                </a>
+                <!-- 全局菜单面板 -->
+                <div class="fui-overall-content">
+                    <div class="ajax-loading"></div>
+                    <div class="fui-overall-navs clearfix"></div>
+                    <!-- 查询结果面板 -->
+                    <div id="navResult" class="srh-result-panel fui-nav second">
+                        <h4 class="fui-nav-title" title="查询结果">查询结果</h4>
+                        <ul class="fui-nav-items">
+                        </ul>
+                    </div>
+                    <!-- 面板底部 搜索|左右导航 -->
+                    <div class="fui-overall-footer">
+                        <div id="navSearch" class="fui-nav-search clearfix l">
+                            <input type="text" placeholder="搜索" class="l" />
+                            <i class="fui-search-icon l"></i>
+                        </div>
+                        <div class="fui-overall-scroller r">
+                            <i class="fui-scroller-left mr10 disabled"></i>
+                            <i class="fui-scroller-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul id="leftNav" class="fui-nav">
+            </ul>
+            <div class="fui-sidebar-toggle">
+                <i class="fui-sidebar-icon"></i>
+            </div>
+        </div>
+        <!-- 主界面tab导航 -->
+        <div id="tabs-nav" class="fui-main">
+            <div class="fui-main-head clearfix">
+                <!-- 固定tab容器 -->
+                <ul id="fixedTabs" class="fui-main-tabs l clearfix"></ul>
+                <!-- 固定tab部分 -->
+                <div class="fui-main-tabcontainer l">
+                    <ul id="mainTabs" class="fui-main-tabs clearfix">
+                    </ul>
+                </div>
+                <!-- tab导航操作 -->
+                <div class="fui-main-taboperation l">
+                    <!-- 全部关闭 -->
+                    <span class="fui-taboperation-operator">
+                        <i class="fui-taboperation-close" title="关闭全部"></i>
+                        <i class="fui-taboperation-more"></i>
+                    </span>
+                    <!-- 最近关闭|当前标签 tab记录面板 -->
+                    <div class="fui-taboperation-dropdown hidden">
+                        <!--<h5 class="fui-taboperation-title">最近关闭</h5>
+                        <ul class="fui-taboperation-history">
+                            <li class="fui-history-item empty">无记录</li>
+                        </ul>
+                        <h5 class="fui-taboperation-title">当前标签</h5>-->
+                        <ul id="currentFixed" class="fui-taboperation-current"></ul>
+                        <ul id="currentCommon" class="fui-taboperation-current nav-tag-split"></ul>
+                    </div>
+                    <!-- 左右滚动切换 -->
+                    <span class="fui-taboperation-scroller invisible">
+                        <i class="fui-tabscroller-left"></i>
+                        <i class="fui-tabscroller-right"></i>
+                    </span>
+                </div>
+                <!-- 右侧消息 -->
+                <div id="rightMessage" class="fui-main-msg r">
+                    <ul class="fui-msg-iconlist clearfix">
+                        <li class="fui-msg-iconitem" data-ref="msgRemind" title="消息"><i class="fui-msg-icon icon-info"></i><span class="fui-msg-num"></span></li>
+
+                        <li class="fui-msg-iconitem" data-ref="msgEMsg" title="E讯"><i class="fui-msg-icon icon-emsg"></i><span class="fui-msg-num"></span></li>
+
+                    </ul>
+                    <div class="msg-panel hidden">
+                        <div id="msgRemind" class="msg-panel-detail">
+                            <h2 class="msg-panel-head">消 &nbsp; 息
+                                <i class="msg-panel-hide"></i>
+                            </h2>
+                            <!--<div class="msg-panel-srh">
+                                <i class="msg-srh-icon"></i>
+                                <input type="text" class="msg-srh-input" placeholder="搜索消息">
+                            </div>-->
+                            <div class="msg-panel-content">
+                            </div>
+
+                        </div>
+
+
+                        <div id="msgEMsg" class="msg-panel-detail">
+                            <h2 class="msg-panel-head">
+                                E &nbsp; 讯
+                                <i class="msg-panel-hide"></i>
+                            </h2>
+                            <!--<div class="msg-panel-srh">
+                                <i class="msg-srh-icon"></i>
+                                <input type="text" class="msg-srh-input" placeholder="搜索E讯最近联系人、讨论组">
+                            </div>-->
+                            <div class="msg-panel-content">
+                                <ul class="emsg-recent-list"></ul>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tab导航主体内容区域 -->
+            <div id="mainframe" class="fui-main-content"></div>
+            <div id="page-cover" class="fui-page-cover hidden"></div>
+        </div>
+    </div>
+    <!-- tab标签的contextmenu -->
+    <ul id="tabContextMenu" class="mini-contextmenu" onbeforeopen="tabContextMenu.onBeforeOpen">
+        <li iconCls="icon-refresh" onclick="tabContextMenu.refresh">刷新</li>
+        <li class="separator"></li>
+        <li iconCls="icon-removeother" onclick="tabContextMenu.closeOther">关闭其他</li>
+        <li iconCls="icon-remove" onclick="tabContextMenu.close">关闭</li>
+    </ul>
+    <!-- 声音提示 js动态添加IE加载iframe 非IE使用audio -->
+    <div id="msg-sound"></div>
+    <!-- <iframe src="" frameborder="0" class="hidden" id="msgcenter-sound"></iframe>
+    <audio id="msgcenter-sound-audio" controls="controls" src="../../msgsound/newsms.wav" class="hidden-accessible"></audio> -->
+
+
+    <script src="../../../js/jsboot.js"></script>
+    <!-- 配置变量 -->
+    <script>
+        var UserConfig = {
+            // 更新个性签名请求url
+            signatureUrl: 'test/saveSignature',
+
+            // 获取用户信息请求url
+            getUrl: 'test/getUserInfo',
+
+            // 注销执行的回调方法
+            onLogout: function () {
+                console.log('注销');
+            }
+        };
+
+        var SidebarNav = {
+            // 获取菜单数据的请求url
+            loadUrl: 'test/getNavData',
+
+            onNodeClick: function (data) {
+                // this为节点的dom
+                // data为节点的数据对象
+            }
+        };
+
+        var QuickNav = {
+            // 快捷菜单显示的名称
+            name: '自定义菜单',
+            // 编辑快捷菜单的地址
+            editUrl: 'modifyQuickNav.html',
+
+            // 获取菜单数据的请求url
+            loadUrl: 'test/getQuickNavData'
+        };
+
+        var FixedTabs = [{
+            id: 'home',
+            name: '我的桌面',
+            url: '../../mydesktop/mydesktop.html'
+        }];
+
+        // 获取所有消息的个数，用于在四个消息图标上显示个数
+        var MsgNumUrl = 'test/getMsgNum';
+
+        // 消息的配置
+        var MsgRemind = {
+            getUrl: 'test/getMsgInfo',
+            ignoreUrl: 'test/ignoreMsgInfo'
+            // searchUrl: 'test/searchMsgInfo'
+        };
+
+
+        var EmsgConfig = {
+            uid: "00001",
+            baseUrl: 'test/emsgbaseUrl',
+            treeUrl: "test/treeUrl",
+            websocketUrl: "http://127.0.0.1:9909/",
+            historyUrl: "pages/frame/communication/exun/exunmessagelist.jspx",
+            groupImg: "../../emsg/images/emsg-group-bg.png",
+            userImg: "../../emsg/images/emsg-user-error.jpg",
+            showErrorMsg: true
+        };
+    </script>
+    <script src="./test/jquery.mockjax.min.js"></script>
+    <script src="./test/jquery.mockjson.js"></script>
+    <script src="./test/_testMainFrame.js"></script>
+    <script>
+        var path = [
+            'frame/fui/pages/themes/dream/dream' + (SrcBoot.debug ? '' : '.min') + '.js'
+        ];
+        SrcBoot.output(path);
+    </script>
+</body>
+
+</html>

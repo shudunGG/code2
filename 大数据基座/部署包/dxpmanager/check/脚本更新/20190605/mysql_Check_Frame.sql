@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where table_schema = database() and table_name = 'Workflow_PVI_Material' and column_name = 'clienttag' and data_type = 'varchar' and character_maximum_length=2000

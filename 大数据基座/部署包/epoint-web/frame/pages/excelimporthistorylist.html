@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Excle导入历史列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar"></div>
+
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" sortField="operatedate"
+			showPager="true" style="height: 100%;" allowResize="true"
+			multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="attachguid">导入文件附件Guid</div>
+				<div field="attachmd5">导入文件md5</div>
+				<div field="importresult">导入结果</div>
+				<div field="operatedate"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">操作日期</div>
+				<div field="operateusername">操作者名字</div>
+				<div width="60" renderer="onDetailRenderer">导入明细</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('excelimporthistorylistaction');
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+
+		// 弹出明细窗口
+		function openDetail(id) {
+			epoint.openDialog('详细信息',
+					"frame/pages/excelimporthistorydetail?guid=" + id,
+					searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+	</script>
+</body>
+</html>

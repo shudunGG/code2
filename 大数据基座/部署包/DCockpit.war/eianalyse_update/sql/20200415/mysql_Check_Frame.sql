@@ -1,0 +1,1 @@
+SELECT count(*) FROM information_schema. COLUMNS WHERE table_schema = DATABASE () AND table_name = 'portrait_table' AND COLUMN_NAME='belongOuGuid' AND COLUMN_TYPE='varchar(50)'

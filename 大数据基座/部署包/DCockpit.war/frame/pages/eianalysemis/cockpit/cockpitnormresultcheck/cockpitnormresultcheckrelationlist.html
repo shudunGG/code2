@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标审核结果关联表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="saveAndRefresh" onclick="saveAndRefresh">保存</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns"></div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var canEdit = true;
+		epoint.initPage('cockpitnormresultcheckrelationlistaction', null,
+				function(e) {
+					if (e.msg == "error") {
+						epoint.alert("数据异常");
+						return;
+					}
+					if (e.applyStatus == '2') {
+						canEdit = false;
+					}
+					if (!canEdit) {
+						$('#toolbar').addClass('hidden');
+					}
+					createGrid(e.columns);
+				});
+
+		function saveAndRefresh() {
+			epoint.execute("saveResult", 'datagrid', function(data) {
+				if (data.msg) {
+					epoint.alertAndRefresh(data.msg);
+				}
+			});
+		}
+
+		var grid = mini.get("datagrid");
+		function createGrid(columns) {
+			for (var i = 0; i < columns.length; i++) {
+				if (canEdit) {
+					if (columns[i].header != '序') {
+						columns[i].editor = {
+							type : 'textbox'
+						}
+					}
+				}
+			}
+			grid.setColumns(columns);
+		}
+	</script>
+</body>
+</html>

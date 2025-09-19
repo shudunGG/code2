@@ -1,0 +1,1 @@
+select CASE count( 1 ) WHEN 0 THEN 1 ELSE 0 END   from code_items ci inner join code_main cm on ci.CODEID=cm.CODEID and cm.CODENAME='标签值类型' where ci.itemtext='仅值'

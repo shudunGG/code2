@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>关联账号列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button" onclick="addSecOu" state="primary">新增关联</a> <a
+				class="mini-button" onclick="saveAll">保存关联</a> <a
+				class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的关联关系!', {state : 'warning'});} else {epoint.confirm('确定删除此关联关系?','',deleteSelected);}">删除关联</a>
+		</div>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="关联用户所在部门" starred="true">
+						<input class="mini-treeselect" bind="ouGuid" action="getTreeModel"
+							multiSelect="false" required="true" filterMode="server"
+							showFilter="true" requiredErrorText="请选择关联用户所在部门" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" allowCellEdit="true" showPager="true"
+			action="getDataGridData" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="25"></div>
+				<div type="indexcolumn" width="25" align="left" headerAlign="left">序</div>
+				<div field="displayName" headerAlign="left" align="left">用户名称</div>
+				<div field="loginId" headerAlign="left" align="left">
+					登录名称</div>
+				<div field="ouName"  headerAlign="left" align="left">
+					部门名称</div>
+				<div field="orderNumber" vtype="int;range:0,99999999" headerAlign="left" align="left">
+					排序号<input property="editor" class="mini-textbox" vtype="int;range:0,99999999"
+						style="width: 100%" inputStyle="text-align:right" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('settingaccountrelationaction', null, function(data) {
+			if (data.soa) {
+				epoint.alertAndClose(e.soa, '', null, null, 'info');
+			}
+			if (data.threemanage) {
+				epoint.alertAndClose(e.threemanage, '', null, null, 'info');
+			}
+		});
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		//刷新表格和下拉树
+		function refreshTreeAndGrid() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增关联关系
+		function addSecOu() {
+			if (epoint.validate()) {
+				epoint.execute('addFrameAccountRelation', [ 'fui-form',
+						'datagrid' ], msgCallBack);
+			}
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg,{state : 'success'});
+					refreshTreeAndGrid();
+				} else {
+					epoint.showTips(msg,{state : 'warning'});
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', saveCallBack);
+		}
+
+		// 回调提醒
+		function saveCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg,{state : 'warning'});
+					searchData();
+				} else {
+					epoint.showTips(msg,{state : 'warning'});
+				}
+			}
+		}
+
+		//保存所有
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', 'datagrid', saveCallBack);
+		}
+		//]]>
+	</script>
+
+
+</body>
+</html>

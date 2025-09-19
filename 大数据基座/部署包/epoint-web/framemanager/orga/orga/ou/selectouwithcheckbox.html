@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择部门</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.mini-tabstreeselect {
+	width: 630px !important
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" onclick="saveAndClose"
+			state="primary">确定选择</a> <a class="mini-button"
+			onclick="epoint.closeDialog">取消选择</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="tree" class="mini-tabstreeselect" action="getTreeModel"
+			filterMode="server" loadWhenChecked="true" selectedPanelTitle="已选部门"
+			canCheckParent="true">
+			<div tabText="部门列表"></div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('selectouwithcheckboxaction');
+
+		function saveAndClose() {
+			epoint.execute('oulist', 'tree', saveCallback);
+		}
+
+		//回调
+		function saveCallback(data) {
+			if (data.nameandguidlist) {
+				epoint.closeDialog(data.nameandguidlist);
+			} else {
+				epoint.alert('您还没有选择任何记录！', '', null, 'warning');
+			}
+		}
+		//]]>
+	</script>
+
+
+</body>
+</html>

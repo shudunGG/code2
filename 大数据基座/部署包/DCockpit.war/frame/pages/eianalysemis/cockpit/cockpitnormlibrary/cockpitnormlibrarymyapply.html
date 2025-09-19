@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>我的申请列表页</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 400px;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" sortField="create_time"
+			editNextOnEnterKey="true" editNextRowCell="true"
+			allowAlternating="true">
+			<div property="columns">
+				<div align="center" type="checkcolumn" width="30"></div>
+				<div align="center" type="indexcolumn" width="60"
+					headerAlign="center">序号</div>
+				<div align="center" width="200" field="name" headerAlign="center"
+					name="name">名称</div>
+				<div align="center" width="200" field="type" headerAlign="center"
+					name="type">类型</div>
+				<div align="center" width="105" field="belongouname"
+					headerAlign="center" name="belongouname">所属单位</div>
+				<div align="center" width="105" field="operatedate"
+					headerAlign="center" name="operatedate">申请时间</div>
+				<div align="center" width="105" field="status" headerAlign="center"
+					name="status">状态</div>
+				<div field="guid" visible="false"></div>
+				<div type="actioncolumn" headerAlign="center" align="center"
+					renderer="onActionRenderer" width="200"></div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面
+		epoint.initPage('cockpitnormlibrarymyapplyaction', '', function(data) {
+		});
+
+		function onActionRenderer(e) {
+			var title = "";
+			if (e.row.status == '待审核' || e.row.status == '审核通过') {
+				title += "-";
+			} else if (e.row.status = "审核不通过") {
+				title += '<span type="action" style=\"color:blue\" onclick="edit(\''
+						+ e.row.rowguid
+						+ '\''
+						+ ',\''
+						+ e.row.guid
+						+ '\''
+						+ ',\'' + e.row.type + '\')">编辑</span>' + '&nbsp&nbsp';
+				title += '<span type="action" style=\"color:red\" onclick="deletesel()">删除</span>'
+						+ '&nbsp&nbsp';
+
+			}
+			return title;
+		}
+
+		function edit(rowguid, guid, type) {
+			var tp;
+			if (type == '指标') {
+				tp = '1';
+			}
+			if (type == '指标分类') {
+				tp = '2';
+			}
+			epoint
+					.openDialog(
+							'编辑',
+							"frame/pages/eianalysemis/cockpit/cockpitnormlibrary/cockpitnormlibraryapply?guid="
+									+ guid
+									+ "&type="
+									+ tp
+									+ "&applyguid="
+									+ rowguid, searchData, {
+								'width' : 1280,
+								'height' : 800
+							});
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		function deletesel() {
+			epoint.execute('deleteSelect', '', function(data) {
+				epoint.alert(data.msg, '', null, null, 'info');
+			});
+		}
+	</script>
+</body>
+
+</html>

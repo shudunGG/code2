@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>附件权限配置表添加</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="鉴权类型">
+						<div class="mini-radiobuttonlist" id="verifytype"
+							showNullItem="true" bind="verifytype" action="getVerifyTypeList"
+							textField="text" valueField="id"
+							onvaluechanged="change(this.value)"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="clienttag">
+						<input id="cliengtag" class="mini-textbox" bind="cliengtag" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="clenginofo">
+						<input id="clienginfo" class="mini-textbox" bind="clienginfo" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="attachguid">
+						<input id="attachguid" class="mini-textbox" bind="attachguid" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" id="addNew" state="primary"
+			onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameattachrightconfigaddaction', "", initCallback);
+
+		function initCallback(data) {
+			if (data.verifytype == 0) {
+				mini.get("cliengtag").enable();
+				mini.get("clienginfo").enable();
+				mini.get("attachguid").disable();
+			}
+			if (data.verifytype == 1) {
+				mini.get("cliengtag").disable();
+				mini.get("clienginfo").disable();
+				mini.get("attachguid").enable();
+			}
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") != -1) {
+					epoint.showTips(data.msg, {
+						state : 'success'
+					});
+					// 清空表单
+					epoint.clear('fui-form');
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'warning'
+					});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") != -1) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'error'
+					});
+				}
+			}
+		}
+
+		function change(verifytype) {
+			if (verifytype == 0) {
+				setEmpty();
+				mini.get("cliengtag").enable();
+				mini.get("clienginfo").enable();
+				mini.get("attachguid").disable();
+			}
+			if (verifytype == 1) {
+				setEmpty();
+				mini.get("cliengtag").disable();
+				mini.get("clienginfo").disable();
+				mini.get("attachguid").enable();
+			}
+		}
+
+		function setEmpty() {
+			mini.get("cliengtag").setValue(null);
+			mini.get("clienginfo").setValue(null);
+			mini.get("attachguid").setValue(null);
+		}
+	</script>
+</body>
+</html>

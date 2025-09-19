@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="css/index.css">
+    <title>DAG流程图</title>
+</head>
+
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="start"
+				onclick="relateTask()">新增关联</a> 
+		</div>
+	</div>
+	<div class="fui-content">
+    <div class="header">
+        <i class="color-icon light-gray"></i>
+        <span>未开始</span>
+        <i class="color-icon light-green"></i>
+        <span>运行成功</span>
+        <i class="color-icon light-red"></i>
+        <span>运行失败</span>
+        <i class="color-icon light-blue"></i>
+        <span>任务挂起</span>
+    </div>
+    <div class="container">
+        <div class="chart" id="chart">
+
+        </div>
+        <!-- 加128 -->
+        <ul class="tags" id="tags">
+            <li class="tag" id="tag-1" style="top: 129px;"><span>01</span></li>
+            <li class="tag" id="tag-2" style="top: 252px;"><span>02</span></li>
+            <!-- <li class="tag" style="top: 380px;"><span>03</span></li>
+            <li class="tag" style="top: 508px;"><span>04</span></li>
+            <li class="tag" style="top: 636px;"><span>05</span></li> -->
+        </ul>
+    </div>
+    </div>
+    <script src="../../rest/resource/jsboot"></script>
+    <script src="./js/go.js"></script>
+    <script src="_test/mock-min.js"></script>
+    <script src="_test/mockdata.js"></script>
+    <script>
+        var dataConfig = {
+            getData: "test/getData",
+            getMoreData: "test/getMoreData",
+            showLineNum: 3, // 默认显示几层，开始节点算第一层，若是四层，则 tags 标签里要按顺序加一个li 标签，top值为上一个的top + 128
+
+            clickEvent: function(data) {
+            	epoint.openDialog(data.text,
+						'dxp/flowinfo/dxpschedulerloglist?guid=' + data.key,
+						null, {
+							'width' : 1000,
+							'height' : 600
+						});
+            }
+        }
+        
+        function relateTask(){
+			var rowguid=Util.getUrlParams().rowguid;
+			epoint.openDialog('关联作业', 'dxp/flowinfo/selectflowinfolist?flowtype=02&rowguid='+rowguid,function(data){
+				console.log(data);
+				location.reload();
+			});
+		}
+    </script>
+    <script src="js/index.js"></script>
+</body>
+
+</html>

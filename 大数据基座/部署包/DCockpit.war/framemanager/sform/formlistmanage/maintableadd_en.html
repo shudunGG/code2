@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The main table to add</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addNew" onclick="save();">save</a> 
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="Form name" starred="true">
+					<input id="tableName" class="mini-textbox" bind="tableBasicInfo.tableName" 
+					    required="true" requiredErrorText="Form nameCan't be empty!" />
+				</div>
+			</div>
+			<!--div role="row">
+				<div role="control" label="The main table name" starred="true">
+					<input id="sqlTableName" class="mini-textbox" bind="tableBasicInfo.sqlTableName" 
+					    required="true" requiredErrorText="Database table nameCan't be empty!" />
+				</div>
+			</div-->
+			<div role="row">
+				<div role="control" label="Sort code">
+					<input id="orderNumber" class="mini-textbox" bind="orderNum" vtype="int" required="true" requiredErrorText="Sort codeCan't be empty. Please enter a positive integer!"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="The form category">
+					<input id="formTree" class="mini-treeselect" bind="categoryNum" action="getTreeData"  multiSelect="false" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单模板配置">
+					<input name="syncType" bind="formModel"
+						data="[{text:'模板一',id:'1'},
+							{text:'模板二',id:'2'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单大小">
+					<input id="paperClass" name="paperClass" bind="paperClass"
+						data="[{text:'A4',id:'formdiv'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表单英文字段创建类型（不设置默认自动生成）">
+					<input id="ctrlEnCreateType" name="ctrlEnCreateType" bind="ctrlEnCreateType"
+						data="[{text:'自动',id:'automatic'},{text:'手动',id:'manual'}]"
+						textField="text" valueField="id" class="mini-combobox" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('maintableaddaction', '', initCallBack);
+		
+		function initCallBack(data){
+			if(data.edit && data.edit=="true"){
+				mini.get("paperClass").setEnabled(false);
+				mini.get("ctrlEnCreateType").setEnabled(false);
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

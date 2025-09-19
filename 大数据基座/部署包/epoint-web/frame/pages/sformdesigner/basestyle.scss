@@ -1,0 +1,316 @@
+@charset "utf-8";
+
+.row {
+    display: -webkit-box;
+    display: flex;
+
+    box-sizing: border-box;
+    padding: 0;
+
+    -webkit-box-orient: horizontal;
+
+    -webkit-box-direction: normal;
+
+    flex-flow: row nowrap;
+}
+.row-container {
+    width: 100%;
+}
+.col {
+    position: relative;
+
+    box-sizing: border-box;
+    box-sizing: border-box;
+    min-height: 30px;
+    padding: 6px;
+
+    line-height: 30px;
+
+    -webkit-box-flex: 0;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.col {
+    &.hasSub {
+        padding: 0;
+    }
+    &.fui-accordion {
+        padding: 0;
+    }
+
+    & > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    &:after {
+        position: absolute;
+        z-index: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+
+        display: block;
+
+        box-sizing: border-box;
+
+        content: '';
+
+        background: transparent;
+    }
+
+    // 内嵌单元格的时候 自身全部无边框
+    &.hasSub:after {
+        border-top-width: 0 !important;
+        border-right-width: 0 !important;
+        border-bottom-width: 0 !important;
+        border-left-width: 0 !important;
+    }
+
+    // 普通单元格 非 第一 最后 强制去掉左边
+    &.mid:after {
+        border-left-width: 0 !important;
+    }
+
+    // 嵌套在内部的第一个强制去掉左边
+    @at-root {
+        .col.mid > .row > &.first:after,
+        .col.mid > .row-container > .row > &.first:after,
+        .col.last > .row > &.first:after,
+        .col.last > .row-container > .row > &.first:after {
+            border-left-width: 0 !important;
+        }
+    }
+
+    // 最后一个去掉右边 必须是真实的最后一个不能是即是第一又是最后
+    &.mid ~ &.last:after,
+    &.first ~ &.last:after {
+        border-left-width: 0 !important;
+    }
+
+    @at-root {
+        // 非第一行的 内嵌列的 top 强制去掉
+        .row.mid > .col:after {
+            border-top-width: 0 !important;
+        }
+        // 嵌套在内部的行中的 top 也需要去掉
+        .row.mid {
+            > .col > .row > .col:after,
+            > .col > .dropArea > .row > .col:after
+            > .col > .row-container > .row > .col:after {
+                border-top-width: 0 !important;
+            }
+        }
+    }
+}
+
+// 单元格对齐
+.col {
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    flex-direction: row;
+    flex-wrap: wrap;
+    & > * {
+        -webkit-box-flex: 0;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+    &.text-left {
+        text-align: left;
+    }
+
+    &.text-center {
+        text-align: center;
+    }
+
+    &.text-right {
+        text-align: right;
+    }
+
+    &.vertical-top {
+        vertical-align: top;
+    }
+
+    &.vertical-middle {
+        vertical-align: middle;
+    }
+
+    &.vertical-bottom {
+        vertical-align: bottom;
+    }
+
+    // &.vertical-top > .design-control {
+    //   display: flex;
+    //   flex-direction: column;
+
+    //   align-items: center;
+    //   justify-content: flex-start;
+    // }
+    // &.vertical-middle > .design-control {
+    //   display: flex;
+    //   flex-direction: column;
+
+    //   align-items: center;
+    //   justify-content: center;
+    // }
+    // &.vertical-bottom > .design-control {
+    //   display: flex;
+    //   flex-direction: column;
+
+    //   align-items: center;
+    //   justify-content: flex-end;
+    // }
+    &.text-left {
+        -webkit-box-pack: start;
+        justify-content: flex-start;
+    }
+
+    &.text-center {
+        -webkit-box-pack: center;
+
+        justify-content: center;
+    }
+
+    &.text-right {
+        -webkit-box-pack: end;
+
+        justify-content: flex-end;
+    }
+
+    &.vertical-top {
+        -webkit-box-align: start;
+
+        align-items: flex-start;
+        align-content: flex-start;
+    }
+
+    &.vertical-middle {
+        -webkit-box-align: center;
+
+        align-items: center;
+        align-content: center;
+    }
+
+    &.vertical-bottom {
+        -webkit-box-align: end;
+
+        align-items: flex-end;
+        align-content: flex-end;
+    }
+}
+
+.design-form-title,
+.design-form-label {
+    position: relative;
+
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+}
+.design-form-label {
+    padding-right: 8px;
+    &.required:after {
+        position: absolute;
+        top: 50%;
+        right: -2px;
+
+        display: block;
+
+        width: 8px;
+        height: 16px;
+        margin-top: -8px;
+
+        font-size: 16px;
+        line-height: 16px;
+
+        content: '*';
+
+        color: red;
+    }
+}
+
+.mini-textbox-readOnly .mini-textbox-border,
+.mini-textbox-readOnly .mini-textbox-input,
+.mini-buttonedit-readOnly .mini-buttonedit-border,
+.mini-buttonedit-readOnly .mini-buttonedit-input,
+.mini-readonly .mini-textboxlist-border {
+    cursor: default;
+
+    border: 0;
+    background: none;
+}
+
+.mini-buttonedit-readOnly .mini-buttonedit-button,
+.mini-readonly .mini-textboxlist-close {
+    display: none;
+}
+
+.mini-readonly .mini-textboxlist-item {
+    padding-right: 8px;
+}
+
+.mini-buttonedit-readOnly ::-webkit-input-placeholder,
+.mini-textbox-readOnly ::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0);
+}
+
+.mini-buttonedit-readOnly ::-moz-placeholder,
+.mini-textbox-readOnly ::-moz-placeholder {
+    color: rgba(255, 255, 255, 0);
+}
+
+.mini-buttonedit-readOnly :-ms-input-placeholder,
+.mini-textbox-readOnly :-ms-input-placeholder {
+    color: rgba(255, 255, 255, 0);
+}
+
+.mini-buttonedit-readOnly ::placeholder,
+.mini-textbox-readOnly ::placeholder {
+    color: rgba(255, 255, 255, 0); 
+}
+
+
+// 手风琴扩展
+.row.acc-layout {
+    display: block;
+    padding-left: 0;
+    padding-right: 0;
+}
+.col.acc-item {
+    display: block;
+    > .fui-acc-bd {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    // 去掉边框
+    &:after {
+        border: none !important;
+    }
+}
+
+// 提示信息
+.control-tips.tips-bottom {
+    display: block;
+    color: #999;
+    width: 100%;
+    text-align: left;
+    // padding: 0 8px;
+    // padding: 0 .08rem;
+    line-height: 30px;
+    line-height: 0.3rem;
+    height: 30px;
+    height: 0.3rem;
+    box-sizing: border-box;
+}
+.control-tips.tips-tooltip {
+    width: 30px;
+    text-align: center;
+    &:before {
+        content: '\e728';
+    }
+}

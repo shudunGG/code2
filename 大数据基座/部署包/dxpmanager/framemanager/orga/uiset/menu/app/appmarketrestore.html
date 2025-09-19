@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>桌面还原</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="appdatagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" pageSize="15" action="getDataGridData"
+			showPager="false">
+			<div property="columns">
+				<div headerAlign="center" field="name"></div>
+				<div width="30" align="center" headerAlign="center"
+					renderer="onRestoreRenderer">还原</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('appmarketrestoreaction');
+
+		// 绘制行还原按钮
+		var onRestoreRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-refresh", "restore",
+					"index");
+		};
+
+		function restore(index) {
+			epoint.execute("appmarketrestoreaction.restore", "", [index],
+					function(e) {
+						epoint.alert(e.message, '', null, 'info');
+					});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

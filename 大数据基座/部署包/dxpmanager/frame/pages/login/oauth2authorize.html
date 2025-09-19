@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新点统一认证平台</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<link rel="stylesheet" href="sso/css/common.css" />
+<link rel="stylesheet" href="sso/css/login.css" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- 背景 -->
+	<div class="bg">
+		<img style="" src="sso/images/bg.jpg" />
+	</div>
+	<!-- 登录主体 -->
+	<div class="content">
+		<!-- 登录页标题 -->
+		<div class="login-tt">
+			<img id="logo-img" src="sso/images/title.png" alt="" />
+		</div>
+		<!-- 登录框 -->
+		<div class="login-authe-wrap">
+			<h6 class="authen-tt">平台将获得以下权限：</h6>
+			<div class="login-btn-row">
+				<button class="btn-login" onclick="confimAuthorize()" type="button">确认授权</button>
+			</div>
+		</div>
+
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		!(function() {
+			var scopes = epoint.decodeUtf8(Util.getUrlParams("scope"));
+			$
+					.ajax({
+						type : 'GET',
+						url : Util.getRightUrl("rest/oauth2/exchangescope"),
+						data : {
+							"scopekeys" : scopes
+						},
+						success : function(data) {
+							var dataJson = eval('(' + data + ')');
+							if (dataJson.custom && dataJson.custom.displaynames
+									&& dataJson.custom.keys) {
+								var displayNameArray = dataJson.custom.displaynames
+										.split(",");
+								var keyArray = dataJson.custom.keys.split(",");
+								var displayHtml = '';
+								var keyHtml = '';
+								for (var i = 0; i < displayNameArray.length; i++) {
+									displayHtml += "<div class=\"authen-right-item\"><label class=\"authen-right-label\">"
+											+ displayNameArray[i]
+											+ "</label></div>";
+								}
+								for (var i = 0; i < keyArray.length; i++) {
+									keyHtml += "<div class=\"authen-right-item-none\"><label class=\"authen-right-label\">"
+											+ keyArray[i] + "</label></div>";
+								}
+							}
+
+							$(".authen-tt").after(displayHtml + keyHtml);
+
+							// 默认全选
+							$(".login-authe-wrap")
+									.find(
+											'.authen-right-item, .authen-right-item-none')
+									.each(function(i) {
+										$(this).toggleClass('checked');
+									});
+
+							Util.hidePageLoading();
+						},
+						error : function(e) {
+							alert(e.status);
+						}
+					});
+		})();
+
+		$(".login-authe-wrap").on(
+				'click',
+				'.authen-right-item',
+				function(event) {
+					$(this).toggleClass('checked');
+					var index = $('.authen-right-item').index($(this));
+					$('.authen-right-item-none').eq(index).toggleClass(
+							'checked');
+				});
+
+		function confimAuthorize() {
+			// 拼接用户勾选的key
+			var keys = '';
+			$(".authen-right-item-none.checked").each(function(i) {
+				keys += $(this).children().first().html() + ",";
+			});
+
+			if (keys) {
+				keys = keys.substr(0, keys.length - 1);
+			}
+
+			url = 'rest/oauth2/authorizeconfirm';
+			// 加上页面地址中的请求参数
+			var all = window.location.href;
+			var index = all.indexOf('?');
+			url += '?' + all.substring(index + 1);
+
+			$.ajax({
+				type : 'POST',
+				url : Util.getRightUrl(url + "&scopekeys=" + keys),
+				success : function(data) {
+					var dataJson = eval('(' + data + ')');
+					// 返回的data格式：{'url':'授权成功后的跳转地址'}
+					window.location.href = dataJson.url;
+				},
+				error : function(e) {
+					alert(e.status);
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

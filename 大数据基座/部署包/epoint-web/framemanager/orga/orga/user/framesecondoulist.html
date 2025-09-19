@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>兼职部门列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="addSecOu">新增兼职</a> <a
+			class="mini-button" onclick="saveAll">保存兼职</a> <a class="mini-button"
+			state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的兼职!', '', null, 'warning');} else {epoint.confirm('确定删除此兼职?','',deleteSelected);}">删除兼职</a>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="兼职部门" starred="true">
+						<input class="mini-treeselect" bind="ouGuid" action="getTreeModel"
+							multiSelect="false" required="true" filterMode="server"
+							showFilter="true" requiredErrorText="请选择兼职部门" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="row_Id" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" allowCellEdit="true" showPager="true"
+			action="getDataGridData" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="displayName" width="100%">用户名称</div>
+				<div field="loginId" width="200">登录名称</div>
+				<div field="orderNumber" width="80" vtype="int;range:0,99999999">
+					排序号<input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" style="width: 100%"
+						inputStyle="text-align:right" />
+				</div>
+				<div field="ouName" width="200">兼职部门名称</div>
+
+				<div field="userOrderNumber" width="150"
+					vtype="int;range:0,99999999">
+					兼职部门内排序<input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" style="width: 100%"
+						inputStyle="text-align:right" />
+				</div>
+				<!-- <div field="title" headerAlign="center" width="20" vtype="maxLength:50"  align="center" >
+					职位<input property="editor" class="mini-textbox" maxLength="50"   style="width:100%"/>
+				</div> -->
+				<div field="tel" width="150" vtype="maxLength:50">
+					兼职部门电话<input property="editor" class="mini-textbox" maxLength="50"
+						style="width: 100%" />
+				</div>
+				<div name="pzjs" renderer="onSelectRoleRender" width="80">配置角色</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//本页面请求使用sm2加密
+		var useSm2Encrypt=true;
+		//初始化页面
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+		epoint.initPage('framesecondoulistaction', '', initCallback);
+		function initCallback(e) {
+			if (e.soa) {
+				epoint.alertAndClose(e.soa, '', null, null, 'info');
+			}
+			if (e.threemanage) {
+				epoint.alertAndClose(e.threemanage, '', null, null, 'info');
+			}
+		}
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+
+		//刷新表格和下拉树
+		function refreshTreeAndGrid() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增兼职
+		function addSecOu() {
+			if (epoint.validate()) {
+				epoint.execute('addFrameUserSecondOU',
+						[ 'fui-form', 'datagrid' ], msgCallBack);
+			}
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") == -1) {
+				//	epoint.alert(msg, '', '', 'warning');
+				//} else {
+				//	epoint.alert(msg, '', refreshTreeAndGrid());
+				//}
+				if (data.success) {
+					epoint.alert(msg, '', refreshTreeAndGrid(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', saveCallBack);
+		}
+
+		// 回diao提醒
+		function saveCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', function() {
+						searchData();
+					}, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		//保存所有
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', 'datagrid', saveCallBack);
+		}
+
+		// 授权角色
+		function onSelectRoleRender(e) {
+			var userGuid = e.row['userGuid'];
+			var ouGuid = e.row['ouGuid'];
+			return "<a style=\"cursor:pointer;\"  onclick=\"selectRole('"
+					+ userGuid + "','" + ouGuid + "')\" >配置角色</a>";
+		}
+
+		//打开授权角色设置页
+		function selectRole(userGuid, ouGuid) {
+			epoint.openDialog("设置用户角色关系",
+					'framemanager/orga/orga/user/settingsecondouuserrole?userGuid='
+							+ userGuid + "&ouGuid=" + ouGuid + "&isSub="
+							+ isSub, '', {
+						'width' : 680,
+						'height' : 480
+					});
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

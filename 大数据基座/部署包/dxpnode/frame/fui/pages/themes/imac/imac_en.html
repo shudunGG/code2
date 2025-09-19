@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>IMACThe theme-The main interface</title>
+    <script src="../../../js/cssboot.js"></script>
+
+    <script>
+    SrcBoot.output([
+        'frame/fui/js/widgets/epdialog/epdialog.css',
+        'frame/fui/js/widgets/epcontextmenu/epcontextmenu.css'
+    ]);
+    </script>
+</head>
+
+<body>
+    
+    <!-- The themebackground -->
+    <img src="../../../../rest/imacdataaction/getSkinBg?isCommondto=true" alt="" class="imac-skin-bg" id="imac-skin-bg" />
+    <!-- At the top of the -->
+    <div class="imac-top-bar clearfix" id="imac-top-bar">
+        <!-- systemlogo -->
+        <img src="images/epoint-logo.png" alt="" class="sys-logo l" />
+        <!-- Split screen page -->
+        <div class="l imac-screen-pages clearfix trans" id="imac-screen-pages">
+            <a href="javascript:void(0);" class="scroll-l invisible trans l mr10"></a>
+            <div class="pages-wrap l mr10">
+                <div class="page-list clearfix">
+                    <!--
+                    <a href="#" data-page="1" class="page-item active l mr10">
+                        <span>1</span>
+                    </a>
+                    -->
+                </div>
+            </div>
+            <a href="javascript:void(0);" class="scroll-r invisible trans l"></a>
+        </div>
+        <div class="clearfix r mr10">
+            <!-- The current user -->
+            <p class="sys-user l">
+                The current user: <a id="user-info" href="#" title="Switch the login identity">systemAdministrator (systemManagement department)</a>
+            </p>
+        </div>
+    </div>
+    <!-- Split screen -->
+    <div class="imac-screens-container" id="imac-screens-container">
+        <div class="screen-list clearfix">
+            <!-- <div class="imac-screen l"></div> -->
+        </div>
+    </div>
+    <!-- The task bar at the bottom of the -->
+    <div class="imac-taskbar" id="imac-taskbar">
+        <div class="scroll-wrap l hidden">
+            <a href="#" class="scroll-l"></a>
+        </div>
+        <div class="tasks-wrap l">
+            <div class="task-list clearfix">
+                <!--
+                <a href="#" class="task-item l clearfix" title="The information submitted">
+                    <img src="images/imac/app/app1-taskbar.png" alt="" class="l task-icon">
+                    <p class="task-name l">The information submitted</p>
+                </a>
+                -->
+            </div>
+        </div>
+        <div class="scroll-wrap l hidden">
+            <a href="#" class="scroll-r"></a>
+        </div>
+    </div>
+    <!-- The side bar  -->
+    <div class="imac-right-bar" id="imac-right-bar">
+        <!-- Application of the warehouse -->
+        <div class="dock-app default-app-btn" data-id="sys-app-store" title="Application of the warehouse">
+            <img src="images/appstore.png" alt="" />
+            <p class="name">Should be with</p>
+        </div>
+        <!-- fastShould bewithThe list of -->
+        <div class="quick-apps">
+            <a href="#" class="scroll-up trans hidden"></a>
+            <div class="list-wrap">
+                <div class="app-list">
+                    <!--
+                    <div class="dock-app" title="systemmanagement">
+                        <span class="unread">12</span>
+                        <img src="images/imac/app/app1-toolbar.png" alt="" >
+                        <p class="name">Department of&nbsp;system</p>
+                    </div>
+                    -->
+                </div>
+            </div>
+            <a href="#" class="scroll-dw trans hidden"></a>
+        </div>
+        <!-- Shortcut button -->
+        <div class="quick-btns">
+            <a href="#" class="online default-app-btn" data-id="sys-online-user" title="Online communication"> <span class="online-user-count" id="online-user-count">(0)</span>
+            </a>
+            <a href="#" class="theme default-app-btn" data-id="sys-theme-setting" title="Theme settings"></a>
+            <a href="#" class="setting default-app-btn" data-id="sys-user-setting" title="Personal configuration"></a>
+            <a href="#" class="refresh default-app-btn" data-id="sys-screen-restore" title="Desktop restore"></a>
+            <a href="#" class="message default-app-btn" data-id="sys-msg-reminder" title="Information alert"></a>
+            <a href="#" class="logout" title="exitsystem"></a>
+        </div>
+    </div>
+    <!-- Voice prompt -->
+    <iframe src="" frameborder="0" class="hidden" id="msgcenter-sound"></iframe>
+    
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../js/jsboot.js"></script>
+    
+    <!-- Configuration Variables -->
+    <script>
+    // To obtainwithThe household information
+    var userInfoUrl = epoint.dealRestfulUrl('imacdataaction/initData'),
+        // To obtainNumber of messages to remind
+        msgCountUrl = epoint.dealRestfulUrl('f9messageaction/initMessage'),
+        // To obtainThe number of online
+        onlineUserCountUrl = userInfoUrl,
+        // The request on the screenShould bewithinformation
+        screenAppsUrl = userInfoUrl,
+        // The request on the toolbarShould bewithinformation
+        toolbarAppsUrl = userInfoUrl,
+        // updateShould bewithinformationrequest:mobile、uninstall、The installation
+        updateAppUrl = userInfoUrl,
+        // requestPage elementsinformation
+        elementsUrl = userInfoUrl,
+        // updateelementinformation:mobile、uninstall、The installation
+        updateElemUrl = userInfoUrl,
+        // The defaultShould bewithThe configuration, such asThe themeSet up the、Should bewithShops etc.
+        defaultApps = [{
+            // Online communication
+            name: 'Online communication',
+            icon: 'frame/fui/pages/themes/imac/images/app/online-user.png',
+            // idAnd forShould beThe elementdata-idMatch the attributes
+            id: 'sys-online-user',
+            url: 'frame/communication/exun/exunmsg'
+        }, {
+            // Theme settings
+            name: 'Theme settings',
+            icon: 'frame/fui/pages/themes/imac/images/app/theme-setting.png',
+            id: 'sys-theme-setting',
+            url: 'frame/uiset/menu/app/skinset'
+        }, {
+            // Personal configuration
+            name: 'Personal configuration',
+            icon: 'frame/fui/pages/themes/imac/images/app/user-setting.png',
+            id: 'sys-user-setting',
+            url: 'frame/dreamframe/f9settingscenter'
+        }, {
+            // Desktop restore
+            name: 'Desktop restore',
+            icon: 'frame/fui/pages/themes/imac/images/app/screen-restore.png',
+            id: 'sys-screen-restore',
+            url: 'frame/uiset/menu/app/appmarketrestore?type=imac'
+        }, {
+            // Information alert
+            name: 'Information alert',
+            icon: 'frame/fui/pages/themes/imac/images/app/msg-reminder.png',
+            id: 'sys-msg-reminder',
+            url: 'frame/imacframe/messagereminder'
+        }, {
+            // Application of the warehouse
+            name: 'Application of the warehouse',
+            icon: 'frame/fui/pages/themes/imac/images/app/app-store.png',
+            id: 'sys-app-store',
+            url: 'frame/uiset/menu/app/appmarket?type=imac'
+        }],
+        // Deactivation of the callback methods
+        onLogout = function() {
+            epoint.execute('loginaction.logout');
+        };
+
+    // The defaultAccording to theSplit screenPage, from1start
+    var DEFAULT_ACTIVE_PAGE = 1;
+
+    // Each column of theShould bewithThe number of
+    var APP_COUNT_PER_COLUMN = 5;
+
+    // Dock on the right side of the toolbarShould bewithMost of theThe number of
+    var MAX_DOCK_APP_NUM = 8;
+
+    // [x, y] dialogWhen they open High relative to the window size than columns wide
+    var DIALOG_SIZE_RATIO = [0.6, 0.6];
+    var EmsgConfig = {
+        baseUrl: epoint.dealRestfulUrl('exundataaction/eXun'),
+        treeUrl: epoint.dealRestfulUrl("exundataaction/getTree"),
+        websocketUrl: "../../../../websocket/eXun",
+        historyUrl: "frame/communication/exun/exunmsg",
+        groupImg: "../../emsg/images/emsg-group-bg.png",
+        userImg: "../../emsg/images/emsg-user-error.jpg"
+    };
+    </script>
+
+    <script>
+    SrcBoot.output(['frame/fui/js/widgets/epdialog/epdialog.js',
+        'frame/fui/js/widgets/epcontextmenu/epcontextmenu.js'
+    ]);
+    </script>
+    <script>
+    var path = 'frame/fui/pages/themes/imac/imac' + (SrcBoot.debug ? '' : '.min') + '.js';
+    SrcBoot.output([path]);
+    </script>
+
+    <!---
+    <script>
+        /* IMac Elem */
+        var iMacElem = new IMacElem({
+            title: 'testelement',
+            url: 'test/pages/module_one.html',
+            btns: [{
+                role: 'refresh',
+                title: 'The refresh'
+            }, {
+                role: 'config',
+                title: 'Open the configuration',
+                click: function(options) {
+                    
+                }
+            }, {
+                role: 'close',
+                title: 'removeelement',
+                click: function(options) {
+                    console.log(options.guid);
+                    this.destroy();
+                }
+            }],
+            height: 450,
+            width: 450,
+            page: 0,
+            noBorder: false,
+            top: 80,
+            left: 200
+        });
+    </script>
+    -->
+</body>
+
+</html>

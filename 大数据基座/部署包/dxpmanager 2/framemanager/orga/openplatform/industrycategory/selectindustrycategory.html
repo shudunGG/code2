@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>选择行业</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	
+	<!-- toolbar区域 -->
+    <div class="fui-toolbar" id="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="saveAndClose">确定选择</a>
+            <a class="mini-button" onclick="epoint.closeDialog">取消选择</a>
+        </div>
+    </div>
+    
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getTreeData"
+			resultAsTree="false" onbeforenodeselect="beforenodeselect"></ul>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("selectindustrycategoryaction");
+		
+		function beforenodeselect(e) {
+            //禁止选中 非叶子节点
+            if (e.node.isLeaf == false) e.cancel = true;
+        }
+		
+
+		//树js对象
+		var tree = mini.get("tree");
+		function saveAndClose() {
+			var selectedNode = tree.getSelectedNode();
+			if (selectedNode) {
+				// 选中节点的codeId和名字
+				var smallCategoryId = selectedNode.id;
+				var smallCategoryName = selectedNode.text;
+				
+				// 行业大类节点（父节点）的codeId和名字
+				var parentNode = tree.getParentNode(selectedNode);
+				var bigCategoryId = parentNode.id;
+				var bigCategoryName = parentNode.text;
+				
+				// 行业A codeid:行业B codeid_SPLIT_行业A名称:行业B名称
+				var result = bigCategoryId + ':' + smallCategoryId + '_SPLIT_' + bigCategoryName + ':' + smallCategoryName
+				
+    			epoint.closeDialog(result);
+    		}else{
+    			epoint.alert('您还没有选择任何记录！', '', null, 'warning');
+    		}
+    	}
+
+		
+		//]]>
+	</script>
+
+</body>
+
+</html>

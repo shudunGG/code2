@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>模板管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button mr10" onclick="addGroup()">新增分组</a> 
+			<a class="mini-button mr10" onclick="updateGroup()">保存修改</a>
+			<a class="mini-button mr10" onclick="deleteGroup()">删除分组</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridModel" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40" headerAlign="center"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="groupName" width="80" headerAlign="center">分组名称
+					<input property="editor" class="mini-textbox"
+							style="width: 100%;" vtype="maxLength:500" maxLength="500" />
+				</div>
+				<div field="typeIcon" width="80" headerAlign="center">分组图标
+					<input property="editor" class="mini-textbox"
+							style="width: 100%;" vtype="maxLength:500" maxLength="500" />
+				</div>
+				<div field="orderNum" width="80" headerAlign="center">排序
+					<input property="editor" class="mini-textbox" vtype="int;range:0,99999999"
+							inputStyle="text-align:right" style="width: 100%;"  value="0" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpsubassemblygrouplistaction');
+
+		function addGroup() {
+			var type=Util.getUrlParams('type');
+			epoint.openDialog("新增分组", "./devsubassemblygroupadd?type="+type, function() {
+				mini.get('datagrid').reload();
+			}, {
+				'width' : 700,
+				'height' : 400
+			})
+		}
+
+
+		// 删除作业
+		function deleteGroup() {
+			if (mini.get('datagrid').getSelecteds() == 0) {
+				epoint.alert('请选择要删除的分组');
+			} else {
+				epoint.confirm('确认删除吗?', '', function() {
+					epoint.execute("deleteGroup", '', callback);
+				});
+			}
+		}
+		
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			} else {
+				epoint.alert("删除失败");
+			}
+		}
+
+		function searchData(){
+			mini.get('datagrid').reload();
+		}
+		
+		// 更新
+		function updateGroup() {
+			epoint.execute("updateGroup", '', callback);
+		}
+	</script>
+</body>
+</html>

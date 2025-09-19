@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+<title>业务选择</title>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar" id="toolbar">
+		<div class="btn-group ">
+			<input id="tableCombobox" class="mini-combobox" textField="text"
+				bind="tableId" valueField="id" action="getTableModel"
+				onvaluechanged="showTableChange" emptyText="业务主表选择" />
+			<input class="mini-hidden" id="type"/>
+		</div>
+	</div>
+	<div class="fui-content">
+		<iframe id="pageIframe" frameborder="0" allowTransparency="true"
+			scrolling="no" width="100%" height="100%"></iframe>
+	</div>
+	
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		           
+		epoint.initPage('recordselectmanageaction', '', initCallBack);
+
+		function initCallBack(data) {
+			var url = "recordmanagelist";
+			var tableId =  mini.get("tableCombobox").getValue();
+			if(data && data.tableId){
+				tableId = data.tableId;
+				document.getElementById("toolbar").style.display = "none";
+			}
+			var pageUrl = url + "?tableId="+ tableId;
+			
+			if(data && data.type){
+				mini.get("type").setValue(data.type);
+				pageUrl += "&type=search";
+			}
+			console.log(pageUrl);
+			document.getElementById("pageIframe").src = pageUrl;
+		}
+
+		function showTableChange() {
+			var url = "recordmanagelist";
+			var tableId = mini.get("tableCombobox").getValue();
+			if (tableId) {
+				url += "?tableId=" + tableId;
+			}
+			var type= mini.get("type").getValue();
+			if(type != null && type !=""){
+				url +="&type=search";
+			}
+            document.getElementById("pageIframe").src=url;
+		}
+		//]]>
+	</script>
+</body>
+</html>

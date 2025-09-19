@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+		</div>
+
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="title" opened="false">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="标题">
+						<input id="title" class="mini-textbox" bind="title" />
+					</div>
+					<div role="control" label="消息类别">
+						<input class="mini-combobox" bind="typeGuid"
+							action="selectTypeModel" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="紧急程度">
+						<input class="mini-radiobuttonlist" bind="urgencyLevel"
+							action="selectUrgencyModel" />
+					</div>
+					<div role="control" label="状态">
+						<input class="mini-radiobuttonlist" bind="status"
+							action="selectStatusModel" />
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<a role="reset" callback="resetCallback"> <a role="searcher"
+			callback="searchData"></a><a role="close" callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="messageguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="topic" headerAlign="center" align="left" width="100%" validateLevel="1">标题</div>
+				<div field="typename" headerAlign="center" width="120" align="left">消息类型</div>
+				<div field="fromusername" headerAlign="center" width="120"
+					align="left">来源用户名称</div>
+				<div field="targetusername" headerAlign="center" width="120"
+					align="left">目标用户名称</div>
+				<div field="sendtime" headerAlign="center" width="160"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">发送时间</div>
+				<div field="urgency" headerAlign="center" width="100" align="center">紧急程度</div>
+				<div field="statusname" headerAlign="center" width="100"
+					align="center">状态</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesmessagelistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

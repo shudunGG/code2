@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>应用注册修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+p{
+margin-left:16px;
+margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="save" onclick="saveModify">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<div class="fui-notice hidden">
+		<p>
+			应用回调地址：接了统一认证后，sso信息回传需要配置的地址，一般配置接入应用的地址。不过不接入统一认证，填写的内容不重要。<br>
+			应用类型：分为pc端应用和移动端应用，区别为配置的内容不一样。移动端应用用于手机app管理使用。<br>移动应用类型：分为内部应用和外部应用。外部应用一般为第三方应用。区别为：内部应用的用户为组织架构的用户，外部应用为第三方使用时发送过来的用户。<br>
+			移动应用支持平台：分为AndroidPhone/AndroidPad/iPhone/iPad/AndroidUniversal/iOSUniversal/others。用于区分app在哪里使用，或者下载安装的应用适配哪种系统。
+				（当选择AndroidUniversal，则AndroidPhone和AndroidPad选择无效；当选择iOSUniversal，则iPhone和iPad选择无效。）<br>
+		</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="应用类别">
+						<input id="appclassname" bind="appclassname" allowInput="false"
+							class="mini-treeselect" onvaluechanged="selectAppClass"
+							showFilter="true" selectOnFocus="true" action="getTreeData" width="90%"/>
+					</div>
+				</div>
+				<input bind="dataBean.appclass" id="appclass" class="mini-hidden" />
+				<div role="row">
+					<div role="control" label="应用名称" starred="true">
+						<input id="appname" class="mini-textbox" bind="dataBean.appname"
+							required="true" maxLength="50" vType="maxLength:50;"
+							requiredErrorText="应用名称不能为空" width="90%"/>
+					</div>
+				</div>
+				<div role="row" id="appcoderow">
+					<div role="control" label="应用标识" starred="true">
+						<input id="appcode" class="mini-textbox" bind="dataBean.appcode"
+							maxLength="4" vType="maxLength:4" required="true"
+							onvalidation="onEnglishAndNumberValidation" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用回调地址" starred="true">
+						<input id="callbackurl" class="mini-textbox" required="true"
+							maxLength="500" vType="maxLength:500;"
+							requiredErrorText="应用回调地址不能为空" bind="dataBean.callbackurl" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">统一认证跳转,如有内外网,逗号间隔,例:http://192.168.112.53:8080/EpointOA9,http://218.4.136.114:7009/EpointOA9</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="应用类型">
+						<div id="apptype" class="mini-outputtext" bind="apptype"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="移动跳转地址">
+						<input id="mobilepageurl" class="mini-textbox" maxLength="100"
+							vType="maxLength:100;" bind="dataBean.mobilepageurl" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">移动消息端推送跳转的静态页面部署地址头,,例:http://192.168.112.53:8080/oarest9V7</div>
+				</div>
+				<div role="row">
+					<div role="control" label="PC跳转地址" starred="true">
+						<input id="approoturl" class="mini-textbox" maxLength="500"
+							required="true" vType="maxLength:1000;"
+							requiredErrorText="PC跳转地址不能为空" bind="dataBean.approoturl" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">统一消息点击详情的跳转地址头,如有内外网和域名,需要另外填写在下面</div>
+				</div>
+				<div role="row">
+					<div role="control" label="PC跳转外网地址">
+						<input id="appconfigurl" class="mini-textbox" maxLength="1000"
+							vType="maxLength:1000;" bind="dataBean.appconfigurl"width="90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="PC跳转域名">
+						<input id="apprealurl" class="mini-textbox" maxLength="1000"
+							vType="maxLength:1000;" bind="dataBean.apprealurl" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主动推送地址">
+						<input id="appentryname" class="mini-textbox" maxLength="50"
+							vType="maxLength:50;" bind="dataBean.appentryname" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">开启soa增量主动推送时的业务端接口地址,例:http://192.168.112.53:8080/oarest9V7</div>
+				</div>
+				<div role="row" id="mobileisexternalrow">
+					<div role="control" label="移动应用类型">
+						<div id="IsExternal" name="level" bind="dataBean.isexternal"
+							data="[{text:'内部应用',id:'0'},{text:'外部应用',id:'1'}]"
+							textField="text" valueField="id" value="0"
+							class="mini-radiobuttonlist" style="width: 200px"></div>
+					</div>
+				</div>
+				<div role="row" id="mobileplatformrow">
+					<div role="control" label="移动应用支持平台">
+						<div class="mini-checkboxlist" showNullItem="true"
+							bind="dataBean.platform" action="getPlatformList" repeatItems="3"
+							repeatLayout="table" textField="text" valueField="id"
+							multiSelect="true"></div>
+					</div>
+				</div>
+				<div role="row" id="icon2">
+					<div role="control" label="自定义应用图标" id="cc">
+						<div style="position: relative; float: left;">
+							<span id="photo1" class="text-minor">暂无应用图标， </span>
+							<div id="uploader" class="mini-webuploader"
+								action="appinfoeditaction.getFileUploadModel"
+								fileSingleSizeLimit="1024" limitType="png" mimeTypes="image/*"
+								showDefaultUI="false" auto="true" pickerText="请上传"
+								onfilesuccess="OnPhotoSuccess"></div>
+							<span class="text-minor" style="width: 300px" id="photo3">（最佳图片尺寸：50px<em>*</em>50px;
+								1M以内）
+							</span>
+						</div>
+
+						<div class="img-view" id="photo">
+							<img id="lblPicture" src="" width="50px" height="50px" alt="应用图标" />
+							<i class="action-icon icon-removecirclefilled"
+								style="position: absolute; left: 60px; top: 2px;"
+								onclick="delPhoto();"></i>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input id="ordernum" bind="dataBean.ordernum" class="mini-textbox"
+							vtype="int;range:0,99999999" allowSort="true" width="90%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用摘要描述">
+						<input id="appdesc" class="mini-textarea" bind="dataBean.appdesc"
+							vtype="maxLength:255" maxLength="255" width="90%"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appinfoeditaction', "", initCallback);
+		function initCallback(e) {
+			if (e.appclassname) {
+				mini.get("appclassname").setText(e.appclassname);
+				mini.get("appclass").setValue(e.appclassguid);
+			}
+			if (e.isEmptyAppCode) {
+				$("#appcoderow").show();
+			} else {
+				$("#appcoderow").hide();
+			}
+
+			showPhoto(e.lblPicture);
+
+			if (mini.get("apptype").getValue() == "PC端应用") {
+				$("#mobileplatformrow").hide();
+				$("#mobileisexternalrow").hide();
+			} else {
+				$("#mobileplatformrow").show();
+				$("#mobileisexternalrow").show();
+			}
+
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		// 选择应用类别
+		function selectAppClass(e) {
+			mini.get("appclassname").setValue(e.value);
+			mini.get("appclass").setValue(mini.get('appclassname').getValue());
+		}
+		//上传成功
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+		}
+
+		//删除个性签名图片
+		function delPhoto() {
+			epoint.execute("appinfoeditaction.delUserSign", "",
+					function delPhotoCallback(data) {
+						if (data.msg) {
+							mini.get("uploader").clearFile();
+							showPhoto();
+						}
+					});
+		}
+
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr("src", url);
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+
+				$("#photo").show();
+			} else {
+				$("#photo").hide();
+				$("#lblPicture").attr("src", "");
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+			}
+		}
+
+		function onEnglishAndNumberValidation(e) {
+			if (e.isValid) {
+				if (isEnglishAndNumber(e.value) == false) {
+					e.errorText = "必须输入英文、数字，或英文+数字的组合";
+					e.isValid = false;
+				}
+			}
+		}
+		/* 是否英文+数字 */
+		function isEnglishAndNumber(v) {
+			var re = new RegExp("^[0-9a-zA-Z\_]+$");
+			if (re.test(v))
+				return true;
+			return false;
+		}
+	</script>
+</body>
+</html>

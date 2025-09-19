@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Edit control</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar content -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save"
+				onclick="saveModify">Save and close</a> <a class="mini-button"
+				iconCls="icon-removecircle" onclick="epoint.closeDialog();">cancel
+				edit</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="control name" starred="true">
+						<input class="mini-textbox" bind="dataBean.controlname"
+							required="true" requiredErrorText="Control name cannot be empty!" />
+					</div>
+					<div role="control" label="control english name" starred="true">
+						<input class="mini-textbox" bind="dataBean.controlenglishname"
+							required="true"
+							requiredErrorText="Control english name cannot be empty!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Allow field type">
+						<input class="mini-radiobuttonlist" action="getDataType"
+							repeatItems="5" repeatLayout="table" textField="text"
+							valueField="id" bind="dataBean.allowfieldtype" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="icon" starred="true">
+						<div id="smallIcon" class="mini-webuploader"
+							action="extensiblecontroleditaction.getFileUploadModel"
+							fileNumLimit="1" fileSingleSizeLimit="5120" limitType="png"></div>
+					</div>
+					<div role="control" label="admit value">
+						<input class="mini-textbox" bind="dataBean.defaultvalue" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Sort number">
+						<input class="mini-textbox" bind="dataBean.ordernum" vType="int"
+							value="0" />
+					</div>
+					<div role="control" label="Starting use">
+						<input class="mini-checkbox" bind="dataBean.initiatemode" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="control class">
+						<input autoLoad="false" id="displayID" action="getControlType"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="Please choose control class..."
+							nullItemText="Please choose control class..."
+							bind="dataBean.controlclass" class="mini-combobox"  onvaluechanged="changType"/>
+					</div>
+				</div>
+				<div role="row" id="infoArea">
+					<div role="control" label="control sign info">
+						 <input class="mini-textbox" bind="dataBean.extendfieldone" />
+					</div>
+				</div>
+				<br />
+				<div id="appearArea">
+				    <div role="row">
+						<div role="control" label="ControlAddTemplate" starred="true">
+							<input class="mini-textarea" style="height: 80px" bind="dataBean.template" required="true"
+								requiredErrorText="Control Add Template cannot be empty!" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="ControlDetailTemplate" starred="true">
+							<input class="mini-textarea" style="height: 80px"
+								bind="dataBean.extendfieldtwo" required="true"
+								requiredErrorText="Control Detail Template cannot be empty!" />
+						</div>
+					</div>
+					<p>
+						<em>Component Template：</em><font color="red">Note the key
+							words for the system to replace the keyword,like" div
+							class="uc-handlecontrols" id="{{id}}"
+							action="formdesignaction.getUsableExtensibleControl"
+							bind="{{bind}}" data-options="{{data-options}}"
+							style="{{style}}"" </font>
+					</p>
+					<br />
+					<div role="row">
+						<div role="control" label="mobilecontroltemplate">
+							<input class="mini-textarea" style="height: 100px" bind="dataBean.mobiletemplate" />
+						</div>
+					</div>
+					<br />
+					<p>
+						<em>mobile template：</em><font color="red">when control
+							class is null，need save mobilecontroltemplate</font>
+					</p>
+					<br />
+					<div role="row">
+						<div class="btn-group mr10" style="width: 100%">
+							<a class="mini-button" id="codeItem" onclick="addProperty();">Add
+								property</a> <a class="mini-button" id="btnDel"
+								iconCls="icon-minuscircle"
+								onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+								删除选定 </a>
+						</div>
+					</div>
+					<div id="datagrid" class="mini-datagrid" idField="propertyguid"
+						action="getDataGridData" sortOrder="desc" showPager="true"
+						style="height: 220px;" allowResize="true" multiSelect="true"
+						allowCellEdit="true" allowCellSelect="true"
+						editNextOnEnterKey="true" editNextRowCell="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">order
+								number</div>
+							<div field="propertyname" width="200" headerAlign="center">
+								property name</div>
+							<div field="propertyenglishname" width="200" headerAlign="center">
+								property english name</div>
+							<div field="displaytype" width="200" align="center"
+								headerAlign="center">control type</div>
+							<div field="ordernum" width="100" headerAlign="center"
+								align="right">order num</div>
+							<div width="60" align="center" headerAlign="center"
+								renderer="onEditRenderer">edit</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="controlguid">
+
+	<script type="text/javascript">
+		var miniLocal = 'en_US.js';
+	</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// Init page
+		epoint.initPage('extensiblecontroleditaction', '', initCallBack);
+
+		function initCallBack(data) {
+			if(data.controlclass){
+				if(data.controlclass == "textbox" || data.controlclass == "textarea"){
+					document.getElementById("infoArea").style.display = "block";
+				}else{
+					document.getElementById("infoArea").style.display = "none";
+				}
+				document.getElementById("appearArea").style.display = "none";	
+			}else{
+				document.getElementById("infoArea").style.display = "none";	
+				document.getElementById("appearArea").style.display = "block";
+			}
+			if (data.controlguid) {
+				mini.get("controlguid").setValue(data.controlguid);
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// operation callback
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") > -1) {
+					epoint.alertAndClose(data.msg, '', null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, null, 'error');
+				}
+			}
+		}
+
+		// Add new properties window
+		function addProperty() {
+			var cguid = mini.get("controlguid").getValue();
+			epoint.openDialog('Add Property',
+					"framemanager/sform/formlistmanage/controlpropertyadd?controlguid="
+							+ cguid, searchData, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+		// Line edit button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// Add edit property window
+		function openEdit(id) {
+			epoint.openDialog('Edit property',
+					"framemanager/sform/formlistmanage/controlpropertyedit?propertyguid="
+							+ id, searchData, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+		// fresh dategrid
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		// delete property data
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		
+		//control 
+		function changType() {
+			var displayName = mini.get("displayID").getValue();
+			if(!displayName){
+				document.getElementById("infoArea").style.display = "none";
+				document.getElementById("appearArea").style.display = "block";
+			}else{
+				if(displayName == "textbox" || displayName == "textarea"){
+					document.getElementById("infoArea").style.display = "block";
+				}else{
+					document.getElementById("infoArea").style.display = "none";
+				}
+				document.getElementById("appearArea").style.display = "none";
+			}
+		}
+	</script>
+</body>
+</html>

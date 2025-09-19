@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The main table field</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addTableStructBtn1" iconCls="icon-save" onclick="add();">Add fields</a> 
+			<a class="mini-button" iconCls="icon-addcircle" id="saveForm"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select you want to save record!', '', null, 'warning');} else {save();}">save changes</a>
+			<!--a class="mini-button" iconCls="icon-removecircle" id="delForm"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {del();}">Delete Selected</a-->
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">That information</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			The current table<em>You must set up the primary key</em>, if the database table has a primary key, do not need to set up; If not, please check here1A field as a query the primary key
+		</p>
+		<p>
+			button<em>Reconstruction data table:</em>When our database physical table is deleted or not, we can through good configuration structure field inversion to generate physical tables
+		</p>
+		<p>
+			button<em>Synchronous structure:</em>If the structure of our field do not agree with our real physical table, we can through thisbuttonFor differences in sync。The synchronization process is to read new physical table field、edit、deletemisThe fields in the table
+		</p>
+	</div>
+
+	<div class="fui-condition">
+		<!-- The form layout -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 4column -->
+				<div role="row">
+					<div role="control" label="The current data table name" starred="false">
+						<input bind="tableInfo.tableName" class="mini-output" />
+					</div>
+					<div role="control" label="SQLThe data table name" starred="false">
+						<input bind="tableInfo.sqlTableName" class="mini-output" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The field name" starred="false">
+						<input bind="fieldChineseName" class="mini-textbox" onkeypress="searchData();"/>
+					</div>
+					<div role="control" label="Field English name" starred="false">
+						<input bind="fieldName" class="mini-textbox" onkeypress="searchData();"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- searchbutton -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<div class="fui-content">
+	    <div id="datagrid" class="mini-datagrid" sortOrder="desc" 
+			idField="fieldid" multiSelect="true" style="width: 100%; height: 100%;" allowResize="true"  showPager="true"
+			allowCellEdit="true" allowCellSelect="true" allowCellValid="true" action="getTableModal">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">order</div>
+				<div field="fieldchinesename" headerAlign="center" align="left" width="100%">
+				         The display name<input property="editor" class="mini-textbox" minWidth="40"
+						inputStyle="text-align:left"/>
+				</div>
+				<div field="fieldname" headerAlign="center" align="left" width="150">The field name</div>
+				<div field="fieldtype" headerAlign="center" align="left" width="60">The data type</div>
+				<div field="fielddisplaytype" headerAlign="center" align="left" width="60">Display type</div>
+				<div headerAlign="center" align="center" renderer="edit" width="50">edit</div>
+				<div field="ordernumingrid" width="50" headerAlign="center" align="right">
+					roworderNo.<input property="editor" class="mini-textbox" minWidth="20"
+						inputStyle="text-align:right" vtype="int" />
+				</div>
+				<div field="controlwidth" type="comboboxcolumn" width="50" autoShowPopup="true" headerAlign="center" align="center">
+						Control the width<input autoLoad="false" data="selectItems.controlwidth"
+						property="editor" class="mini-combobox" style="width: 99%" />
+				</div>
+				<div field="todispingrid" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">columntable</div>
+				<div field="isquerycondition" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">The query</div>
+				<!--div field="uniquefield" type="checkboxcolumn" headerAlign="center"
+					width="35" align="center">The index</div-->
+				<div field="isorderfield" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">roworder</div>
+				<div field="mustfill" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">mandatory</div>	
+				<!--div field="dispInAdd" type="checkboxcolumn" headerAlign="center"
+					width="35" align="center">page</div-->
+				<div field="isexportexcel" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">export</div>
+				<!--div field="isforeignkey" type="checkboxcolumn" headerAlign="center"
+					width="35" align="center">A primary key</div-->
+			</div>
+		</div>
+	</div>
+
+	<input bind="tableInfo.tableID" id="tableID" class="mini-hidden" />
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize thepage
+		epoint.initPage('maintablestructlistaction');
+		
+		var selectItems = {
+				'controlwidth' : [{
+					id : 2,
+					text : 'Double wide'
+				}, {
+					id : 1,
+					text : 'Haploid wide'
+				}]
+		};
+
+		function add() {
+			var tableID=mini.get("tableID").getValue();
+            epoint.openDialog("The new structure","framemanager/sform/formlistmanage/tablestructadd?tableID=" + tableID, 
+            		addCallBack,
+            		 {
+     					'width':1000,
+    			        'height':450
+    			     });
+        }
+		
+        // tablelatticesearch
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form']);
+		}
+		
+		function save() {
+			epoint.execute('saveAll', 'datagrid', msgCallBack);
+		}
+		
+		function del() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+		
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit","updateInfo","fieldid");
+		}
+		
+		function updateInfo(fieldid) {
+            epoint.openDialog("editfield","framemanager/sform/formlistmanage/tablestructedit?fieldID=" + fieldid, addCallBack);
+        }
+		
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+		}
+		
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.alert(msg, '', function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, 'info');
+			}
+		}
+		
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+select count(*) from  user_tab_columns where table_name = upper('messages_center') and column_name = upper('tagname')

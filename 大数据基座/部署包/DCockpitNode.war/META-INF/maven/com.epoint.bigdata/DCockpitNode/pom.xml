@@ -1,0 +1,914 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.epoint.bigdata</groupId>
+	<artifactId>DCockpitNode</artifactId>
+	<version>1.1_20211202</version>
+	<packaging>war</packaging>
+
+	<properties>
+		<!-- 指定编码与编译版本 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!-- war包不需要发布到本地和远程仓库 -->
+		<maven.install.skip>true</maven.install.skip>
+		<maven.deploy.skip>true</maven.deploy.skip>
+
+		<epoint-DCockpit-version>1.1_20211202</epoint-DCockpit-version>
+		<epoint.job.version>2.1.0</epoint.job.version>
+		<scala.version>2.11.8</scala.version>
+		<spark.version>2.2.1</spark.version>
+		<!-- hadoop -->
+		<hadooptype>hadoop4hdp-P-HDP-2.6.2</hadooptype>
+		<hadoopversion>1.4-9.4</hadoopversion>
+
+		<!-- tomcat7插件端口配置（调试用） -->
+		<maven.tomcat.port>8092</maven.tomcat.port>		
+		
+		<jackson_version>2.11.2-e1</jackson_version>
+		<shiro.version>1.7.1</shiro.version>
+		<shiro.web.version>1.7.1</shiro.web.version>
+		
+		<!-- 一些框架包因为整改升级后的版本 -->
+		<frameupgradeversion>9.4.1-sp3</frameupgradeversion>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.2</version>
+			</dependency>
+			<dependency>
+				<groupId>com.epoint.frame</groupId>
+				<artifactId>epoint-dependency</artifactId>
+				<version>9.4.1-sp3</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+        		<groupId>org.springframework</groupId>
+        		<artifactId>spring-framework-bom</artifactId>
+        		<version>4.3.29.RELEASE</version>
+        		<scope>import</scope>
+        		<type>pom</type>
+    		</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- 统一调度2.0 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-job-executor</artifactId>
+			<version>${epoint.job.version}</version>
+		</dependency>
+		
+		<!-- ######################### 项目引包 ######################### -->
+		<dependency>
+			<groupId>com.epoint.bigdata</groupId>
+			<artifactId>DCockpitMis</artifactId>
+			<version>${epoint-DCockpit-version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.reflections</groupId>
+					<artifactId>reflections</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+			<version>2.6.0</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>zookeeper</artifactId>
+					<groupId>org.apache.zookeeper</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- hadoop -->
+		<dependency>
+			<groupId>com.epoint.bigdata</groupId>
+			<artifactId>${hadooptype}</artifactId>
+			<version>${hadoopversion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.curator</groupId>
+					<artifactId>curator-framework</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-all</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-csv</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.epoint.fi651</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<!-- HDP262需要单独引 -->
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-csv</artifactId>
+			<version>2.9.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.epoint.3rdparty</groupId>
+			<artifactId>janusgraph-es</artifactId>
+			<version>0.5.0</version>
+		</dependency>
+
+		<!-- fastjson -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.70</version>
+		</dependency>
+		
+		<dependency>
+	    	<groupId>org.codehaus.jackson</groupId>
+	    	<artifactId>jackson-jaxrs</artifactId>
+	    	<version>1.9.13</version>
+		</dependency>
+		
+		<!-- ######################### SpringBoot ######################### -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<!-- 应用健康状况监控 -->
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId> 
+			</dependency> -->
+		<!-- 支持Servlet2.5，保留web.xml -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-legacy</artifactId>
+		</dependency>
+		<!-- 支持Spring property属性值加解密，需要的时候把注释打开 -->
+		<!-- <dependency> <groupId>com.github.ulisesbocchio</groupId> <artifactId>jasypt-spring-boot</artifactId> 
+			</dependency> -->
+
+		<!-- ######################### SpringCloud ######################### -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-netflix-hystrix-stream</artifactId>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bus-amqp</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- ########################### 下面是框架自身的依赖包 ########################### -->
+
+		<!-- 框架基础组件包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-utils</artifactId>
+			<version>${frameupgradeversion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.ant</groupId>
+					<artifactId>ant</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-database</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-dto</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.epoint.security</groupId>
+					<artifactId>Epoint.Frame.Security</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<artifactId>Epoint.Frame.Security</artifactId>
+			<groupId>com.epoint.security</groupId>
+			<version>9.5.0-20210916</version>
+			<exclusions>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-common</artifactId>
+			<version>${frameupgradeversion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.sso</groupId>
+			<artifactId>epoint-sso-authenticator</artifactId>
+			<version>3.1.0-sp3</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-core</artifactId>
+			<version>${shiro.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-ehcache</artifactId>
+			<version>${shiro.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-web</artifactId>
+			<version>${shiro.web.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.servlet</groupId>
+					<artifactId>javax.servlet-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.servlet.jsp</groupId>
+					<artifactId>jsp-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-cas</artifactId>
+			<version>${shiro.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.9.15</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson_version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson_version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson_version}</version>
+		</dependency>
+		
+		<!-- 框架基础服务API包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-log-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-metadata-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-attachfile-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-message-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-im-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-organ-api</artifactId>
+			<version>${frameupgradeversion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-am-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-ui-api</artifactId>
+		</dependency>
+		<!-- 框架高级服务API包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-organ-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-mgmt-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-tccmain-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-stireport-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-sform-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-helpcenter-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-mobile-api</artifactId>
+		</dependency>
+		<!-- 框架基础服务实现包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-log-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-metadata-impl</artifactId>
+			<version>${frameupgradeversion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-attachfile-impl</artifactId>
+			<version>${frameupgradeversion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-message-impl</artifactId>
+			<version>${frameupgradeversion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-im-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-organ-impl</artifactId>
+			<version>${frameupgradeversion}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-am-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-ui-impl</artifactId>
+		</dependency>
+		<!-- 框架高级服务实现包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-organ-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-tccmain-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-stireport-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-sform-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-helpcenter-impl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-mobile-impl</artifactId>
+		</dependency>
+		<!-- web控制层组件包 -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-frame-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-workflow-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-stireport-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-sform-action</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-helpcenter-action</artifactId>
+		</dependency>
+		<!-- <dependency> <groupId>com.epoint.frame</groupId> <artifactId>epoint-showcase-action</artifactId> 
+			</dependency> -->
+		<dependency>
+			<groupId>com.epoint.frame</groupId>
+			<artifactId>epoint-mobile-action</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.reflections</groupId>
+					<artifactId>reflections</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- ########################### 下面是其他通用的开源组件包 ########################### -->
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- 数据库驱动包 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>sqljdbc4</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc7</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- mpp -->
+		<dependency>
+			<groupId>com.epoint.bigdata</groupId>
+			<artifactId>epoint4mpp</artifactId>
+			<version>1.2-9.4</version>
+		</dependency>
+		<!-- kylin -->
+		<dependency>
+		    <groupId>org.apache.kylin</groupId>
+		    <artifactId>kylin-jdbc</artifactId>
+		    <version>2.2.0</version>
+		</dependency>
+		<!-- 达梦库 -->
+		<!-- <dependency> <groupId>com.epoint.3rdparty</groupId> <artifactId>Dm7JdbcDriver17</artifactId> 
+			<version>1.0</version> </dependency> -->
+			
+		<!--maxcompute数据库-->
+        <dependency>
+            <groupId>com.aliyun.odps</groupId>
+            <artifactId>odps-jdbc</artifactId>
+            <version>3.2.9</version>
+        </dependency>
+
+		<!-- 邮件实现 <dependency> <groupId>javax.mail</groupId> <artifactId>mail</artifactId> 
+			</dependency> -->
+
+		<!-- poi用于excel等office文档的操作 -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-schemas</artifactId>
+		</dependency>
+
+		<!-- ShardingJdbc分库分表 -->
+		<dependency>
+			<groupId>com.dangdang</groupId>
+			<artifactId>sharding-jdbc-core</artifactId>
+		</dependency>
+
+		<!-- 跨域实现 -->
+		<dependency>
+			<groupId>com.thetransactioncompany</groupId>
+			<artifactId>cors-filter</artifactId>
+		</dependency>
+
+		<!-- 消息中间件 -->
+		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit</artifactId>
+		</dependency>
+
+		<!-- 华为Hbase的包，需要的时候把注释打开 -->
+		<!-- <dependency> <groupId>com.epoint.bigdata</groupId> <artifactId>hadoop4hw</artifactId> 
+			</dependency> -->
+
+		<!-- webservice转发需要的包，需要的时候把注释打开 -->
+		<!-- <dependency> <groupId>wsdl4j</groupId> <artifactId>wsdl4j</artifactId> 
+			</dependency> <dependency> <groupId>com.epoint.3rdparty</groupId> <artifactId>soapui-xmlbeans</artifactId> 
+			</dependency> <dependency> <groupId>com.epoint.3rdparty</groupId> <artifactId>soapui</artifactId> 
+			</dependency> <dependency> <groupId>jdom</groupId> <artifactId>jdom</artifactId> 
+			</dependency> <dependency> <groupId>com.jgoodies</groupId> <artifactId>looks</artifactId> 
+			</dependency> <dependency> <groupId>org.apache.mina</groupId> <artifactId>mina-core</artifactId> 
+			</dependency> -->
+
+		<!-- ######################### 下面的在框架web工程中才需要引入 ######################### -->
+
+		<!-- f9框架自检工具 -->
+		<!-- <dependency> <groupId>com.epoint</groupId> <artifactId>epoint-check</artifactId> 
+			</dependency> -->
+
+		<!-- EL表达式 -->
+		<!-- <dependency> <groupId>javax.el</groupId> <artifactId>javax.el-api</artifactId> 
+			<scope>provided</scope> </dependency> -->
+
+		<!-- CDI(Contexts and Dependency Injection)上下文依赖注入API -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+		</dependency>
+		<!-- JSR-330依赖注入注解，在SpringCloud及WebSocket中都有依赖 -->
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+		</dependency>
+
+		<!-- JSR303数据校验API <dependency> <groupId>javax.validation</groupId> <artifactId>validation-api</artifactId> 
+			</dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-validator</artifactId> 
+			</dependency> -->
+		<!-- Apache的JSR303数据校验API实现，Spring4.0之后不再支持这个包 -->
+		<!-- <dependency> <groupId>org.apache.bval</groupId> <artifactId>bval-jsr303</artifactId> 
+			<version>0.5</version> </dependency> -->
+
+		<!-- ewebeditor -->
+		<dependency>
+			<groupId>ewebeditor</groupId>
+			<artifactId>ewebeditor</artifactId>
+		</dependency>
+		<!-- ueditor -->
+		<dependency>
+			<groupId>com.baidu</groupId>
+			<artifactId>ueditor</artifactId>
+		</dependency>
+
+		<!-- cxf webservice -->
+		<dependency>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-frontend-jaxws</artifactId>
+		    <version>3.3.10</version>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>org.glassfish.jaxb</groupId>
+		            <artifactId>txw2</artifactId>
+		        </exclusion>
+		        <exclusion>
+		            <groupId>org.glassfish.jaxb</groupId>
+		            <artifactId>jaxb-runtime</artifactId>
+		        </exclusion>
+		        <exclusion>
+		            <groupId>jakarta.xml.bind</groupId>
+		            <artifactId>jakarta.xml.bind-api</artifactId>
+		        </exclusion>
+		        <exclusion>
+		            <groupId>org.ow2.asm</groupId>
+		            <artifactId>asm</artifactId>
+		        </exclusion>
+		    </exclusions>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-ws-security</artifactId>
+		    <version>3.3.10</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.cxf</groupId>
+		    <artifactId>cxf-rt-transports-http</artifactId>
+		    <version>3.3.10.e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.glassfish.jaxb</groupId>
+		    <artifactId>jaxb-runtime</artifactId>
+		    <version>2.3.2-e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.ow2.asm</groupId>
+		    <artifactId>asm</artifactId>
+		    <version>7.1-e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.istack</groupId>
+		    <artifactId>istack-commons-runtime</artifactId>
+		    <version>3.0.8-e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.jvnet.staxex</groupId>
+		    <artifactId>stax-ex</artifactId>
+		    <version>1.8.1-e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.xml.fastinfoset</groupId>
+		    <artifactId>FastInfoset</artifactId>
+		    <version>1.2.16-e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>jakarta.xml.bind</groupId>
+		    <artifactId>jakarta.xml.bind-api</artifactId>
+		    <version>2.3.2-e1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.glassfish.jaxb</groupId>
+		    <artifactId>txw2</artifactId>
+		    <version>2.3.2-e1</version>
+		</dependency>
+
+		<!-- WebSocket -->
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-runtime</artifactId>
+		</dependency>
+		<!-- 开启WebSocket集群需要引入 -->
+		<!-- <dependency> <groupId>org.atmosphere</groupId> <artifactId>atmosphere-redis</artifactId> 
+			</dependency> -->
+
+		<!-- brave相关配置依赖(接入Zipkin用Java库) -->
+		<!-- <dependency> <groupId>io.zipkin.brave</groupId> <artifactId>brave</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.brave</groupId> <artifactId>brave-spring-beans</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.brave</groupId> <artifactId>brave-instrumentation-spring-webmvc</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.brave</groupId> <artifactId>brave-instrumentation-httpclient</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.brave</groupId> <artifactId>brave-instrumentation-spring-rabbit</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.brave</groupId> <artifactId>brave-instrumentation-p6spy</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.reporter2</groupId> <artifactId>zipkin-sender-okhttp3</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.reporter2</groupId> <artifactId>zipkin-sender-amqp-client</artifactId> 
+			</dependency> <dependency> <groupId>io.zipkin.zipkin2</groupId> <artifactId>zipkin</artifactId> 
+			<version>2.8.1</version> </dependency> -->
+	</dependencies>
+
+	<profiles>
+		<!-- 多环境配置依赖自动切换，注意这里的依赖会覆盖上面相同的依赖 -->
+		<!-- 普通应用环境 -->
+		<profile>
+			<id>normal</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<!-- spring.profiles.active -->
+				<profiles.active>normal</profiles.active>
+				<!-- web.xml中的启动类 -->
+				<bootClass>com.epoint.FrameWebApplication</bootClass>
+			</properties>
+		</profile>
+		<!-- 微服务应用环境 -->
+		<profile>
+			<id>micro</id>
+			<properties>
+				<profiles.active>micro</profiles.active>
+				<bootClass>com.epoint.FrameWebServiceApplication</bootClass>
+			</properties>
+			<dependencies>
+				<!-- 服务注册与发现客户端 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+				</dependency>
+				<!-- 声明式REST客户端，封装了HTTP调用方法，使得消费者像调用本地方法那样直接调用远端服务方法 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-openfeign</artifactId>
+				</dependency>
+				<!-- Feign底层调用客户端用Apache HttpClient -->
+				<dependency>
+					<groupId>io.github.openfeign</groupId>
+					<artifactId>feign-httpclient</artifactId>
+				</dependency>
+				<!-- Feign文件上传支持 -->
+				<dependency>
+					<groupId>io.github.openfeign.form</groupId>
+					<artifactId>feign-form-spring</artifactId>
+				</dependency>
+				<!-- 熔断器，对延迟和故障提供容错能力 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+				</dependency>
+				<!-- 负载均衡器 -->
+				<dependency>
+					<groupId>org.springframework.cloud</groupId>
+					<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+				</dependency>
+				<!-- 熔断监控提供了微服务运行指标，相关数据异步输出 -->
+				<!-- <dependency> <groupId>org.springframework.cloud</groupId> <artifactId>spring-cloud-netflix-hystrix-stream</artifactId> 
+					<exclusions> <exclusion> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-logging</artifactId> 
+					</exclusion> </exclusions> </dependency> <dependency> <groupId>org.springframework.cloud</groupId> 
+					<artifactId>spring-cloud-starter-bus-amqp</artifactId> </dependency> <dependency> 
+					<groupId>org.springframework.amqp</groupId> <artifactId>spring-rabbit</artifactId> 
+					</dependency> -->
+
+				<!-- rabbit自动配置兼容xml方式个性化版本 -->
+				<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-autoconfigure</artifactId> 
+					<version>1.5.19.RELEASE.e1</version> </dependency> <dependency> <groupId>org.springframework.cloud</groupId> 
+					<artifactId>spring-cloud-stream-binder-rabbit</artifactId> <version>1.3.4.RELEASE.e1</version> 
+					</dependency> -->
+
+				<!-- ######################### smartbi ######################### -->
+				<!-- <dependency> <groupId>com.epoint.3rdparty</groupId> <artifactId>smartbi-Common</artifactId> 
+					<version>1.0</version> </dependency> <dependency> <groupId>com.epoint.3rdparty</groupId> 
+					<artifactId>smartbi-SDK</artifactId> <version>1.0</version> </dependency> -->
+			</dependencies>
+		</profile>
+	</profiles>
+
+	<build>
+		<finalName>${project.artifactId}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<!-- 二进制如证书文件不能过滤，防止这些文件被篡改 -->
+					<nonFilteredFileExtensions>
+						<nonFilteredFileExtension>so</nonFilteredFileExtension>
+						<nonFilteredFileExtension>dll</nonFilteredFileExtension>
+						<nonFilteredFileExtension>store</nonFilteredFileExtension>
+						<nonFilteredFileExtension>lic</nonFilteredFileExtension>
+						<nonFilteredFileExtension>p12</nonFilteredFileExtension>
+						<nonFilteredFileExtension>keytab</nonFilteredFileExtension>
+					</nonFilteredFileExtensions>
+				</configuration>
+				<!-- 解决war插件filtering开启后出现编译异常问题 -->
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.shared</groupId>
+						<artifactId>maven-filtering</artifactId>
+						<version>3.1.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<!-- war打包插件 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<webResources>
+						<!-- 开启过滤支持占位符参数替换 -->
+						<resource>
+							<directory>src/main/webapp</directory>
+							<filtering>true</filtering>
+							<includes>
+								<include>WEB-INF/web.xml</include>
+							</includes>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+			<!-- jrebel插件用于生成rebel.xml -->
+			<plugin>
+				<groupId>org.zeroturnaround</groupId>
+				<artifactId>jrebel-maven-plugin</artifactId>
+				<version>1.1.8</version>
+				<executions>
+					<execution>
+						<id>generate-rebel-xml</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<rebelXmlDirectory>${basedir}/src/main/resources</rebelXmlDirectory>
+				</configuration>
+			</plugin>
+			<!-- tomcat7运行插件 -->
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<uriEncoding>UTF-8</uriEncoding>
+					<url>http://localhost:${maven.tomcat.port}/</url>
+					<server>tomcat7</server>
+					<systemProperties>
+						<bootClass>${bootClass}</bootClass>
+						<server.port>${maven.tomcat.port}</server.port>
+						<server.context-path>/${project.artifactId}/rest</server.context-path>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

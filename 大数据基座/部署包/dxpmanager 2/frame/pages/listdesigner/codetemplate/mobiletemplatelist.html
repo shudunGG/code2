@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<title>移动端列表页</title>
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<script>
+	document.write("<script src='../../../../../frame/fmui/js/cssboot.js?"
+			+ Math.random() + "'></scr" + "ipt>");
+</script>
+
+<script>
+	SrcBoot
+			.output([
+					'../../../../../frame/fmui/showcase/comdto/css/common.css',
+					'../../../../../frame/fmui/showcase/comdto/css/template_list.css' ]);
+</script>
+
+
+</head>
+
+<body class="ejs-f9-content">
+	<div class="page-loading"></div>
+	<header class="mui-bar mui-bar-nav">
+		<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+		<h1 class="mui-title">列表模版页</h1>
+	</header>
+	<!-- 内容区域 -->
+	<div class="mui-content">
+		<!-- 搜索框控件 -->
+		@searchContainer
+		<!--数据列表-->
+		@contentContainer
+	</div>
+
+	@toolbarContainer
+
+	<script type="text/template" id="tpl-pullrefresh">
+      @templateContainer
+  	</script>
+
+	<script>
+		document.write("<script src='../../../../../frame/fmui/js/jsboot.js?" + Math.random()
+				+ "'></scr" + "ipt>");
+	</script>
+	<script>
+		Util.loadJs(initPage);
+
+		function initPage() {
+			epointm.initPage('tablelistaction@params', null, null, null, {
+				method : 'GET'
+			});
+			
+			if (document.body.classList.contains('ejs-f9-content') && ejs.os.ejs) {
+		        var scrollWrapper = document.querySelector('.mui-scroll-wrapper');
+
+		        if (document.querySelector('.ep-mui-searchbar')) {
+		          scrollWrapper.style.top = '44px';
+		        } else {
+		          scrollWrapper.style.top = 0;
+		        }
+		      }
+		}
+
+		// 搜索回调函数
+		window.onSearchCallback = function() {
+			// 触发下拉刷新
+			epm.get('datagrid').refresh();
+		};
+
+		/**
+		 * 跳转页面
+		 * @param {String} url 跳转地址
+		 * @param {Object} extras url 拼接的参数
+		 */
+		window.openPage = function(url, extras) {
+
+			if (extras && typeof extras === 'string') {
+				extras = epm.parseJSON(extras);
+			}
+
+			//ejs.page.open(url, extras);
+			ejs.page.open({
+				pageUrl : url,
+				data : extras,
+				success : function(result) {
+					console.log(1111);
+					epm.get('datagrid').refresh();
+
+				},
+				error : function(error) {
+				}
+			});
+		};
+		
+		@jsContainer
+	</script>
+</body>
+
+</html>

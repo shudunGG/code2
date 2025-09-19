@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Module management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<div class="fui-left">
+			<div role="head" title="module management"></div>
+
+			<div role="body">
+				<ul id="tree" name="tree" class="mini-tree" style="width: 100%;height:100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"  action="getTreeModel"
+				resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right" id="fui-right">
+			<!-- toolbar area -->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" iconCls="icon-addcircle" onclick="addModule">new module</a>
+					<a class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose you want to delete the module!', '', null, 'warning');} else {epoint.confirm('Sure you want to delete?','',function(){epoint.execute('deleteSelect','datagrid',callback);});}">delete selected</a>
+					<a class="mini-button" iconCls="icon-save" onclick="saveAll()">save changes</a>
+					<a class="mini-button" iconCls="icon-save" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a want to export record!', '', null, 'warning');} else {epoint.execute('export','',exportsql)}">script export</a>
+				</div>
+
+				<input id="database" autoLoad="false"
+				action="getDsTypes" textField="text"
+				valueField="id" class="mini-combobox mr10" />
+			</div>
+
+			<div class="fui-condition">
+				<!-- The form layout -->
+				<div class="fui-form" id="fui-form">
+					<div id="cform" role="form">
+						<!-- 2column -->
+						<div role="row">
+							<div role="control" label="module name">
+								<input bind="frameModule.moduleName" id="name"
+								class="mini-textbox" emptyText="" style="width: 60%;"/>
+							</div>
+						</div>
+					</div>
+					<input bind="frameModule.moduleCode" id="moduleCode" class="mini-hidden" />
+				</div>
+				<!-- Search button -->
+				<a role="searcher" callback="updateTable"></a>
+			</div>
+			<div id="fuiContent" class="fui-content">
+				<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="moduleCode" multiSelect="true" action="getDataGridData"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true"  allowCellValid="true" allowCellEdit="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true" ondrawcell="onCheckRender">
+					<div property="columns">
+						<div type="checkcolumn" width="80" ></div>
+						<div type="indexcolumn" headerAlign="center" width="80">
+							order
+						</div>
+
+						<div field="moduleName" width="120"
+						headerAlign="center" allowSort="true" vtype="required;maxLength:50">
+							module name
+							<input property="editor" class="mini-textbox"
+							style="width: 100%;" maxLength="50"  />
+						</div>
+						<div field="moduleCode" width="120"
+						headerAlign="center" align="right" renderer="onCodeRenderer">
+							module code
+						</div>
+						<div field="moduleUrl" headerAlign="center" width="100%">
+							module addresses
+							<input property="editor" class="mini-textbox"
+							style="width: 100%;" />
+						</div>
+						<div field="orderNumber" width="120" align="right" headerAlign="center" vtype="int;max:99999999" allowSort="true">
+							roworder
+							<input property="editor" class="mini-textbox" maxLength="8" inputStyle="text-align:right" style="width: 100%;"/>
+						</div>
+						<div field="isAddOu" width="80" align="center" type="checkboxcolumn" truevalue="1" falsevalue="0" headerAlign="center">
+							hidden
+						</div>
+						<div field="isDisable" width="80" align="center" type="checkboxcolumn" truevalue="1" falsevalue="0" headerAlign="center">
+							disable
+						</div>
+						<div field="isBlank" width="80" align="center" headerAlign="center" type="checkboxcolumn" truevalue="1" falsevalue="0">
+							pop-up
+						</div>
+						<div width="50" align="center" headerAlign="center"
+						renderer="onEditRenderer">
+							edit
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			epoint.initPage("framemodulelistaction", '', initDataBase);
+
+			function initDataBase(e) {
+				mini.get("database").setValue("oracle");
+				mini.get("database").setText("Oracle");
+			}
+
+			//grid.on("load", function(e) {
+			//	var rows = e.sender.findRows();
+			//	for (var i = 0; i < rows.length; i++) {
+			//		grid.beginEditRow(rows[i]);
+			//	}
+			//});
+			var grid = mini.get('datagrid');
+
+			grid.on("beforeselect", function(e) {
+				var moduleCode = e.record.moduleCode;
+				if (moduleCode == '9998' || moduleCode == '9999') {
+					e.cancel = true;
+				}
+			});
+
+			//The treejsobject
+			var tree = mini.get("tree");
+
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				var id = e.node.objectcode;
+				//To the leftThe treeClick on the nodeidIn a hidden field
+				mini.get('moduleCode').setValue(id);
+				//Refresh the table
+				updateTable_tree();
+			});
+
+			// Draw Edit Columns button
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "editModule", "moduleCode");
+			};
+
+			function onCodeRenderer(e) {
+				return e.value + "&#160;&#160;";
+			}
+
+			function addModule() {
+				var moduleCode = mini.get('moduleCode').getValue();
+				var settings = {
+					'width' : 1000,
+					'height' : 500
+				};
+				epoint.openDialog('new module', 'framemanager/orga/uiset/menu/module/framemodule?parentModuleCode=' + moduleCode, addCallBack, settings);
+			}
+
+			function editModule(moduleCode) {
+				var settings = {
+					'width' : 1000,
+					'height' : 500
+				};
+				epoint.openDialog('edit module', 'framemanager/orga/uiset/menu/module/framemodule?moduleCode=' + moduleCode, addCallBack, settings);
+			}
+
+			//The callback for the add operation
+			function addCallBack(param) {
+				if (param) {
+					epoint.refresh(['datagrid', 'fui-form', 'tree'],'',true);
+				}
+			}
+
+			// save
+			function saveAll() {
+				grid.validate();
+	            if (grid.isValid() == false) {
+	                //alert("Please check the input content of cells");
+	                var error = grid.getCellErrors()[0];
+// 	                console.log(error);
+	                grid.beginEditCell(error.record, error.column);
+	                return;
+	            }
+	            epoint.execute('saveAll', '', callback);
+				
+				//if(epoint.validate("datagrid")){
+				//	epoint.execute('saveAll', '', callback);
+				//}
+			}
+
+			// exportsqlstatements
+			function exportsql(moduleIDs) {
+				var databaseType = mini.get("database").getValue();
+				epoint.openDialog(mini.get("database").getText() + 'Script export', "framemanager/orga/uiset/menu/module/framemoduleexport?moduleIDs=" + moduleIDs.exportlist + "&databaseType=" + databaseType, '', {
+					'width' : 1000,
+					'height' : 400
+				});
+			}
+
+			//callback
+			function callback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', function(){
+						epoint.refresh(['datagrid', 'fui-form', 'tree'],'',true);
+					}, 'info');
+				}
+			}
+
+			function updateTable_tree() {
+				epoint.refresh(["datagrid", "fui-form"]);
+			}
+
+			function updateTable() {
+				epoint.refresh(["datagrid", "fui-form", "tree"]);
+			}
+
+			function onCheckRender(e) {
+				//This function is only hidden selection box, but still can be selected to attention!!!!!!!!!! To cooperate withbeforeselectuse
+				var moduleCode = e.record.moduleCode;
+				if ((moduleCode == '9998' || moduleCode == '9999') && e.cellCls === "mini-checkcolumn") {
+					e.cellHtml = "";
+				}
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

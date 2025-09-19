@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where table_schema = database() and table_name = 'epointsform_table_basicinfo' and column_name = 'ctrlencreatetype'

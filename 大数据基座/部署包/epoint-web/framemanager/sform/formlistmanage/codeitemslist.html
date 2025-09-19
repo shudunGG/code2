@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>代码子项管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择上级代码"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" onclick="addCodeItems()">新增代码项</a> <a
+				class="mini-button" onclick="saveAll()">保存代码项</a> <a
+				class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('删除代码项会同步删除子节点数据,确定要删除吗?','',deleteSelected);}">删除代码项</a>
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<div>
+				<div style="margin: 0px auto; text-align: left; width: 700px">
+					<p>
+						注意：对于多级代码，如行政区划，***市对应编号为320502，代码项值必须为数字320502，并且请注意代码长度必须符合代码分级定义规范。
+					</p>
+					<p>默认的代码项层级值和代码项值是一样的，即组织层级关系使用该字段。当你的值不具备层级概念时，可以手动设置该属性</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="fui-condition">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 3列 -->
+					<div role="row">
+						<div role="control" label="代码项文本" starred="true">
+							<input bind="codeItems.itemText" id="itemText"
+								class="mini-textbox" required="true"
+								requiredErrorText="代码项文本不能为空" />
+
+						</div>
+						<div role="control" label="代码项值" starred="true">
+							<input bind="codeItems.itemValue" id="itemValue"
+								class="mini-textbox" required="true"
+								requiredErrorText="代码项值不能为空" />
+						</div>
+						<div role="control" label="代码项层级">
+							<input bind="codeItems.itemLevCode" id="itemLevCode"
+								class="mini-textbox" />
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="itemID" id="itemID" class="mini-hidden" />
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="itemid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				action="getDataGridData" showPager="true" allowCellSelect="true"
+				allowCellValid="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+
+					<div type="indexcolumn" width="40">序</div>
+
+					<div field="itemText" width="100%">
+						代码项文本 <input property="editor" class="mini-textbox"
+							required="true" requiredErrorText="代码项文本不能为空" style="width: 100%" />
+					</div>
+					<div field="itemValue" width="150">
+						代码项值 <input property="editor" class="mini-textbox" required="true"
+							requiredErrorText="代码项值不能为空" style="width: 100%" />
+					</div>
+					<div field="itemLevCode" width="150">
+						代码项层级值 <input property="editor" class="mini-textbox"
+							style="width: 100%" />
+					</div>
+					<div field="orderNo" width="60">
+						排序 <input property="editor" class="mini-textbox" vtype="int"
+							style="width: 100%" />
+					</div>
+					<div field="dmAbr1" width="60">
+						备注1 <input property="editor" class="mini-textbox"
+							style="width: 100%" />
+					</div>
+					<div field="dmAbr2" width="60">
+						备注2 <input property="editor" class="mini-textbox"
+							style="width: 100%" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("formcodeitemslistaction");
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 在表格数据加载完之后打开表格编辑状态
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('itemID').setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		// 新增代码项
+		function addCodeItems() {
+			if (epoint.validate()) {
+				epoint.execute('addCodeItems', '', msgCallBack);
+			}
+		}
+
+		// 保存
+		function saveAll() {
+			var grid = mini.get("datagrid");
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', [ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (msg.indexOf("成功") == -1) {
+					epoint.alert(msg, '', '', 'warning');
+				} else {
+					epoint.alert(msg, '', searchData_Tree(), 'success');
+				}
+			}
+		}
+
+		// 表格，树的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 表格，树的搜索
+		function searchData_Tree() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'tree' ], '', true);
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>

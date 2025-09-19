@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The log level set</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+        <div class="page-loading"></div>
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle"
+					onclick="addLevel">new log level</a>
+				<a class="mini-button" iconCls="icon-minuscircle"
+					onclick="deleteSelect">delete the log level</a>
+				<a class="mini-button" iconCls="icon-save" onclick="epoint.execute('frameloglevellistaction.editLevel','',saveCallback);">save settings</a>
+			</div>
+		</div>
+	
+		<div class="fui-condition">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="log name">
+							<input bind="frameLogLevel.logname" id="name" class="mini-textbox"
+								style="width: 100%;"/>
+						</div>
+						<div role="control" label="current log level">
+							<input id="level" data="[{text:'',id:''},{text:'DEBUG',id:'DEBUG'},{text:'INFO',id:'INFO'},{text:'WARN',id:'WARN'},{text:'ERROR',id:'ERROR'},{text:'FATAL',id:'FATAL'},{text:'ALL',id:'ALL'},{text:'OFF',id:'OFF'}]" textField="text" valueField="id"
+								bind="frameLogLevel.loglevel" class="mini-combobox" style="width: 100%" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="default log level">
+							<input id="defaultlevel" data="[{text:'',id:''},{text:'DEBUG',id:'DEBUG'},{text:'INFO',id:'INFO'},{text:'WARN',id:'WARN'},{text:'ERROR',id:'ERROR'},{text:'FATAL',id:'FATAL'},{text:'ALL',id:'ALL'},{text:'OFF',id:'OFF'}]" textField="text" valueField="id"
+								bind="frameLogLevel.defaultlevel" class="mini-combobox" style="width: 100%" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+	    <div id="fuiContent" class="fui-content">
+            <div id="datagrid"  class="mini-datagrid"
+					idField="levelguid" multiSelect="true"
+					style="width: 100%; height: 100%;" allowResize="true"
+					showPager="true" action="frameloglevellistaction.loglevelModel"  allowCellEdit="true"
+					allowCellSelect="true" editNextOnEnterKey="true"
+					editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div field="logname" width="100%"  headerAlign="center">
+						log name <input property="editor" class="mini-textbox"
+							style="width: 100%;" minWidth="200" />
+					</div>
+					<div field="loglevel" width="140" align="center" headerAlign="center">
+						current log level <input property="editor" class="mini-combobox" data="[{text:'DEBUG',id:'DEBUG'},{text:'INFO',id:'INFO'},{text:'WARN',id:'WARN'},{text:'ERROR',id:'ERROR'},{text:'FATAL',id:'FATAL'},{text:'ALL',id:'ALL'},{text:'OFF',id:'OFF'}]"
+							style="width: 100%;" minWidth="200" />
+					</div>
+					<div field="defaultlevel" width="140" align="center" headerAlign="center">
+						default log level
+					</div>
+					<div field="isworking" width="60" align="center" headerAlign="center" type="checkboxcolumn">To enable the
+						<div class="mini-checkbox" value="1" truevalue="1" falsevalue="0" ></div>
+				    </div>
+					<div field="description" headerAlign="center" width="150">
+						note <input property="editor" class="mini-textbox" 
+							style="width: 100%;"  />
+					</div>
+				</div>
+			</div>
+			
+		</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//Initialize the page
+		epoint.initPage("frameloglevellistaction");
+		
+		function addLevel() {
+		    var settings = {'width' : 700, 'height' : 260};
+			epoint.openDialog('new log level', 'mis/sysconf/loglevel/frameloglevel', addCallBack, settings);
+		}
+
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+		}
+		
+		//The callback after the new code
+		function saveCallback(data){ 
+			if(data.msg){
+				epoint.alert(data.msg, '', null, 'info');
+			    //Refresh the table
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+		}
+		
+		function searchData(){
+			epoint.refresh(['datagrid', 'fui-form']);
+		}
+		
+		function deleteSelect(){
+		    var datagrid = mini.get('datagrid');
+	        var ids = datagrid.getSelectedIds();
+
+	        if (ids.length > 0) {
+	        	 epoint.confirm("Sure to delete the selected record?", "", function(action) {
+	        		 epoint.execute('frameloglevellistaction.deleteLevel','',saveCallback);
+	             });
+	        }
+	        else{
+	        	epoint.alert("Please choose to delete records!", '', null, 'warning');
+	        }
+		}
+
+		
+	</script>
+
+</body>
+
+</html>

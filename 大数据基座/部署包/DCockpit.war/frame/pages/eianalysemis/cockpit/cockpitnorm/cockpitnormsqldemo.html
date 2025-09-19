@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>指标定义sql示例</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+b {
+	color: blue;
+}
+
+b.alias {
+	color: red;
+}
+
+b.warn {
+	color: green;
+}
+</style>
+</head>
+
+<body>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-content">
+		<p>
+			<b class="alias">请严格按照示例写法，否则可能会导致指标结果落地失败！！！</b>
+		</p>
+		<p>
+			<b class="alias">红色</b>
+			：字段别名，对应指标结果表的字段，一定要有！！！
+		</p>
+		<p>
+			<b class="warn">绿色</b>
+			：时间维度字段别名，对应指标结果表的字段，可有可无
+		</p>
+		<p>
+			<em>1、单值指标（过滤条件+时间窗口）</em>
+			<br />
+			<b> select </b>
+			<br />
+			<b style="margin-left: 20px;">count (</b>
+			sou.name
+			<b>)</b>
+			<b class="alias">fieldcount</b>
+			,
+			<br />
+			<b style="margin-left: 20px;">date_format (</b>
+			sou.birthday
+			<b>,'%Y-%m-%d')</b>
+			<b class="warn">fieldtimewindow</b>
+			<br />
+			<b>from</b>
+			person sou
+			<br />
+			<b>where</b>
+			sou.age = 18
+			<br />
+			<b>group by date_format (</b>
+			sou.birthday
+			<b>,'%Y-%m-%d')</b>
+		</p>
+		<p style="margin-top: 20px;">
+			<em>2、多值指标（组合方式+过滤条件+时间窗口）</em>
+			<br />
+			<b> select </b>
+			<br />
+			<b style="margin-left: 20px;">count (</b>
+			sou.sex
+			<b>)</b>
+			<b class="alias">fieldcount</b>
+			,
+			<br />
+			<em style="margin-left: 20px; font-weight: none;">personsex.sexname</em>
+			<b class="alias"> fielddim</b>
+			,
+			<br />
+			<em style="margin-left: 20px; font-weight: none;">personarea.areaname</em>
+			<b class="alias"> fielddim2</b>
+			,
+			<br />
+			<b style="margin-left: 20px;">date_format (</b>
+			sou.birthday
+			<b>,'%Y-%m-%d')</b>
+			<b class="warn">fieldtimewindow</b>
+			<br />
+			<b>from</b>
+			person sou , personsex ,personarea
+			<br />
+			<b>where</b>
+			sou.sex = personsex.sex
+			<b>and</b>
+			sou.area = personarea.area
+			<b>and</b>
+			sou.age = 18
+			<br />
+			<b>group by</b>
+			personsex.sexname ,personarea.areaname
+			<b>date_format (</b>
+			sou.birthday
+			<b>,'%Y-%m-%d')</b>
+		</p>
+		<p style="margin-top: 20px;">
+			<em>3、列表指标（过滤条件）</em>
+			<br />
+			<b> select </b>
+			<br />
+			sou.name ,sou.sex ,sou.age ,sou.area
+			<br />
+			<b>from</b>
+			person sou
+			<br />
+			<b>where</b>
+			sou.age = 18
+			<br />
+		</p>
+	</div>
+
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+</body>
+</html>

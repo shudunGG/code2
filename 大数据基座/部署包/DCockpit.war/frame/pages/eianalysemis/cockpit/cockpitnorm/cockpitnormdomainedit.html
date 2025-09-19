@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新增领域</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="指标分类名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.normdomainName" id="normdomainName" required="true" vtype="maxLength:50;" requiredErrorText="分类名称不能为空!" />
+					</div>
+					<div role="control" label="ApiCode">
+						<input class="mini-textbox" readonly="true" emptyText="提交后自动生成" bind="dataBean.apicode">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标分类简述">
+						<input class="mini-textarea" bind="dataBean.description" vtype="maxLength:200;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门" starred="true">
+						<input id="createou" class="mini-treeselect" action="getOuTreeModel" bind="dataBean.belongouguid" showFolderCheckBox="true" showRadioButton="true" showTreeIcon="true"
+							textField="text" idField="id" expandOnLoad="true" required="required" requiredErrorText="所属部门不能为空" />
+					</div>
+					<div role="control" label="创建人">
+						<input class="mini-textbox" readonly="true" id="createusername">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="启用状态" starred="true">
+						<div id="isopen" class="mini-radiobuttonlist" bind="dataBean.isopen" requiredErrorText="公开状态必须选择" data="[{text:'启用',id:'1'},{text:'停用',id:'0'}]" value="1" textField="text"
+							valueField="id"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar-bottom text-center">
+		<div class="btn-group mr10" style="float: none; display: inline-block;">
+			<a class="mini-button mini-btn-primary" id="save" iconCls="icon-save" onclick="saveModify">保存</a> <a class="mini-button mini-btn-primary" iconCls="icon-removecircle"
+				onclick="epoint.closeDialog">取消</a>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitnormdomaineditaction', null, function(data) {
+			if (data.createusername) {
+				mini.get("createusername").setValue(data.createusername);
+			}
+			if (data.ouguid) {
+				mini.get("createou").setValue(data.ouguid);
+				mini.get("createou").setText(data.ouname);
+				mini.get("createou").disable();
+			}
+		});
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 保存并关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf('成功') > -1) {
+					epoint.alertAndClose(data.msg);
+				} else {
+					epoint.alert(data.msg);
+				}
+			}
+		}
+
+		function validatelen() {
+			if (isNaN(mini.get("orderNum").getValue())) {
+				epoint.alert("排序号必须为数字");
+				return false;
+			}
+			var name = mini.get("normdomainName").getValue();
+			if (name.indexOf("-") > -1 || name.indexOf("~") > -1 || name.indexOf("!") > -1 || name.indexOf("@") > -1 || name.indexOf("#") > -1 || name.indexOf("$") > -1 || name.indexOf("%") > -1
+					|| name.indexOf("^") > -1 || name.indexOf("&") > -1 || name.indexOf("*") > -1 || name.indexOf(":") > -1 || name.indexOf("?") > -1 || name.indexOf(",") > -1
+					|| name.indexOf(".") > -1 || name.indexOf("/") > -1) {
+				epoint.alert("分类名称不能带有特殊符号“-~!@#$%^&*:?.,/”");
+				return false;
+			} else {
+				return true;
+			}
+		}
+	</script>
+</body>
+
+</html>

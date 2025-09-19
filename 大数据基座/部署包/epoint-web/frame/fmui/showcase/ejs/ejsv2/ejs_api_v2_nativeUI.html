@@ -1,0 +1,549 @@
+<!-- 
+        作者：guotq
+        创建时间: 2017/06/06
+        版本: [1.0, 2017/06/06 ]
+        版权: 江苏国泰新点软件有限公司
+        描述：  ejs api示例
+-->
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+        <meta name="format-detection" content="telephone=no, address=no, email=no">
+        <title>UI模块</title>
+        <script>
+            document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            SrcBoot.output([
+                './_common/common.css'
+            ]);
+        </script>
+    </head>
+
+    <body>
+        <div class="mui-content pt0" id="ejs-app">
+        </div>
+
+        <script>
+            document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            Util.loadJs([
+                './_common/bizlogic_common_ready.js',
+                'js/widgets/mui.picker/mui.picker.css',
+                'js/widgets/mui.poppicker/mui.poppicker.css',
+                'js/widgets/mui.picker/mui.picker.js',
+                'js/widgets/mui.poppicker/mui.poppicker.js'
+            ], function() {
+                Util.bizlogic.ready(initPage);
+            });
+
+            function initPage() {
+                var litemplate = new Util.litemplate.listLitemplate({
+                    isIndex: false,
+                    title: 'ui模块',
+                    ejsApi: [{
+                        'id': 'toast',
+                        'text': 'toast',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.toast({
+                                "message": '测试toast消息'
+                            });
+                            //也可以如下使用-快速使用的兼容模式
+                            //ejs.nativeUI.toast('测试toast消息');
+                        }
+                    }, {
+                        'id': 'alert',
+                        'text': 'alert',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.alert({
+                                'title': '提示',
+                                'message': '测试alert信息'
+                            });
+                            //也可以如下使用-快速使用的兼容模式
+                            //ejs.nativeUI.alert('测试alert信息','提示');
+                        }
+                    }, {
+                        'id': 'showDebugDialog',
+                        'text': 'showDebugDialog',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.showDebugDialog("测试信息");
+                            //也可以如下使用-快速使用的兼容模式
+                            //ejs.nativeUI.showDebugDialog('测试alert信息','提示');
+                        }
+                    }, {
+                        'id': 'confirm',
+                        'text': 'confirm',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.confirm({
+                                'title': 'confirm',
+                                'message': '你的名字。',
+                                'btn1': '立花泷',
+                                'btn2': '宫水三叶',
+                                //默认为可取消
+                                'cancelable': 0,
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                            //兼容以下写法
+                            //                          ejs.nativeUI.confirm('问题描述?','标题', function(result, msg, detail) {
+                            //                              litemplate.showTips(JSON.stringify(detail));
+                            //                          });
+                            //                          ejs.nativeUI.confirm('问题描述?',function(result, msg, detail) {
+                            //                              litemplate.showTips(JSON.stringify(detail));
+                            //                          });
+                        }
+                    }, {
+                        'id': 'confirmAlert',
+                        'text': 'confirm(模拟alert)',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.confirm({
+                                'title': 'confirm',
+                                'message': '你的名字。',
+                                'btn1': '确定',
+                                //必须传null
+                                'btn2': null,
+                                //默认为可取消
+                                'cancelable': 0,
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+
+                        }
+                    }, {
+                        'id': 'prompt',
+                        'text': 'prompt(3行)',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.prompt({
+                                'title': 'prompt',
+                                'hint': '你的名字',
+                                'text': '立花泷',
+                                'cancelable': 0,
+                                'lines': 3,
+                                'maxLength': 10000
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'promptSingle',
+                        'text': 'prompt(单行)',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.prompt({
+                                'title': 'prompt',
+                                'hint': '你的名字',
+                                'text': '立花泷',
+                                'cancelable': 0,
+                                'lines': 1,
+                                'maxLength': 20
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'actionSheet',
+                        'text': 'actionSheet',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.actionSheet({
+                                'items': ['立花泷', '宫水三叶'],
+                                'cancelable': 0
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'actionSheet2',
+                        'text': 'actionSheet2',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.actionSheet({
+                                'items': ['hello', 'world!'],
+                                'cancelable': 0
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'showWaiting',
+                        'text': 'showWaiting',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.showWaiting();
+                            setTimeout(function() {
+                                ejs.nativeUI.closeWaiting();
+                            }, 1000);
+                        }
+                    }, {
+                        'id': 'pickDate',
+                        'text': 'pickDate',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.pickDate({
+                                'title': 'pickDate',
+                                'datetime': '2016-12-05',
+                                beginYear: 1999,
+                                endYear: 2020
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+
+                        }
+                    }, {
+                        'id': 'pickTime',
+                        'text': 'pickTime',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.pickTime({
+                                'title': 'pickTime',
+                                'datetime': '10:20'
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+
+                        }
+                    }, {
+                        'id': 'pickDateTime',
+                        'text': 'pickDateTime',
+                        'tag': 'all',
+                        'runCode': function() {
+                            ejs.nativeUI.pickDateTime({
+                                'title1': '选择日期',
+                                'title2': '选择时间',
+                                'datetime': '2016-12-05 10:20',
+                                'beginYear': 1999,
+                                'endYear': 2020
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'pickMonth',
+                        'text': 'pickMonth',
+                        'tag': 'h5',
+                        'runCode': function() {
+                            ejs.nativeUI.pickMonth({
+                                'title': '选择月份',
+                                'datetime': '2017-01',
+                                'beginYear': 1999,
+                                'endYear': 2020
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'popPicker1',
+                        'text': 'popPicker一级',
+                        'tag': 'h5',
+                        'runCode': function() {
+                            ejs.nativeUI.popPicker({
+                                data: [{
+                                    value: 'value1',
+                                    text: 'text1'
+                                }, {
+                                    value: 'value2',
+                                    text: 'text2'
+                                }],
+                                layer: 1
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+
+                        }
+                    }, {
+                        'id': 'popPicker2',
+                        'text': 'popPicker二级',
+                        'tag': 'h5',
+                        'runCode': function() {
+                            ejs.nativeUI.popPicker({
+                                data: [{
+                                    value: 'value111',
+                                    text: 'text111',
+                                    children: [{
+                                        value: 'value11',
+                                        text: 'text11',
+                                    }, {
+                                        value: 'value12',
+                                        text: 'text12',
+                                    }]
+                                }, {
+                                    value: 'value222',
+                                    text: 'text222',
+                                    children: [{
+                                        value: 'value21',
+                                        text: 'text21',
+                                    }, {
+                                        value: 'value22',
+                                        text: 'text22',
+                                    }]
+                                }],
+                                layer: 2
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+
+                        }
+                    }, {
+                        'id': 'popPicker3',
+                        'text': 'popPicker三级',
+                        'tag': 'h5',
+                        'runCode': function() {
+                            ejs.nativeUI.popPicker({
+                                data: [{
+                                    value: '110000',
+                                    text: '北京市',
+                                    children: [{
+                                        value: "110101",
+                                        text: "北京市",
+                                        children: [{
+                                            value: "110101",
+                                            text: "东城区"
+                                        }, {
+                                            value: "110102",
+                                            text: "西城区"
+                                        }, {
+                                            value: "110103",
+                                            text: "崇文区"
+                                        }, {
+                                            value: "110104",
+                                            text: "宣武区"
+                                        }, {
+                                            value: "110105",
+                                            text: "朝阳区"
+                                        }, {
+                                            value: "110106",
+                                            text: "丰台区"
+                                        }, {
+                                            value: "110107",
+                                            text: "石景山区"
+                                        }, {
+                                            value: "110108",
+                                            text: "海淀区"
+                                        }, {
+                                            value: "110109",
+                                            text: "门头沟区"
+                                        }, {
+                                            value: "110111",
+                                            text: "房山区"
+                                        }, {
+                                            value: "110112",
+                                            text: "通州区"
+                                        }, {
+                                            value: "110113",
+                                            text: "顺义区"
+                                        }, {
+                                            value: "110114",
+                                            text: "昌平区"
+                                        }, {
+                                            value: "110115",
+                                            text: "大兴区"
+                                        }, {
+                                            value: "110116",
+                                            text: "怀柔区"
+                                        }, {
+                                            value: "110117",
+                                            text: "平谷区"
+                                        }, {
+                                            value: "110228",
+                                            text: "密云县"
+                                        }, {
+                                            value: "110229",
+                                            text: "延庆县"
+                                        }, {
+                                            value: "110230",
+                                            text: "其它区"
+                                        }]
+                                    }]
+                                }, {
+                                    value: '120000',
+                                    text: '天津市',
+                                    children: [{
+                                        value: "120100",
+                                        text: "天津市",
+                                        children: [{
+                                            value: "120101",
+                                            text: "和平区"
+                                        }, {
+                                            value: "120102",
+                                            text: "河东区"
+                                        }, {
+                                            value: "120103",
+                                            text: "河西区"
+                                        }, {
+                                            value: "120104",
+                                            text: "南开区"
+                                        }, {
+                                            value: "120105",
+                                            text: "河北区"
+                                        }, {
+                                            value: "120106",
+                                            text: "红桥区"
+                                        }, {
+                                            value: "120107",
+                                            text: "塘沽区"
+                                        }, {
+                                            value: "120108",
+                                            text: "汉沽区"
+                                        }, {
+                                            value: "120109",
+                                            text: "大港区"
+                                        }, {
+                                            value: "120110",
+                                            text: "东丽区"
+                                        }, {
+                                            value: "120111",
+                                            text: "西青区"
+                                        }, {
+                                            value: "120112",
+                                            text: "津南区"
+                                        }, {
+                                            value: "120113",
+                                            text: "北辰区"
+                                        }, {
+                                            value: "120114",
+                                            text: "武清区"
+                                        }, {
+                                            value: "120115",
+                                            text: "宝坻区"
+                                        }, {
+                                            value: "120116",
+                                            text: "滨海新区"
+                                        }, {
+                                            value: "120221",
+                                            text: "宁河县"
+                                        }, {
+                                            value: "120223",
+                                            text: "静海县"
+                                        }, {
+                                            value: "120225",
+                                            text: "蓟县"
+                                        }, {
+                                            value: "120226",
+                                            text: "其它区"
+                                        }]
+                                    }]
+                                }],
+                                layer: 3
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+
+                        }
+                    }, {
+                        'id': 'showMask',
+                        'text': 'showMask',
+                        'tag': 'h5',
+                        'runCode': function() {
+                            ejs.nativeUI.showMask();
+                            setTimeout(function() {
+                                ejs.nativeUI.hideMask();
+                            }, 1000);
+                        }
+                    }, {
+                        'id': 'popWindowHorizontal',
+                        'text': 'popWindow(横向)',
+                        'runCode': function() {
+                            ejs.nativeUI.popWindow({
+                                'titleItems': ['立花泷', '宫水三叶'],
+                                'iconItems': ['frm_tab_tipstext_bg', 'frm_round_right_blue'],
+                                'orientation': 'horizontal'
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'popWindow',
+                        'text': 'popWindow(竖向)',
+                        'runCode': function() {
+
+                            ejs.nativeUI.popWindow({
+                                'titleItems': ['立花泷', '宫水三叶'],
+                                'iconItems': ['frm_tab_tipstext_bg', 'frm_round_right_blue']
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'select',
+                        'text': 'select(多选)',
+                        'runCode': function() {
+                            //多选时必须如果有chooseArray，必须一一对应，如果少了，会报错
+                            ejs.nativeUI.select({
+                                'title': 'select',
+                                'items': ['远野贵树', '篠原明里', '澄田花苗', '立花泷', '宫水三叶'],
+                                'checkState': ['0', '0', '0', '1', '1'],
+                                //默认为可取消
+                                'cancelable': 0,
+                                'isMultiSelect': true,
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'selectSingle',
+                        'text': 'select(单选)',
+                        'runCode': function() {
+                            ejs.nativeUI.select({
+                                'title': 'select',
+                                'items': ['远野贵树', '篠原明里', '澄田花苗', '立花泷', '宫水三叶'],
+                                'checkState': ['0', '0', '0', '0', '1'],
+                                //默认为可取消
+                                'cancelable': 0,
+                                'isMultiSelect': false,
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'selectSingleSP',
+                        'text': 'select(单选九宫格)',
+                        'runCode': function() {
+                            ejs.nativeUI.select({
+                                'title': 'select',
+                                'items': ['远野贵树', '篠原明里', '澄田花苗', '立花泷', '宫水三叶'],
+                                'checkState': ['0', '0', '0', '0', '1'],
+                                //默认为可取消
+                                'cancelable': 0,
+                                'isMultiSelect': false,
+                                'type': 1,
+                                'columns': 3
+                            }, function(result, msg, detail) {
+                                litemplate.showTips(JSON.stringify(detail));
+                            });
+                        }
+                    }, {
+                        'id': 'pullToRefresh',
+                        'items': [{
+                            'id': 'pullToRefresh_disable',
+                            'text': 'pullToRefresh_disable',
+                            'runCode': function() {
+                                ejs.nativeUI.pullToRefresh.disable();
+                            }
+                        }, {
+                            'id': 'pullToRefresh_enable',
+                            'text': 'pullToRefresh_enable(3秒消失)',
+                            'runCode': function() {
+                                ejs.nativeUI.pullToRefresh.enable(function() {
+                                    setTimeout(function() {
+                                        ejs.nativeUI.pullToRefresh.stop();
+                                    }, 3000);
+                                });
+                            }
+                        }]
+                    }]
+                });
+            }
+        </script>
+    </body>
+
+</html>

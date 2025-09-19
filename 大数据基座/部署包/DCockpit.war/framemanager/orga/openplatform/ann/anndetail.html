@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>公告详情</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<div id="notReleased">
+				<a class="mini-button" id="btnRelease" onclick="releaseAnn">发布</a>
+				<a class="mini-button" id="btnSave" onclick="saveAnn">保存</a>
+				<a class="mini-button mini-btn-danger" id="btnDelete" onclick="deleteAnn">删除</a>
+            	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+			</div>
+			<div id="released">
+				<a class="mini-button mini-btn-warning" id="btnWithdraw" onclick="withdrawAnn">撤回</a>
+				<a class="mini-button mini-btn-danger" id="btnDelete" onclick="deleteAnn">删除</a>
+            	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="标题" starred="true">
+					<input id="annTitle" class="mini-textbox"
+						bind="ann.title" required="true" requiredErrorText="标题不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="正文" starred="true">
+					<textarea bind="ann.content"
+						id="annContent" class="mini-webeditor" readOnly="false"
+						required="true" requiredErrorText="正文不能为空!"></textarea>
+				</div>
+			</div>
+			<!-- 隐藏域 -->
+			<input bind="contentText" id="contentText" class="mini-hidden" />
+		</div>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('anndetailaction', '', initCallBack);
+
+		var annGuid = '';
+		function initCallBack(e){
+			annGuid = e.annGuid;
+			var annStatus = e.annStatus;
+			
+			if (annStatus == 1) {
+				// 公告已发布
+				hideForReleased();
+				
+			} else if (annStatus == 2) {
+				// 公告未发布
+				hideForNotReleased();
+			}
+			
+		}
+		
+		// 当前为已发布状态，隐藏相关内容
+		function hideForReleased(){
+			document.getElementById("released").style.display = '';
+			// 隐藏相关按钮
+			document.getElementById("notReleased").style.display = 'none';
+			// 将标题和正文内容设置为不可修改
+			/* mini.get('annTitle').readOnly = true;
+			mini.get('annContent').readOnly = true;
+			var annEditor = mini.get("annContent").editor;
+			if (annEditor) {
+				annEditor.setReadOnly('1');
+			} */
+			
+		}
+		
+		// 当前为未发布状态，隐藏相关内容
+		function hideForNotReleased(){
+			document.getElementById("notReleased").style.display = '';
+			// 隐藏相关按钮
+			document.getElementById("released").style.display = 'none';
+			// 将标题和正文内容设置为可修改
+			/* mini.get('annTitle').readOnly = false;
+			mini.get('annContent').readOnly = false;
+			var annEditor = mini.get("annContent").editor;
+			if (annEditor) {
+				annEditor.setReadOnly('');
+			} */
+			
+		}
+		
+		// 获取正文文本内容
+		function getContentText(){
+			var annEditor = mini.get("annContent").editor;
+			var contentText = annEditor.getText();
+			mini.get("contentText").setValue(contentText);
+		}
+		
+		// 发布
+		function releaseAnn(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('releaseAnn', '', annGuid, releaseAnnCallBack);
+			}
+		}
+		
+		// 发布回调
+		function releaseAnnCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					hideForReleased();
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		// 撤回
+		function withdrawAnn(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('withdrawAnn', '', annGuid, withdrawAnnCallBack);
+			}
+		}
+
+		// 撤回回调
+		function withdrawAnnCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					hideForNotReleased();
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		// 保存公告
+		function saveAnn(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('saveAnn', '', annGuid, saveAnnCallBack);
+			}
+		}
+		
+		// 保存公告回调
+		function saveAnnCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		// 删除公告
+		function deleteAnn(){
+			epoint.confirm('是否删除该公告？', '删除公告确认', function () {
+				// 删除公告确认回调
+				epoint.execute('deleteAnn', '', annGuid, function (data) {
+					var msg =data.msg;
+					if (msg) {
+						if(data.success){
+							epoint.closeDialog("success");
+						} else {
+							epoint.alert(msg, '', '', 'warning');
+						}
+					} else {
+						epoint.alert('操作失败', '', '', 'warning');
+					}
+				});
+			}, function () {
+				// 删除公告取消回调
+				
+			})
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

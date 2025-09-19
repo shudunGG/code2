@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>门户</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-addcircle"
+				onclick="if (epoint.validate()) {epoint.execute('addNew','',newCallback);}">保存并新建</a>
+			<a class="mini-button" id="addClose" iconCls="icon-save"
+				onclick="if (epoint.validate()) {epoint.execute('addPortal','',closeCallback);}">保存并关闭</a>
+			<a class="mini-button" id="save" iconCls="icon-save"
+				onclick="if (epoint.validate()) {epoint.execute('update','',closeCallback);}">保存修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="门户类别">
+						<input id="typeguid" class="mini-treeselect"
+							bind="framePortal.typeguid" action="getTreeTypeModel"
+							style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="门户名称" starred="true">
+						<input id="portalname" bind="framePortal.portalname" vtype="maxLength:50"
+							class="mini-textbox" required="true" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="门户类型" starred="true">
+						<input id="portaltype" class="mini-combobox"
+							action="selectPortalTypeModel" bind="framePortal.portaltype"
+							required="true" requiredErrorText="请选择门户类型" style="width: 90%"
+							onValueChanged="showPortalUrl" />
+					</div>
+				</div>
+				<div role="row" id="portalurl">
+					<div role="control" label="门户地址">
+						<input class="mini-textbox" bind="framePortal.portalurl"
+							style="width: 90%" vtype="maxLength:1000"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="禁用">
+						<div class="mini-checkbox" bind="framePortal.isdisable"
+							truevalue="1" falsevalue="0" readOnly="false"></div>
+					</div>
+				</div>
+				<input class="mini-hidden" bind="thumbnail" id="thumbnail" />
+				<div role="row">
+					<div role="control" label="描述">
+						<input bind="framePortal.description" class="mini-textarea" maxLength="200"
+							style="width: 90%" maxLength="200"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="打开方式">
+						<input id="openType" bind="framePortal.openType"
+							style="width: 90%" action="getOpenType"
+							class="mini-radiobuttonlist" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input bind="framePortal.ordernumber" class="mini-textbox"
+							style="width: 90%" vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('frameportalaction', '', initCallBack);
+
+		//由list页面传参时进行触发
+		function initCallBack(param) {
+			//如果新增
+			if (param.add) {
+				//隐藏修改按钮
+				mini.get('save').setVisible(false);
+				/* $("#desp").hide();
+				$("#lblPicture").hide();
+				$("#closeicon").hide(); */
+			}
+			//如果修改
+			else {
+				//隐藏新增按钮
+				mini.get('addNew').setVisible(false);
+				mini.get('addClose').setVisible(false);
+				/* $("#closeicon").hide();
+				$("#lblPicture").hide();
+				$("#layouttemp").hide(); */
+			}
+			if (!param.isShowPortalUrl) {
+				$("#portalurl").hide();
+			}
+		}
+		//选择模板
+		function chooseTemplate() {
+			var url = 'framemanager/ui/portalNew/selectlayout';
+			epoint.openDialog("选择模板", url, openiconOperJS, {
+				'width' : 1100,
+				'height' : 500
+			});
+		}
+
+		//回调
+		function openiconOperJS(rtnValue) {
+			//console.log(rtnValue);
+			if (rtnValue != "" && rtnValue != 'close') {
+				$("#closeicon").show();
+				$("#lblPicture").show();
+				var url = Util.getRightUrl(rtnValue);
+				$("#lblPicture").attr("src", url);
+				mini.get("thumbnail").setValue(rtnValue);
+			}
+		}
+
+		//删除图片
+		function delPhoto() {
+			$("#lblPicture").attr("src", "");
+			$("#lblPicture").hide();
+			$("#closeicon").hide();
+		}
+		function closeCallback(data) {
+			if (data.message) {
+				epoint.alert(data.message, '', null, 'warning');
+			}
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'success');
+			}
+		}
+		function newCallback(data) {
+			if (data.message) {
+				epoint.alert(data.message, '', null, 'warning');
+			}
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'success');
+				epoint.clear('fui-form');
+				mini.get('typeguid').setValue(data.typeguid);
+				mini.get('openType').setValue('tabsnav');
+			}
+		}
+
+		function showPortalUrl() {
+			var portalType = mini.get("portaltype").getValue();
+			if (portalType && portalType == '3') {
+				$("#portalurl").show();
+			} else {
+				$("#portalurl").hide();
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

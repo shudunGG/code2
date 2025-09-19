@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>查找</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style>
+.row1 {
+	width: 20%;
+	padding: 10px 0px 10px 20px;
+	font-weight: bold;
+}
+
+.row2 {
+	width: 55%;
+}
+
+.row3 {
+	padding-right: 20px;
+	width: 25%;
+}
+</style>
+</head>
+<body>
+	<div style="padding-top: 30px;">
+		<table style="width: 100%;">
+			<tr>
+				<td class="row1">&nbsp;&nbsp;&nbsp;查找项：</td>
+				<td class="row2"><input id="searchName" class="mini-combobox"
+					textField="text" valueField="id" width="90%" allowInput="true"
+					onvaluechanged="onSearchNameChanged" required="true" /></td>
+				<td class="row3"><a class="mini-button" width="100"
+					id="searchFirst" onclick="searchFirst">查找第一个</a></td>
+			</tr>
+			<tr>
+				<td class="row1">查找内容：</td>
+				<td class="row2"><input id="searchText" class="mini-textbox"
+					width="90%" required="true" onvaluechanged="onSearchTextChanged" /></td>
+				<td class="row3"><a class="mini-button" width="100"
+					id="searchNext" onclick="searchNext">查找下一个</a></td>
+			</tr>
+			<tr>
+				<td class="row1">模糊查询：</td>
+				<td class="row2"><input id="isBlur" class="mini-checkbox"
+					width="90%" /></td>
+				<td class="row3"><a class="mini-button" width="100" id="close"
+					onclick="epoint.closeDialog">关闭</a></td>
+			</tr>
+		</table>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		var checked = "";
+		var columnArr = "";
+		var startIndex = 0;
+		var searchName = mini.get("searchName");
+		var searchText = mini.get("searchText");
+		var isBlur = mini.get("isBlur");
+
+		function pageLoad(data) {
+			if (data && data.columnArr) {
+				columnArr = data.columnArr;
+				console.log(columnArr);
+				//如果传过来的代码项值为空
+				if (columnArr.length != 0) {
+					searchName.setData(columnArr);
+					searchName.select(0);
+				}
+			}
+			setSelected();
+			setStartIndex();
+		}
+
+		function setStartIndex() {
+			var checked = parent.getChecked();
+			if ($.isEmptyObject(checked)) {
+				startIndex = 0;
+			} else {
+				startIndex = checked.index;
+			}
+		}
+
+		function setSelected() {
+			var checked = parent.getChecked();
+			if (!$.isEmptyObject(checked)) {
+				for (var i = 0; i < columnArr.length; i++) {
+					if (checked.id == columnArr[i].id) {
+						searchName.select(i);
+					}
+				}
+			}
+		}
+
+		function onSearchNameChanged() {
+			setStartIndex();
+			searchText.setText("");
+			if (typeof (row) != "undefined") {
+				parent.$(".mini-grid-cell").removeClass("mini-grid-cell-selected");
+			}
+		}
+
+		function onSearchTextChanged() {
+			setStartIndex();
+			if (typeof (row) != "undefined") {
+				parent.$(".mini-grid-cell").removeClass("mini-grid-cell-selected");
+			}
+		}
+
+		function searchFirst() {
+			if (epoint.validate() == false) {
+				return;
+			}
+			var rtnData = {
+				searchName : searchName.getValue(),
+				searchText : searchText.getValue(),
+				isBlur : isBlur.getValue(),
+				type : 1
+			};
+			parent.searchColumn(rtnData, startIndex);
+		}
+
+		function searchNext() {
+			if (epoint.validate() == false) {
+				return;
+			}
+			var rtnData = {
+				searchName : searchName.getValue(),
+				searchText : searchText.getValue(),
+				isBlur : isBlur.getValue(),
+				type : 0
+			};
+			parent.searchColumn(rtnData, startIndex);
+
+		}
+	</script>
+</body>
+</html>

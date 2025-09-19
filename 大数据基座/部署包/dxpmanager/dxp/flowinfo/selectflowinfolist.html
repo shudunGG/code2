@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>选择关联</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot
+			.output([ './css/selectrelation.css',
+					'./css/infomanage.css','./css/common.css' ]);
+</script>
+<style type="text/css">
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="mini-fit">
+		<!-- <div class="condition-wrap clearfix"> -->
+			<div class="condition-mid">
+				<div class="fui-left">
+    <div role="head" title="选择分组">
+    </div>
+    <div role="body">
+        <ul id="tree" class="mini-filtertree" textField="text" idField="id"
+            parentField="pid" action="dxpflowgroupaction.getTreeModel" resultAsTree="false"
+            filterMode="server">
+        </ul>
+    </div>
+</div>
+
+<div class="fui-right">
+    <!-- 按钮区域 -->
+    <div class="fui-toolbar" id="condition">
+        <div class="btn-group mr10">
+            <a class="mini-button mini-btn-primary" onclick="btnSelect()">确认选择</a>
+        </div>
+        <div class="right-btn-area r">
+			 	<span class="data-name">流程名称：</span>
+				<input type="text" placeholder="请输入关键字" id="flowname" class="search-input" />
+				<a href="javascript:;" class="search-button btn r">搜索</a>
+			</div>
+			<input bind="groupGuid" id="groupGuid" class="mini-hidden"/>
+			<input bind="dataBean.flowName" id="name" class="mini-hidden"/>
+			<input bind="publishStatus" id="publishStatus" class="mini-hidden" />
+    </div>
+
+    <!-- 表格区域 -->
+    <div class="fui-content">
+        <div id="datagrid" name="datagrid" class="mini-datagrid"
+             idField="rowguid" multiSelect="true" extraId="condition"
+             style="width: 100%; height: 100%;" showPager="true"
+             action="getDataGridData">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div type="indexcolumn" width="50" headerAlign="center">序</div>
+                <div field="flowname" width="200" headerAlign="center"
+                     align="center">流程名称
+                </div>
+                <div field="nodename" width="100" headerAlign="center"
+                     align="center">所属节点域
+                </div>
+                <div field="publishstatusname" width="100" headerAlign="center"
+                     align="center">发布状态
+                </div>
+                <div field="flowtypename" width="80" headerAlign="center"
+                     align="center" >流程类型
+                </div>
+                <div field="flowtype" visible="false">流程类型
+                </div>
+                <div field="generatedate" width="160" headerAlign="center"
+                     data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+                     dateFormat="yyyy-MM-dd HH:mm:ss" align="center">生成日期
+                </div>
+                <div field="operatedate" width="160" headerAlign="center"
+                     data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+                     dateFormat="yyyy-MM-dd HH:mm:ss" align="center">更新日期
+                </div>
+                <div field="nodeguid"  headerAlign="center"
+                     align="center"  visible="false">节点guid
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+			</div>
+			<div class="condition-right">
+				<!-- 已选信息 -->
+				<div class="selected-col">
+					<div class="selected-col-head">
+						<h3 class="selected-col-title">已选流程</h3>
+					</div>
+					<div class="selected-col-body select">
+						<!-- empty容器 -->
+						<div class="selected-empty">
+							<img src="../images/empty-bg.jpg" alt="empty">
+							<p>暂无已选流程</p>
+							<p>请在左侧选择流程</p>
+						</div>
+						<!-- 已选信息datagrid容器 -->
+						<div class="selected-info hidden">
+							<div class="fui-content">
+								<div id="datagrid1" class="mini-datagrid" idField="rowguid"
+									action="getDataGridData1" sortOrder="desc"  height="90%"
+									multiSelect="true" showPager="false" allowCellEdit="true"
+									allowCellSelect="true" editNextOnEnterKey="true"
+									editNextRowCell="true">
+								<div property="columns">
+									<div type="checkcolumn" headerAlign="center" width="10"></div>
+									<div type="indexcolumn" width="10" headerAlign="center">序</div>
+									<div field="flowname" width="50" headerAlign="center">流程标题</div>
+									<div field="nodeguid" headerAlign="center" align="center"
+										visible="false">节点guid</div>
+									<div field="flowtype" headerAlign="center" align="center"
+										visible="false">流程类型</div>
+								</div>
+							</div>
+								<div style="text-align-last: center; margin-top: 10px;">
+									<a class="mini-button" onclick="deleteSelect()">删除选中</a> <a
+										class="mini-button" onclick="epoint.closeDialog()">取消</a> <a
+										class="mini-button mini-btn-primary" onclick="saveConfirm()">提交保存</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		<!-- </div> -->
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpselectflowinfolistaction?publishStatus=1');
+		var dataGrid = mini.get("datagrid");
+		var dataGrid1 = mini.get("datagrid1");
+
+		dataGrid1.on('load', function(e) {
+			if (e.sender.totalCount > 0) {
+				$(".selected-empty").addClass('hidden');
+				$(".selected-info").removeClass('hidden');
+			}
+		});
+
+		//删除已选中
+		function deleteSelect() {
+			var selects = dataGrid1.getSelecteds();
+			if (selects.length == 0) {
+				epoint.alert('请选择要删除的记录！');
+			}
+			for (var i = 0, j = selects.length; i < j; i++) {
+				if (dataGrid1.data.length == 1) {
+					dataGrid1.removeRow(selects[i], false);
+				} else {
+					dataGrid1.removeRow(selects[i], false);
+				}
+			}
+		}
+		//确认选中
+		function btnSelect() {
+			var selects = dataGrid.getSelecteds();
+			var rowguid=Util.getUrlParams('rowguid');
+			if (selects.length > 0) {
+				for (var i = 0, j = selects.length; i < j; i++) {
+					if(rowguid==selects[i].rowguid){
+						epoint.alert('选择的作业不能包含自己本身！');
+						return;
+					}
+				}
+				for (var i = 0, j = selects.length; i < j; i++) {
+					var selectRow = dataGrid1.findRow(function(row) {
+						if (row.rowguid == selects[i].rowguid
+								|| row.rowguid == selects[i].rowguid) {
+							return true;
+						}
+					});
+					dataGrid1.removeRow(selectRow, false);
+					dataGrid1.addRow(selects[i], 0);
+				}
+				$(".selected-empty").addClass('hidden');
+				$(".selected-info").removeClass('hidden');
+				epoint.refresh('datagrid','',true);
+			} else {
+				epoint.alert('请选择要关联的信息！');
+			}
+		}
+
+		var tree = mini.get('tree');
+		tree.on('beforenodeselect', function(e) {
+			mini.get('name').setValue($('#flowname').val());
+			if (e.node.id == 'f9root') {
+				mini.get('groupGuid').setValue('');
+			} else {
+				mini.get('groupGuid').setValue(e.node.id);
+			}
+			searchData();
+		});
+	
+		function saveConfirm(){
+			if (dataGrid1.data.length == 0) {
+				$(".selected-empty").removeClass('hidden');
+				$(".selected-info").addClass('hidden'); 
+				epoint.confirm('您未选择流程，若保存将丢失原先的流程关联关系，确认提交？', '提交确认', function () {
+				    save();
+				});
+			}else{
+				save();
+			}
+		}
+
+		function save() {
+			var rowguid=Util.getUrlParams('rowguid');
+			var selRecord=dataGrid1.data;
+			for(var i=0;i<selRecord.length;i++){
+				if(selRecord[i].rowguid==rowguid){
+					epoint.alert('选择的作业不能包含自己本身！');
+					return;
+				}
+			}
+			epoint.execute('saveRelate', '@all',{
+				'data' : dataGrid1.data
+			}, function(data) {
+				if (data.result.indexOf('成功') != -1) {
+					epoint.alertAndClose(data.result, '提示', function() {
+						
+					}, 'success');
+				} else {
+					epoint.alert(data.result);
+				}
+			});
+		}
+
+		function callback(data) {
+			if (data.message) {
+				if (data.message.indexOf('成功') != -1) {
+					epoint.alertAndClose(data.message);
+				} else {
+					epoint.alert(data.message);
+				}
+			}
+		}
+
+		//点击高级搜索
+		$('.search-button').on('click', function(event) {
+			mini.get('name').setValue($('#flowname').val());
+			dataGrid.reload();
+		});
+		// 表格的搜索
+		function searchData() {
+			dataGrid.reload();
+		}
+	</script>
+</body>
+
+</html>

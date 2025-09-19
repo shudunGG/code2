@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>开发作业更新导入</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button mr10" onclick="importSel()">导入选中</a>
+		</div>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="作业名称">
+						<input class="mini-textbox" id="jobname" bind="jobName" />
+					</div>
+					<div role="control"  label="状态">
+						<input class="mini-combobox" id="status" bind="status" data="[{text:'成功',id:'1'},{text:'失败',id:'0'},{text:'已导入',id:'9'},{text:'未导入',id:'8'}]" showClose="true"/>						
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDevDataGridModel" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40" headerAlign="center"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="jobname" width="80" headerAlign="center" align="center">作业名称</div>
+				<div field="instancename" width="80" headerAlign="center"
+					align="center">流程名称</div>
+				<div field="templatename" width="80" headerAlign="center"
+					align="center">模板</div>
+				<div field="createDate" width="80" headerAlign="center"
+					align="center">时间</div>
+				<div field="status" width="80" headerAlign="center" align="center">状态</div>
+				<div field="errorreason" width="80" headerAlign="center" align="center">异常原因</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpupdateaction');
+		var datagrid = mini.get('datagrid');
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		
+		function importSel(){
+			if (datagrid.getSelecteds() == 0) {
+				epoint.alert('请选择要导入的作业');
+			} else {
+				epoint.openDialog('节点选择', 'dxp/dxpupdate/choseintegratenode',
+						function(data) {
+							if (data && data != 1&&data !='close') {
+								epoint.confirm(
+										'确认导入吗?', '',
+										function() {
+											epoint.execute("importDevFlow",'',
+													data, callback);
+										});
+							}
+						}, {
+							width : 600,
+							height : 300
+						});
+			}
+			
+		}
+		mini.get('status').on('closeclick',function(e){
+	    	e.sender.setText('');
+	    	e.sender.setValue('');
+	    });
+		
+		function searchData(){
+			datagrid.reload();
+		}
+	</script>
+</body>
+</html>

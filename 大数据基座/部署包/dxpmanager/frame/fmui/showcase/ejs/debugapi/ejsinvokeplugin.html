@@ -1,0 +1,240 @@
+<!--
+    @Author: guotq
+    @Date: 2019-01-16 09:28:53
+    @Last Modified by: guotq
+    @Last Modified time: 2019-01-16 09:28:53
+    @Description: util.invokePluginApi demo page
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="format-detection" content="telephone=no" />
+    <title>EJS组件调用控制台</title>
+
+    <script>
+        document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+    </script>
+
+    <script>
+        SrcBoot.output([
+            './codemirror/codemirror.css',
+            './codemirror/monokai.css',
+            './ejsinvokeplugin.css'
+        ]);
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">配置invokePluginApi API</h3>
+            </div>
+
+            <div class="panel-body">
+                <div id="component">
+                    <div class="clearfix mb10 component-list">
+                        <input type="text" class="form-control l" vtype="path" placeholder="path">
+                        <input type="text" class="form-control r dataMap" vtype="dataMap" placeholder="dataMap">
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-info" id="add-component">新增组件</button>
+                <button type="button" class="btn btn-default btn-lg btn-block" id="generate-code">生成组件代码</button>
+            </div>
+        </div>
+
+        <div id="container-code">
+
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">控制台</h3>
+            </div>
+
+            <div class="panel-body clearfix">
+                <div id="qrcode"></div>
+                <div class="well" id="room"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/template" id="tpl-component">
+        <input type="text" class="form-control l" placeholder="path" vtype="path">
+        <input type="text" class="form-control r" placeholder="dataMap" vtype="dataMap">
+        <button type="button" class="btn btn-danger r delete">删除</button>
+    </script>
+
+    <script type="text/template" id="tpl-code">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">EJS组件代码</h3>
+            </div>
+
+            <div class="panel-body">
+                <textarea id="{{id}}" class="hidden">
+{{code}}
+                </textarea>
+
+                <button class="btn btn-default btn-lg btn-block exectu-code" vindex="{{index}}">执行代码</button>
+            </div>
+        </div>
+    </script>
+
+    <script>
+        document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+    </script>
+
+    <script>
+        'use strict';
+
+        var resultEl = document.getElementById('result'),
+            clearEl = document.getElementById('clear'),
+            componentEl = document.getElementById('component'),
+            containerCodeEl = document.getElementById('container-code'),
+            qrcodeEl = document.getElementById('qrcode');
+
+        var tplComponent = document.getElementById('tpl-component').innerHTML,
+            tplCode = document.getElementById('tpl-code').innerHTML;
+
+        var idx = 0;
+        var socket = null,
+            qrcode = null,
+            editorInstanceAssemble = [];
+
+        Util.loadJs(
+            './socket.io.js',
+            './codemirror/codemirror.min.js',
+            './codemirror/mode/javascript.js',
+            './beautify.min.js',
+            './qrcode.js',
+            function () {
+                ejs.config({
+                    jsApiList: []
+                });
+
+                ejs.ready(function () {
+                    initListeners();
+                    openWebSocket();
+                });
+            });
+
+        /**
+         * openWebSocket
+         */
+        function openWebSocket() {
+            var roomid = uuidv4().toUpperCase();
+
+            socket = io.connect('http://192.168.118.28:8088/');
+            socket.emit('roomid', roomid);
+
+            var location = window.location,
+                uri = location.origin,
+                pathname = location.pathname;
+
+            var pathArr = pathname.split('/');
+
+            pathArr.length = pathArr.length - 1;
+            pathname = pathArr.join('/');
+            uri += pathname + '/ejsinvokepluginroom.html?roomid=' + roomid;
+
+            qrcodeEl.innerHTML = '';
+            qrcode = new QRCode(qrcodeEl);
+            qrcode.clear();
+            qrcode.makeCode(uri);
+            document.getElementById('room').textContent = uri;
+        }
+
+        function initListeners() {
+            document.getElementById('add-component').addEventListener('tap', function () {
+                var div = document.createElement('div');
+
+                div.innerHTML = tplComponent;
+                div.className = 'clearfix mb10 component-list';
+                componentEl.append(div);
+            });
+
+            mui(componentEl).on('tap', '.delete', function () {
+                $(this).parent().remove();
+            });
+
+            document.getElementById('generate-code').addEventListener('tap', function () {
+                var invokePluginAssembly = mui('#component .component-list');
+
+                containerCodeEl.innerHTML = '';
+                idx = 0;
+                editorInstanceAssemble = [];
+
+                if (invokePluginAssembly && Array.isArray(invokePluginAssembly)) {
+                    for (var i = 0, len = invokePluginAssembly.length; i < len; i++) {
+                        var el = invokePluginAssembly[i],
+                            path = el.querySelector('[vtype=path]').value || '',
+                            dataMap = el.querySelector('[vtype=dataMap]').value || '{}';
+
+                        // 生成代码
+                        generateCode(path, dataMap);
+                    }
+                }
+            });
+
+            mui('#container-code').on('tap', '.exectu-code', function () {
+                var index = this.getAttribute('vindex'),
+                    editor = editorInstanceAssemble[index];
+
+                socket.emit('send_code', editor.doc.getValue(0));
+            });
+        }
+
+        /**
+         * 生成代码块
+         * @param {String} path 组件路径
+         * @param {Object} dataMap 组件参数
+         */
+        function generateCode(path, dataMap) {
+            var code = "ejs.util.invokePluginApi({path: '" + path + "',dataMap: " + new Object(dataMap) +
+                ",success: function(result) {ejs.ui.toast(JSON.stringify(result));},error: function(err) {ejs.ui.toast(JSON.stringify(err));}});";
+
+            containerCodeEl.innerHTML += Mustache.render(tplCode, {
+                code: js_beautify(code),
+                id: 'code' + idx,
+                index: idx
+            });
+
+            var editor = CodeMirror.fromTextArea(document.getElementById('code' + idx), {
+                lineNumbers: true,
+                mode: 'javascript',
+                theme: 'monokai'
+            });
+
+            editorInstanceAssemble.push(editor);
+
+            idx++;
+        }
+
+        function runCode(code) {
+            try {
+                eval(code);
+                resultEl.innerHTML += '<li>' + code + ' 执行成功</li>';
+            } catch (error) {
+                resultEl.innerHTML += '<li>' + error.message + ' 执行失败</li>';
+            }
+        }
+
+        function uuidv4() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+    </script>
+</body>
+
+</html>

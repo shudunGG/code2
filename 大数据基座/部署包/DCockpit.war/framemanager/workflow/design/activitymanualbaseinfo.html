@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程活动基本配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify"
+				iconCls="icon-save">确认保存 </a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input bind="processVersionGuid" id="processVersionGuid"
+			class="mini-hidden" /><input bind="activityGuid" id="activityGuid"
+			class="mini-hidden" /><input id="splitActivityGuid"
+			bind="splitActivityGuid" class="mini-hidden" />
+
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="活动名称" starred="true">
+						<input id="activityName" bind="workflowActivity.ActivityName"
+							class="mini-textbox" required="true" requiredErrorText="活动名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="附件操作权限">
+						<input id="isAllowAddAttach" bind="isAllowAddAttach"
+							class="mini-checkbox" style="width: 20%" text=" 允许修改" /> <input
+							id="isAllowDelAttach" bind="isAllowDelAttach"
+							class="mini-checkbox" style="width: 20%" text=" 允许删除" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="流程处理页面">
+						<input id="handleurl" bind="workflowActivity.handleUrl"
+							class="mini-buttonedit" emptyText="" onbuttonclick="setPage"
+							selectOnFocus="true" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="移动端流程处理页面">
+						<input id="mobileHandleURL"
+							bind="workflowActivity.mobileHandleURL" class="mini-buttonedit"
+							onbuttonclick="setMobilePage" selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="表单区初始地址">
+						<input id="handleBodyPageUrl"
+							bind="workflowActivity.handleBodyPageUrl" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">如果为空则自动显示本活动的第一份表单</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分支方式">
+						<div id="splitType" bind="splitType" action="getTypeList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="会合方式">
+						<div id="joinType" bind="joinType" action="getJoinTypeList"
+							class="mini-radiobuttonlist" textField="text" valueField="id"></div>
+					</div>
+
+				</div>
+				<div id="row_SplitActName" role="row">
+					<div role="control" label="对应分支点">
+						<input id="splitActivityName" bind="splitActivityName"
+							class="mini-buttonedit" emptyText="" allowInput="false"
+							onbuttonclick="selectSplitActivity" selectOnFocus="true" /> <span
+							class="text-danger" style="width: 50%">如果会合方式为多路，那么必须手动设置对应的分支节点</span>
+
+					</div>
+				</div>
+				<div id="row_JoinMethod" role="row">
+					<div role="control" label="会合判断方法">
+						<input id="joinMethodName" bind="workflowActivity.joinMethodGuid"
+							class="mini-buttonedit" onbuttonclick="selectMethod"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="多人处理方式">
+						<div id="multiTransactorMode" bind="multiTransactorMode"
+							action="getHandleTypeList" class="mini-radiobuttonlist"
+							repeatItems="3" repeatLayout="table" repeatDirection="vertical"
+							textField="text" valueField="id"></div>
+
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="共用同一活动实例">
+						<input id="singleInstance" bind="singleInstance"
+							class="mini-checkbox" style="width: 20%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="通过率">
+						<input id="passRate" bind="workflowActivity.passRate"
+							vtype="range:0,100" class="mini-textbox" width="50%" /> 单位：%
+					</div>
+				</div>
+                <div role="row">
+					<div role="control" label="多人处理是否锁定">
+						<div id="isLockWhenMulti" bind="isLockWhenMulti"
+							action="getYesNoList" class="mini-radiobuttonlist" onvaluechanged="selectChange(this.value)"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row" id="lockTime"  style="display: none">
+				   <div role="control" label="锁定时间">
+						<input id="lockTimeWhenMultiTransactor" bind="workflowActivity.lockTimeWhenMultiTransactor" style="width:120px;" value="1" vtype="int;min:1" 
+							class="mini-textbox" />分钟(输入大于等于1的正整数),如果此项值维护了默认走多人手写签批锁定控制；不维护默认原来的锁定逻辑
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用程序配置">
+						<input id="applicationConfig"
+							bind="workflowActivity.applicationConfig" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="短信通知内容">
+						<input id="smsContent" bind="workflowActivity.smsContent"
+							class="mini-textarea" style="width: 90%" /> <a
+							class="action-icon icon-mail" onclick="setSMS();"
+							style="width: 10%"></a>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">本步骤收到工作项时，以此处设置的内容发送短信通知（为空则不发送）</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input id="note" bind="workflowActivity.note"
+							class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动Guid">
+						<input id="activityGuid" bind="workflowActivity.activityGuid"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动标识">
+						<input id="activityDispName"
+							bind="workflowActivity.activityDispName" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">(用来唯一定位到该活动,一旦设定不允许修改,与活动对象的activityDispName关联)</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitymanualbaseinfoaction', '', initCallBack);
+
+		function initCallBack(e) {
+			//流程处理页面
+			if (e.handleurl) {
+				mini.get('handleurl').setText(e.handleurl);
+
+			}
+			if (e.mobileHandleURL) {
+				mini.get('mobileHandleURL').setText(e.mobileHandleURL);
+			}
+			if (e.splitActivityName) {
+				mini.get('splitActivityName').setText(e.splitActivityName);
+			}
+			//设置会合方式  关联的显隐
+			var joinTypeValue = mini.get("joinType").getValue();
+			if (joinTypeValue == "20") {
+				document.getElementById("row_SplitActName").style.display = "block";
+				document.getElementById("row_JoinMethod").style.display = "none";
+			} else if (joinTypeValue == "40") {
+				//选择自定义方法时
+				document.getElementById("row_SplitActName").style.display = "none";
+				document.getElementById("row_JoinMethod").style.display = "block";
+			} else {
+				document.getElementById("row_SplitActName").style.display = "none";
+				document.getElementById("row_JoinMethod").style.display = "none";
+			}
+
+			//处理会合方法
+			if (e.joinMethodName) {
+				mini.get("joinMethodName").setText(e.joinMethodName);
+			}
+			
+			
+			//初始化的时候如果是锁定的，把时间填写控件显示
+			var isLockWhenMulti= mini.get("isLockWhenMulti").getValue();
+			if(isLockWhenMulti == "true"){
+				document.getElementById("lockTime").style.display = "block";
+			}else{
+				document.getElementById("lockTime").style.display = "none";
+			}
+		}
+		// 关闭操作的回调
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+			if (!data.edit) {
+				parent.updateTab();
+			}
+			var textValue = mini.get('activityName').getValue();
+			if (!parent.tag) {
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : parent.Util.getUrlParams('MaxID'),
+					NodeType : 'Manual',
+					Text : textValue
+				};
+				parent.setDialogValue(param, !data.edit);
+			} else if (parent.tag == true) {
+				var param = {
+					Added : true,
+					Edit : false,
+					ID : parent.Util.getUrlParams('MaxID'),
+					NodeType : 'Manual',
+					Text : textValue
+				};
+				parent.setDialogValue(param, true);
+			}
+		}
+
+		// 保存操作的回调
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', '', callback);
+			}
+		}
+
+		//选择流程处理页面
+		function setPage(e) {
+			epoint
+					.openDialog(
+							'选择流程处理页面',
+							'framemanager/workflow/design/designhelper?mode=activityPage&type=showWorkItem',
+							setParValueOperJS, {
+								'width' : 800,
+								'height' : 400
+							});
+		}
+
+		function setParValueOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split(";")[0];
+				mini.get("handleurl").setText(s);
+				mini.get("handleurl").setValue(s);
+			}
+		}
+
+		//设置短信
+		function setSMS() {
+			var sms = "您收到了一项标题为“[#=工作项名称#]”的待办事宜，请及时办理。";
+			mini.get('smsContent').setValue(sms);
+		}
+		//会合方式为多路时
+		mini.parse();
+		var rbl = mini.get("joinType");
+		rbl
+				.on(
+						"valuechanged",
+						function(e) {
+							var va = this.getValue();
+							if (va == "20") {
+								document.getElementById("row_SplitActName").style.display = "block";
+								document.getElementById("row_JoinMethod").style.display = "none";
+							} else if (va == "40") {
+								document.getElementById("row_SplitActName").style.display = "none";
+								document.getElementById("row_JoinMethod").style.display = "block";
+							} else {
+								document.getElementById("row_SplitActName").style.display = "none";
+								document.getElementById("row_JoinMethod").style.display = "none";
+							}
+						});
+		//设置对应分支点
+		function selectSplitActivity() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			epoint.openDialog('选择分支节点',
+					'framemanager/workflow/design/selectactivity?processVersionGuid='
+							+ processVersionGuid + '&activityGuid='
+							+ activityGuid, addSplitActivity, {
+						'width' : 800,
+						'height' : 500
+					});
+			//todo缺返回操作
+		}
+
+		function addSplitActivity(data) {
+			if (data && data != 'close') {
+				var s = data.split(";");
+				mini.get("splitActivityName").setText(s[0]);
+				mini.get("splitActivityName").setValue(s[0]);
+				mini.get("splitActivityGuid").setValue(s[1]);
+
+			}
+		}
+		function setMobilePage() {
+			epoint
+					.openDialog(
+							'选择流程处理页面',
+							'framemanager/workflow/design/designhelper?mode=activityPage&type=showMobilePage',
+							setParValueOperJSMobile, {
+								'width' : 800,
+								'height' : 400
+							});
+
+		}
+
+		function setParValueOperJSMobile(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split(";")[0];
+				mini.get("mobileHandleURL").setValue(s);
+				mini.get("mobileHandleURL").setText(s);
+			}
+		}
+		
+		//选择会合方法
+		function selectMethod() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('选择外部方法',
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid, selectCallBack, {
+						width : 480,
+						height : 300
+					});
+		}
+		//选择会合外部方法后CallBack
+		function selectCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("joinMethodName").setValue(datas[1]);
+				mini.get("joinMethodName").setText(datas[0]);
+			}
+		}
+		
+		//多人处理锁定切换，填写锁定时间控件显隐控制
+		function selectChange(value){
+			if(value == "true"){
+				document.getElementById("lockTime").style.display = "block";
+			}else{
+				document.getElementById("lockTime").style.display = "none";
+			}
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

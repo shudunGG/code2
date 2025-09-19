@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择链接地址</title>
+<script src="../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="c" class="fui-form">
+			<div role="form">
+				<div id="tree" class="mini-tree" selectedPanelTitle="已选择记录"
+					style="width: 99%;" filterMode="server" bind="sformid"
+					action="getTreeModal" onbeforenodeselect="beforenodeselect"></div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<script type="text/javascript">
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('linkselectaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+		var platform = Util.getUrlParams('platform');
+
+		function beforenodeselect(e) {
+			if (e.isLeaf == false) {
+				e.cancel = true;
+			}
+		}
+
+		// 点击树，关闭操作的回调
+		tree
+				.on(
+						"nodeselect",
+						function(e) {
+							var url = "";
+							if (e.node.id == 'pvipreview') { //流程预览
+								url = '../../../../../frame/pages/epointworkflow/client/browser/midview?PVIGuid={{pviguid}}&RowGuid={{recordguid}}';
+							} else if (e.node.id == 'add'
+									|| e.node.id == 'detail') { //表单
+								var pageType = e.node.id;
+								if (platform == 'mobile') {
+									pageType = "mobile" + e.node.id;
+								}
+								url = '../../../../../epointtemp/epointsform/form/'
+										+ e.node.pid
+										+ '?pageType='
+										+ pageType
+										+ '&rowguid={{recordguid}}';
+							} else if (e.node.pid == 'process') { //流程
+								url = '../../../../../frame/pages/epointworkflow/client/processcreateinstance?processguid='
+										+ e.node.id + '&XXX={{recordguid}}';
+							}
+
+							epoint.closeDialog(url);
+
+						});
+		//]]>
+	</script>
+</body>
+</html>

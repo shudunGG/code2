@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>流程转换</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a>
+		</div>
+	</div>
+	
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="流程名称" starred="true">
+				<input id=changeName name="changeName" class="mini-textbox"
+					required="true" emptyText="请输入流程名称" />
+			</div>
+		</div>
+		<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false" >
+			<div name="tabs1" title="一般">
+				<span>源SFTP服务器设置 :</span>
+					<div role="row">
+						<div role="control" label="来源数据源名称" starred="true">
+							<input id="dataSource" name="dataSource" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="SFTP服务器名称/IP" starred="true">
+							<input id="serverName" name="serverName" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="端口" starred="true">
+							<input id="serverPort" name="serverPort" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="用户名" starred="true">
+							<input id="userName" name="userName" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="密码" starred="true">
+							<input id="password" name="password" class="mini-password" required="true" />
+						</div>
+					</div>
+					<div role="row">
+					<div class="btn-group r" >
+						<a class="mini-button" onclick="testSFTPConnect('dataSource')">测试连接</a>
+					</div>
+					</div>
+					
+					<hr style="height:1px;border:none;border-top:1px solid #ebebeb;" />
+					
+					<span >目标SFTP服务器设置 :</span>
+					<div role="row">
+						<div role="control" label="目标数据源名称" starred="true">
+							<input id="targetDataSource" name="targetDataSource" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="SFTP服务器名称/IP" starred="true">
+							<input id="targetServerName" name="targetServerName" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="端口" starred="true">
+							<input id="targetServerPort" name="targetServerPort" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="用户名" starred="true">
+							<input id="targetUserName" name="targetUserName" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="密码" starred="true">
+							<input id="targetPassword" name="targetPassword" class="mini-password" required="true" />
+						</div>
+					</div>
+					<div class="btn-group r">
+						<a class="mini-button" onclick="testSFTPConnect('targetDataSource')">测试连接</a>
+					</div>
+				</div>
+			<div name="tabs2" title="文件">
+				<span >源(本地)文件 :</span>
+					<div role="row">
+						<div role="control" label="本地目录" starred="true">
+							<input id="sourceDirectory" name="sourceDirectory" class="mini-textbox" required="true" />
+						</div>
+						<div role="control">
+							<div class="btn-group r" >
+									<a class="mini-button" onclick="testFolder('sourceDirectory')">测试文件夹</a>
+							</div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="通配符(正则表达式)">
+							<input id="wildcard" name="wildcard" class="mini-textbox"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="备份文件夹">
+							<input id="destinationFolder" name="destinationFolder" class="mini-textbox"/>
+						</div>
+						<div role="control">
+							<div class="btn-group r" >
+									<a id="miniButton" class="mini-button" onclick="testFolder('destinationFolder')">测试文件夹</a>
+							</div>
+						</div>
+					</div>
+					
+					<hr style="height:1px;border:none;border-top:1px solid #ebebeb;" />
+					
+					<span >目标(远程)文件夹 :</span>
+					<div role="row">
+						<div role="control" label="远程目录" starred="true">
+							<input id="sftpDirectory" name="sftpDirectory" class="mini-textbox" required="true" />
+						</div>
+						<div role="control">
+							<div class="btn-group r" >
+									<a class="mini-button" onclick="testFolder('sftpDirectory')">测试文件夹</a>
+							</div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="文件存在时" starred="true">
+							<input id="overwrite" name="overwrite"
+							data="[{text:'覆盖文件',id:'0'},{text:'创建副本',id:'1'}]"
+							textField="text" valueField="id" value="0" class="mini-combobox" required="true"/>
+						</div>
+					</div>
+					<br/>
+					<br/>
+					<br/>
+			</div>
+		</div>
+	</div>
+
+
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('changeName');
+		var nodeData;
+		var nodeInfo;
+		
+		
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('sftpsyncaction', '', '');
+			
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.changeName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+		
+		//获取form表单数据
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate()) {
+				var data = form.getData(true, false);
+				epoint.closeDialog(mini.encode(data));
+			}
+		}
+		
+		
+		//测试SFTP连接情况
+		function testSFTPConnect(e){
+			var serverName;
+			var serverPort;
+			var userName;
+			var password;
+			
+			//数据源测试连接
+			if (e == "dataSource") {
+				serverName = mini.get('serverName').value;
+				serverPort = mini.get('serverPort').value;
+				userName = mini.get('userName').value;
+				password = mini.get('password').value;
+			}else{
+				//目标数据源测试连接
+				serverName = mini.get('targetServerName').value;
+				serverPort = mini.get('targetServerPort').value;
+				userName = mini.get('targetUserName').value;
+				password = mini.get('targetPassword').value;
+			}
+			
+			if (serverName && serverPort && userName && password) {
+				var serverInfo = serverName + ";" + serverPort + ";" + userName + ";" + password;
+				epoint.execute("checkSFTPConnect", '', [serverInfo], function(data) {
+					if (data.success == "success") {
+						epoint.alert(data.msg);
+					}else{
+						epoint.alert(data.msg);
+					}
+				}); 
+			}else{
+				epoint.alert("服务器IP/端口/用户名/密码不能为空");
+			}
+		}
+
+		//测试文件夹
+		function testFolder(e){
+			var serverName;
+			var serverPort;
+			var userName;
+			var password;
+			var folder;
+			
+			//源文件夹
+			if (e == "sourceDirectory" || e == 'destinationFolder') {
+				serverName = mini.get('serverName').value;
+				serverPort = mini.get('serverPort').value;
+				userName = mini.get('userName').value;
+				password = mini.get('password').value;
+				if (e == "sourceDirectory") {
+					folder = mini.get('sourceDirectory').value;
+				}else{
+					folder = mini.get('destinationFolder').value;
+				}
+			}else{
+				//目标文件夹
+				serverName = mini.get('targetServerName').value;
+				serverPort = mini.get('targetServerPort').value;
+				userName = mini.get('targetUserName').value;
+				password = mini.get('targetPassword').value;
+				folder = mini.get('sftpDirectory').value;
+			}
+			
+			if (serverName && serverPort && userName && password) {
+				var serverInfo = serverName + ";" + serverPort + ";" + userName + ";" + password + ";" + folder;
+				epoint.execute("checkFolderExist", '', [serverInfo], function(data) {
+					if (data.success == "success") {
+						epoint.alert(data.msg);
+					}else{
+						epoint.alert(data.msg);
+					}
+				}); 
+			}else{
+				epoint.alert("服务器IP/端口/用户名/密码不能为空");
+			}
+		}
+	</script>
+</body>
+
+</html>

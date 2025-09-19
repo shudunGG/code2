@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>问题信息详情页面</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+table {
+	table-layout: fixed;
+}
+
+table img {
+	max-width: 100%;
+}
+
+#questioncontent img {
+	max-width: 100%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="r mr10">
+			<a class="mini-button l" onclick="btnProcessClientClick" state="primary">流程追踪</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="问题提问"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="row">
+							<div role="control" label="反馈类型">
+								<div class="mini-outputtext"
+									bind="commFeedbackQuestionInfo.cFeedbackType"
+									data-options="{code:'反馈问题类型'}"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="所属功能">
+								<input id="func" class="mini-outputtext"></input>
+								<!--  div class="mini-outputtext"
+									bind="commFeedbackQuestionInfo.cFunctionType"
+									data-options="{code:'反馈所属功能'}" /></div-->
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="标题">
+								<input id="cMessageTitle" class="mini-outputtext"
+									bind="commFeedbackQuestionInfo.cFeedbackQuestionTitle" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="问题内容">
+								<textarea
+									bind="commFeedbackQuestionInfo.cFeedbackQuestionContent"
+									id="cMessageContent" class="mini-outputtext" validateLevel="3"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="反馈信息"></div>
+				<div role="body">
+					<div class="btn-group mr10" style="margin-bottom: 8px">
+						<div id="btnAddFeedback" class="mini-button"
+							onclick="OpenAddFeedBack">添加我的反馈意见</div>
+					</div>
+					<div id="feedbackgrid" class="mini-datagrid"
+						idField="cfeedbackguid" action="getDataGridData" sortOrder="desc"
+						showPager="true" sortField="cfeedbacktime" allowResize="true"
+						multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+						editNextOnEnterKey="true" editNextRowCell="true">
+						<div property="columns">
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="cfeedbackusername" width="100">反馈人</div>
+							<div field="cfeedbacktime" width="160"
+								data-options="{format:'yyyy-MM-dd HH:mm'}" allowSort="true">反馈时间</div>
+							<div field="cfeedbackcontent" width="100%" validateLevel="1">反馈内容</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../epointworkflow/js/workflowjsboot.js"></script>
+	<script src="../../epointworkflow/js/tableproperty.js"></script>
+	<!--script src="../../../../fui/js/prepFancy.js"></script>  -->
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('feedbackdetailaction', '', initCallback);
+
+		var rowguid;
+		var pviguid;
+
+		function initCallback(data) {
+			rowguid = data.rowguid;
+			pviguid = data.pviguid;
+			var cFunctionName = data.cFunctionName;
+			mini.get("func").setValue(cFunctionName);
+			window.prepFancy && prepFancy($('.fui-form').find('table'));
+		}
+
+		function btnProcessClientClick() {
+			epoint.execute('processClient', null, function(ret) {
+				epoint.openDialog("查看流程", ret);
+			});
+		}
+
+		function OpenAddFeedBack() {
+			epoint.openDialog('添加反馈',
+					'frame/pages/helpcenter/infofeedback/infofeedback?cFeedbackQuestionGuid='
+							+ rowguid + '&flag=1', function(ret) {
+						if (ret) {
+							epoint.refresh([ 'feedbackgrid' ]);
+						}
+					}, {
+						width : 900,
+						height : 700,
+					});
+		}
+		//打开问题反馈页面
+		var feedbackgrid = mini.get("feedbackgrid");
+		feedbackgrid
+				.on(
+						"rowclick",
+						function(e) {
+							var row = e.record;
+							var cfeedbackguid = row.cfeedbackguid;
+							var url = "frame/pages/helpcenter/infofeedback/infofeedbackdetail?cFeedbackguid="
+									+ cfeedbackguid + '&flag=1';
+							epoint.openDialog('问题反馈详情', url, function(ret) {
+							}, {
+								width : 1000,
+								height : 700
+							});
+						});
+
+		//]]>
+	</script>
+</body>
+</html>

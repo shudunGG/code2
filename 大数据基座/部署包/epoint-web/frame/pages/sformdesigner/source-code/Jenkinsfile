@@ -1,0 +1,73 @@
+pipeline {
+  agent any
+  stages {
+    stage('检出') {
+      steps {
+        checkout([$class: 'GitSCM', branches: [[name: env.GIT_BUILD_REF]],
+        userRemoteConfigs: [[url: env.GIT_REPO_URL, credentialsId: env.CREDENTIALS_ID]]])
+      }
+    }
+    stage('安装') {
+      steps {
+        echo '安装依赖中...'
+        sh 'yarn'
+        echo '安装依赖完成...'
+      }
+    }
+    stage('构建') {
+      steps {
+        echo '构建中...'
+        sh 'yarn build'
+        echo '构建完成.'
+        script {
+          def exists = fileExists 'README.md'
+          if (!exists) {
+            writeFile(file: 'README.md', text: 'Helloworld')
+          }
+        }
+
+        archiveArtifacts(artifacts: 'dist/*', fingerprint: true, onlyIfSuccessful: true)
+      }
+    }
+    stage('部署demo') {
+      steps {
+        echo '部署demo中...'
+        dir(path: 'dist') {
+          sh 'git init'
+          sh 'git remote add build $HTTPS_URL'
+          sh 'echo "<html><head><meta http-equiv=\\"Refresh\\" content=\\"0; URL=designer.html?useMock\\"/></head></html>" > index.html'
+          sh 'echo "# 在线演示demo \n\n 此分支为推送时自动构建部署生成的演示代码分支，请勿手动改动和提交推送" > README.md'
+          sh 'git add .'
+          sh 'git commit -m deploy'
+          sh 'git checkout -b demo-tmp'
+          sh 'git push -f build demo-tmp:demo'
+        }
+
+        echo '部署demo完成'
+      }
+    }
+    stage('构建文档') {
+      steps {
+        echo '构建文档中...'
+        sh 'yarn doc:build'
+        echo '构建文档完成.'
+      }
+    }
+    stage('部署文档') {
+      steps {
+        echo '部署文档中...'
+        dir(path: 'doc/.vuepress/dist') {
+          sh 'git init'
+          sh 'git remote add builddoc $HTTPS_URL'
+          sh 'echo "# 文档 \n\n 此分支为推送时自动构建部署生成的文档分支，请勿手动改动和提交推送" > README.md'
+          sh 'git add .'
+          sh 'git commit -m deploy'
+          sh 'git checkout -b doc-tmp'
+          sh 'git push -f builddoc doc-tmp:document'
+        }
+
+        echo '部署文档完成'
+      }
+    }
+  }
+}

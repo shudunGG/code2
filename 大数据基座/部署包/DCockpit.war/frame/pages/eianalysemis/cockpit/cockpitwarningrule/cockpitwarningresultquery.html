@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>预警结果查询</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="指标名称">
+						<input class="mini-textbox" bind="dataBean.normname" />
+					</div>
+					<div role="control" label="规则描述">
+						<input class="mini-textbox" bind="dataBean.rulename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="预警对象">
+						<input id="search_userguid" class="mini-buttonedit" allowInput="false" emptyText="" onbuttonclick="selectuser" bind="dataBean.userguid" showClose="true" oncloseclick="onCloseClick"/>
+					</div>
+					<div role="control" label="是否已读">
+						<input id="search_issend" class="mini-combobox" bind="dataBean.issend" data="[{id:'1',text:'是'},{id:'0',text:'否'}]" showClose="true" oncloseclick="onCloseClick"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="开始时间">
+						<input id="search_starttime" class="mini-datepicker" bind="startTime" format="yyyy-MM-dd" showClose="true" showClose="true" oncloseclick="onCloseClick"/>
+					</div>
+					<div role="control" label="截止时间">
+						<input id="search_endtime" class="mini-datepicker" bind="endTime" format="yyyy-MM-dd" showClose="true" showClose="true" oncloseclick="onCloseClick"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否取消">
+						<input id="search_ishistory" class="mini-combobox" bind="dataBean.ishistory" data="[{id:'1',text:'已取消'},{id:'0',text:'未取消'}]" showClose="true" oncloseclick="onCloseClick"/>
+					</div>
+					<div role="control" ></div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="warninguser" headerAlign="center" align="center">预警对象</div>
+				<div field="normname" headerAlign="center" align="center">指标名称</div>
+				<div field="rulename" headerAlign="center" align="center">规则描述</div>
+				<div field="Reason" headerAlign="center" align="center">预警原因</div>
+				<div field="issend" headerAlign="center" align="center">是否已读</div>
+				<div field="ishistory" headerAlign="center" align="center">是否取消</div>
+				<div field="WarningTime" headerAlign="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">预警时间</div>
+				<div align="center" headerAlign="center"
+					renderer="onDetailRenderer">预警历史</div>
+				<div type="actioncolumn" headerAlign="center" align="center">
+					<span type="action" icon="icon-gear" onclick="cancelWarning">忽略本次预警</span>
+				</div>
+				<div visible="false" field="userguid"></div>
+				<div visible="false" field="computeguid"></div>
+				<div visible="false" field="rowguid"></div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitwarningresultqueryaction', null,
+				function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openDetail", "computeguid,userguid");
+		};
+
+		// 弹出明细窗口
+		function openDetail(e) {
+			var computeguid = e.computeguid;
+			var userguid = e.userguid;
+			epoint
+					.openDialog(
+							'预警历史',
+							"frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningresulthistory?computeguid="
+									+ computeguid + "&userguid=" + userguid, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		//忽略本次预警
+		function cancelWarning(e) {
+			epoint.confirm('确认忽略本条预警？', '确认', function() {
+				console.log(e);
+				epoint.execute("cancelWarning", "", e.computeguid, callback);
+			});
+		}
+
+		function selectuser() {
+			epoint.openDialog("选择人员", 'framemanager/orga/orga/user/selectuser',
+					saveAndClose, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+		//回调
+		function saveAndClose(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split("_SPLIT_");
+				if (s[1] != 'f9root') {
+					mini.get("search_userguid").setValue(s[0]);
+					mini.get("search_userguid").setText(s[1]);
+				} else {
+				}
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+	</script>
+</body>
+</html>

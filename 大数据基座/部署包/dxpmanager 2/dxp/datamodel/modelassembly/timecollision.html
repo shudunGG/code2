@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>时间碰撞个性化</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script type="text/javascript">
+	SrcBoot.output([ 'css/jedate.css', ]);
+</script>
+<style>
+.nonebd {
+	border-right: 0;
+	border-bottom: 0;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="confirmadd">确定添加</a> <a class="mini-button" id="cancleadd" onclick="epoint.closeDialog">取消添加</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div class="fui-accordions">
+					<div role="accordion">
+						<div role="head" title="步骤名称配置"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="步骤名称" starred="true">
+									<input id="stepName" name="stepName" class="mini-textbox"
+										required="true" emptyText="请输入步骤名称" vtype="maxLength:20" 
+										requiredErrorText="步骤名称不能为空"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true">
+						<div role="head" title="时间碰撞配置"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="碰撞方式" starred="true">
+									<input id="ptimecollisiontype" name="ptimecollisiontype"
+										class="mini-combobox"
+										data="[{'id':'时间相同','text':'时间相同'},{'id':'时间点之前','text':'时间点之前'},{'id':'时间点之后','text':'时间点之后'},{'id':'时间点前后','text':'时间点前后'}]"
+										onvaluechanged="changetimetype" 
+										required="true" requiredErrorText="碰撞方式不能为空"/>
+								</div>
+							</div>
+
+							<div role="row" id="before">
+								<div role="control" label="向前推移" starred="true">
+									<input id="pbeforetime" name="pbeforetime" class="mini-textbox"
+										style="width: 80px" /> <input id="pbeforetimetype"  name="pbeforetimetype"
+										class="mini-combobox" style="width: 80px; margin-left: 1px"
+										inputStyle="text-align:center"
+										data="[{'id':'分钟','text':'分钟'},{'id':'小时','text':'小时'},{'id':'天','text':'天'}]" 
+										required="true" requiredErrorText="向前推移不能为空"/>
+								</div>
+							</div>
+							<div role="row" id="after">
+								<div role="control" label="向后推移" starred="true">
+									<input id="paftertime" name="paftertime" class="mini-textbox"
+										style="width: 80px" /> <input id="paftertimetype" name="paftertimetype"
+										class="mini-combobox" style="width: 80px; margin-left: 1px"
+										inputStyle="text-align:center"
+										data="[{'id':'分钟','text':'分钟'},{'id':'小时','text':'小时'},{'id':'天','text':'天'}]"
+										required="true" requiredErrorText="向后推移不能为空" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="碰撞条件" starred="true">
+									<input id="leftstep" name="leftstep" class="mini-hidden" />
+									<input id="rightstep" name="rightstep" class="mini-hidden"/>
+									<div id="datagrid1" name="datagrid1" class="mini-datagrid"
+										idField="rowguid" style="width: 100%; height: 90px;"
+										showPager="false" allowCellSelect="true"
+										action="getDataGridData1" allowResizeColumn="false"
+										allowMoveColumn="false" allowCellEdit="true"
+										oncellvalidation="onCellValidation">
+										<div property="columns">
+											<div field="table1" name="table1" width="150"
+												headerAlign="center" align="center" type="comboboxcolumn"
+												required="true" requiredErrorText="向后推移不能为空">
+												<input property="editor" class="mini-combobox"
+													style="width: 70%;" data="Genderstime1" showClose="true"
+													oncloseclick="onCloseClick"/>
+											</div>
+											<div field="timefilter" name="timefilter" width="150"
+												headerAlign="center" align="center">
+												<a style="color: blue" class="action-icon icon-refresh"></a>
+											</div>
+											<div field="table2" name="table2" width="150"
+												headerAlign="center" align="center" type="comboboxcolumn">
+												<input property="editor" class="mini-combobox"
+													style="width: 70%;" data="Genderstime2" showClose="true"
+													oncloseclick="onCloseClick"/>
+											</div>
+										</div>
+									</div>
+									<input class="mini-hidden" name="dataTable1" id="dataTable1" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true">
+						<div role="head" title="其它条件配置"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="碰撞条件">
+									<div id="datagrid2" name="datagrid2" class="mini-datagrid"
+										idField="rowguid" multiSelect="true"
+										style="width: 100%; height: 150px;" showPager="false"
+										allowCellSelect="true" action="getDataGridData2"
+										allowResizeColumn="false" allowMoveColumn="false"
+										allowCellEdit="true">
+										<div property="columns">
+											<div field="table3" name="table3" width="150"
+												headerAlign="center" align="center" type="comboboxcolumn">
+												<input property="editor" class="mini-combobox"
+													style="width: 70%;" data="Genderstime1" showClose="true"
+													oncloseclick="onCloseClick" />
+											</div>
+											<div field="otherfilter" name="otherfilter" width="150"
+												headerAlign="center" align="center" type="comboboxcolumn">
+												符号 <input property="editor" class="mini-combobox"
+													style="width: 100px;" showclose="true" oncloseclick="onCloseClick"
+													data="[{'id':'等于','text':'等于'},{'id':'不等于','text':'不等于'},{'id':'大于','text':'大于'},{'id':'大于等于','text':'大于等于'},{'id':'小于','text':'小于'},{'id':'小于等于','text':'小于等于'}]"
+													inputStyle="text-align:center" />
+											</div>
+											<div field="table4" name="table4" width="150"
+												headerAlign="center" align="center" type="comboboxcolumn">
+												<input property="editor" class="mini-combobox"
+													style="width: 70%;" data="Genderstime2" showClose="true"
+													oncloseclick="onCloseClick" />
+											</div>
+											<div name="add" width="100" headerAlign="center"
+												align="center" renderer="onaddRenderer">操作</div>
+										</div>
+									</div>
+								</div>
+								<input class="mini-hidden" name="dataTable2" id="dataTable2" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<!-- <script src="../../../../fui/js/libs/jquery.jedate.min.js"></script> -->
+	<script>
+		// 初始化页面
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var grid1 = mini.get('datagrid1');
+		var grid2 = mini.get('datagrid2');
+		var Genderstime1 = "";
+		var Genderstime2 = "";
+		var Gendersotherfilter = "";
+		var grid2count = 0;
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('modeltimecollisionaction?stepId=' + nodeInfo.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initCallBack);
+		}
+		
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			grid1.updateColumn("table1", {
+				header : e.step1
+			});
+			grid1.updateColumn("table2", {
+				header : e.step2
+			});
+			grid2.updateColumn("table3", {
+				header :  e.step1
+			});
+			grid2.updateColumn("table4", {
+				header : e.step2
+			});
+			Genderstime1=e.stepField1;
+			Genderstime2=e.stepField2;
+			if(grid1.getData().length==0){
+				var sfield1 = "";
+				var sfield2 = "";
+				//给grid1赋值
+				grid1.setData([ {
+					'table1' : sfield1,
+					'table2' : sfield2,
+					'timefilter' : '满足'
+				} ]);
+			}
+			if(grid2.getData().length==0){
+				var sfield3 = "";
+				var sfield4 = "";
+				//给grid2赋值
+				grid2.setData([ {
+					'table3' : sfield3,
+					'table4' : sfield4,
+					'spacefilter' : '满足'
+				} ]);
+			}
+			var leftstep=mini.get('leftstep').getValue();
+			var rightstep=mini.get('rightstep').getValue();
+			mini.get('leftstep').setValue(e.stepId1);
+			mini.get('rightstep').setValue(e.stepId2);
+			var ptimecValue = mini.get("ptimecollisiontype").getValue();
+			if(ptimecValue==''){
+				mini.get("ptimecollisiontype").setValue('时间相同');
+				ptimecValue='时间相同';
+			}
+			if (ptimecValue == '时间相同') {
+				$("#before").hide();
+				$("#after").hide();
+			} else if (ptimecValue == '时间点之前') {
+				$("#before").show();
+				$("#after").hide();
+			} else if (ptimecValue == '时间点之后') {
+				$("#before").hide();
+				$("#after").show();
+			} else if (ptimecValue == '时间点前后') {
+				$("#before").show();
+				$("#after").show();
+			}
+		}
+		
+		//解决下拉框不展示的问题
+		function epoint_preload(ctrs,data) {
+			mini.get("datagrid1").getCellEditor(0,0).setData(data.stepTimeField1);
+			mini.get("datagrid1").getCellEditor(2,0).setData(data.stepTimeField2);
+			mini.get("datagrid2").getCellEditor(0,0).setData(data.stepField1);
+			mini.get("datagrid2").getCellEditor(2,0).setData(data.stepField2);
+        }
+		
+		
+		//加载参数列表
+		function loadParam() {/* 
+			epoint.execute("getParam", [ 'bagname', 'bagversion', 'step', 'parameter' ], [], function(data) {
+
+				mini.get('parameter').setValue(data);
+				if (data) {
+					data = JSON.parse(data);
+				}
+				mini.parse();
+
+				var sfield1 = "";
+				var sfield2 = "";
+				var sfield3 = "";
+				var sfield4 = "";
+				var sfield5 = "";
+				var sfield6 = "";
+				var sotherfilter = "";
+				for (var i = 0; i < data.length; i++) {
+					if (data[i].hide)
+						continue;
+
+					if (data[i].parameterName == 'table1') {
+						grid1.updateColumn("table1", {
+							header : data[i].text
+						});
+						grid2.updateColumn("table3", {
+							header : data[i].text
+						});
+						grid3.updateColumn("table5", {
+							header : data[i].text
+						});
+					} else if (data[i].parameterName == 'table2') {
+						grid1.updateColumn("table2", {
+							header : data[i].text
+						});
+						grid2.updateColumn("table4", {
+							header : data[i].text
+						});
+						grid3.updateColumn("table6", {
+							header : data[i].text
+						});
+					}
+
+					if ("field1" == data[i].parameterName) {
+						Genderstime1 = eval('(' + data[i].data + ')');
+						sfield1 = data[i].value;
+					} else if ("field2" == data[i].parameterName) {
+						Genderstime2 = eval('(' + data[i].data + ')');
+						sfield2 = data[i].value;
+					} else if ("field3" == data[i].parameterName) {
+						sfield3 = data[i].value;
+					} else if ("field4" == data[i].parameterName) {
+						sfield4 = data[i].value;
+					} else if ("field5" == data[i].parameterName) {
+						sfield5 = data[i].value;
+					} else if ("field6" == data[i].parameterName) {
+						sfield6 = data[i].value;
+					}
+
+					if ("otherfilter" == data[i].parameterName) {
+						sotherfilter = data[i].value;
+						Gendersotherfilter = eval('(' + data[i].data + ')');
+					}
+
+					if (mini.get("p" + data[i].parameterName)) {
+						if (mini.get("p" + data[i].parameterName).uiCls == "mini-combobox") {
+							mini.get("p" + data[i].parameterName).setData(data[i].data);
+						}
+
+						if (mini.get("p" + data[i].parameterName).uiCls == "mini-textbox") {
+							if (data[i].hastext) {
+								mini.get("p" + data[i].parameterName).setValue(data[i].text);
+							} else {
+								mini.get("p" + data[i].parameterName).setValue(data[i].value);
+							}
+						} else {
+							mini.get("p" + data[i].parameterName).setValue(data[i].value);
+						}
+					}
+				}
+
+				//给grid1赋值
+				grid1.setData([ {
+					'table1' : sfield1,
+					'table2' : sfield2,
+					'timefilter' : '满足'
+				} ]);
+
+				//给grid2赋值
+				grid2.setData([ {
+					'table3' : sfield3,
+					'table4' : sfield4,
+					'spacefilter' : '满足'
+				} ]);
+
+				//sfield5 ="name,age"
+				//sotherfilter="等于,大于"
+				//sfield6 = "name,age";
+
+				var sfield5Array = sfield5.split(",");
+				var sfield6Array = sfield6.split(",");
+				var sotherfilterArray = sotherfilter.split(",");
+				var sgrid3jarray = [];
+				for (var j = 0; j < sfield5Array.length; j++) {
+					var sobject = {};
+					sobject.table5 = sfield5Array[j];
+					if (j < sfield6Array.length) {
+						sobject.table6 = sfield6Array[j];
+					} else {
+						sobject.table6 = "";
+					}
+					if (j < sotherfilterArray.length) {
+						sobject.otherfilter = sotherfilterArray[j];
+					} else {
+						sobject.otherfilter = "";
+					}
+					sgrid3jarray.push(sobject);
+					grid2count++;
+				}
+				grid3.setData(sgrid3jarray);
+				for (var j = 0; j < sfield5Array.length; j++) {
+					grid3.beginEditRow(grid3.getRow(j));
+				}
+
+				grid1.beginEditRow(grid1.getRow(0));
+				grid2.beginEditRow(grid2.getRow(0));
+
+				var ptimecValue = mini.get("ptimecollisiontype").getValue();
+				if (ptimecValue == '时间相同') {
+					$("#before").hide();
+					$("#after").hide();
+				} else if (ptimecValue == '时间点之前') {
+					$("#before").show();
+					$("#after").hide();
+				} else if (ptimecValue == '时间点之后') {
+					$("#before").hide();
+					$("#after").show();
+				} else if (ptimecValue == '时间点前后') {
+					$("#before").show();
+					$("#after").show();
+				}
+			});
+		 */}
+		function getForm() {
+			var data = form.getData(true, false);
+			console.log(data);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		//保存
+		function confirmadd() {
+			grid1.validate();
+			if (grid1.isValid() == false) {
+				var error = grid1.getCellErrors()[0];
+				grid1.beginEditCell(error.record, error.column);
+				epoint.alert(error.errorText, '', null, 'warning');
+				return;
+			}
+			var datas = grid2.getData();
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				if(!(row.table3 == '' && row.table4 == '' && row.otherfilter == '')
+						&& (row.table3 == '' || row.table4 == '' || row.otherfilter == '')){
+					epoint.alert('其他条件配置必须填写完整或去除。', '', null, 'warning');
+					return;
+				}
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData1();
+				setGridData2();
+				var nodeForm = getForm();
+				epoint.execute('save', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+				});
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		//上传成功后的回调
+		function OnFileSuccess(args) {
+			var pid = args.sender.id.substring(0, args.sender.id.length - 8);
+			mini.get(pid).setValue(args.data.extraDatas.name);
+			mini.get(pid + 'attachguid').setValue(args.data.extraDatas.attachguid);
+			if (args.data.extraDatas.errmsg) {
+				mini.alert(args.data.extraDatas.errmsg);
+			}
+			if (args.data.extraDatas.success) {
+				mini.alert(args.data.extraDatas.success);
+			}
+		}
+
+		//selectdatarig
+		function onButtonEdit(pnameid, openurl) {
+			var btnEdit = mini.get('p' + pnameid);
+			epoint.openDialog("多选列表", openurl, function(action) {
+				if (action && action != "close") {
+					btnEdit.setValue(action);
+					btnEdit.setText(action);
+				}
+			}, {
+				width : 650,
+				height : 380,
+			});
+
+		}
+
+		// 绘制新增的按钮
+		var onaddRenderer = function(e) {
+			var row = e.rowIndex;
+			var uid = e.record._uid;
+			//var totalCount = grid.totalCount;
+			if (row == 0) {
+				//epoint.alert(row);
+				return epoint.renderCell(e, "action-icon icon-addcircle", "add");
+			} else {
+				var s = '<a href="javascript:deleteinfo(\'' + uid + '\')" class="action-icon icon-minuscircle"></a>';
+				return s;
+			}
+		};
+		// 新增一行调用的方法
+		function add() {
+			var newRow = {
+				name : "New Row"
+			};
+			grid2.addRow(newRow, grid2count + 1);
+			grid2.beginEditRow(newRow);
+			grid2count++;
+		}
+
+		// 删除一行调用的方法
+		function deleteinfo(row_uid) {
+			grid2count--;
+			var row = grid2.getRowByUID(row_uid);
+			grid2.removeRow(row, true);
+		}
+
+		function changetimetype(e) {
+			var ptimecValue = mini.get("ptimecollisiontype").getValue();
+			if (ptimecValue == '时间相同') {
+				$("#before").hide();
+				$("#after").hide();
+			} else if (ptimecValue == '时间点之前') {
+				$("#before").show();
+				$("#after").hide();
+			} else if (ptimecValue == '时间点之后') {
+				$("#before").hide();
+				$("#after").show();
+			} else if (ptimecValue == '时间点前后') {
+				$("#before").show();
+				$("#after").show();
+			}
+		}
+		
+		
+		function setGridData1(){
+			var datas = grid1.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"table1" : row.table1,
+					"timefilter" : row.timefilter,
+					"table2" : row.table2
+				});
+			}
+			mini.get('dataTable1').setValue(JSON.stringify(array));
+		}
+		
+		function setGridData2(){
+			var datas = grid2.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"table3" : row.table3,
+					"table4" : row.table4,
+					"otherfilter" : row.otherfilter
+				});
+			}
+			mini.get('dataTable2').setValue(JSON.stringify(array));
+		}
+		
+		function onCellValidation(e){
+			if (e.field == "table1" || e.field == "table2") {
+				if (e.value == '') {
+					e.errorText = "时间碰撞字段不能为空!";
+					e.isValid = false;
+				}
+			}
+		}
+	</script>
+</body>

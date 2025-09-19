@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>文档在线编辑</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+.mini-button {
+	margin: 20px 5px 0px;
+	width: 90px;
+}
+
+body {
+	scroll: hidden;
+}
+</style>
+</head>
+<body>
+
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<table border="0"
+			style="width: 100%; height: 100%; overflow-y: hidden;">
+			<tr>
+				<td width="100" valign="top">
+					<div id="tool">
+						<div onclick="Print(true)" class="mini-button">打印</div>
+						<div onclick="PrintPreview()" class="mini-button">打印预览</div>
+						<div id="close" onclick="close()" class="mini-button">关闭</div>
+					</div>
+				</td>
+
+				<td style="height: 100%">
+					<div id="officecontrol" style="height: 100%">
+						<script src="../../../../rest/resource/jsboot"></script>
+						<script src="../sfromeditor/sfromeditor.js"></script>
+						<script>
+							oaeditor.loadcontroljs();
+							oaeditor.loadfunctionjs();
+						</script>
+					</div>
+				</td>
+			</tr>
+		</table>
+
+	</div>
+
+
+	<script>
+    //初始化页面
+    var openUrl, operateUserName;
+	var actionname='epointsfromprint';
+	if(oaeditor.editorMode =="wps"||oaeditor.editorMode =="yozo") {
+		actionname="editOfficenewwpsaction";
+	}
+    epoint.initPage(actionname, null, function (data) {
+        if (data.existsattachguid =="no"){
+             epoint.alert("打印模板不存在！");
+		}else {
+            openUrl = data.openUrl;
+            operateUserName = data.webusername;
+			setTimeout(openAttach, 1);
+            if(Util.getUrlParams().readonly==1){
+                $("#tool").hide();
+            }
+		}
+    })
+
+	//加载控件
+	function openAttach() {
+		var i = Util.getRootPath().lastIndexOf("/");
+		var str = Util.getRootPath().substring(0,Util.getRootPath().lastIndexOf("/",i-1));
+		openUrl=str+openUrl;
+		//openUrl ="http://192.168.107.29:8081/EpointOA9/rest/attachAction.action?cmd=getContent&attachGuid=8c3bb3ec-6520-43d4-995e-c7ec089ee32b";
+		oaeditor.OpenEditOffice(openUrl, "1", operateUserName);
+
+		setFileOpenedOrClosed(true);
+		//设置文档在痕迹模式下编辑
+		SetReviewMode(true);
+		//设置是否显示痕迹
+		setShowRevisions(true);
+		OnComplete3();
+		if ("ActiveXObject" in window&&oaeditor.editorMode == "ntko") {
+			TANGER_OCX_OBJ.ActiveDocument.Saved = true;
+		}
+		if(oaeditor.editorMode == "wps"){
+			//如果是wps模式，
+			//右建 接受修订按钮给禁用
+			DocFrame.ActiveDocument.CommandBars.FindControl(1,1715).Enabled = false;
+			//右建 拒绝修订按钮给禁用
+			DocFrame.ActiveDocument.CommandBars.FindControl(1,1716).Enabled = false;
+
+		}
+
+	}
+
+    //打印预览
+    function PrintPreview() {
+        TANGER_OCX_OBJ.PrintPreview();
+    }
+
+    //打印
+    function Print(isBackground) {
+        var oldOption;
+        try {
+            var objOptions = TANGER_OCX_OBJ.ActiveDocument.Application.Options;
+            oldOption = objOptions.PrintBackground;
+            objOptions.PrintBackground = isBackground;
+        } catch (err) {
+        }
+        TANGER_OCX_OBJ.printout(true);
+        try {
+            var objOptions = TANGER_OCX_OBJ.ActiveDocument.Application.Options;
+            objOptions.PrintBackground = oldOption;
+        } catch (err) {
+        }
+    }
+
+	function close() {
+		epoint.closeDialog();
+	}
+
+</script>
+</body>
+</html>

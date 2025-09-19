@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{@title}</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- 请修改相对路径 -->
+    <script src="{@outsideNum}fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+    <div class="page-loading"></div>
+    
+    <!-- toolbar区域 -->
+    <div class="fui-toolbar">
+    	<div class="btn-group mr10">
+    		 <a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+                  	新增记录
+             </a>
+             <a id="btnDel" class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+                  	删除选定
+             </a>
+    	</div>
+    	<a class="mini-dataexport" id="dataexport" gridId="datagrid"  fileName="查询列表"
+				action="getExportModel" extraId="fui-form"></a>             
+    </div>
+    
+    {@conditionContainer}
+    
+    <!-- 内容区域 -->
+    <div id="fuiContent" class="fui-content">
+    	{@tbConatainer}
+    </div>
+    
+    <!-- 请修改相对路径 -->
+    <script src="{@outsideNum}rest/resource/jsboot"></script>
+    <script>
+    	// 初始化页面
+    	epoint.initPage('{@ActionName}');
+    	
+    	// 绘制行编辑按钮
+	    var onEditRenderer = function(e) {
+	        return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+	    };
+	
+	    // 绘制行查看按钮
+	    var onDetailRenderer = function(e) {
+	        return epoint.renderCell(e, "action-icon icon-search", "openDetail");
+	    };
+    	
+    	// 弹出新增窗口
+	    function openAdd() {
+	        epoint.openDialog('新增记录', "{@PagePath}{@AddPageName}", searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+	    }
+	    
+	    // 弹出修改窗口
+	    function openEdit(id) {
+	        epoint.openDialog('修改记录', "{@PagePath}{@EditPageName}?guid=" + id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+	    }
+	    
+	    // 弹出明细窗口
+	    function openDetail(id) {
+	        epoint.openDialog('详细信息', "{@PagePath}{@DetailPageName}?guid=" + id, {
+						'width' : 1000,
+						'height' : 550
+					});
+	    }
+	    
+	    // 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+    	
+    	function callback(data) {
+    		if(data.msg) {
+    			epoint.alert(data.msg, '', searchData, 'info');
+    		}
+    	}
+    	
+    	// 表格的搜索
+	    function searchData() {
+	        epoint.refresh(['datagrid'{@refreshFuiForm}]);
+	    }
+    </script>
+</body>
+</html>

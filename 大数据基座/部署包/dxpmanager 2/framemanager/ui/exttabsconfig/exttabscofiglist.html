@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>扩展配置页面</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add" iconCls="icon-addcircle">新增扩展配置</a>
+			<a class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}"
+				iconCls="icon-minuscircle">删除配置</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="extname" align="center" headerAlign="center" width="50">名称</div>
+				<div field="exturl" align="center" headerAlign="center">地址</div>
+				<div field="exttype" align="center" headerAlign="center" width="100">扩展类型</div>
+				<div width="20" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content"></div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('exttabsconfiglistaction');
+
+		// 弹出新增窗口
+		function add() {
+			epoint.openDialog('新增记录',
+					"framemanager/ui/exttabsconfig/exttabsconfig", searchData, {
+						'width' : 800,
+						'height' : 350
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		// 删除数据
+		function deleteSelected() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "edit",
+					"rowguid");
+		};
+		// 弹出修改窗口
+		function edit(guid) {
+			var url = 'framemanager/ui/exttabsconfig/exttabsconfig?rowguid=' + guid;
+			epoint.openDialog("修改记录", url, searchData, {
+				'width' : 800,
+				'height' : 350
+			});
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

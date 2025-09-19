@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="background-color: #080c11;width: 100%;height: 100%;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <meta name="renderer" content="webkit"/>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/index.css">
+    <title>新点数据建模平台首页</title>
+    <script src="../../../js/cssboot.js"></script>
+    <style type="text/css">
+        .user-action-item {
+            position: relative;
+            color: #dfe2e3;
+            font-size: 15px;
+            height: 32px;
+            line-height: 32px;
+            padding-left: 36px;
+            padding-right: 14px;
+            max-width: 160px;
+            transition: all .1s ease-out;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            -o-text-overflow: ellipsis
+        }
+    </style>
+</head>
+
+<body>
+<div class="carousel">
+    <video src="images/bg.mp4" autoplay loop muted></video>
+    <header></header>
+    <div class="moveBox">
+        <div class="boxList">
+            <section>
+                <div class="left">
+                    <div class="sexangle date"></div>
+                    <div class="sexangle deploy"></div>
+                </div>
+                <div class="center">
+                    <div class="sexangle modeling">
+                        <!-- 2022.12.08修改 -->
+                        <div class="picture"></div>
+                        <div class="guide"></div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="sexangle model"></div>
+                    <div class="sexangle display"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div class="userOuter">
+        <div class="user"></div>
+        <div class="clickUser">
+            <p class="exit">退出登录</p>
+            <p class="user-action-item change-pwd" title="修改密码">修改密码</p>
+        </div>
+    </div>
+</div>
+
+<script src="js/jquery-1.12.4.min.js"></script>
+<script src="js/rem.js"></script>
+<script src="js/index.js"></script>
+<script src="../../../js/jsboot.js"></script>
+
+<script type="text/javascript">
+    
+    var double = true,
+    guide = true,
+    picture=false,
+    $modeling = $('.modeling');
+
+	epoint.execute('dxpmodelflowaddaction.getModelCenterClass','',function(data){
+		if(data=='both'){
+			 $modeling.addClass('double');
+		}else {
+			 $modeling.addClass(data);
+		}
+		
+	    $('.picture').on('click',function(){
+			// 图形建模
+			epoint.execute('dxpmodelflowaddaction.save2',null,['1'],function(ret){
+			    	if(ret.indexOf("失败")==-1){
+			    		window.open(Util.getRightUrl("modelga/modeldesign/index?flowGuid="+ret));               		
+			   		 }else{
+			   			 epoint.alert(ret);
+			   		 }
+			});
+		});
+		$('.guide').on('click',function(){
+			//向导式建模
+			epoint.execute('dxpmodelflowaddaction.save2',null,['2'],function(ret){
+				if(ret.indexOf("失败")==-1){
+					window.open(Util.getRightUrl("modelga/guidemodel/choose?rowguid="+ret));         		
+				}else{
+		   			 epoint.alert(ret);
+		   		 }
+			});
+		});
+	});
+    
+    
+    var _getData_ = function (method, params) {
+        return Util.ajax({
+            url: epoint.dealRestfulUrl('themedataaction/' + method),
+            data: params
+        });
+    };
+    
+    _getData_('getUserInfo').done(function (data) {
+        $('.user').text(data.name);
+        $('.user').attr("title",data.name);
+    });
+    
+    $('.display').on('click',function(){
+    	var param={};
+    	param.query='sub';
+    	param.code='7798';
+	    _getData_('getMenu',param).done(function (data) {
+	    	 if(data.length>0){
+	    		 window.location.href=Util.getRightUrl("frame/fui/pages/themes/datacenter/datacenter-deploy?code=77980001");
+	    	 }else{
+	    		 epoint.alert('当前用户没有该模块权限','','','error');
+	    	 }
+	    }); 
+    });
+    
+    
+    
+
+</script>
+
+</body>
+
+</html>

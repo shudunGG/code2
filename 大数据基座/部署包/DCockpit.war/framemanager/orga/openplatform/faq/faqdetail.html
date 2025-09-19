@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>常见问题详情</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<div id="notReleased">
+				<a class="mini-button" id="btnRelease" onclick="releaseFaq">发布</a>
+				<a class="mini-button" id="btnSave" onclick="saveFaq">保存</a>
+				<a class="mini-button mini-btn-danger" id="btnDelete" onclick="deleteFaq">删除</a>
+            	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+			</div>
+			<div id="released">
+				<a class="mini-button mini-btn-warning" id="btnWithdraw" onclick="withdrawFaq">撤回</a>
+				<a class="mini-button mini-btn-danger" id="btnDelete" onclick="deleteFaq">删除</a>
+            	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="题干" starred="true">
+					<input id="faqTitle" class="mini-textbox"
+						bind="faq.title" required="true" requiredErrorText="题干不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="问题分类" starred="true">
+					<input id="selectedFaqType" bind="faqType" allowInput="false" width="200px"
+						class="mini-buttonedit" emptyText="" required="true" requiredErrorText="请选择问题分类"
+						onbuttonclick="selectFaqType"
+						selectOnFocus="true" />
+						<!-- 隐藏域 -->
+					<input bind="faq.codeId" id="faqtype" class="mini-hidden" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="正文" starred="true">
+					<textarea bind="faq.content"
+						id="faqContent" class="mini-webeditor" readOnly="false"
+						required="true" requiredErrorText="正文不能为空!"></textarea>
+				</div>
+			</div>
+			<!-- 隐藏域 -->
+			<input bind="contentText" id="contentText" class="mini-hidden" />
+		</div>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('faqdetailaction', '', initCallBack);
+
+		var faqGuid = '';
+		function initCallBack(e){
+			faqGuid = e.faqGuid;
+			var faqStatus = e.faqStatus;
+			
+			if (faqStatus == 1) {
+				// 常见问题已发布
+				hideForReleased();
+				
+			} else if (faqStatus == 2) {
+				// 常见问题未发布
+				hideForNotReleased();
+			}
+			
+
+			mini.get("selectedFaqType").setText(e.faqType);
+			mini.get("selectedFaqType").setValue(e.faqType);
+		}
+		
+		// 当前为已发布状态，隐藏相关内容
+		function hideForReleased(){
+			document.getElementById("released").style.display = '';
+			// 隐藏相关按钮
+			document.getElementById("notReleased").style.display = 'none';
+			// 将题干、问题分类和正文内容设置为不可修改
+			/* mini.get('faqTitle').readOnly = true;
+			mini.get('selectedFaqType').readOnly = true;
+			mini.get('faqContent').readOnly = true;
+			 var faqEditor = mini.get("faqContent").editor;
+			if (faqEditor) {
+				faqEditor.setReadOnly('1');
+			} */
+			
+		}
+		
+		// 当前为未发布状态，隐藏相关内容
+		function hideForNotReleased(){
+			document.getElementById("notReleased").style.display = '';
+			// 隐藏相关按钮
+			document.getElementById("released").style.display = 'none';
+			// 将题干、问题分类和正文内容设置为可修改
+			/* mini.get('faqTitle').readOnly = false;
+			mini.get('selectedFaqType').readOnly = false;
+			mini.get('faqContent').readOnly = false;
+			var faqEditor = mini.get("faqContent").editor;
+			if (faqEditor) {
+				faqEditor.setReadOnly('');
+			} */
+			
+		}
+		
+		// 获取正文文本内容
+		function getContentText(){
+			var faqEditor = mini.get("faqContent").editor;
+			var contentText = faqEditor.getText();
+			mini.get("contentText").setValue(contentText);
+		}
+		
+		// 发布
+		function releaseFaq(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('releaseFaq', '', faqGuid, releaseFaqCallBack);
+			}
+		}
+		
+		// 发布回调
+		function releaseFaqCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					hideForReleased();
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		// 撤回
+		function withdrawFaq(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('withdrawFaq', '', faqGuid, withdrawFaqCallBack);
+			}
+		}
+
+		// 撤回回调
+		function withdrawFaqCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					hideForNotReleased();
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		// 保存常见问题
+		function saveFaq(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('saveFaq', '', faqGuid, saveFaqCallBack);
+			}
+		}
+		
+		// 保存常见问题回调
+		function saveFaqCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		// 删除常见问题
+		function deleteFaq(){
+			epoint.confirm('是否删除该常见问题？', '删除常见问题确认', function () {
+				// 删除常见问题确认回调
+				epoint.execute('deleteFaq', '', faqGuid, function (data) {
+					var msg =data.msg;
+					if (msg) {
+						if(data.success){
+							epoint.closeDialog("success");
+						} else {
+							epoint.alert(msg, '', '', 'warning');
+						}
+					} else {
+						epoint.alert('操作失败', '', '', 'warning');
+					}
+				});
+			}, function () {
+				// 删除公告取消回调
+				
+			})
+		}
+
+		// 选择常见问题分类
+		function selectFaqType(){
+			epoint.openDialog("选择问题分类",
+					'framemanager/orga/openplatform/app/selectcodeitem?codeName=常见问题',
+					dealSelectFaqTypeBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+		// 选择代码项回调
+		function dealSelectFaqTypeBackValue(rtnValue){
+			if (rtnValue && rtnValue != 'close') {
+				// codeid_SPLIT_名称
+				var idAndName = rtnValue.split("_SPLIT_");
+				var id = idAndName[0];
+				var	name = idAndName[1];
+			
+				mini.get("selectedFaqType").setText(name);
+				mini.get("faqtype").setValue(id);
+				
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

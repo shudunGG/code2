@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The new work</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	
+			<!-- toolbar area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="process name">
+							<input bind="processlistcreateinstanceaction.searchString" id="searchString"
+								class="mini-textbox" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="processGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				action="getDefaultModel" showPager="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+					<div type="indexcolumn" headerAlign="center" width="50">
+						serial number
+					</div>
+					<div field="processName" width="100%" headerAlign="center" renderer="onLocationUrl">
+						name
+						<input property="editor" class="mini-textbox" minWidth="50" />
+					</div>
+					<div field="tenantName" width="150" headerAlign="center" align="center">
+						tenant logo
+					</div>
+					<div field="itemName" width="150" headerAlign="center" align="center">
+						category
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../frame/js/jsboot.js"></script>
+	<script>
+		//Initialize the page
+		epoint.initPage("processlistcreateinstanceaction");
+		
+		function onLocationUrl(e){
+			return ' <a class="" href="javascript:openUrl(\'' + e.row['processGuid'] + '\',\'' + e.row['status'] + '\',\'' + e.row['workflowProcessVersion'] + '\')">'+e.value+'</a>';
+		}
+		
+		function openUrl(processGuid,status,workflowProcessVersion){
+			var url = "processcreateinstance?ProcessGuid="
+				+ processGuid;
+			if (status != 10) {
+				epoint.alert("Workflow is not enabled!", '', '', 'warning');
+			}
+			else if (workflowProcessVersion == 'false') {
+				epoint.alert("The workflow version is not enabled!", '', '', 'warning');
+			}
+			else{
+				epoint.openTopDialog('The new workprocess', "frame/pages/epointworkflow/client/" + url, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				});
+			}
+		}
+	
+		// Search for tables
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form']);
+		}
+	</script>
+	
+	</body>
+</html>

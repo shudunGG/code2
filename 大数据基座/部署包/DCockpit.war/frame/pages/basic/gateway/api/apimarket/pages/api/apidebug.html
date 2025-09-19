@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>api调试</title>
+    
+    <script>
+        document.write('<script src="../../js/boot/boot.min.js?' + Math.random() + '"></scr' + 'ipt>');
+    </script>
+    <script>
+        ResBoot.output(['../../js/widgets/chosen/chosen.css',
+            './css/apidebug.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div id="header" class="header hidden"></div>
+    <div class="main">
+        <p class="api-title">API调试</p>
+        <div class="clearfix column-box">
+            <div class="part-model">
+                <div class="left-request" id="left-request">
+                    <!-- <form ></form> -->
+                </div>
+
+            </div>
+            <div class="part-model">
+                <div class="right-info" id="right-info">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="footer" class="footer hidden"></div>
+    <!-- 左侧模板 -->
+    <script type="text/x-tmpl" id="interface-tmpl">
+        <form id="request">
+            <div class="unable top-param">
+                <p class="c-request-title">请求方式</p>
+                <input type="text" class="param-input" readonly="readonly" value="{{requestType}}" name="requestType">
+            </div>
+            <div class="unable top-param">
+                <p class="c-request-title">接口地址</p>
+                <input type="text" class="param-input" readonly="readonly" value="{{requestUrl}}" name="requestUrl">
+            </div>
+            {{#headers}}
+            <div class="slide-area">
+                <p class="slide-icon">Headers</p>
+                <table class="param-table">
+                    <colgroup>
+                        <col width="13%">
+                        <col width="12%">
+                        <col width="15%">
+                        <col width="">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>必填</th>
+                            <th>类型</th>
+                            <th class="table-value">值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#keyList}}
+                        <tr>
+                            <td>{{keyName}}</td>
+                            <td>{{#must}}是{{/must}}{{^must}}否{{/must}}</td>
+                            <td>{{type}}</td>
+                            <td class="table-value">
+                                {{#isJson}}
+                                <textarea class="code-box" spellcheck="false" name="{{renderName}}">{{value}}</textarea> {{/isJson}} {{^isJson}}
+                                <input type="text" value="{{value}}" name="{{renderName}}" /> {{/isJson}}
+                            </td>
+                        </tr>
+                        {{/keyList}}
+                    </tbody>
+                </table>
+            </div>
+            {{/headers}} {{#query}}
+            <div class="slide-area">
+                <p class="slide-icon">Query</p>
+                <table class="param-table">
+                    <colgroup>
+                        <col width="13%">
+                        <col width="12%">
+                        <col width="15%">
+                        <col width="">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>必填</th>
+                            <th>类型</th>
+                            <th class="table-value">值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#keyList}}
+                        <tr>
+                            <td>{{keyName}}</td>
+                            <td>{{#must}}是{{/must}}{{^must}}否{{/must}}</td>
+                            <td>{{type}}</td>
+                            <td class="table-value">
+                                {{#isJson}}
+                                <textarea class="code-box" spellcheck="false" name="{{renderName}}">{{value}}</textarea> {{/isJson}} {{^isJson}}
+                                <input type="text" value="{{value}}" name="{{renderName}}" /> {{/isJson}}
+                            </td>
+                        </tr>
+                        {{/keyList}}
+                    </tbody>
+                </table>
+            </div>
+            {{/query}} {{#body}}
+            <div class="slide-area">
+                <p class="slide-icon">Body</p>
+                {{#isCode}}
+                <textarea class="body-area code-box" spellcheck="false" name="{{keyName}}">{{value}}</textarea> {{/isCode}} {{^isCode}}
+                <table class="param-table">
+                    <colgroup>
+                        <col width="13%">
+                        <col width="12%">
+                        <col width="15%">
+                        <col width="">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>必填</th>
+                            <th>类型</th>
+                            <th class="table-value">值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#keyList}}
+                        <tr>
+                            <td>{{keyName}}</td>
+                            <td>{{#must}}是{{/must}}{{^must}}否{{/must}}</td>
+                            <td>{{type}}</td>
+                            <td class="table-value">
+                                {{#isJson}}
+                                <textarea class="code-box" spellcheck="false" name="{{renderName}}">{{value}}</textarea> {{/isJson}} {{^isJson}}
+                                <input type="text" value="{{value}}" name="{{renderName}}" /> {{/isJson}}
+                            </td>
+                        </tr>
+                        {{/keyList}}
+                    </tbody>
+                </table>
+                {{/isCode}}
+            </div>
+            {{/body}}
+            <div class="check-way">
+                <p class="c-request-title">验证方式</p>
+                <div class="clearfix select-box">
+                    <span class="l left-select">授权方式</span>
+                    <div class="right-way" data-id="{{apiRight}}">{{rightWay}}</div>
+                    <!-- <select class="select-choose" id="right-way">
+                    {{^apiRight}}<option value="01">无授权</option>{{/apiRight}}
+                    {{#apiRight}}
+                    <option value="01">无授权</option>
+                    <option value="02" selected="selected">应用授权</option>
+                    {{/apiRight}}
+                    </select> -->
+                </div>
+                {{#chooseAble}}
+                <div class="clearfix select-box" id="app-choose-box">
+                    <span class="l left-select">应用选择</span>
+                    <select class="select-choose" data-placeholder="请选择" id="app-choose">
+                    <option value=""></option>
+                    {{#app}}
+                    <option value="{{value}}">{{text}}</option>
+                    {{/app}}
+                </select>
+                </div>
+                {{/chooseAble}}
+            </div>
+        </form>
+        <a href="javascript:;" class="send-request">发送请求</a>
+    </script>
+
+    <!-- 右侧模板 -->
+    <script type="text/x-tmpl" id="result-tmpl">
+        <div class="right-result-box">
+            <p class="c-request-title">请求信息</p>
+            <!--   <textarea class="code-box" readonly="readonly">{{requestInfo}}</textarea> -->
+            <pre class="code-box"><code>{{requestInfo}}</code></pre>
+        </div>
+        <div class="right-result-box">
+            <p class="c-request-title">返回内容</p>
+            <pre class="code-box"><code>{{resultInfo}}</code></pre>
+            <!--   <textarea class="code-box" readonly="readonly">{{resultInfo}}</textarea> -->
+        </div>
+    </script>
+    <!-- 配置放于最前 -->
+    <script>
+        Config.ajaxUrls = {
+            //  获取接口信息
+        		getInterface : "apiinfodebugaction/getDebugAppInfo",
+    			getResult : "apiinfodebugaction/getResult"
+        };
+
+        // Config.ajaxUrls.real = {
+        //      //  获取接口信息
+        //     getInterface: "",
+        //     getResult:""
+        // };
+    </script>
+
+    <!-- 输出公共资源 -->
+    <script>
+        ResBoot.output(Config.resExport.js);
+    </script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+        ResBoot.output([
+            '../../js/widgets/layer/layer.js',
+            '../../js/widgets/chosen/chosen.jquery.min.js',
+            '../../js/widgets/jquery.placeholder.min.js',
+            './js/apidebug.js'
+        ]);
+    </script>
+</body>
+
+</html>

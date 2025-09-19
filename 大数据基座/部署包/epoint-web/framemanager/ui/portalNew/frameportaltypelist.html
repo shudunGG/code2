@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>门户类别</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="add">新增分类</a> <a
+			class="mini-button" onclick="saveAll()"> 保存修改 </a> <a
+			class="mini-button" state="danger" onclick="deleted">删除选中</a>
+	</div>
+	<!-- <div class="fui-condition" opened="true">
+		条件区域
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="类型名称" starred="true">
+						<input bind="framePortalType.typename" class="mini-textbox"
+							required="true" requiredErrorText="类型名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input bind="framePortalType.ordernumber" vType="int"
+							class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div> -->
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="typename" name="typename" width="100%">
+					类别名称<input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="50" />
+				</div>
+				<div field="ordernumber" width="150" vtype="int;range:0,99999999">
+					排序号<input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%;" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('frameportaltypelistaction');
+
+		var grid = mini.get("datagrid");
+
+		function add() {
+			var newRow = {
+			//	name : "newattachconfig"
+			};
+			grid.addRow(newRow, 0);
+			grid.beginEditCell(newRow, "typename");
+		}
+
+		var grid = mini.get("datagrid");
+
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+
+		function deleteSelected() {
+			epoint.execute('deleteSelected', '', callback);
+		}
+
+		function deleted() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.showTips('请选择要删除的记录!',  {state : 'warning'});
+			} else {
+				epoint.execute("selectInfo", '', function(data) {
+					if (data && data.msg) {
+						epoint.closeDialog(data.msg+ "不能删除该门户分类！如果要删除，请先将改门户下类别的门户信息删除");
+					} else {
+						epoint.confirm('确认删除?', '', deleteSelected);
+					}
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//回调
+		function callback(args) {
+			if (args) {
+				if (args.success) {
+					epoint.showTips(args.msg, {state : 'success'});
+					searchData();
+				} else if (args.msg) {
+					epoint.showTips(args.msg, {state : 'warning'});
+				}
+			} else {
+				searchData();
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

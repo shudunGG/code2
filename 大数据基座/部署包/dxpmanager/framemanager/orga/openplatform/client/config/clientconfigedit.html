@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>编辑客户端配置</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="btnAdd" onclick="saveConfig">保存</a>
+           	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="配置类型">
+					<div id="globalConfig"  class="mini-checkbox" bind="isGlobalConfig" readOnly="false" text="全局配置" onvaluechanged="onGlobalConfigValueChanged"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="系统类型" starred="true">
+					<div id="clientOsType" bind="clientOsTypeId" class="mini-radiobuttonlist" repeatItems="1" repeatLayout="table" repeatDirection="vertical" 
+					textField="text" valueField="id" required="true" onvaluechanged="onClientOsTypeValueChanged"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="版本号" starred="true">
+					<div id="versionNumberArray" class="mini-combobox" style="width:250px;"  popupWidth="250" textField="text" valueField="id" 
+					    bind="clientVersionGuid" showClose="true" oncloseclick="onVersionNumberCloseClick" 
+					    required="true" requiredErrorText="版本号不能为空!">     
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="配置名称" starred="true">
+					<input id="configName" class="mini-textbox"
+						bind="clientConfig.configName" required="true" vtype="rangeLength:1,100" onvalidation="onConfigNameValidation"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="配置值" starred="true">
+					<input id="configValue" class="mini-textbox"
+						bind="clientConfig.configValue" required="true" vtype="rangeLength:1,500" onvalidation="onConfigValueValidation"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="配置描述">
+					<input id="configDesc" class="mini-textarea" bind="clientConfig.configDesc"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="../../../../../rest/resource/jsboot"></script>
+	
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('clientconfigeditaction', '', initCallBack);
+		
+		// 客户端全版本指定值
+		var versionNumberAllVal = '';
+		// 客户端版本号下拉选择框
+		var versionNumberArrayCombobox = mini.get("versionNumberArray");
+		
+		// 初始化页面回调函数
+		function initCallBack(e){
+			
+			// 设置客户端全版本指定值
+			versionNumberAllVal = e.versionNumberAll;
+			
+			// 初始化客户端系统类型单选按钮
+			mini.get('clientOsType').set({data:e.clientOsTypeListJson});
+			
+			// 设置是否勾选全局配置
+			if (e.isGlobalConfig) {
+				mini.get("globalConfig").setChecked(true);
+				mini.get("clientOsType").disable();
+				mini.get("versionNumberArray").disable();
+			} else {
+				// 非全局配置，设置系统类型选中值
+				mini.get("clientOsType").select(e.clientVersionGuid);
+				// 设置版本号下拉框数据
+				versionNumberArrayCombobox.set({data:e.clientVersionListJson});
+				// 非全局配置，设置版本号下拉框选中值
+				mini.get("versionNumberArray").select(e.clientVersionGuid);
+			}
+			
+		}
+		
+		// 客户端系统类型修改触发操作
+		function onClientOsTypeValueChanged(){
+			epoint.execute('getClientVersionList','clientOsType', getClientVersionListCallBack);
+		}
+		
+		// 获取版本号回调函数
+		function getClientVersionListCallBack(data){
+			if (data) {
+				if(data.success === 'success'){
+					// 清空版本号下拉框数据
+					versionNumberArrayCombobox.setValue('');
+					versionNumberArrayCombobox.setValue('');
+					// 设置版本号下拉框数据
+					versionNumberArrayCombobox.set({data:data.clientVersionListJson});
+				} else {
+					epoint.alert(data.msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		function onGlobalConfigValueChanged(){
+			// 获取选中状态
+			var checked = this.getChecked();
+			
+			// 选中则将系统类型和版本号置为不可操作，且清空对应值
+			// 非选中则将系统类型和版本号置为可操作
+			if (checked) {
+				mini.get("clientOsType").disable();
+				mini.get("versionNumberArray").disable();
+			} else {
+				mini.get("clientOsType").enable();
+				mini.get("versionNumberArray").enable();
+			}
+			
+		}
+		
+		// 版本号下拉框清空事件
+		function onVersionNumberCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+            lastClientVersionSelected = '';
+        }
+
+		// 配置名称校验
+		function onConfigNameValidation(e) {
+            if (e.isValid) {
+                if (e.value == false) {
+                    e.errorText = "配置名称不能为空！";
+                    e.isValid = false;
+                } else if (e.value.length < 1 || e.value.length > 100) {
+                	e.errorText = "配置名称不能超过100个字符！";
+                    e.isValid = false;
+                }
+            }
+        }
+
+		// 配置值校验
+		function onConfigValueValidation(e) {
+            if (e.isValid) {
+                if (e.value == false) {
+                    e.errorText = "配置值不能为空！";
+                    e.isValid = false;
+                } else if (e.value.length < 1 || e.value.length > 500) {
+                	e.errorText = "配置值不能超过500个字符！";
+                    e.isValid = false;
+                }
+            }
+        }
+		
+		// 编辑保存配置
+		function saveConfig(){
+			if (epoint.validate()) {
+				epoint.execute('saveConfig','', saveConfigCallBack);
+			}
+		}
+		
+		// 编辑保存配置回调
+		function saveConfigCallBack(data){
+			var msg = data.msg;
+			if (msg) {
+				if(data.success === 'success'){
+					epoint.alertAndClose(msg, '', null, {backParam:data}, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

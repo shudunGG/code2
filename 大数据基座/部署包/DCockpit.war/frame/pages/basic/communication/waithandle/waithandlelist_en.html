@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Matters to deal with</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- Wait for the tooltip -->
+	<div class="page-loading"></div>
+
+	<!-- Button area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="deleteSelect" id="btnAdd"
+				iconCls="icon-minuscircle">delete selected</a><a class="mini-button"
+				onclick="delay" id="btnDelay" iconCls="icon-addcircle">postpone</a><a
+				class="mini-button" id="btnSure" onclick="sure"
+				iconCls="icon-addcircle">add</a>
+		</div>
+	</div>
+
+	<!-- Condition area -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="time">
+						<input name="dateFrom" id="dateFrom" class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" bind="dateFrom" data-options="{'format': 'yyyy-MM-dd'}"
+							showTime="false" showClearButton="true" /> <span
+							style="width: 12%; text-align: center">to</span> <input
+							name="dateTo" id="dateTo" class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" bind="dateTo" data-options="{'format': 'yyyy-MM-dd'}"
+							showTime="false" showClearButton="true" />
+					</div>
+					<div role="control" label="title">
+						<div class="mini-textbox" bind="waithandlelistaction.txtTitle"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Search button -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="messageitemguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="waithandlelistaction.getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">
+					order
+				</div>
+				<div field="topic" headerAlign="center" width="100%">The title</div>
+				<div field="beiZhu" headerAlign="center" align="center" width="350">step</div>
+				<div field="handelName" headerAlign="center" align="center" width="150">
+					transactor</div>
+				<div field="fromDispName" headerAlign="center" align="center" width="150">
+					operator</div>
+				<div field="generateDate" headerAlign="center" align="center"
+					width="150" data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">sendtime</div>
+				<div field="title" headerAlign="center" visible="false"></div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+        //Initialize the page
+        epoint.initPage ("waithandlelistaction", "", initCallback);
+        
+        //Initializes the callback event
+        function initCallback (data)
+        {
+	        if (data && data.commissionGuid)
+	        {
+		        mini.get ("btnAdd").setVisible (false);
+		        mini.get ("btnDelay").setVisible (false);
+	        }
+	        else
+	        {
+		        mini.get ("btnSure").setVisible (false);
+	        }
+        }
+
+        // Search for tables
+        function searchData ()
+        {
+	        epoint.refresh (['datagrid', 'fui-form']);
+        }
+
+        //delete selectedline
+        function deleteSelect ()
+        {
+	        var datagrid = mini.get ('datagrid');
+	        var ids = datagrid.getSelectedIds ();
+	        if (ids.length > 0)
+	        {
+		        epoint.confirm ("determinedelete selectedRecord?", "", function (action)
+		        {
+			        epoint.execute ("delete", "", [
+				        ids.join (',')
+			        ], function (data)
+			        {
+				        if (data.msg)
+				        {
+					        epoint.alert (data.msg, null, null, 'info');
+					        epoint.refresh (['datagrid', 'fui-form'], '', true);
+				        }
+			        });
+		        });
+	        }
+	        else
+	        {
+		        epoint.alert ("Please choose to delete records!", null, null, 'warning');
+	        }
+        }
+
+        function delay ()
+        {
+	        var datagrid = mini.get ('datagrid');
+	        var ids = datagrid.getSelectedIds ();
+	        if (ids.length > 0)
+	        {
+		        epoint.confirm ("determineTo pigeonhole??", "", function (action)
+		        {
+			        epoint.execute ("delay", "", [
+				        ids.join (',')
+			        ], function (data)
+			        {
+				        if (data.msg)
+				        {
+					        epoint.alert (data.msg, null, null, 'info');
+					        epoint.refresh (['datagrid', 'fui-form'], '', true);
+				        }
+			        });
+		        });
+	        }
+	        else
+	        {
+		        epoint.alert ("Please choose toTo pigeonholeThe record of!", null, null, 'warning');
+	        }
+        }
+
+        //The agent is set
+        function sure ()
+        {
+	        var datagrid = mini.get ('datagrid');
+	        var ids = datagrid.getSelectedIds ();
+	        var titles = datagrid.getColumnData ("title")
+	        if (ids.length > 0)
+	        {
+		        epoint.execute ("addCommision", "", [
+		                ids.join (','), titles.join ('topic_split')
+		        ], function (data)
+		        {
+			        if (data.msg)
+			        {
+				        if (data.success)
+				        {
+					        epoint.alertAndClose (data.msg, null, null, null, 'success');
+				        }
+				        else
+				        {
+					        epoint.alert (data.msg, null, null, 'error');
+				        }
+			        }
+		        });
+	        }
+	        else
+	        {
+		        epoint.alert ("Please choose toDo STH for sbThe record of!", null, null, 'warning');
+	        }
+        }
+        
+     //　Verification of date of control
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.alert("starttimeIs not greater than endtime!", null, null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("The end of thetimeNot less thanstarttime!", null, null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+        //]]>
+	</script>
+
+</body>
+</html>

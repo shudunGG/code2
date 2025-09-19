@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标定义表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="指标分类"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getNormDomainTreeModel"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div id="operate" class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-save" onclick="mutiApply">批量订阅</a>
+			</div>
+		</div>
+
+		<!-- 新增搜索区域 -->
+		<!-- 条件区域 -->
+		<div class="fui-condition" opened="false"
+			primaryControl="search_NormName">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="指标名称">
+							<input id="search_NormName" class="mini-textbox"
+								bind="dataBean.normname" />
+						</div>
+						<div role="control" label="指标类型">
+							<input id="search_NormType" class="mini-combobox" valueField="id"
+								textField="text" action="getNormtypeList"
+								bind="dataBean.normtype" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="是否预警">
+							<input id="search_IsNeedWarning" class="mini-combobox"
+								valueField="id" textField="text"
+								data="[{id:'1',text:'是'},{id:'0',text:'否'}]"
+								bind="dataBean.isneedwarning" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+						<div role="control" label="是否启用">
+							<input id="search_Status" class="mini-combobox" valueField="id"
+								textField="text" data="[{id:'1',text:'启用'},{id:'0',text:'停用'}]"
+								bind="dataBean.status" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="normDomain"
+					bind="dataBean.normDomain" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="normname" headerAlign="center"
+						renderer="onNameRenderer">指标名称</div>
+					<div field="normdomain" headerAlign="center" align="center"
+						width="80">指标分类</div>
+					<div field="configtype" headerAlign="center"
+						data-options="{code:'配置类型'}" align="center" width="80">配置类型</div>
+					<div field="normtypeText" headerAlign="center" align="center"
+						width="80">指标类型</div>
+					<div field="statusText" headerAlign="center" align="center"
+						width="60">状态</div>
+					<div field="isneedwarningText" headerAlign="center" align="center"
+						width="60">是否预警</div>
+					<div field="username" headerAlign="center" align="center"
+						width="60">创建人</div>
+					<div field="ouname" headerAlign="center" align="center"
+						width="60">创建人部门</div>
+					<div field="lastupdatetime" name="lastupdatetime"
+						headerAlign="center" align="center"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+						dateFormat="yyyy-MM-dd HH:mm:ss" width="140">上次更新时间</div>
+					<div field="ordernum" headerAlign="center" align="center"
+						width="40">排序号</div>
+					<!-- 隐藏列 -->
+					<!-- 操作列 -->
+					<div name="operate" type="actioncolumn" headerAlign="center"
+						align="center">
+						<span renderer="hideapply" type="action" icon="icon-gear"
+							onclick="apply">申请</span> <span type="action" icon="icon-search"
+							onclick="openResult" renderer="hideResult">指标结果</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get('datagrid');
+
+		var isAdmin;
+		// 初始化页面
+		epoint.initPage('cockpitnormapplylistaction', null, function(data) {
+			if (data.isAdmin) {
+				isAdmin = data.isAdmin;
+			}
+		});
+
+		// 打开指标任务配置
+		function apply(e) {
+			epoint
+					.openDialog(
+							'指标申请',
+							"frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=97d99aa5-a333-4465-bdeb-d19d81624f83&normguid="
+									+ e.rowguid, null, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		// 打开结果
+		function openResult(e) {
+			epoint.openDialog('指标结果',
+					"frame/pages/eianalysemis/cockpit/cockpitjoblog/cockpitnormjobloglist?guid="
+							+ e.rowguid, null, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('normDomain').setValue(id === 'root' ? "" : id);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		// 弹出明细窗口
+		function openDetail(guid) {
+			epoint.openDialog('详细信息',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormdetail?guid="
+							+ guid, searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function hideResult(e) {
+			if (!isAdmin) {
+				if (e.record.isopen === "true") {
+				} else {
+					if (!e.record.isApply) {
+						e.icon.visible = false;
+					}
+				}
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function hideapply(e) {
+			if (isAdmin) {
+				e.icon.visible = false;
+			} else {
+				if (e.record.isopen === "true") {
+					e.icon.visible = false;
+				} else {
+					if (e.record.isApply) {
+						e.icon.visible = false;
+					}
+				}
+
+			}
+		}
+
+		function mutiApply() {
+
+		}
+	</script>
+</body>
+</html>

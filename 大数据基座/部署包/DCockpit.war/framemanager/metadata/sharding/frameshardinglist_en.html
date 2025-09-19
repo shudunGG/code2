@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>Depots table</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord"
+				iconCls="icon-save">new configuration </a> <a class="mini-button"
+				iconCls="icon-save" onclick="saveAll()">save changes</a> <a id="btnDel"
+				class="mini-button"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}"
+				iconCls="icon-minuscircle"> delete Selected </a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">precautions</a>
+	</div>
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				  Initialization: contains2First step, according to the rules Table, and then To import the source table data into the table。If a table is established by oneself, please ensure that these Rule table In the No data。
+			</span>
+		</p>
+		<p style="text-indent: 6em;">
+			<span class="text-danger">
+				  More than5wThe data please according to the established rules Imported into each table or depotsIn the。
+			</span>
+		</p>
+	</div>
+
+
+	<!-- conditions area -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="source table name">
+						<input id="sourceTable" class="mini-textbox"
+							bind="sourceTable" />
+					</div>
+					<div role="control" label="table depots type" >
+							<input id="shardingType" bind="shardingType"
+							action="getTypeList" allowInput="false" autoLoad="true" onvaluechanged="searchData"
+							class="mini-combobox mr10" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- content area -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">order</div>
+				<div field="sourcetable" headerAlign="center" width="200" align="center">
+					source table name</div>
+				<div field="showshardingtype" headerAlign="center" width="80" align="center">
+					type</div>		
+				<div field="showshardingkey" headerAlign="center" width="100%" align="center">
+					points(slice/library)key</div>
+				<div field="showshardinginter" headerAlign="center" width="200" align="center">
+					points(slice/library)strategy</div>	
+				<div field="orderNumber" width="100" align="right"
+					headerAlign="center" vtype="int" allowSort="true">
+					roworder 
+					<input property="editor" class="mini-textbox" maxLength="8"
+						inputStyle="text-align:right" style="width: 100%;" />
+				</div>
+				<div field="isuse" width="110" align="center"
+					type="checkboxcolumn" truevalue="1" falsevalue="0"
+					headerAlign="center">To enable the</div>
+				<div width="110" align="center" headerAlign="center"
+					renderer="onInitRenderer">Initialize the</div>
+				<div width="50" align="center" headerAlign="center"
+					renderer="onEditRenderer">edit</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// Initialize thepage
+		epoint.initPage('frameshardinglistaction');
+
+		//Initialize the
+		function initSharding(rowguid){
+			epoint.execute('initSharding','','['+rowguid+']',msgCallBack);
+		}
+		
+		// Table object
+		var grid = mini.get("datagrid");
+		
+		//drawInitialize thebutton
+		var onInitRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "initSharding","rowguid");
+		};
+
+		// drawedit
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit","rowguid");
+		};
+
+		// The new popup Windows
+		function openAdd() {
+			epoint.openDialog('newDepots tableconfiguration',
+					"framemanager/metadata/sharding/frameshardingadd",
+					function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// The pop-upeditwindow
+		function openEdit(id) {
+			epoint.openDialog('editDepots tableconfiguration',
+					"framemanager/metadata/sharding/frameshardingedit?guid="
+							+ id, function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+							}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// Back off to remind
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+					},'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		
+		// save
+		function saveAll() {
+			grid.validate();
+            if (grid.isValid() == false) {
+                var error = grid.getCellErrors()[0];
+                grid.beginEditCell(error.record, error.column);
+                return;
+            }
+            epoint.execute('saveAll', '', msgCallBack);
+		}
+
+		// delete data
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', msgCallBack);
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

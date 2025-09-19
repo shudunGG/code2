@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where table_schema = database() and table_name = 'epointsform_extensible_control' and column_name = 'extendfieldtwo'

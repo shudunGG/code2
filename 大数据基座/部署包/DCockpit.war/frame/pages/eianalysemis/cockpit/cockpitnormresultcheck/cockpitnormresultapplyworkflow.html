@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标结果审核流程</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="uc-handlecontrols" id="handlecontrols"
+			action="handlecontrolsaction.handleCtrl" style="width: 100%"></div>
+	</div>
+	<div class="fui-content">
+		<!-- 隐藏按钮id不能修改 -->
+		<div class="hidden">
+			<a class="mini-button" id="btnSaveFrom" onclick="saveFrom();">保存</a>
+			<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+		</div>
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="指标基础信息"></div>
+				<div role="body">
+					<!-- 表单布局 -->
+					<div class="fui-form" id="fui-form">
+						<br />
+						<div role="form">
+						<div role="row">
+					<div role="control" label="指标标识">
+						<div class="mini-outputtext" bind="cockpitNorm.rowguid"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标分类">
+						<div class="mini-outputtext" bind="cockpitNorm.setName"></div>
+					</div>
+					<div role="control" label="apicode">
+						<div class="mini-outputtext" bind="cockpitNorm.apicode"></div>
+					</div>
+				</div>
+							<div role="row">
+								<div role="control" label="指标名称">
+									<input class="mini-outputtext" bind="cockpitNorm.normname"
+										id="normname" />
+								</div>
+								<div role="control" label="指标类型">
+									<input class="mini-outputtext" bind="cockpitNorm.normtypetext"
+										id="normtype" />
+								</div>
+							</div>
+							<!-- <div role="row">
+								<div role="control" label="结果生成时间">
+									<input id="createDate" class="mini-outputtext"
+										bind="dataBean.createDate"
+										data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" />
+								</div>
+								<div role="control"></div>
+							</div> -->
+							<div role="row">
+								<div role="control" label="是否预警">
+									<div bind="cockpitNorm.isneedwarning" class="mini-outputtext"></div>
+								</div>
+								<div role="control" label="是否启用">
+									<div class="mini-outputtext" bind="cockpitNorm.status"></div>
+								</div>
+							</div>
+							<div role="row" id="zblx">
+								<div role="control" label="配置类型">
+									<div bind="cockpitNorm.configtype" class="mini-outputtext"></div>
+								</div>
+								<div id="groupTypeDiv" role="control" label="聚合方式">
+									<div class="mini-outputtext" bind="cockpitNorm.groupbytype"></div>
+								</div>
+							</div>
+							<div role="row" id="datasource">
+								<div role="control" label="来源库">
+									<input class="mini-outputtext" bind="cockpitNorm.datasourceid" />
+								</div>
+							</div>
+							<div class="commonType">
+								<div role="row">
+									<div role="control" label="数据来源表">
+										<div class="mini-outputtext"
+											bind="cockpitNorm.DataTableNameen"></div>
+									</div>
+									<div role="control" label="来源字段">
+										<div class="mini-outputtext"
+											bind="cockpitNorm.datafieldnameen"></div>
+									</div>
+								</div>
+								<div id="dimDiv">
+									<!-- <div role="row">
+										<div role="control" label="维度字段">
+											<div class="mini-outputtext" id="dimfields"></div>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="维表来源表">
+											<div class="mini-outputtext"
+												bind="cockpitNorm.DimTableNameen"></div>
+										</div>
+										<div role="control" label="维度值字段">
+											<div class="mini-outputtext" id="dimvalue"></div>
+										</div>
+										<div role="control" label="维表显示字段">
+											<div class="mini-outputtext"
+												bind="cockpitNorm.dimfieldnameen"></div>
+										</div>
+									</div> -->
+									<div role="row">
+										<div role="control" label="维度过滤条件">
+											<div style="border: 1px solid #ccc;">
+												<div id="datagrid2" action="getRelatelistModel"
+													class="mini-datagrid" allowResize="true" idField="id"
+													showPager="false">
+													<div property="columns">
+														<div field="DataFieldGuid" displayField="DataFieldNameEN"
+															width="100" align="center" headerAlign="center">
+															数据表字段 <input property="editor" class="mini-combobox"
+																valueField="value" textField="text" style="width: 100%;"
+																required="true" requiredErrorText="数据表字段不能为空"
+																emptyText="请选择...">
+														</div>
+														<div field="DimFilterFieldNameEN"
+															displayField="DimFilterFieldNameEN" width="100"
+															align="center" headerAlign="center">
+															维表过滤字段 <input property="editor" class="mini-combobox"
+																valueField="value" textField="text" style="width: 100%;"
+																emptyText="请选择" allowInput="true">
+														</div>
+														<div field="DimFilterRelateType" width="80" align="center"
+															headerAlign="center">
+															组合方式 <input property="editor" class="mini-outputtext"
+																name="DimFilterType" value="="
+																style="width: 100%; text-align: center;" />
+														</div>
+														<div field="DimFilterValue" width="100" align="center"
+															headerAlign="center">
+															维表过滤值 <input property="editor" class="mini-textbox"
+																valueField="value" textField="text" style="width: 100%;"
+																emptyText="请填写过滤值" allowInput="true">
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div role="row" class="filterConfig">
+									<div role="control" label="过滤条件">
+										<div style="border: 1px solid #ccc;">
+											<div id="datagrid1" action="getFilterlistModel"
+												class="mini-datagrid" allowResize="true" idField="id"
+												showPager="false">
+												<div property="columns">
+													<div field="DataFieldGuid" displayField="DataFieldNameEN"
+														width="100" align="center" headerAlign="center">
+														数据表字段 <input property="editor" class="mini-combobox"
+															valueField="value" textField="text" style="width: 100%;"
+															required="true" requiredErrorText="数据表字段不能为空"
+															emptyText="请选择...">
+													</div>
+													<!--ComboBox：本地数据-->
+													<div field="FilterType" width="100" align="center"
+														headerAlign="center">
+														过滤条件 <input property="editor" class="mini-combobox"
+															style="width: 100%;" data="fConditonDatas"
+															required="true" requiredErrorText="过滤条件不能为空"
+															emptyText="请选择..." />
+													</div>
+													<div field="FilterValue" width="120" align="center"
+														headerAlign="center">
+														过滤值 <input property="editor" class="mini-textbox"
+															style="width: 100%;" required="true"
+															requiredErrorText="过滤值不能为空" emptyText="请输入..." />
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div role="row" id="timeDiv">
+									<div role="control" label="时间字段">
+										<div class="mini-outputtext"
+											bind="cockpitNorm.timefieldnameen" id="timefieldguid"></div>
+									</div>
+									<!-- <div role="control" label="时间窗口" id="timewindowCon">
+										<div class="mini-outputtext" bind="cockpitNorm.timewindow"
+											id="timewindow"></div>
+									</div> -->
+								</div>
+								<!-- <div role="row" id="timeDiv1">
+									<div role="control" label="统计周期">
+										<div class="mini-outputtext"
+											bind="cockpitNorm.statisticsCycle" id="statisticsCycle"></div>
+									</div>
+									<div role="control" label="是否累加" id="isCumsumCon">
+										<div class="mini-outputtext" bind="cockpitNorm.isCumsum"
+											id="isCumsum"></div>
+									</div>
+								</div> -->
+								<div role="row" class="resultCountConfig" id="resCountConfig">
+									<div role="control" label="结果数量" id="resCount">
+										<div class="mini-outputtext" bind="cockpitNorm.resultCount"
+											id="resultCount"></div>
+									</div>
+									<!-- <div role="control" label="排序方式" id="sortOrderCon">
+										<div class="mini-outputtext" bind="cockpitNorm.sortOrderText"
+											id="sortOrder"></div>
+									</div> -->
+								</div>
+								<!-- <div role="row" id="sortColumn">
+									<div role="control" label="排序字段">
+										<div class="mini-outputtext" bind="cockpitNorm.sortColumn"></div>
+									</div>
+								</div> -->
+							</div>
+
+							<!-- <div role="row" id="generatesql">
+								<div role="control" label="SQL语句">
+									<div class="mini-outputtext" bind="cockpitNorm.generatesql"></div>
+								</div>
+							</div>
+							<div class="api">
+								<div role="row">
+									<div role="control" label="api信息">
+										<div class="mini-outputtext" id="apiinfo"></div>
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="api参数">
+										<div class="mini-outputtext" bind="cockpitNorm.apiparams"></div>
+									</div>
+									<div role="control" label="api过滤器">
+										<div class="mini-outputtext" bind="cockpitNorm.apifilter"></div>
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="试调用结果">
+										<div class="mini-outputtext" bind="cockpitNorm.apiresult"></div>
+									</div>
+								</div>
+							</div> -->
+							<div role="row">
+								<div role="control" label="数据责任部门">
+									<input class="mini-outputtext" bind="cockpitNorm.liableou"
+										id="liableOu" />
+								</div>
+								<div role="control" label="数据责任人">
+									<input class="mini-outputtext" bind="cockpitNorm.liableperson"
+										id="liablePer" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="运营人员">
+									<input class="mini-outputtext" bind="dataBean.operationperson"
+										id="operationperson" />
+								</div>
+								<div role="control">
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="单位">
+									<div class="mini-outputtext" bind="cockpitNorm.unit"></div>
+								</div>
+								<div role="control" label="排序号">
+									<div class="mini-outputtext" bind="cockpitNorm.ordernum"></div>
+								</div>
+								
+							</div>
+							<div role="row">
+							<div role="control" label="备注">
+									<div class="mini-outputtext" bind="cockpitNorm.remark"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="指标结果"></div>
+				<div role="body">
+					<div class="fui-toolbar" id="toolbar">
+						<div class="btn-group mr10">
+							<div class="mini-button" id="saveResult" onclick="saveResult">保存结果</div>
+						</div>
+					</div>
+					<div class="form-wrap">
+						<div id="datagrid" class="mini-datagrid" idField="rowguid"
+							action="getDataGridData" sortOrder="desc" showPager="true"
+							style="width: 100%;" allowResize="true" multiSelect="true"
+							allowCellEdit="true" allowCellSelect="true"
+							editNextOnEnterKey="true" editNextRowCell="true">
+							<div property="columns"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script
+		src="../../../../../frame/pages/epointworkflow/js/workflowjsboot.js"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		var checkGuid = Util.getUrlParams('checkGuid');
+		epoint.initPage('cockpitnormresultapplyworkflowaction', null, function(
+				data) {
+			if (data.columns) {
+				createGrid(data.columns);
+			}
+			if(data.msg){
+				epoint.alert(data.msg);
+			}
+		});
+
+		var grid = mini.get("datagrid");
+		function createGrid(columns) {
+			for (var i = 0; i < columns.length; i++) {
+				if (columns[i].header != '序') {
+					columns[i].editor = {
+						type : 'textbox'
+					}
+				}
+			}
+			grid.setColumns(columns);
+		}
+
+		function saveFrom() {
+			if (epoint.validate()) {
+				epoint.execute('saveForm', [ 'fui-form', 'datagrid' ],
+						newCallback);
+			} else {
+				ShowTdOperate(true);
+			}
+		}
+
+		function submit() {
+			var data = grid.getChanges();
+			console.log(data);
+			if (data.length > 0) {
+				epoint.confirm("修改的指标结果未保存，是否需要保存", '保存提示', function() {
+					epoint.execute('saveResult', 'datagrid', function(data) {
+						if (epoint.validate()) {
+							epoint.execute('submit', '', newCallback);
+						} else {
+							ShowTdOperate(true);
+						}
+					});
+				}, function() {
+					epoint.refresh('@all');
+					ShowTdOperate(true);
+				});
+			} else {
+				if (epoint.validate()) {
+					epoint.execute('submit', '', newCallback);
+				} else {
+					ShowTdOperate(true);
+				}
+			}
+
+		}
+
+		function newCallback(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				ShowTdOperate(true);
+			} else {
+				HeaderSubmit();
+			}
+		}
+
+		function saveResult() {
+			epoint.execute('saveResult', 'datagrid', function(data) {
+				if(data.error){
+					epoint.alert(data.error);
+				}
+				else{
+					if (data.msg) {
+						epoint.alert(data.msg);
+					}
+				}
+				epoint.refresh('datagrid');
+			});
+		}
+	</script>
+</body>
+
+</html>

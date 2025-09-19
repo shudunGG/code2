@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择角色</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" id="addNew" onclick="saveAndClose">确定选择</a>
+            <a class="mini-button" id="closeSet" onclick="epoint.closeDialog">取消选择</a>
+        </div>
+    </div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="tree" class="mini-tabstreeselect" action="getTreeModel" checkRecursive="true" filterMode="server" loadWhenChecked="true"  selectedPanelTitle="已选角色" canCheckParent="true">
+			<div tabText="角色列表"></div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		//初始化请求
+    	epoint.initPage('settinguserroleaction', '', function(e){
+    		if (e.soa) {
+    			mini.get('addNew').setVisible(false);
+				mini.get('closeSet').setVisible(false);
+				epoint.alertAndClose(e.soa, '', null, null, 'info');
+			}
+			if (e.threemanage) {
+				epoint.alertAndClose(e.threemanage, '', null, null, 'info');
+			}
+    	});
+		
+    	function saveAndClose() {
+    		epoint.execute('save', 'tree', saveCallback);
+    	}
+    	
+    	//回调
+    	function saveCallback(data){
+    		if (data.success) {
+    			epoint.alert('保存成功', '', function(){
+	    			epoint.closeDialog();
+    			}, 'success');
+    		}
+    		else{
+    			epoint.alert(data.msg, '', null, 'warning');
+    		}
+    	}
+    	//]]>
+	</script>
+
+
+</body>
+</html>

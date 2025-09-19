@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片关联列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增关联</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要取消关联的记录!');} else {epoint.confirm('确认要取消关联吗?','',deleteSelect);}"> 取消关联 </a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="卡片名称">
+						<input class="mini-textbox" bind="dataBean.CardName" />
+					</div>
+				</div>
+			</div>
+			<!-- 添加隐藏域，用于树与表格的联动 -->
+			<input class="mini-hidden" id="CateCode" bind="dataBean.CateCode" />
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="width: 100%; height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="30" headerAlign="center" align="center">序</div>
+				<div field="catename" headerAlign="center" align="center" renderer="onNameRenderer" width="200">版块分类</div>
+				<div field="cardname" headerAlign="center" align="center" renderer="onNameRenderer" width="200">卡片名称</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 版块标识
+		var plateguid = Util.getUrlParams("guid");
+		var categuid = Util.getUrlParams("categuid");
+		// 初始化页面
+		epoint.initPage('cockpitplatecatecardlistaction');
+
+		// 弹出卡片列表
+		function openAdd() {
+			if (!categuid) {
+				epoint.alert("无分类标识！");
+				return;
+			}
+			epoint.openDialog('卡片列表', "frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardlist?categuid=" + categuid, searchData, {
+				'width' : 1000,
+				'height' : 500
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', searchData);
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>卡片新增</title>
+    <script src="../../../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            '../css/common.css',
+            './css/card_add.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+
+    <!-- 页面内容区域 -->
+    <div class="fui-content">
+        <!-- 手风琴布局 -->
+        <div class="fui-accordions">
+            <div role="accordion">
+                <div role="head" title="基础信息">
+                </div>
+                <div role="body">
+                    <!-- 表单布局 -->
+                    <div class="fui-form" data-vertical="true">
+                        <div role="form">
+                            <div role="row">
+                                <div role="control" label="卡片名称" id="test" starred="true">
+                                    <div class="mini-textbox" value="" showTitle="false" emptyText="请输入"
+                                        bind="dataBean.cardName" required="true">
+                                    </div>
+                                </div>
+                                <div role="control" label="APICode">
+                                    <div class="mini-textbox l" bind="dataBean.apiCode" emptyText="提交后自动生成" showTitle="false"
+                                        readonly="true"></div>
+                                </div>
+                            </div>
+                            <div role="row">
+                                <div role="control" label="卡片模板" starred="true">
+                                    <input class="mini-buttonedit" id="model" bind="dataBean.cardModelGuid" emptyText="请选择" onbuttonclick="onSelectModel"
+                                        required="true" selectOnFocus="true" />
+                                </div>
+                                <div role="control" label="是否需要审核" starred="true">
+                                    <div bind="dataBean.process" class="mini-radiobuttonlist" repeatLayout="table"
+                                        data="[{id:1,text:'需要'},{id:0,text:'不需要'}]" textField="text" valueField="id"
+                                        required="true"></div>
+                                </div>
+                            </div>
+                            <div role="row">
+                                <div role="control" label="卡片简述">
+                                    <div class="mini-textarea"  bind="dataBean.remark" emptyText="请输入" showTitle="false"
+                                        style="height:90px" vtype="maxLength:9999;"></div>
+                                </div>
+                            </div>
+                            <div role="row">
+                                <div role="control" label="负责人" starred="true">
+                                    <div class="mini-textbox" bind="dataBean.liableperson" emptyText="请输入" showTitle="false" required="true" requiredErrorText="负责人不能为空">
+                                    </div>
+                                </div>
+                                <div role="control" label="联系电话" starred="true">
+                                    <div class="mini-textbox" bind="dataBean.telephone" emptyText="请输入" showTitle="false" required="true" requiredErrorText="联系电话不能为空"
+                                    	vtype="mobile">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="accordion">
+                <div role="head" title="数据绑定">
+                </div>
+                <div role="body">
+                    <div class="preview clearfix">
+                        <div class="preview-left l">
+                            <div class="phone">
+                                <div class="phone-content" id="phone-content">
+                                    <img class="screen" src="./images/black2.png" height="400" width="250" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-right r">
+                            <div class="right-content">
+                                <div class="operate nodata" id="operate">
+                                
+                                	<!-- <div class="container" id="container" style="width: 100%; height: 100%; display:none;"></div> -->
+                                    <div class="operate-cover">
+                                        <div class="cover-content">
+                                            <p class="cover-text">点击左侧需配置内容</p>
+                                            <p class="cover-text">在此处进行文本修改和数据绑定</p>
+                                        </div>
+                                    </div>
+                                	<div id="title" style="display:none;">
+                                		<div class="mini-textarea" id="titleText" emptyText="请输入卡片标题" showTitle="false"
+                                        	style="height:200px; width:100%" vtype="maxLength:9999;"></div>
+                                	</div>
+                                	<div id="describe" style="display:none;">
+                                		<div class="mini-textarea" id="describeText" emptyText="请输入卡片描述" showTitle="false"
+                                        	style="height:200px; width:100%" vtype="maxLength:9999;"></div>
+                                	</div>
+                                	<div id="normconf" style="display:none;">
+										<!-- 表格 -->
+										<div id="datagrid" name="datagrid" class="mini-datagrid"
+											idField="rowguid" multiSelect="true" action="getDataGridData"
+											style="width: 100%; height: auto;" allowResize="true"
+											showPager="false" allowCellValid="true" allowCellEdit="true"
+											allowCellSelect="true" editNextOnEnterKey="true"
+											editNextRowCell="true">
+											<div property="columns">
+												<div type="indexcolumn" headerAlign="center" width="20">序</div>
+												<div field="fieldname">说明</div>
+												<div field="edescribe">映射</div>
+												<div field="statusText">状态</div>
+											</div>
+										</div>
+										<div style="display:none;">
+											<input class="mini-textbox" id="unitEditor" />
+											<input id="selectboxEditor" class="mini-buttonedit" onbuttonclick="selectNorm"/>
+									        <input class="mini-combobox" id="fieldEditor"/> 
+									        <!-- <input class="mini-buttonedit" id="fieldEditor" onbuttonclick="selectField"/> -->
+									    </div>
+                                	</div>
+								</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- 底部toolbar区域 -->
+    <div class="fui-toolbar-bottom">
+        <div class="btn-area">
+        	<a class="mini-button mini-btn-info" onclick="view" id="view">预览</a>
+        	<a class="mini-button mini-btn-info" onclick="edit" id="edit" style="display:none;">返回编辑</a>
+            <a class="mini-button mini-btn-info" onclick="save">保存</a>
+            <a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+        </div>
+    </div>
+
+
+
+    <script type="text/html" id="phone-content-tmpl">
+        <img class="screen" src="{{img}}" />
+        {{#cardData}}
+        <a class="screen_click" href="javascript:;" style="top:{{top}};left:{{left}};width:{{width}};height:{{height}};" data-guid="{{rowguid}}"></a>
+        {{/cardData}}
+    </script>
+
+    <!-- 接口配置 -->
+    <script>
+	    function getRootPath(){
+	        var curWwwPath = window.document.location.href;
+	        var pathName = window.document.location.pathname;
+	        var pos = curWwwPath.indexOf(pathName);
+	        var localhostPaht = curWwwPath.substring(0, pos);
+	        var projectName = pathName
+	            .substring(0, pathName.substr(1).indexOf('/') + 1);
+	        return (localhostPaht + projectName);
+	    }
+        window.pageConfig = {
+            //getImgDataUrl:'getImgDataUrl',
+            getImgDataUrl:getRootPath()+"/rest/cockpitcardtmpl/getImgDataUrl",
+            // 方法,
+            // 点击卡片模板选择按钮
+            /* onCardSelect: function (guid) {
+                //alert('弹出选择'+guid);
+                $('#normconf').css('display', 'block');
+            } */
+        }
+    </script>
+
+    <script src="../../../../../fui/js/jsboot.js"></script>
+
+    <!-- 模拟数据 -->
+    <script src="../_test/mock.min.js"></script>
+    <!-- <script src="./_test/test_card_add.js"></script> -->
+    <script>
+        SrcBoot.output([
+            '../js/lib/clipboard.min.js',
+            '../js/util.js',
+            './js/card_add.js',
+        ]);
+    </script>
+
+    <script>
+        Util.hidePageLoading();
+    </script>
+    <script>
+    	var cardGuid = Util.getUrlParams('cardGuid');
+    	var grid = mini.get("datagrid");
+    	var modelguid;
+		// 初始化页面
+		epoint.initPage('cardaddaction', null, function(data) {
+			if(data.modelName){
+				mini.get('model').setText(data.modelName);
+			}
+			if(!cardGuid){
+				cardGuid = data.cardGuid;
+			}
+			else{
+				mini.get('model').setEnabled(false);
+			}
+			if(data.modelguid){
+				window.getImgData(data.modelguid);
+				modelguid = data.modelguid;
+			}
+		}); 
+		
+		function onSelectModel(){
+			epoint.openTopDialog("选择模板",
+					'frame/pages/eianalysemis/cockpit/mobile_cockpit/cockpitmobilecardtemplatelist',
+					function(data) {
+						if (data != "close") {
+							modelguid = data;
+							epoint.execute('getModelName', '', [ modelguid ], function(data){
+								mini.get('model').setValue(modelguid);
+								mini.get('model').setText(data.modelName);
+								window.getImgData(modelguid);
+							});
+						}
+					}, {
+						'width' : 1200,
+						'height' : 800
+					});
+		} 
+		
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+		
+		var $phoneContent = $('#phone-content');
+		
+		
+		// 点击图片区域
+	    $phoneContent.on('click', '.screen_click', function () {
+	        var $this = $(this),
+	        guid = $this.data('guid');
+	        epoint.execute('getCardDataInfo', '', [ guid ], function(data){
+	        	$('.operate-cover').css('display', 'none');
+	        	if(data.type){
+	        		var type = data.type;
+	        		if(type=='0'){
+	        			$('#container').css('display', 'none');
+	    	        	$('#normconf').css('display', 'block');
+	    	        	$('#title').css('display', 'none');
+	        			$('#describe').css('display', 'none');
+	    	        	searchData();
+	        		}
+	        		else if(type == '1'){
+	        			$('#container').css('display', 'none');
+	        			$('#describe').css('display', 'block');
+	        			$('#normconf').css('display', 'none');
+	        			$('#title').css('display', 'none');
+	        			var describeText = mini.get('describeText').getValue();
+	        			if(describeText==''){
+	        				mini.get('describeText').setValue(data.describe);
+	        			}
+	        		}
+	        		else if(type == '2'){
+	        			$('#container').css('display', 'none');
+	        			$('#title').css('display', 'block');
+	        			$('#normconf').css('display', 'none');
+	        			$('#describe').css('display', 'none');
+	        			var titleText = mini.get('titleText').getValue();
+	        			if(titleText==''){
+	        				mini.get('titleText').setValue(data.title);
+	        			}
+	        		}
+	        	}
+	        	
+	        });
+	    });
+		
+	    function getEditor(record){
+            var id = record.editor +"Editor";
+            var editor = mini.get(id);
+            return editor;
+        }
+		
+	    grid.on("cellbeginedit", function (e) {
+	    	if(e.field == 'edescribe'){
+	    		if(e.record.type=='norm'){
+	    			e.editor = mini.get("selectboxEditor");
+	    			e.column.editor = mini.get("selectboxEditor"); 
+	    		}
+	    		else if(e.record.type=='field'){
+	    			e.editor = mini.get("fieldEditor");
+	    			e.column.editor = mini.get("fieldEditor"); 
+	    		}
+	    		else if(e.record.type=='normTypeText'){
+	    			e.editor = null;
+	    			e.column.editor = null; 
+	    		}
+	    		else if(e.record.type=='normUnit'){
+	    			e.editor = mini.get("unitEditor");
+	    			e.column.editor = mini.get("unitEditor"); 
+	    		}
+	    	}
+        });
+	    
+	    grid.on("drawcell", function (e) {
+            if (e.field == "edescribe") {
+                var record = e.record;
+                e.cellHtml = !mini.isNull(record.text) ? record.text : record.edescribe;
+            }
+        });
+	    
+	    grid.on("cellcommitedit", function (e) {
+            var record = e.record;
+            var valueStr = "";
+            if(record.type=='normUnit'){
+            	valueStr = mini.get('unitEditor').getValue();
+            	epoint.execute('saveUnit', '', [ record.rowguid, valueStr ], function(data){
+            		epoint.refresh([ 'datagrid']);
+            	});
+            }
+            else if(record.type=='field'){
+            	valueStr = mini.get('fieldEditor').getValue();
+            	epoint.execute('saveField', '', [ record.rowguid, valueStr ], function(data){
+            		epoint.refresh([ 'datagrid' ]);
+            	});
+            }
+        });
+	  	
+	    
+	  	//选择指标
+		function selectNorm(e) {
+			var row = grid.getEditorOwnerRow(e.sender);
+			epoint.openDialog("关联指标", "./newchoosenormlist?rowguid=" +row.rowguid
+					+ "&normtype=" + row.normtype, function(data){
+				epoint.refresh([ 'datagrid']); 
+				epoint.execute('getMapList', '', [ row.rowguid ], function(jsonData){
+					var json = [];
+				    for(i=0; i < jsonData.length; i++){
+				    	var row = {};
+				    	row.id = jsonData[i].value;
+				    	row.text = jsonData[i].text;
+				    	json.push(row);
+				    }
+					mini.get("fieldEditor").setData(json); 
+				});
+			}, {
+				width : 1400,
+				height : 900
+			}); 
+		}
+	    
+	  	function selectField(e){
+	  		var row = grid.getEditorOwnerRow(e.sender);
+			epoint.openDialog("字段映射", "./newcockpitmappingconf?rowguid=" +row.rowguid
+					+ "&normguid=" + row.normguid, searchData, {
+				width : 800,
+				height : 500
+			}); 
+	  	}
+	  	
+	  	function save(){
+            if (epoint.validate()) {
+                epoint.execute('save', '', '', function(data){
+                    if (data.msg) {
+                        epoint.alertAndClose(data.msg);
+                    }
+                });
+            }
+	  	}
+	  	
+	  	function view(){
+	  		epoint.execute('getViewUrl', '', [ modelguid ], function(data){
+	  			if(data.error){
+	  				epoint.alert(data.error);
+	  			}
+	  			else{
+	  				$('#normconf').css('display', 'none');
+    	        	$('#title').css('display', 'none');
+        			$('#describe').css('display', 'none');
+        			$('#edit').show();
+        			$('#view').hide();
+	  				var url = "../../../../../" + data.url + "?cardGuid=" + data.cardguid;
+	  				document.getElementById("phone-content").innerHTML = '<iframe id="cardUrl" src="'+url+'" style="height:230px; width:330px"></iframe>';
+	  			}
+	  		});
+	  	}
+	  	
+	  	function edit(){
+	  		$("#cardUrl").remove();
+	  		var modelguid = mini.get('model').getValue();
+	  		window.getImgData(modelguid);
+	  		$('#edit').hide();
+	  		$('#view').show();;
+	  	}
+	  	
+	</script>
+    
+</body>
+
+</html>

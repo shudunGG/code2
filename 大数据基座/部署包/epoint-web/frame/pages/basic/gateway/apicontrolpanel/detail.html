@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>单个指标详情页</title>
+    <script src="../../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([ 
+			'./css/desktop.css', 
+			'./css/index.css',
+			'./css/detail.css'
+		]);
+</script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <div class="fui-content">
+        <div class="count-module mod1">
+            <div class="selections clearfix">
+                <div class="selection-item duration clearfix">
+	                <div class="mini-selectduration">
+	                    <ul class="mini-selectduration-btns">
+	                        <li class="mini-selectduration-btn active" data-day="0" data-hour="1">1时</li>
+	                        <li class="mini-selectduration-btn" data-day="0" data-hour="2">2时</li>
+	                        <li class="mini-selectduration-btn" data-day="0" data-hour="3">3时</li>
+	                        <li class="mini-selectduration-btn" data-day="0" data-hour="4">4时</li>
+	                        <li class="mini-selectduration-btn" data-day="1" data-hour="0">1天</li>
+	                        <li class="mini-selectduration-btn" data-day="7" data-hour="0">1周</li>
+	                        <li class="mini-selectduration-btn" data-day="31" data-hour="0">1月</li>
+	                    </ul>
+	                    <div class="mini-selectduration-custom">
+	                    	<a class="mini-selectduration-custom-input" href="javascript:;"></a>
+	                        <div class="mini-selectduration-custom-container hidden" style="width: 400px">
+	                            <div class="selectduration-item">
+	                                <span class="">开始时间：</span>
+	                                <input id="start-date" class="mini-datepicker" style="width: 120px; margin-right: 10px;">
+	                                <input id="start-hour" class="mini-spinner" style="width: 70px;">
+	                                <span>:</span>
+	                                <input id="start-minute" class="mini-spinner" style="width: 70px;">
+	                            </div>
+	                            <div class="selectduration-item">
+	                                <span class="">结束时间：</span>
+	                                <input id="end-date" class="mini-datepicker" style="width: 120px; margin-right: 10px;">
+	                                <input id="end-hour" class="mini-spinner" style="width: 70px;">
+	                                <span>:</span>
+	                                <input id="end-minute" class="mini-spinner" style="width: 70px;">
+	                            </div>
+	                            <div>
+	                                <p class="selectduration-tip">31天内的查询提供分钟粒度的数据，最多连续查询7天数据</p>
+	                                <a id="selectduration-query" class="mini-button confirm" href="javascript:;">查询</a>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div class="count-tip">
+	                	<span>统计截止：<span id="count-time"></span></span>
+	                	<a class="refresh-btn" href="javascript:;"></a>
+	                </div>
+                </div>
+            </div>
+            <div class="clearfix">
+                <ul class="count-list clearfix">
+                    <li class="count-item count01">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">累计调用次数（次）</p>
+                                <p class="count-value">
+									<span class="value-item"><span class="value-num" id="total-req-times"></span>次</span>
+									<span class="value-item"><span class="value-trend up" id="up-rate"></span></span>
+								</p>
+                            </p>
+                        </div>
+                    </li>
+                    <li class="count-item count02">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">累计流量（Kb）</p>
+                                <p class="count-value">
+									<span class="value-item">流入<span class="value-num" id="flow-in"></span></span>
+									<span class="value-item">流出<span class="value-num" id="flow-out"></span></span>
+								</p>
+                            </p>
+                        </div>
+                    </li>
+                    <li class="count-item count03">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">平均响应（ms）</p>
+                                <p class="count-value">
+									<span class="value-item"><span class="value-num" id="avg-res-time"></span></span>
+								</p>
+                            </p>
+                        </div>
+                    </li>
+                    <li class="count-item count04">
+                        <div class="count-content">
+                            <p class="count-point">
+                                <p class="count-name">异常率（%）</p>
+                                <p class="count-value">
+									<span class="value-item"><span class="value-num" id="error-rate"></span></span>
+								</p>
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="count-module mod02">
+            <div id="chart-list" class="charts-list clearfix"></div>
+        </div>
+    </div>
+	<script type="text/x-tpl" id="chart-tpl">
+		{{#monitorIndexs}}
+		<div class="chart-item" data-index="{{index}}">
+			<div class="chart-info">
+				<span class="chart-name">{{text}} <span>({{unit}})</span></span>
+				<span class="chart-duration">周期：{{duration}}</span>
+				<span class="chart-method">{{^methods}}<span>{{method}}</span>{{/methods}}{{#methods}}<input id="method-{{index}}" class="mini-combobox" style="width:150px;" textField="text" valueField="id"
+					data="{{methods}}"  required="true" value="{{method}}"/>{{/methods}}</span>
+				<!--<span class="chart-method">聚合方式：{{^methods}}<span>{{method}}</span>{{/methods}}{{#methods}}<input id="method-{{index}}" class="mini-combobox" style="width:150px;" textField="text" valueField="id"
+					data="{{methods}}"  required="true" value="{{method}}"/>{{/methods}}</span>-->
+			</div>
+			<div class="result-container">
+				<div class="chart"></div>
+				<div class="no-result hidden">
+					<p>未能获取监控数据</p>
+				</div>
+			</div>
+		</div>
+		{{/monitorIndexs}}
+	</script>
+    <script>
+    var getDefaultTime = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getIndexDefaultTime?isCommondto=true',
+        getVisitCount = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getIndexVisitCount?isCommondto=true';
+        getMonitorObjects = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getMonitorObjects?isCommondto=true';
+        getMonitorChart = 'rest/frame/pages/default/apiruntimestatisticsdatainfoaction/getMonitorChart?isCommondto=true';
+    </script>
+    <script src="../../../../fui/js/jsboot.js"></script>
+    <script>
+    SrcBoot.output([
+        'frame/fui/js/libs/mustache.min.js',
+        './js/echarts.min.js',
+        './js/jquery-tab.js',
+        // 模拟数据，需删除
+        'frame/fui/js/libs/mock-min.js',
+        './_test/_testindex.js',
+
+        './js/detail.js'
+    ]);
+    </script>
+    
+    <script>
+    	epoint.initPage('apiruntimestatisticsdatainfoaction', null, function(data) {
+			var dayStatistics = data.dayStatistics
+    		
+			// 累计调用次数
+			$("#total-req-times").text(dayStatistics.totalreqtimes);
+			
+			// 较前日增长率
+			$("#up-rate").text(fixNumber(dayStatistics.uprate) + "%");
+			
+			// 累计流入
+			$("#flow-in").text(fixNumber(dayStatistics.flowin));
+			// 累计流入
+			$("#flow-out").text(fixNumber(dayStatistics.flowout));
+			// 平均响应时间
+			$("#avg-res-time").text(fixNumber(dayStatistics.avgrestime));
+			// 异常率
+			$("#error-rate").text(fixNumber(dayStatistics.errorrate));
+		});
+    	
+    	// 数据保留两位小数
+    	function fixNumber(data){
+			if (data && data.toString().indexOf(".") != -1 && data.toString().split(".")[1].length > 2) {
+				data = data.toFixed(2);
+			}
+    		return data;
+    	}
+   	</script>
+    <!-- <script>
+		epoint.initPage('apiruntimestatisticsdatainfoaction', null, function() {
+			mini.get("combo1").setValue("api");
+		});
+
+		function openVisitDetail() {
+			var combo1 = mini.get("combo1").value;
+			epoint.openDialog('调用详情', 'frame/pages/default/desktop.html?type='
+					+ combo1 + '&othertype=visittimes');
+		}
+
+		function openFlowDetail() {
+			var combo1 = mini.get("combo1").value;
+			epoint.openDialog('流量详情',
+					'frame/pages/default/desktopflow.html?type=' + combo1
+							+ '&othertype=inputflow');
+		}
+
+		function openResponseTime() {
+			var combo1 = mini.get("combo1").value;
+			epoint.openDialog('响应详情',
+					'frame/pages/default/desktopresponse.html?type=' + combo1
+							+ '&othertype=responsetime');
+		}
+
+		//无法选择自身
+		function beaforenodeselect(e) {
+			if (!e.node.ckr) {
+				e.cancel = true;
+			}
+		}
+	</script>
+	-->
+</body>
+
+</html>

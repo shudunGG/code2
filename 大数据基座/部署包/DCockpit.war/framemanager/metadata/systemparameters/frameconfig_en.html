@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>codeThe form</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <!-- This must have,it is loaded with some loading effect -->
+    <div class="page-loading"></div>
+    <!-- toolbar area -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" id="addNew" onclick="saveAndNew">save and new</a>
+            <a class="mini-button" id="addClose" onclick="saveAndClose">save and close</a>
+            <a class="mini-button" id="save" onclick="saveModify">save changes</a>
+            <a class="mini-button" onclick="epoint.closeDialog">shut down</a>
+        </div>
+    </div>
+    <!-- content area -->
+    <div class="fui-content">
+    	<!-- The form area -->
+        <div id="fui-form" class="fui-form">
+        	<div role="form">
+	            <!-- 2column -->
+	            <div role="row">
+	                <div role="control" label="parameter name" starred="true">
+	                    <input id="configname" bind="frameconfigaction.frameConfig.configname" class="mini-textbox" required="true" requiredErrorText="The parameter nameCan't be empty"/>
+	                </div>
+	            </div>
+	            <div role="row">
+	                <div role="control" label="classification">
+	                    <input id="cateGoryGuid" class="mini-combobox" bind="frameconfigaction.categoryguid" valueField="cateGoryGuid" emptyText="" action="frameconfigaction.getCategoryList" autoLoad="false" />
+	                </div>
+	            </div>
+	            <div role="row">
+	            	<!-- Don't need to verify, can is empty -->
+	                <div role="control" label="parameter value">
+	                    <input id="configValue" bind="frameconfigaction.frameConfig.configvalue" class="mini-textbox"/>
+	                </div>
+	            </div>
+	            <div role="row">
+	                <div role="control" label="describe">
+	                    <input id="description" bind="frameconfigaction.frameConfig.description" class="mini-textbox" />
+	                </div>
+	            </div>
+	            <div role="row">
+	                <div role="control" label="order no">
+	                    <input id="orderNumber" bind="frameconfigaction.frameConfig.ordernumber" class="mini-textbox" value="0" vtype="int"/>
+	                </div>
+	            </div>
+            </div>
+        </div>
+    </div>
+    <!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+    
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+    <script type="text/javascript">
+    //Initialization request 
+    epoint.initPage('frameconfigaction', '', initCallBack);
+    
+    // Initialization callback
+    function initCallBack(data) {
+        if (data.edit) {
+            //Hide the new button
+            mini.get('addNew').setVisible(false);
+            mini.get('addClose').setVisible(false);
+        }
+        else{
+            //Hide the modify button
+            mini.get('save').setVisible(false);
+        }
+    }
+    
+ 	// New correction operation
+	function newCallback(data) {
+		if (data.msg) {
+			epoint.alert(data.msg, '', null, 'info');
+			if (data.success) {
+				// emptyThe form
+				epoint.clear('fui-form');
+			}
+		}
+	}
+    
+    function saveAndNew() {
+        if(epoint.validate()){
+            epoint.execute('frameconfigaction.addConfig','fui-form',newCallback);
+        }
+    }
+    
+ // Shut downOperation of the callback
+	function closeCallback(data) {
+		if (data.msg) {
+			if (data.success) {
+				epoint.alertAndClose(data.msg, '', null, null, 'success');
+			} else {
+				epoint.alert(data.msg, '', null, 'error');
+			}
+		}
+	}
+
+    function saveAndClose() {
+        if(epoint.validate()){
+            epoint.execute('frameconfigaction.addConfig','fui-form',closeCallback);
+        }
+    }
+
+    function saveModify() {
+        if(epoint.validate()){
+            epoint.execute('frameconfigaction.saveConfig','fui-form',closeCallback);
+        }
+    }
+    </script>
+</body>
+
+</html>

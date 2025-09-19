@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>门户列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新增记录 </a> <a id="btnDel" class="mini-button"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a><a class="mini-button" iconCls="icon-save" onclick="saveAll()">保存修改</a>
+		</div>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="门户名称">
+						<input class="mini-textbox" bind="portalname" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" holdSelectedStatus="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="30" headerAlign="center">序</div>
+				<div field="portalname" headerAlign="center" align="center">
+					门户名称<input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="50" />
+				</div>
+				<div field="typename" headerAlign="center" width="50" align="center">门户类型</div>
+				<div field="ordernumber" width="20" align="right" vtype="int"
+					headerAlign="center" allowSort="true" sortOrder="desc">
+					排序<input property="editor" class="mini-textbox" maxLength="8"
+						inputStyle="text-align:right" style="width: 100%;" />
+				</div>
+				<div field="isdisable" width="40" align="center"
+					type="checkboxcolumn" truevalue="1" falsevalue="0"
+					headerAlign="center">禁用</div>
+				<div width="50" align="center" headerAlign="center"
+					renderer="onElementRenderer">元件配置</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onAuthRenderer">权限</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameportallistaction');
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录', "framemanager/ui/portal/frameportaladd",
+					searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "edit",
+					"rowguid");
+		};
+		// 弹出修改窗口
+		function edit(guid) {
+			var url = 'framemanager/ui/portal/frameportaledit?guid=' + guid;
+			epoint.openDialog("修改界面", url, searchData, {
+				'width' : 1100,
+				'height' : 500
+			});
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		// 保存
+		var grid = mini.get('datagrid');
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//绘制授权按钮
+		var onAuthRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-22", "auth");
+		};
+		// 弹出授权窗口
+		function auth(id) {
+			epoint
+					.openDialog('权限',
+							"framemanager/ui/portal/frameportalrightsetting?guid="
+									+ id, searchData, {
+								'width' : 800,
+								'height' : 550
+							});
+		}
+		var onElementRenderer = function(e) {
+			if (e.record.portaltype == 3) {
+				return "";
+			} else if (e.record.portaltype == 1) {
+				return epoint.renderCell(e, "action-icon modicon-22",
+						"selectItem");
+			}
+			return epoint.renderCell(e, "action-icon modicon-22",
+					"selectElement");
+		};
+		function selectElement(id) {
+			epoint.openDialog('配置元件',
+							"framemanager/ui/portal/portalelementmanagement?portalGuid="
+									+ id, null, {
+							'allowResize' : true,
+							'allowDrag' : true
+							});
+		}
+		function selectItem(id) {
+			epoint.openDialog('配置元件',
+					"framemanager/orga/uiset/deskmanagement/deskmanagement?portalGuid="
+							+ id, null, {
+						'allowResize' : true,
+						'allowDrag' : true
+					});
+		}
+	</script>
+</body>
+</html>

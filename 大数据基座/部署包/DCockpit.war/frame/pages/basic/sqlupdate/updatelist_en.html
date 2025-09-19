@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The script update</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+	<div id="form">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<div style="float:left;margin-left:10px">framework version:</div>
+				<div style="float:left">
+					<input id="versionList" autoLoad="false"
+						onvaluechanged="refreshData" bind="updatelistaction.version"
+						action="getVersionList" textField="text" valueField="id"
+						class="mini-combobox mr10" />
+				</div>
+			</div>
+
+			<!--Help button -->
+			<a role="helper" class="mr10">precautions</a>
+		</div>
+
+		<!-- Help information area Hidden by default-->
+		<div class="fui-notice hidden">
+			<p>
+				<em>The current project framework version of the version number is selected by default</em>
+			</p>
+			<p>
+				<em>The wholeThe script updateWe framework still relies on the functiondocsUnder the directoryThe script updateDocuments, when do you think of using online update trouble or have questions, you can go to the script file manuallycopyperform。</em>
+			</p>
+			<p>
+				<em>Update the status、performThe number is for youThe script updateInside the file behind every day(1)This number, generally you just update the framework, this is certainly not, also is the show did not update,performThe number of0。When you click on theperformUpdated, will automatically into correspondingThe number of。</em>
+			</p>
+			<p>
+				<em>When you areperformUpdate error, can view the error message, and may have scriptperformAfter the。butUpdate the statusAlso shows not updated,performThe number ofIs also0。Because this state just rely on analytical script file, so don't too truer。</em>
+			</p>
+		</div>
+		
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="filename" style="width: 100%; height: 100%;" allowResize="true" 
+				showPager="false" action="updatelistaction.getLogListData">
+				<div property="columns">
+					<div field="date" width="150" align="center" headerAlign="center" >
+						date
+					</div>
+					<div field="status" width="150" align="center" headerAlign="center" >
+						update the status
+					</div>
+					<div field="count" width="80" align="center" headerAlign="center" >
+						performThe number of
+					</div>
+					<div field="desc" align="left" headerAlign="center" width="100%">
+						script described
+					</div>
+					<div field="looktext" width="80" align="center" headerAlign="center" renderer="onLookTextRenderer">
+						see the scripts
+					</div>
+					<div field="execute" width="80" align="center" headerAlign="center" renderer="onExecuteRenderer">
+						performupdate
+					</div>
+				</div>
+				<input name="rowId" id="rowId" class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+			//Initialize the page
+			epoint.initPage('updatelistaction');
+			
+			var grid = mini.get("datagrid");
+			grid.on("load", function(){
+				grid.mergeColumns(["date"]);
+			});
+			/* function onLoad(e){
+				var grid = e.sender;
+ 	            grid.mergeColumns(["date"]);
+			} */
+			
+			// performupdate
+			function onExecuteRenderer(e){
+				var date=e.row['date'];
+				return "<a  style=\"cursor:pointer;\" class=\"action-icon icon-start\" onclick=\"executeScript('"+date+"')\" ></a>";
+			};
+			
+			// See the scripts
+			function onLookTextRenderer(e){
+				// To viewThe date of
+				var date=e.row['date'];
+				return "<a  style=\"cursor:pointer;\" class=\"action-icon icon-search\" onclick=\"lookScript('"+date+"')\" ></a>";
+			};
+			
+			// performThe script
+			function executeScript(date){
+				epoint.execute("executeUpdate", null, [date], function(res){
+					epoint.alert(res.msg, null, null, 'info');
+				});
+			};
+			
+			// See the scripts
+			function lookScript(date){
+				epoint.openDialog(date + 'See the scripts',
+						'mis/base/sqlupdate/lookscript?date=' + date, '', {
+							'width' : 1000,
+							'height' : 400
+						});
+			};
+			
+			// Refresh the table
+			function refreshData(){
+				epoint.refresh(['versionList', 'datagrid']);
+			};
+			
+		//]]>
+	</script>
+</body>
+
+</html>

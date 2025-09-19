@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>用户角色关系</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<div class="fui-left">
+			<div role="head" title="选择部门"></div>
+
+			<div role="body">
+				<ul id="tree" name="tree" class="mini-tree" style="width: 100%;height:100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"  action="getTreeModel"
+				resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right" id="fui-right">
+			<!-- toolbar区域 -->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" iconCls="icon-save" onclick="saveBtn()">保存设置</a>
+				</div>
+			</div>
+
+			<!-- 表单布局 -->
+			<div class="fui-condition" opened="true">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="角色类别">
+							<input id="roleType" autoLoad="false" bind="roleTypeGuid"
+							action="getFrameRoleType" textField="text" onvaluechanged="roleTypeChange"
+							valueField="id" class="mini-combobox mr10" />
+						</div>
+						<div role="control" label="姓名">
+							<input bind="displayName" class="mini-textbox" onkeypress="searchData" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="角色">
+							<div id="roleGroup" class="mini-checkboxlist" repeatItems="5" repeatLayout="table"
+							textField="text" valueField="id" bind="selectRoleGuids" onvaluechanged="roleGroupChange"
+							action="checkgroupModal" ></div>
+						</div>
+					</div>
+				</div>
+				<input bind="ouguid" id="leftTreeNodeGuid" class="mini-hidden" />
+			</div>
+			</div>
+			<div id="fuiContent" class="fui-content">
+				<div id="datagrid" name="datagrid" class="mini-datagrid" allowCellEdit="true" 
+				idField="userGuid" action="getDataGridData" showPager="true"
+				style="width: 100%; height: 100%;" ondrawcell="onCheckRender">
+				</div>
+			</div>
+		</div>
+		<script src="../../../../../rest/resource/jsboot"></script>
+		<link href="../../../../../frame/fui/js/miniui/plugin/gridcheckall/checkall.css" rel="stylesheet" type="text/css" />
+		<script src="../../../../../frame/fui/js/miniui/plugin/gridcheckall/checkall.js" type="text/javascript"></script>
+		<!-- 配置变量 -->
+		<script>
+			//<![CDATA[
+			epoint.initPage("subframeuserrolerelationlistaction", '', callbackinit);
+
+			// 表格对象
+			var grid = mini.get("datagrid");
+			//树js对象
+			var tree = mini.get("tree");
+
+			// 初始化回掉，动态生成列
+			function callbackinit(data) {
+				adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+				if (data) {
+					drawDynamicColumn(data);
+				}
+			}
+
+			// 点击左侧树刷新右侧表格
+			tree.on("nodeselect", function(e) {
+				var id = e.node.id;
+				//将左侧树点击的节点id放到隐藏域中
+				mini.get('leftTreeNodeGuid').setValue(id=='f9root'?"":id);
+				//刷新表格
+				updateTable();
+			});
+
+			// 角色类别变更
+			function roleTypeChange() {
+				mini.get('roleGroup').setValue('');
+				epoint.execute('roleTypeChange', '', function(data) {
+					drawDynamicColumn(data);
+					updateTable();
+				});
+			}
+
+			// 显示方式变更
+			function moduleDisplayChange() {
+				updateTable();
+			}
+
+			// 选择角色变更
+			function roleGroupChange() {
+				epoint.execute("initDynamicRole", 'roleGroup', function(data) {
+					drawDynamicColumn(data);
+					updateTable();
+				});
+			}
+
+			// 绘制动态列
+			function drawDynamicColumn(data) {
+				var tmp = data.columns;
+				var columns = Util.safeEval('(' + tmp + ')');
+				grid.set(columns);
+				var tmpObj = epoint.decodeJson(tmp);
+				var columnsObj = tmpObj.columns;
+				if(columnsObj && columnsObj.length){
+					$.each(columnsObj, function(k,v){
+						if(columnsObj[k].type=='checkboxcolumn'){
+							new CheckAll(grid, columnsObj[k].name);
+						}
+					});
+				}
+			}
+			function onCheckRender(e) {
+				//此功能只是隐藏掉选择框，但是还是可以被选到的，注意！！！！，要配合beforeselect使用
+				if (e.record[e.field + 'hide'] == "true") {
+					e.cellHtml = "";
+				}
+			}
+			grid.on("beforeselect", function(e) {
+				var hide = e.record[e.field + 'hide'];
+				if (hide) {
+					e.cancel = true;
+				}
+			});
+			// 保存
+			function saveBtn() {
+				epoint.execute('saveBtn', '', callback);
+			}
+
+			//回调
+			function callback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', updateTable, 'info');
+				}
+			}
+			
+			function searchData(){
+				if(event.keyCode==13){
+					updateTable();
+				}
+			}
+
+			function updateTable() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

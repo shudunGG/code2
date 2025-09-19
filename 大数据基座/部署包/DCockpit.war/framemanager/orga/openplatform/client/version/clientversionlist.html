@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>客户端版本列表</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+        .btn-in-column{margin-right:5px;}
+        .btn-in-column-text{margin-left:5px;margin-right:5px;}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="addVersion" class="mini-button" onclick="addVersion">新增版本</a>
+		</div>
+	</div>
+	
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="操作系统类型">
+						<div id="search_clientOsType" class="mini-combobox" style="width:150px;"
+						textField="text" valueField="id" bind="clientOsType" showClose="true" 
+						onkeyenter="searchData();" oncloseclick="onCloseClick"></div>
+					</div>
+					<div role="control" label="版本号">
+						<input id="search_clientVersion" class="mini-textbox"
+							bind="clientVersion" onkeyenter="searchData();" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="versionGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="clientVersion" headerAlign="center" width="150">版本号</div>
+				<div field="clientOsTypeName" headerAlign="center" align="left" width="150">操作系统</div>
+				<div field="versionDesc" headerAlign="center" align="center" width="100%"">版本描述</div>
+				<div field="creatorName" headerAlign="center" align="center" width="150">创建者</div>
+				<div field="gmtCreateTime" headerAlign="center" renderer="onTimeRender"
+					align="center" width="150">创建时间</div>
+				<div name="operation" headerAlign="center" renderer="onOperationRender"
+				align="center" width="200">操作</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		                      
+		//初始化页面
+		epoint.initPage('clientversionlistaction', '', initCallBack);
+
+		// 初始化页面回调函数
+		function initCallBack(e){
+			
+			// 初始化客户端系统类型单选按钮
+			mini.get('search_clientOsType').set({data:e.clientOsTypeListJson});
+		}
+		
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 格式化时间列
+		function onTimeRender(e) {
+			
+			var time = e.value;
+			
+			time = new Date(time);
+			
+			// 格式化时间
+			var year = time.getFullYear();
+			var month = time.getMonth() + 1;
+			month = fixZero(month);
+			var date = time.getDate();
+			date = fixZero(date);
+			var hours = time.getHours();
+			hours = fixZero(hours);
+			var minutes = time.getMinutes();
+			minutes = fixZero(minutes);
+			var seconds = time.getSeconds();
+			seconds = fixZero(seconds);
+			
+			return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+		}
+
+		function fixZero(data){
+			if (data < 10) {
+				data = '0' + data;
+			}
+			return data;
+		}
+		
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form']);
+		}
+
+		// 绘制操作按钮
+		function onOperationRender(e) {
+			var versionGuid = e.row['versionGuid'];
+			
+			// 编辑
+			var editHtml = '<a class="mini-button btn-in-column" id="btnEdit" onclick="editVersion(\'' + versionGuid + '\');"><div class="btn-in-column-text">编辑</div></a>';
+			// 删除
+			var deleteHtml = '<a class="mini-button mini-btn-danger btn-in-column" id="btnDelete" onclick="deleteVersion(\'' + versionGuid + '\');"><div class="btn-in-column-text">删除</div></a>'
+		
+			var renderHtml = '<div>' + editHtml + deleteHtml + '</div>';
+			return renderHtml;
+		}	
+		
+		// 新增版本
+		function addVersion() {
+			epoint.openDialog("新增版本", 'framemanager/orga/openplatform/client/version/clientversionadd', dealVersionCallBack, {'width': 470, 'height': 280});
+		}
+		
+		// 编辑版本
+		function editVersion(versionGuid){
+			epoint.openDialog("编辑版本", 'framemanager/orga/openplatform/client/version/clientversionedit?versionGuid=' + versionGuid, dealVersionCallBack, {'width': 470, 'height': 280});
+		}
+		
+		// 删除版本
+		function deleteVersion(versionGuid){
+			
+			epoint.execute('deleteVersion', '', [versionGuid], dealVersionCallBack);
+		}
+		
+		// 版本操作回调函数
+		function dealVersionCallBack(data){
+			if (data) {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			} 
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

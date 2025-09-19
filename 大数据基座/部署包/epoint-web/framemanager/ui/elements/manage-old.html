@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>代办事宜配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<!-- <script>
+        SrcBoot.output([
+            './manage.css'
+        ]);
+    </script> -->
+<style>
+.title-img-item {
+	width: 20px;
+	height: 20px;
+	margin: 10px;
+}
+</style>
+</head>
+
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<span class="mini-button" onclick="saveAndClose">保存并关闭</span>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="无边框">
+						<div class="mini-checkboxlist" repeatItems="3" textField="text"
+							valueField="value" value="noborder"
+							data="[{value:'true',text:''}]"
+							onvaluechanged="onBorderValueChanged" bind="noborder"></div>
+					</div>
+				</div>
+				<div role="row" id="border-color-row">
+					<div role="control" label="边框颜色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							value="#ddd" bind="dataBean.framecolor" width="55%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="显示标题栏">
+						<div class="mini-checkboxlist" repeatItems="3" textField="text"
+							valueField="value" value="noborder" data="[{value:'1',text:''}]"
+							onvaluechanged="onShowTitleBarChanged"
+							bind="dataBean.isShowTitle"></div>
+					</div>
+				</div>
+				<div role="row" class="title-settings-el">
+					<div role="control" label="标题">
+						<input class="mini-textbox" bind="dataBean.title" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row" class="title-settings-el">
+					<div role="control" label="标题长度">
+						<input changeOnMousewheel="false" class="mini-spinner"
+							minValue="1" maxValue="50" bind="dataBean.titlelength" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row" class="title-settings-el">
+					<div role="control" label="标题字体颜色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							value="#f96e41" bind="dataBean.fontcolor" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row" class="title-settings-el">
+					<div role="control" label="标题栏背景颜色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							value="#efefef" bind="dataBean.titlebackgroundcolor" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row" class="title-settings-el">
+					<div role="control" label="标题图标">
+						<input id="title-img-select" class="mini-buttonedit"
+							emptyText="请选择..." selectOnFocus="true"
+							onbuttonclick="showTitleImgList" bind="dataBean.icon"
+							width="315px" /> <img id="lblPicture" src="" width="30px"
+							height="30px" style="width: 10%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="工具栏按钮">
+						<div class="mini-checkboxlist" repeatItems="3" textField="text"
+							valueField="value" value="more,refresh"
+							data="[{value:'more',text:'更多'},{value:'refresh',text:'刷新'}]"
+							onvaluechanged="onToolbarValueChanged" bind="moreAndRefresh">
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="链接打开方式" starred="true">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							valueField="value" value="dialog" bind="dataBean.openwith"
+							data="[{value:'dialog',text:'对话框'},{value:'tabsNav',text:'标签页'},{value:'blank',text:'新窗口'}]">
+						</div>
+					</div>
+				</div>
+				<div role="row" id="element-opentype-el">
+					<div role="control" label="更多按钮打开方式" starred="true">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							valueField="value" value="dialog"
+							data="[{value:'dialog',text:'对话框'},{value:'tabsNav',text:'标签页'},{value:'blank',text:'新窗口'}]"
+							bind="dataBean.moreopenwith"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="内容背景色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							value="#ffffff" bind="dataBean.backgroundcolor" width="55%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="信息条数">
+						<input changeOnMousewheel="false" class="mini-spinner"
+							minValue="1" maxValue="50" bind="dataBean.infocount" width="55%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="高度">
+						<input changeOnMousewheel="false" class="mini-spinner"
+							minValue="0" maxValue="1000" bind="dataBean.height" width="55%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">高度等于0为自适应内容高度</div>
+				</div>
+				<div role="row">
+					<div role="control" label="待办类别">
+						<input id="messageType" bind="dataBean.extendcustomattr"
+							class="mini-checkboxlist" action="selectTypeModel" width="55%"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="title-img-dialog" class="mini-window" title="标题图片选择"
+			style="width: 400px; height: 250px;" showMaxButton="true"
+			showCollapseButton="true" showShadow="true" showModal="false"
+			allowResize="true" allowDrag="true">
+			<div id="title-img-container">
+				<div class="img-list clearfix"></div>
+			</div>
+		</div>
+	</div>
+    <script src="../../../rest/resource/jsboot"></script>
+
+	<script>
+		SrcBoot.output([ './todo/manage.js' ]);
+	</script>
+	<script>
+		// 元件ID
+		var elementID = Util.getUrlParams('elementID');
+
+		// // 页面初始化 回传元件ID
+		epoint.initPage('frameportalelementaction', {
+			elementID : elementID
+		}, initCallback);
+
+		// =====================================
+		// 边框选择变化时 调整颜色可见性
+		// 边框颜色
+		var $borderColorEl = $('#border-color-row');
+
+		function onBorderValueChanged(e) {
+			if (e.value == 'true') {
+				adjustBorderColorVisible(false);
+			} else {
+				adjustBorderColorVisible(true);
+			}
+		}
+
+		function adjustBorderColorVisible(show) {
+			if (show) {
+				$borderColorEl.show();
+			} else {
+				$borderColorEl.hide();
+			}
+		}
+
+		// =====================================
+		// 是否显示标题栏变化时 调整标题相关可见性
+		// 标题图片和颜色
+		var $titleSettingsEl = $('.title-settings-el');
+
+		function onShowTitleBarChanged(e) {
+			if (e.value == '1') {
+				adjustTitleSettingsVisible(true)
+			} else {
+				adjustTitleSettingsVisible(false);
+			}
+		}
+
+		function adjustTitleSettingsVisible(show) {
+			if (show) {
+				$titleSettingsEl.show();
+			} else {
+				$titleSettingsEl.hide();
+			}
+		}
+
+		// =====================================
+		// 工具栏按钮变化时 调整打开方式可见性
+		// 更多按钮打开方式
+		var $elementOpentypeEl = $('#element-opentype-el');
+
+		function onToolbarValueChanged(e) {
+			if (/more/.test(e.value)) {
+				adjustMoreOpentypeVisible(true);
+			} else {
+				adjustMoreOpentypeVisible(false);
+			}
+		}
+
+		function adjustMoreOpentypeVisible(show) {
+			if (show) {
+				$elementOpentypeEl.show();
+			} else {
+				$elementOpentypeEl.hide();
+			}
+		}
+
+		// 
+		// 标题图片点击 选择
+		var titleImgDialog = mini.get('title-img-dialog');
+
+		function showTitleImgList() {
+			titleImgDialog.show();
+		}
+		// 点击选择图片
+		var titleImgSelect = mini.get('title-img-select');
+		$('body').on('click', '.title-img-item', function(e) {
+			var $this = $(this), url = $this.data('src');
+			titleImgSelect.setValue(url);
+			titleImgSelect.setText(url);
+			$("#lblPicture").attr("src", Util.getRightUrl(url));
+			titleImgDialog.hide();
+		});
+
+		function saveAndClose() {
+			epoint.execute('save', '', function() {
+				epoint.closeDialog('save');
+			});
+		}
+
+		// 使用数据初始化标题图片选择
+		function initCallback(data) {
+			if (data.noborder) {
+				adjustBorderColorVisible(false);
+			}
+			if (data.notitle) {
+				adjustTitleSettingsVisible(false);
+			}
+			if (data.nomore) {
+				adjustMoreOpentypeVisible(false);
+			}
+			if (data && data.imgList) {
+				// 渲染标题图片
+				renderTitleImgs(data.imgList)
+			}
+			if (data.iconUrl) {
+				$("#lblPicture").attr("src", Util.getRightUrl(data.iconUrl));
+				titleImgSelect.setValue(data.iconUrl);
+				titleImgSelect.setText(data.iconUrl);
+			}
+		}
+
+		// 初始化拉取数据后 进行如下的可视化调整
+		function epoint_preload(controls, custom) {
+			// 根据有无边框确定是否显示边框颜色的选择
+			// adjustBorderColorVisible(true/false);
+			// 是否展示标题栏的相关设置
+			// adjustTitleSettingsVisible(true/false);
+			// 是否展示更多的打开方式
+			// adjustMoreOpentypeVisible(true/false);
+		}
+	</script>
+
+</body>
+
+</html>

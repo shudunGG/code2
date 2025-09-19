@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增常见问题</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="btnRelease" onclick="releaseFaq">发布</a>
+			<a class="mini-button" id="btnSave" onclick="saveFaq">保存</a>
+			<a class="mini-button mini-btn-danger" id="btnDelete" onclick="deleteFaq" style="display:none">删除</a>
+           	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="题干" starred="true">
+					<input id="faqTitle" class="mini-textbox"
+						bind="faq.title" required="true" requiredErrorText="题干不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="问题分类" starred="true">
+					<input id="selectedFaqType" bind="faq.codeId" allowInput="false" width='200px'
+						class="mini-buttonedit" emptyText="" required="true" requiredErrorText="请选择问题分类"
+						onbuttonclick="selectFaqType"
+						selectOnFocus="true" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="正文" starred="true">
+					<textarea bind="faq.content"
+						id="faqContent" class="mini-webeditor" readOnly="false"
+						required="true" requiredErrorText="正文不能为空!"></textarea>
+				</div>
+			</div>
+			<!-- 隐藏域 -->
+			<input bind="contentText" id="contentText" class="mini-hidden" />
+		</div>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('faqaddaction');
+
+		var faqGuid = '';
+		
+		// 获取正文文本内容
+		function getContentText(){
+			var faqEditor = mini.get("faqContent").editor;
+			var contentText = faqEditor.getText();
+			mini.get("contentText").setValue(contentText);
+		}
+		
+		// 发布
+		function releaseFaq(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('releaseFaq?faqGuid=' + faqGuid, '', faqGuid, releaseFaqCallBack);
+			}
+		}
+		
+		// 发布回调
+		function releaseFaqCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.closeDialog("success");
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		// 保存常见问题
+		function saveFaq(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('saveFaq?faqGuid=' + faqGuid, '', faqGuid, saveFaqCallBack);
+			}
+		}
+		
+		// 保存常见问题回调
+		function saveFaqCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					faqGuid = data.faqGuid;
+					// 显示删除按钮
+					document.getElementById("btnDelete").style.display = '';
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		// 删除常见问题
+		function deleteFaq(){
+			epoint.confirm('是否删除该常见问题？', '删除常见问题确认', function () {
+				// 删除公告确认回调
+				epoint.execute('deleteFaq?faqGuid=' + faqGuid, '', faqGuid, function (data) {
+					var msg = data.msg;
+					if (msg) {
+						if(data.success){
+							epoint.closeDialog("success");
+						} else {
+							epoint.alert(msg, '', '', 'warning');
+						}
+					} else {
+						epoint.alert('操作失败', '', '', 'warning');
+					}
+				});
+			}, function (data) {
+				// 删除公告取消回调
+				
+			})
+		}
+
+		// 选择常见问题分类
+		function selectFaqType(){
+			epoint.openDialog("选择问题分类",
+					'framemanager/orga/openplatform/app/selectcodeitem?codeName=常见问题',
+					dealSelectServiceTypeBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+		// 选择代码项回调
+		function dealSelectServiceTypeBackValue(rtnValue){
+			if (rtnValue && rtnValue != 'close') {
+				// codeid_SPLIT_名称
+				var idAndName = rtnValue.split("_SPLIT_");
+				var id = idAndName[0];
+				var	name = idAndName[1];
+			
+				mini.get("selectedFaqType").setText(name);
+				mini.get("selectedFaqType").setValue(id);
+				
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

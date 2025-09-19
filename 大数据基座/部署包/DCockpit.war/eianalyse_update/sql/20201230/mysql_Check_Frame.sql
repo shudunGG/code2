@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	cockpit_api_response_params where rowguid='22ee78d7-aff3-41eb-942b-8ebaf5af5c1f'

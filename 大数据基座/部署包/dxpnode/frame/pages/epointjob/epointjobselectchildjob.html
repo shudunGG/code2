@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>子任务选择页</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="select">选择</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<span class="text-danger"> 暂无描述 </span>
+		</p>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="row">
+				<div role="control" label="">
+					<input bind="jobDesc" class="mini-textbox" emptyText="请输入任务描述" />
+				</div>
+			</div>
+		</div>
+		<a id="search" role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="jobGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="false" allowCellEdit="true" showPager="true"
+			action="getDataGridData" allowCellSelect="true">
+			<div property="columns">
+				<div field="isSelected" name="isSelected" type="checkcolumn"
+					width="40"></div>
+				<div type="indexcolumn" width="50">序</div>
+				<div field="jobDesc" width="50%">任务描述</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobselectchildjobaction', '@all',
+				function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '提示', null, 'info');
+					}
+				});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 选择任务
+		function select() {
+			grid.validate();
+			if (grid.isValid()) {
+				epoint.execute('saveSelected', '', closeCallback);
+			}
+		}
+
+		// 渲染选中任务选中状态
+		grid.on("load", function(e) {
+			for (var i = 0, data = e.data; i < data.length; i++) {
+				var r = data[i];
+				if (r.isSelected) {
+					grid.select(i);
+				}
+			}
+		});
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			epoint.closeDialog([ data.childJobIdStr, data.childJobNameStr ]);
+		}
+	</script>
+</body>
+</html>

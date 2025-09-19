@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="format-detection" content="telephone=no" />
+    <title>EJS组件调用控制台</title>
+
+    <script>
+        document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+    </script>
+
+    <script>
+        SrcBoot.output([
+            './ejsinvokeplugin.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">invokePluginApi API 控制台信息</h3>
+            </div>
+
+            <div class="panel-body">
+                <div class="well" id="room"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+    </script>
+
+    <script>
+        'use strict';
+
+        var roomEl = document.getElementById('room');
+
+        var roomid = null,
+            socket = null;
+
+        Util.loadJs(
+            './socket.io.js',
+            function () {
+                roomid = Util.getExtraDataByKey('roomid') || '';
+                roomEl.textContent = roomid;
+
+                ejs.config({
+                    jsApiList: []
+                });
+
+                ejs.ready(function () {
+                    // 连接 WebSocket
+                    connectWebSocket(roomid);
+                });
+            });
+
+        /**
+         * 连接 WebSocket
+         * @param {String} roomid 房间 ID
+         */
+        function connectWebSocket(roomid) {
+            socket = io.connect('http://192.168.118.28:8088/');
+
+            if (!roomid) {
+                roomEl.textContent = roomid + ' 连接失败';
+            }
+
+            socket.emit('roomid', roomid);
+            socket.on('join_room_success', function() {
+                roomEl.textContent = roomid + ' 连接成功';
+            });
+            socket.on('excute_code', function(code) {
+                try {
+                    eval(code);
+                } catch (error) {
+                    ejs.ui.toast(error);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

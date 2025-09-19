@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Application of the warehouse</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div id="test" class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="application"></div>
+				<div role="body">
+					<div id="appdatagrid" class="mini-datagrid" sortOrder="desc"
+						idField="rowguid" pageSize="15" action="getAppDataGridData"
+						showPager="false">
+						<div property="columns">
+							<div headerAlign="center" width="100%" renderer="onAppRenderer">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="elememt" role="accordion" opened="true">
+				<div role="head" title="element"></div>
+				<div role="body">
+					<div id="elementdatagrid" class="mini-datagrid" sortOrder="desc"
+						idField="rowguid" pageSize="15" action="getElementDataGridData"
+						showPager="false">
+						<div property="columns">
+							<div headerAlign="center" width="100%"
+								renderer="onElementRenderer"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+	<script type="text/x-template" id="apptempl">
+        <table width="100%" height="100%">
+			<tr>
+				<td width="100px" style="display:{{appshow}}">
+					<img src="{{icon}}" border="0" />
+				</td>
+				<td width="70%" style="text-align:left">
+					{{appname}}
+					{{description}}
+					{{name}}
+				</td>
+				<td>
+					<div width="78px" style="display:{{opendisplay}}" id="{{id}}_appInstalled">
+						<a href="#" onclick="javascript:top.AppMgr.openApp('{{appguid}}');return false;"> 
+						<img src="appmarket/Open.jpg" border="0" /></a>
+					</div>
+					<div width="78px" style="display:{{adddisplay}}" id="{{id}}_appUnstalled">
+						<a onclick="installAppOrElement('{{appguid}}','app','{{id}}');return false;"> 
+						<img src="appmarket/Add.jpg" border="0" /></a>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</script>
+	<script type="text/x-template" id="elementtempl">
+        <table width="100%" height="100%">
+			<tr>
+				<td width="100px" style="display:{{eleshow}}">
+					<div class="top-menu-item-icon {{storeicon}}"  />
+				</td>
+				<td width="70%" style="text-align:left">
+					{{appname}}
+					{{description}}
+					{{name}}
+				</td>
+				<td>
+					<div width="78px" style="display:{{opendisplay}}" id="{{id}}_appInstalled">
+						<a href="#" onclick="javascript:top.AppMgr.openApp('{{appguid}}');return false;"> 
+						<img src="appmarket/yiAdd.png" border="0" /></a>
+					</div>
+					<div width="78px" style="display:{{adddisplay}}" id="{{id}}_appUnstalled">
+						<a onclick="installAppOrElement('{{appguid}}','element','{{id}}');return false;"> 
+						<img src="appmarket/Add.jpg" border="0" /></a>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</script>
+	<script>
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('appmarketaction');
+
+		// Access to the template
+		var apptempl = $.trim($("#apptempl").html());
+
+		var elementtempl = $.trim($("#elementtempl").html());
+
+		var M = Mustache;
+
+		var type = Util.getUrlParams('type');
+
+		if (type == "metro") {
+			document.getElementById("elememt").style.display = "none";
+		}
+
+		//Apply colours to a drawingapplicationline
+		function onAppRenderer(e) {
+			var icon;
+			if ("imac" == type) {
+				icon = e.record.desktopbigicon ? _rootPath + "/"
+						+ e.record.desktopbigicon : _rootPath
+						+ "/pages/orga/uiset/menu/app/appmarket/app1.jpg";
+			} else if ("metro" == type) {
+				icon = e.record.desktopsmallicon ? _rootPath + "/"
+						+ e.record.desktopsmallicon : _rootPath
+						+ "/pages/orga/uiset/menu/app/appmarket/app1.jpg";
+			}
+			var data = {
+				appname : e.record.appname,
+				description : e.record.description,
+				name : e.record.name,
+				opendisplay : e.record.count > 0 ? "" : "none",
+				adddisplay : e.record.count > 0 ? "none" : "",
+				icon : icon,
+				id : e.record.id,
+				appguid : e.record.appguid
+			}
+			return M.render(apptempl, data);
+		}
+
+		//Apply colours to a drawingelementline
+		function onElementRenderer(e) {
+			var icon;
+			var data = {
+				appname : e.record.portaletname,
+				description : e.record.description,
+				name : e.record.name,
+				opendisplay : e.record.count > 0 ? "" : "none",
+				adddisplay : e.record.count > 0 ? "none" : "",
+				icon : icon,
+				id : e.record.id,
+				appguid : e.record.rowguid,
+				storeicon : e.record.storeicon
+			}
+			return M.render(elementtempl, data);
+		}
+
+		//The installationapplication
+		function installAppOrElement(appOrEleGuid, type, number) {
+			optType = type;
+			optNumber = number;
+			if (optType == "app") {
+				epoint.execute("appmarketaction.getAppinfo", "", [appOrEleGuid,
+						type], function(data) {
+					console.dir(data);
+					installAppOrElementBack(data.msg);
+				});
+			} else {
+				var result = top.ElemMgr.installElem(appOrEleGuid);
+				searchData();
+			}
+		}
+
+		function installAppOrElementBack(json) {
+			if (json) {
+				json = $.parseJSON(json);
+				var result = top.AppMgr.installApp(json);
+				searchData(result);
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh(['appdatagrid', 'elementdatagrid']);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

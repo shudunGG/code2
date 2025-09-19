@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>红灯指标</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="红灯信息"></div>
+				<div role="body">
+					<!-- 表单布局 -->
+					<div class="fui-form" id="fui-form">
+						<br />
+						<div role="form">
+							<div role="row">
+								<div role="control" label="红灯标题">
+									<input class="mini-outputtext" bind="dataBean.title" />
+								</div>
+								<div role="control" label="状态">
+									<input class="mini-outputtext" bind="dataBean.statusText" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="红灯概述">
+									<input class="mini-outputtext" bind="dataBean.content" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="发起人">
+									<input class="mini-outputtext" bind="dataBean.launchUserName" />
+								</div>
+								<div role="control" label="接收人">
+									<div class="mini-outputtext" bind="dataBean.responseUserName"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="发起时间">
+									<input class="mini-outputtext" bind="dataBean.createTimeText" />
+								</div>
+								<div role="control" label="完成期限">
+									<div class="mini-outputtext"
+										bind="dataBean.expectedPerformanceTimeText"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="驾驶舱">
+									<input class="mini-outputtext" bind="dataBean.cockpitName" />
+								</div>
+								<div role="control" label="主题">
+									<input class="mini-outputtext" bind="dataBean.columnName" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题分类">
+									<input class="mini-outputtext" bind="dataBean.projectCateName" />
+								</div>
+								<div role="control" label="专题">
+									<input class="mini-outputtext" bind="dataBean.projectName" />
+								</div>
+							</div>
+							<div role="row" id="plate">
+								<div role="control" label="版块">
+									<input class="mini-outputtext" bind="dataBean.plateName" />
+								</div>
+							</div>
+							<div role="row" id="card">
+								<div role="control" label="卡片分类">
+									<input class="mini-outputtext" bind="dataBean.cateName" />
+								</div>
+								<div role="control" label="卡片">
+									<input class="mini-outputtext" bind="dataBean.cardName" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="指标名称">
+									<input class="mini-outputtext" bind="dataBean.normName" />
+								</div>
+								<div role="control" label="APICode">
+									<input class="mini-outputtext" bind="dataBean.apicode" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="反馈信息"></div>
+				<div role="body">
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<div class="mini-button" id="feedback" onclick="feedback">新增反馈</div>
+							<div class="mini-button" id="deleteSelect" onclick="deleteSelect">删除所选</div>
+						</div>
+					</div>
+					<div class="form-wrap">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="rowguid" multiSelect="true"
+							style="width: 100%; max-height: 300px;" allowResize="false"
+							showPager="true" action="getDataGridData" allowCellSelect="true"
+							allowCellEdit="true" editNextOnEnterKey="true">
+							<div property="columns">
+								<div type="checkcolumn" width="30"></div>
+								<div type="indexcolumn" width="40" headerAlign="center">序号</div>
+								<div field="feedbackUser" width="80" headerAlign="center">反馈人</div>
+								<div field="content" width="150" headerAlign="center"
+									align="center">反馈内容</div>
+								<div field="fileName" width="80" headerAlign="center"
+									align="center" renderer="onNameRenderer">附件</div>
+								<div field="feedbackTime" width="100" headerAlign="center"
+									align="center" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+									dateFormat="yyyy-MM-dd HH:mm:ss">反馈时间</div>
+								<div name="operate" type="actioncolumn" headerAlign="center"
+									align="center">
+									<span type="action" icon="icon-edit" onclick="openEdit">编辑</span>
+									<span type="action" icon="icon-trash" onclick="deleteFeedback">删除</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		var redLightGuid = Util.getUrlParams('guid');
+		epoint.initPage('cockpitredlightdetailaction', null, function(data) {
+			if (data.cockpitType == '1') {
+				$('#plate').addClass('hidden');
+				$('#card').addClass('hidden');
+			}
+		});
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:downloadFile(\'' + e.record.attachGuid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		function downloadFile(guid) {
+			window
+					.open(Util.getRootPath()
+							+ 'rest/attachAction/getContent?isCommondto=true&attachGuid='
+							+ guid);
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		function feedback() {
+			epoint
+					.openDialog('新增反馈',
+							"./cockpitredlightfeedbackadd?redLightGuid="
+									+ redLightGuid, searchData, {
+								'width' : 600,
+								'height' : 400
+							});
+		}
+
+		function deleteSelect() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', function(data) {
+					epoint.execute("deleteFeedbackList", '', callback);
+				});
+			}
+		}
+
+		function deleteFeedback(e) {
+			epoint.confirm('确认要删除吗?', '', function(data) {
+				epoint.execute("deleteFeedback", '', e.rowguid, callback);
+			});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+	</script>
+</body>
+
+</html>

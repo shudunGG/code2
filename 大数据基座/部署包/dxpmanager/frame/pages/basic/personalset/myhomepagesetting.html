@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>首页配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add">新增快捷</a><a class="mini-button"
+				onclick="save">确定修改</a>
+		</div>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid2" name="datagrid2" class="mini-datagrid"
+			idField="userLinkGuid" multiSelect="true" style="width: 100%;"
+			showPager="false" action="getLinkDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div field="linkName" headerAlign="center">
+					快捷方式名称<input property="editor" class="mini-textbox"
+						vtype="maxLength:50" />
+				</div>
+				<div type="checkboxcolumn" width="10" field="isDisable"
+					truevalue="0" falsevalue="1" headerAlign="center" align="center">启用</div>
+				<div field="orderNumber" headerAlign="center" width="20"
+					align="right" vtype="int">
+					排序号 <input property="editor" class="mini-textbox" vtype="int;range:0,99999999"/>
+				</div>
+				<div width="20" align="center" headerAlign="center"
+					renderer="onDelRenderer">删除</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("myhomepagesettingaction");
+
+		//删除回调事件
+		function callback(data) {
+			epoint.alert(data.msg, '', null, 'info');
+			if (data.success) {
+				epoint.refresh([ "datagrid2" ], '', true);
+			}
+		}
+
+		//删除方法
+		function deleteLink(linkGuid) {
+			// 弹出确认框
+			epoint.confirm("确定删除？", '', function() {
+				epoint.execute("delete", '', [ linkGuid ], callback);
+			});
+		}
+
+		//渲染删除按钮
+		function onDelRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"deleteLink", "userLinkGuid");
+		}
+
+		//新增回调事件
+		function addCallBack(data) {
+			if (data && data != 'close' && typeof data == 'string') {
+				epoint.alert(data, '', null, 'info');
+				if (data != "请选择模块") {
+					epoint.refresh([ "datagrid2" ], '', true);
+				}
+
+			}
+		}
+
+		//新增快捷方式
+		function add() {
+			epoint.openTopDialog("新增快捷方式",
+					'frame/pages/basic/module/framemoduletree', addCallBack, {
+						'width' : 300,
+						'height' : 500
+					});
+		}
+
+		//保存回调事件
+		function saveCallback(data) {
+			epoint.alert(data.msg, '', null, 'info');
+			epoint.refresh([ "datagrid2" ], '', true);
+		}
+
+		//确定修改
+		function save() {
+			var grid = mini.get("datagrid2");
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			var ids = grid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.execute('save', '', saveCallback);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

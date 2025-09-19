@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The basic information</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">Confirm to save </a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">Do you know?</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<em>Do you know?<br /></em>Browsing activity is not a real activities in the process, but represents a set of browsing process instance Settings。You can like setting human activities set with what page displays process information, see which material。A process version can set up multiple browsing activity, already meet different needs, by identifying markers。
+		</p>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="The name of the event" starred="true">
+						<input id="activityName" bind="workflowActivity.activityName"
+							class="mini-textbox" required="true" requiredErrorText="The name of the eventCan't be empty" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input id="note" bind="workflowActivity.note" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Activity id">
+						<input id="activityDispName" bind="workflowActivity.activityDispName" class="mini-textbox" />
+						<span class="text-danger">(Used to only positioning to the activity,Once the setting is not allowed to change,With active objects activityDispName associated)</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitybrowserbaseinfoaction');
+
+		// The callback for the close operation
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if(data.flag != null && (data.flag == "1")){
+					if (!data.edit) {
+						parent.updateTab();
+					}
+					var textValue = mini.get('activityName').getValue();
+					var param = {
+						Added : !data.edit,
+						Edit : data.edit,
+						ID : parent.Util.getUrlParams('MaxID'),
+						NodeType : 'Browser',
+						Text : textValue
+					};
+					parent.setDialogValue(param);
+				}
+			}
+		}
+
+		// The callback for the save operation
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', 'fui-form', callback);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

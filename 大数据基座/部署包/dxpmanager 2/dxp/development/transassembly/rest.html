@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary" onclick="saveModify">保存并关闭</a> 
+			<a class="mini-button mini-btn-primary" id="closebtn" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+<div class="fui-content">
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepName" name="stepName" class="mini-textbox"
+					required="true" emptyText="请输入步骤名称" style="width: 70%" />
+			</div>
+		</div>
+		<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false" >
+			<div name="tabs1" title="一般">
+				<span>设置:</span>
+					<div role="row">
+						<div role="control" label="URL" starred="true">
+							<input id="url" name="url" class="mini-textbox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="获取字段URL">
+							<div class="mini-checkbox" id="urlInField" name="urlInField" onValueChanged="onUrlInFieldValueChanged" ></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="URL字段名称" starred="true">
+							<input id="urlField" name="urlField" action="getPreFieldsToUrlField" class="mini-combobox" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="HTTP方法" starred="true">
+							<input id="httpMethod" name="httpMethod" class="mini-combobox" required="true" action="getSelectHttpMethod"
+								textField="text" valueField="id" onValueChanged="onHttpMethodValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="字段体" >
+							<input id="bodyField" name="bodyField" action="getPreFieldsToUrlField"  class="mini-combobox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="应用类型" starred="true">
+							<input id=applicationType name="applicationType" class="mini-combobox" required="true" action="getSelectApplicationTypes"
+								textField="text" valueField="id"/>
+						</div>
+					</div>
+					
+					<hr style="height:1px;border:none;border-top:1px solid #ebebeb;" />
+					
+					<span >输出字段 :</span>
+					<div role="row">
+						<div role="control" label="结果字段名称" starred="true">
+							<input id="resultFieldName" name="resultFieldName" value="result" class="mini-textbox" required="true"/>
+						</div>
+					</div>
+					
+					<input id="headerTableData" name="headerTableData" class="mini-textbox hidden">
+					<input id="parameterTableData" name="parameterTableData" class="mini-textbox hidden">
+			
+				</div>
+			<div name="tabs2" title="头">
+				<span >Header:</span>
+				<div class="" style="padding-top: 1px">
+					<div class="btn-group mr10">
+						<a class="mini-button mini-btn-primary" onclick="addHeaders" style="margin-left: 20px">新增字段</a>
+						<a id="deleteHelder" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteHeadersSelected);}">删除选中</a>
+					</div>
+				</div>
+				<div class="fui-content" style="padding-top: 1px">
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						 multiSelect="true" allowCellValid="true" action="getHeadersDataGridData"
+						allowCellEdit="true" style="height: 100%;" allowResize="true"
+						showPager="false" allowCellSelect="true" editNextOnEnterKey="true"
+						editNextRowCell="true">
+						<div property="columns">
+							<div type="checkcolumn" width="55"></div>
+							<div type="indexcolumn" width="55" headerAlign="center">序</div>
+							<div field="headerField" headerAlign="center" vtype="required" width="200">
+								字段<input property="editor" class="mini-combobox" style="width: 100%"
+									emptyText="请选择字段..." data="preFieldList" textField="text" valueField="id" required="true"/>
+							</div>
+							<div field="headerName" headerAlign="center" vtype="required" width="200">
+								名称<input property="editor" class="mini-textbox" style="width: 100%" required="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div name="tabs3" title="参数">
+				<span >Parameters:</span>
+				<div class="" style="padding-top: 1px">
+					<div class="btn-group mr10">
+						<a class="mini-button mini-btn-primary" id="addParameter" onclick="addParameters" style="margin-left: 20px">新增参数</a>
+						<a id="deleteParameter" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid2').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteParametersSelected);}">删除选中</a>
+					</div>
+				</div>
+				<div class="fui-content" style="padding-top: 1px">
+					<div id="datagrid2" name="datagrid2" class="mini-datagrid"
+						 multiSelect="true" allowCellValid="true" action="getParametersDataGridData"
+						allowCellEdit="true" style="height: 100%;" allowResize="true"
+						showPager="false" allowCellSelect="true" editNextOnEnterKey="true"
+						editNextRowCell="true">
+						<div property="columns">
+							<div type="checkcolumn" width="55"></div>
+							<div type="indexcolumn" width="55" headerAlign="center">序</div>
+							<div field="parameterField" headerAlign="center" vtype="required" width="200">
+								参数<input property="editor" class="mini-combobox" style="width: 100%"
+								emptyText="请选择字段..." data="preFieldList" textField="text" valueField="id" required="true"/>
+							</div>
+							<div field="parameterName" headerAlign="center" vtype="required" width="200">
+								名称<input property="editor" class="mini-textbox" style="width: 100%" required="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+		<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+
+		<script>
+			var form = new mini.Form("#form");
+			var stepNameForm = mini.get('stepName');
+			var grid = mini.get("datagrid");
+			var grid2 = mini.get("datagrid2");
+			var nodeData;
+			var nodeInfo;
+			var preFieldList;
+			
+			
+			function pageLoad() {
+				//从父页面获取表单数据
+				var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+				epoint.initPage('restaction?nodeInfoKey=' + nodeInfo.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initCallBack);
+			}
+			
+			function initCallBack(e) {
+				//填充表单数据
+				form.setData(nodeData);
+				var nodeName = nodeData.stepname;
+				if(!nodeName){
+					stepNameForm.setValue(nodeInfo.name);
+				}
+				if(e.preFieldList){
+					preFieldList = e.preFieldList;
+				}
+				
+				if ("true" == nodeData.urlInField) {
+					mini.get("url").disable();
+					mini.get("urlField").enable();
+				}else{
+					mini.get("url").enable();
+					mini.get("urlField").disable();
+				}
+				
+				if ("0" == nodeData.httpMethod || "4" == nodeData.httpMethod || "5" == nodeData.httpMethod) {
+					mini.get("addParameter").disable();
+					mini.get("deleteParameter").disable();
+					mini.get("bodyField").disable();
+					mini.get("applicationType").disable();
+					mini.get("datagrid2").allowCellEdit = false;
+				}else if("3" == nodeData.httpMethod){
+					mini.get("bodyField").disable();
+					mini.get("applicationType").disable();
+				}else{
+					mini.get("addParameter").enable();
+					mini.get("deleteParameter").enable();
+					mini.get("bodyField").enable();
+					mini.get("applicationType").enable();
+					mini.get("datagrid2").allowCellEdit = true;
+				}
+			}
+			
+			//获取form表单数据
+			function getForm() {
+				var data = form.getData(true, false);
+				var s = mini.encode(data);
+				return s;
+			}
+	
+			//保存修改
+			function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			grid2.validate();
+			if (grid2.isValid() == false) {
+				var error = grid2.getCellErrors()[0];
+				grid2.beginEditCell(error.record, error.column);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute('saveAll', '@none', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+			
+			//新增类别
+			function addHeaders() {
+				var newRow = {
+				//lx : "保留非全局角色"
+				};
+				grid.addRow(newRow, 0);
+				grid.beginEditRow(newRow);
+			}
+			
+			//新增类别
+			function addParameters() {
+				var newRow = {
+				//lx : "保留非全局角色"
+				};
+				grid2.addRow(newRow, 0);
+				grid2.beginEditRow(newRow);
+			}
+	
+			//删除Headers选中
+			function deleteHeadersSelected() {
+				grid.removeRows(grid.getSelecteds(), false);
+				setGridData();
+			}
+			
+			//删除Parameters选中
+			function deleteParametersSelected() {
+				grid2.removeRows(grid2.getSelecteds(), false);
+				setGridData();
+			}
+			
+			function setGridData(){
+				var datas = grid.getData();
+				var array = [];
+				for (var i = 0; i < datas.length; i++) {
+					var row = datas[i];
+					array.push({
+						"headerField" : row.headerField,
+						"headerName" : row.headerName,
+					});
+				}
+				mini.get('headerTableData').setValue(JSON.stringify(array));
+				
+				var datas2 = grid2.getData();
+				var array2 = [];
+				for (var i = 0; i < datas2.length; i++) {
+					var row2 = datas2[i];
+					array2.push({
+						"parameterField" : row2.parameterField,
+						"parameterName" : row2.parameterName,
+					});
+				}
+				mini.get('parameterTableData').setValue(JSON.stringify(array2));
+			}
+			
+			//获取字段URL为true时，URL置灰，false时，URL字段名称置灰
+			function onUrlInFieldValueChanged(e){
+				if ("true" == e.value) {
+					mini.get("url").disable();
+					mini.get("urlField").enable();
+				}else{
+					mini.get("url").enable();
+					mini.get("urlField").disable();
+				}
+			}
+			
+			//HTTP方法为GET(0)、HEAD(4)、OPTIONS(5)时，参数列置灰
+			//HTTP方法为GET(0)、DELETE(3)、HEAD(4)、OPTIONS(5)时，bodyField/applicationType置灰
+			function onHttpMethodValueChanged(e){
+				if ("0" == e.value || "4" == e.value || "5" == e.value) {
+					mini.get("addParameter").disable();
+					mini.get("deleteParameter").disable();
+					mini.get("bodyField").disable();
+					mini.get("applicationType").disable();
+					mini.get("datagrid2").allowCellEdit = false;
+				}else if("3" == e.value){
+					mini.get("bodyField").disable();
+					mini.get("applicationType").disable();
+				}else{
+					mini.get("addParameter").enable();
+					mini.get("deleteParameter").enable();
+					mini.get("bodyField").enable();
+					mini.get("applicationType").enable();
+					mini.get("datagrid2").allowCellEdit = true;
+				}
+			}
+		</script>
+</body>
+
+</html>

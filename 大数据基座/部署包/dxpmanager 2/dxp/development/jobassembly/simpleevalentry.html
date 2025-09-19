@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>校验字段的值</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a>
+		</div>
+	</div>
+	
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="流程名称" starred="true">
+				<input id=changeName name="changeName" class="mini-textbox"
+					required="true" emptyText="请输入流程名称" />
+			</div>
+		</div>
+		<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false" >
+			<div name="tabs1" title="一般">
+				<span>源</span>
+					<div role="row">
+						<div role="control" label="检验" starred="true">
+							<input id="valueType" name="valueType" 
+							 data="[{text:'上一步结果的字段',id:'0'},{text:'变量',id:'1'}]" textField="text" valueField="id" value="0" 
+							class="mini-combobox" onValueChanged="onValueTypeValueChanged" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="fieldNameDiv" >
+						<div role="control" label="字段名" starred="true">
+							<input id="fieldName" name="fieldName" class="mini-textbox" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="variableNameDiv">
+						<div role="control" label="变量名" starred="true">
+							<input id="variableName" name="variableName" class="mini-textbox" required="true"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="类型" starred="true">
+							<input id="fieldType" bind="fieldType" name="fieldType" class="mini-combobox" emptyText="请选择类型..." textField="text" valueField="id"
+							action="getSimpleEvalentryFieldtype" onValueChanged="onFieldTypeValueChanged" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="maskDiv">
+						<div role="control" label="掩码" starred="true">
+							<input id="mask" bind="mask" name="mask" class="mini-combobox" emptyText="请选择掩码..." 
+							textField="text" valueField="id" action="getSimpleEvalentryMask" required="true"/>
+						</div>
+					</div>
+					
+					<hr style="height:1px;border:none;border-top:1px solid #ebebeb;" />
+					<span>成功条件</span>
+					
+					<!-- <div role="row">
+						<div role="control" label="Success when variable">
+							<div name="successwhenvarset" class="mini-checkbox"></div>
+						</div>
+					</div> -->
+					<div role="row" id="successNumberConditionDiv">
+						<div role="control" label="成功条件" starred="true">
+							<input id="successNumberCondition" bind="successNumberCondition" name="successNumberCondition" class="mini-combobox" emptyText="请选择成功条件..." 
+							textField="text" valueField="id" action="getSimpleEvalentrySuccessnumbercondition" required="true" onValueChanged="onSuccNumCondiValueChanged"/>
+						</div>
+					</div>
+					<div role="row" id="successStringConditionDiv">
+						<div role="control" label="成功条件" starred="true">
+							<input id="successStringCondition" bind="successStringCondition" name="successStringCondition" class="mini-combobox" emptyText="请选择成功条件..." 
+							textField="text" valueField="id" action="getSimpleEvalentrySuccessstringcondition" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="successBooleanConditionDiv">
+						<div role="control" label="成功条件" starred="true">
+							<input id="successBooleanCondition" bind="successBooleanCondition" name="successBooleanCondition" class="mini-combobox" emptyText="请选择成功条件..." 
+							textField="text" valueField="id" action="getSimpleEvalentrySuccessbooleancondition" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="comparevalueDiv">
+						<div role="control" label="值" starred="true">
+							<input id="comparevalue" name="comparevalue" class="mini-textbox" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="minValueDiv">
+						<div role="control" label="Min" starred="true">
+							<input id="minValue" name="minValue" class="mini-textbox" required="true"/>
+						</div>
+					</div>
+					<div role="row" id="maxValueDiv">
+						<div role="control" label="Max" starred="true">
+							<input id="maxValue" name="maxValue" class="mini-textbox" required="true"/>
+						</div>
+					</div>
+				</div>
+		</div>
+	</div>
+
+
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('changeName');
+		var nodeData;
+		var nodeInfo;
+		
+		
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			var nodeName = nodeData.changeName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			//填充表单数据
+			if (nodeData) {
+				form.setData(nodeData);
+				var valueType = mini.get('valueType');
+				var fieldType = mini.get('fieldType');
+				var successNumberCondition = mini.get('successNumberCondition');
+				if (valueType) {
+					onValueTypeValueChanged(valueType);
+					onFieldTypeValueChanged(fieldType);
+					onSuccNumCondiValueChanged(successNumberCondition);
+				}
+			}else{
+				$('#fieldNameDiv').show();
+				$('#variableNameDiv').hide();
+				$('#maskDiv').hide();
+				$('#successStringConditionDiv').show();
+				$('#successNumberConditionDiv').hide();
+				$('#successBooleanConditionDiv').hide();
+				$('#comparevalueDiv').show();
+				$('#minValueDiv').hide();
+				$('#maxValueDiv').hide();
+			}
+			
+			epoint.initPage('simpleevalentryaction',
+					{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+					'');
+		}
+		
+		//获取form表单数据
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate()) {
+				//清除隐藏输入框数据
+				var valueType = mini.get('valueType').value;
+				var fieldType = mini.get('fieldType').value;
+				var successNumberCondition = mini.get('successNumberCondition').value;
+				if (valueType == 0) {
+					epoint.clear('variableNameDiv');
+				}else{
+					epoint.clear('fieldNameDiv');
+				}
+				
+				if (fieldType == 0) {
+					//String
+					epoint.clear('maskDiv');
+					epoint.clear('successNumberConditionDiv');
+					epoint.clear('successBooleanConditionDiv');
+					epoint.clear('minValueDiv');
+					epoint.clear('maxValueDiv');
+				}else if(fieldType == 1){
+					//Number
+					epoint.clear('maskDiv');
+					epoint.clear('successStringConditionDiv');
+					epoint.clear('successBooleanConditionDiv');
+					if (successNumberCondition == 6) {
+						epoint.clear('comparevalueDiv');
+					}else{
+						epoint.clear('minValueDiv');
+						epoint.clear('maxValueDiv');
+					}
+				}else if(fieldType == 2){
+					//Date time
+					epoint.clear('successStringConditionDiv');
+					epoint.clear('successBooleanConditionDiv');
+					if (successNumberCondition == 6) {
+						epoint.clear('comparevalueDiv');
+					}else{
+						epoint.clear('minValueDiv');
+						epoint.clear('maxValueDiv');
+					}
+				}else if(fieldType == 3){
+					//Boolan
+					epoint.clear('maskDiv');
+					epoint.clear('successStringConditionDiv');
+					epoint.clear('successNumberConditionDiv');
+					epoint.clear('comparevalueDiv');
+				}
+				
+				var data = form.getData(true, false);
+				epoint.closeDialog(mini.encode(data));
+			}
+		}
+		
+		//检验条件变化时页面输入框变化
+		function onValueTypeValueChanged(e){
+			if (e && e.value == 0) {
+				$('#fieldNameDiv').show();
+				$('#variableNameDiv').hide();
+			}else{
+				$('#fieldNameDiv').hide();
+				$('#variableNameDiv').show();
+			}
+		}
+		
+		//类型变化时页面输入框变化
+		function onFieldTypeValueChanged(e){
+			if (e) {
+				var successNumberCondition = mini.get('successNumberCondition').value;
+				if (e.value == "0") {
+					//String
+					$('#maskDiv').hide();
+					$('#successStringConditionDiv').show();
+					$('#successNumberConditionDiv').hide();
+					$('#successBooleanConditionDiv').hide();
+					$('#comparevalueDiv').show();
+					$('#minValueDiv').hide();
+					$('#maxValueDiv').hide();
+				}else if(e.value == "1"){
+					//Number
+					$('#maskDiv').hide();
+					$('#successStringConditionDiv').hide();
+					$('#successNumberConditionDiv').show();
+					$('#successBooleanConditionDiv').hide();
+					if (successNumberCondition == 6) {
+						$('#comparevalueDiv').hide();
+						$('#minValueDiv').show();
+						$('#maxValueDiv').show();
+					}else{
+						$('#comparevalueDiv').show();
+						$('#minValueDiv').hide();
+						$('#maxValueDiv').hide();
+					}
+				}else if(e.value == "2"){
+					//Date time
+					$('#maskDiv').show();
+					$('#successStringConditionDiv').hide();
+					$('#successNumberConditionDiv').show();
+					$('#successBooleanConditionDiv').hide();
+					if (successNumberCondition == 6) {
+						$('#comparevalueDiv').hide();
+						$('#minValueDiv').show();
+						$('#maxValueDiv').show();
+					}else{
+						$('#comparevalueDiv').show();
+						$('#minValueDiv').hide();
+						$('#maxValueDiv').hide();
+					}
+				}else if(e.value == "3"){
+					//Boolean
+					$('#maskDiv').hide();
+					$('#successStringConditionDiv').hide();
+					$('#successNumberConditionDiv').hide();
+					$('#successBooleanConditionDiv').show();
+					$('#comparevalueDiv').hide();
+					$('#minValueDiv').hide();
+					$('#maxValueDiv').hide();
+				}
+			}
+		}
+
+		//当值为If value is between时，展示Min和Max，隐藏值
+		function onSuccNumCondiValueChanged(e){
+			if (e.value == 6) {
+				$('#comparevalueDiv').hide();
+				$('#minValueDiv').show();
+				$('#maxValueDiv').show();
+			}else{
+				$('#comparevalueDiv').show();
+				$('#minValueDiv').hide();
+				$('#maxValueDiv').hide();
+			}
+		}
+		
+		
+	</script>
+</body>
+

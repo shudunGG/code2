@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>设备列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" bind="deviceid" emptyText="请输入设备ID搜索"
+				onenter="searchData" /> <a class="mini-button ml8" state="primary"
+				iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="deviceid" width="100%" align="left">设备ID</div>
+				<div field="deviceinfo" width="350" align="left">设备型号</div>
+				<!-- <div field="appversion" width="200">app版本</div> -->
+				<div field="appguid" visible="false"></div>
+				<!-- <div field="registdate" width="150"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">注册时间</div> -->
+				<div width="60" renderer="onDetailRenderer" align="left">查看</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('mobiledevicelistaction');
+
+		var appguid = Util.getUrlParams('rowguid');
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openDetail", "rowguid,deviceid,appguid");
+		};
+
+		// 弹出明细窗口
+		function openDetail(e) {
+			var item = epoint.decodeJson(e);
+			epoint.openDialog('设备使用用户列表-' + item.deviceid,
+					"framemanager/mobile/device/mobiledevicedetail?guid="
+							+ item.rowguid + "&appguid=" + appguid
+							+ "&deviceid=" + item.deviceid, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+</body>
+</html>

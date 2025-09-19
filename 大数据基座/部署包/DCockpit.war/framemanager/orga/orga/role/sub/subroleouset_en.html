@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Role authorization</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="Choose department"></div>
+
+		<div role="body">
+			<ul id="tree" name="tree" class="mini-tree"
+				style="width: 100%; height: 100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"
+				action="getTreeModel" resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-save" onclick="saveBtn()">Save
+					Settings</a>
+			</div>
+		</div>
+
+
+		<!-- conditions area -->
+		<div class="fui-condition" opened="true">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="rolecolumntable">
+							<input id="roleType" autoLoad="false" bind="roleTypeGuid"
+								action="getFrameRoleType" textField="text"
+								onvaluechanged="roleTypeChange" valueField="id"
+								class="mini-combobox mr10" />
+						</div>
+						<div role="control" label="Department name">
+							<input bind="searchString" class="mini-textbox"
+								onkeypress="searchData" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="role">
+							<div id="roleGroup" class="mini-checkboxlist" repeatItems="5"
+								repeatLayout="table" textField="text" valueField="id"
+								bind="selectRoleGuids" onvaluechanged="roleGroupChange"
+								action="checkgroupModal"></div>
+						</div>
+					</div>
+				</div>
+				<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+					class="mini-hidden" />
+			</div>
+		</div>
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="ouguid" action="getDataGridData" allowCellEdit="true"
+				style="width: 100%; height: 100%;" showFooter="false"
+				allowSortColumn="false"></div>
+		</div>
+	</div>
+
+
+	<script type="text/javascript">
+		var miniLocal = 'en_US.js';
+	</script>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<link href="../../../../../fui/js/miniui/plugin/gridcheckall/checkall.css"
+		rel="stylesheet" type="text/css" />
+	<script src="../../../../../fui/js/miniui/plugin/gridcheckall/checkall.js"
+		type="text/javascript"></script>
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		epoint.initPage("subroleousetaction", '', callbackinit);
+
+		// tableLattice object
+		var grid = mini.get("datagrid");
+		//The treejsobject
+		var tree = mini.get("tree");
+
+		// Initialize the back off, dynamically generatedcolumn
+		function callbackinit(data) {
+			adjustContentHeight();//hiddenconditionCome out To recount a height
+			if (data) {
+				drawDynamicColumn(data);
+			}
+		}
+
+		// Click on the left side of theThe treeThe refresh on the right sidetable"
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			//To the leftThe treeClick on the nodeidIn a hidden field
+			mini.get('leftTreeNodeGuid').setValue(id == 'f9root' ? "" : id);
+			//The refreshtable"
+			updateTable();
+		});
+
+		// roleCategory change
+		function roleTypeChange() {
+			epoint.execute('roleTypeChange', '', function(data) {
+				drawDynamicColumn(data);
+				updateTable();
+			});
+		}
+
+		// Display mode change
+		function moduleDisplayChange() {
+			updateTable();
+		}
+
+		// chooserolechange
+		function roleGroupChange() {
+			epoint.execute("initDynamicRole", 'roleGroup', function(data) {
+				drawDynamicColumn(data);
+				updateTable();
+			});
+		}
+
+		// Draw the dynamiccolumn
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = eval('(' + tmp + ')');
+			grid.set(columns);
+			var tmpObj = epoint.decodeJson(tmp);
+			var columnsObj = tmpObj.columns;
+			if(columnsObj && columnsObj.length){
+				$.each(columnsObj, function(k,v){
+					if(columnsObj[k].type=='checkboxcolumn'){
+						new CheckAll(grid, columnsObj[k].name);
+					}
+				});
+			}
+		}
+
+		// save
+		function saveBtn() {
+			epoint.execute('saveBtn', '', callback);
+		}
+
+		//callback
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', updateTable, 'info');
+			}
+		}
+
+		function searchData() {
+			if (event.keyCode == 13) {
+				updateTable();
+			}
+		}
+
+		function updateTable() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//]]>
+	</script>
+
+</body>
+
+</html>

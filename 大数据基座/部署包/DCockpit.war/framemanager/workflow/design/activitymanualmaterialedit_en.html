@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Activity edit material</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!--   This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify"
+				iconCls="icon-save"> save changes
+			</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<!-- Add a hidden field -->
+		<input bind="workflowActivityMaterial.processVersionGuid"
+			id="processVersionGuid" class="mini-hidden" /><input
+			bind="workflowActivityMaterial.controlVisiableMethodGuid"
+			id="controlVisiableMethodGuid" class="mini-hidden" />
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="The name of the material">
+						<input id="materialName" bind="materialName" class="mini-textbox"
+							enabled="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input id="orderNum" bind="workflowActivityMaterial.orderNum"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="submission">
+						<input name="type" bind="workflowActivityMaterial.submitType"
+							data="[{text:'Submit the electronic files',id:'10'},
+							{text:'Submit paper document',id:'20'},
+							{text:'Submit the electronic filesorSubmit paper document',id:'35'},
+							{text:'At the same timeSubmit the electronic filesandSubmit paper document',id:'40'}]"
+							textField="text" valueField="id" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Whether must submit">
+						<div id="ismustsubmit"
+							bind="workflowActivityMaterial.isMustSubmit"
+							class="mini-radiobuttonlist" repeatItems="2" repeatLayout="table"
+							repeatDirection="horizontal" textField="text" valueField="id"
+							data="[{text:'is',id:'10'},{text:'no',id:'20'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Control display method">
+						<input id="methodName" bind="methodName" class="mini-buttonedit"
+							emptyText="" onbuttonclick="setMethod" selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="This step operation permissions">
+						<div id="accessRight" bind="workflowActivityMaterial.accessRight"
+							class="mini-radiobuttonlist" repeatItems="2" repeatLayout="table"
+							repeatDirection="horizontal" textField="text" valueField="id"
+							data="[{text:'Read and write',id:'20'},{text:'read-only',id:'10'}]"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		//Initialization request 
+		epoint.initPage('activitymanualmaterialeditaction', '', initCallBack);
+		function initCallBack(e) {
+			if (e.methodName) {
+				mini.get('methodName').setText(e.methodName);
+			}
+		}
+		//callback
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+		}
+		// Closing thecallback
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+		// The save operationcallback
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('updateMaterial', '', closeCallback);
+			}
+		}
+		//chooseControl display method
+		function setMethod() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			epoint
+					.openDialog(
+							'chooseFlow process page',
+							'framemanager/workflow/design/designhelper?mode=function&processVersionGuid='
+									+ processVersionGuid, selMethodOperJS, {
+								'width' : 480,
+								'height' : 500
+							});
+		}
+
+		function selMethodOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var name = rtnValue.split(';')[0];
+				var guid = rtnValue.split(';')[1];
+				mini.get("methodName").setText(name);
+				mini.get("methodName").setValue(name);
+				//controlVisiableMethodGuid
+				mini.get("controlVisiableMethodGuid").setValue(guid);
+			}
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

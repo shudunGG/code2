@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<title>新点统一认证平台_移动</title>
+</head>
+<body>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 用户名密码SM2加密引入js文件
+		SrcBoot.output([ '../../../frame/fui/js/libs/sm2security.js' ]);
+	</script>
+	<script>
+		// 获取token和loginid
+		var token;
+		var token2;
+		var sm2PubKey;
+		var username;
+		var password;
+
+		epoint.execute("loginaction.autoLoad", "@none", function(data) {
+			
+			sm2PubKey = data.sm2PubKey;
+			
+			// 判断ejs版本
+	        ejsType(function (ejsType) {
+	        	switch (ejsType) {
+	        		case 'V3':
+	        			// 插入ejs3.0js
+	        			loaderLibrary([{
+	        				inject: 'body',
+	        				src: 'mobile/js/ejs/v3/ejs.js',
+	        				type: 'js'
+	        			}]).then(function () {
+	        				loaderLibrary([{
+		        				inject: 'body',
+		        				src: 'mobile/js/ejs/v3/ejs.native.js',
+		        				type: 'js'
+		        			}]).then(function () {
+		        				// 插入文件加载成功后执行
+		        				ejs.auth.getToken({
+		        					success: function (result) {
+		        						login(result.access_token)
+		        					},
+		        					error: function (error) {
+		        					}
+		        				});
+	        				});
+	        			});
+	        			break;
+	        		case 'V2':
+	        			// 插入ejs2.0js
+	        			loaderLibrary([{
+	        				inject: 'body',
+	        				src: 'mobile/js/ejs/v2/epoint.moapi.v2.js',
+	        				type: 'js'
+	        			}]).then(function () {
+	        				// 插入文件加载成功后执行
+	        				ejs.oauth.getV7Token(function (result, msg, detail) {
+	        					login(result.token)
+	        				});
+	        			});
+	        			break;
+	        		default:
+	        			break;
+	        	}
+	        })
+		});
+
+		
+       /**
+        * 返回容器ejs版本
+        * @param {Obejct} cb 成功回调，返回ejs版本
+        */
+        function ejsType(cb) {
+            var ua = navigator.userAgent.toLowerCase();
+            if (/m7/.test(ua) || window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.WKWebViewJavascriptBridge) {
+            	cb && cb('V3')
+            } else {
+                cb && cb('V2')
+            }
+        }
+		
+        /**
+         * 动态插入js文件
+         * @param {Arrary} Arrary 插入文件数组
+         */
+         function loaderLibrary(Arrary) {
+             var promiseAssembly = [];
+
+             Arrary.forEach(function (e) {
+                 var inject = e.inject;
+                 var src = e.src + "?timestamp=" + new Date().getTime();
+                 var type = e.type;
+                 var el = null;
+                 var promise = new Promise((resolve) => {
+                     if (type === 'css') {
+                         el = document.createElement('link');
+                         el.link = src;
+                         el.ref = 'stylesheet';
+                     } else {
+                         el = document.createElement('script');
+                         el.src = src;
+                     }
+
+                     if (inject === 'head') {
+                         document.head.appendChild(el);
+                     } else {
+                         document.body.appendChild(el);
+                     }
+
+                     el.onload = function () {
+                         resolve();
+                     };
+                 });
+
+                 promiseAssembly.push(promise);
+             });
+
+             return Promise.all(promiseAssembly);
+         }
+
+        // 执行登录
+        function login(token){
+        	username = epoint.encodeUtf8(token);
+        	username = sm2Encrypt(username, sm2PubKey, 0);
+        	password = epoint.encodeUtf8(token);
+        	password = sm2Encrypt(password, sm2PubKey, 0);
+
+        	epoint.execute('loginaction.login', '', [ username, password, '777', '', '' ], checkMultipleLogin);
+        }
+
+
+        function checkMultipleLogin(data) {
+        	if (data.systemMessages != null&&(data.systemMessages.indexOf("过期的Token")>-1||data.systemMessages.indexOf("已经单点登出")>-1)) {
+        		// 判断ejs版本
+        		ejsType(function (ejsType) {
+        			switch (ejsType) {
+        				case 'V3':
+        					ejs.auth.refreshToken({
+        						success: function (result) {
+        							token2 = result.access_token
+        							username = epoint.encodeUtf8(token2);
+        							username = sm2Encrypt(username, sm2PubKey, 0);
+        							password = epoint.encodeUtf8(token2);
+        							password = sm2Encrypt(password, sm2PubKey, 0);
+        							epoint.execute('loginaction.login', '', [ username, password, '777', '', '' ], checkMultipleLogin);
+        						},
+        						error: function (error) {},
+        						isForce : 1,
+        						isAutoLogout : 1
+        					});
+        					break;
+        				case 'V2':
+        					ejs.oauth.refreshToken(function (result, msg, detail) {
+        							token2 = result.access_token
+        							username = epoint.encodeUtf8(token2);
+        							username = sm2Encrypt(username, sm2PubKey, 0);
+        							password = epoint.encodeUtf8(token2);
+        							password = sm2Encrypt(password, sm2PubKey, 0);
+        							epoint.execute('loginaction.login', '', [ username, password, '777', '', '' ], checkMultipleLogin);
+        						});
+        					break;
+        				default:
+        					break;
+        			}
+        		})
+        	}else{
+        		var errorMsg=data.systemMessages;
+        		epoint.alert(errorMsg.substring(0,errorMsg.indexOf("还剩下")));
+        	}
+        }
+	</script>
+</body>
+</html>

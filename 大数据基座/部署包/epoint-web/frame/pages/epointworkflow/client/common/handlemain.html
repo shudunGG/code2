@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title></title>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<!-- 左侧的标题
+		 @local 国际化的标识     表示从语言包中的'sysParamCategory'取值-->
+		<!-- <div role="head" title="">
+			
+		</div> -->
+		<!-- 左侧的内容区域 -->
+		<div role="body">
+			<ul id="tree" name="tree" class="mini-tree" style="width: 100%;" showTreeIcon="true" textField="text"
+				idField="id" action="getTreeModal">
+			</ul>
+		</div>
+	</div>
+
+	<!-- 左右布局页面的右侧内容 -->
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="uc-handlecontrols" id="handlecontrols" action="handleCtrl" style="width: 100%"></div>
+		</div>
+		<div class="fui-content">
+			<!-- 隐藏按钮id不能修改 -->
+			<div class="hidden">
+				<a class="mini-button" id="btnSaveFrom" onclick="saveFrom();">保存</a>
+				<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+			</div>
+
+			<div id="tabs1" class="mini-tabs" activeIndex="0" style="width: 100%; height: 100%;"
+				bodyStyle="padding:0;border:0;">
+			</div>
+
+			<!-- 
+			showmode(显示意见模板模式)
+			   1:(默认)显示意见模板区域，但仅显示个人意见模板
+			   2:显示意见模板区域，显示公共和个人意见模板
+			   3:不显示意见模板区域
+			-->
+			<div class="uc-workflowfloatopinion" id="workflowfloatopinion" action='floatOpinionCtrl'
+				data-options="{'showmode' : 1}"></div>
+		</div>
+	</div>
+
+
+
+
+	<input class="mini-hidden" id="pageUrl" bind="map" />
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output(['frame/pages/epointworkflow/js/workflowjsboot.js']);
+	</script>
+	<script>
+		//<![CDATA[ 
+		//初始化页面
+		var showmode = Util.getUrlParams('showmode');
+		if (!showmode) {
+			showmode = 1;
+		}
+		var opinionControl = $('#workflowfloatopinion');
+		opinionControl.get(0).dataset.options = "{'showmode' : " + showmode + "}";
+		
+		epoint.initPage("handlemainaction");
+		
+		var tree = mini.get("tree");
+		var tabs = mini.get("tabs1");
+		var openNodesArray = [];
+		var openEdit = [];
+		var formNum = 0;
+
+		function saveFrom() {
+			var tabsCount = tabs.getTabs().length;
+			if (!tabsCount) {
+				HeaderSubmit();
+				return;
+			}
+			for (var n = 0; tabsCount != null && tabsCount > 0 && n < tabsCount; n++) {
+				if (tabs.getTabIFrameEl(tabs.getTab(n)) != null) {
+					if (tabs.getTabIFrameEl(tabs.getTab(n)).contentWindow.mini
+						.get("btnSaveFrom") != null) {
+						tabs.getTabIFrameEl(tabs.getTab(n)).contentWindow.mini
+							.get("btnSaveFrom").doClick();
+					}
+				}
+			}
+		}
+
+		function submit() {
+			var tabNum = tabs.getTabs().length;
+			if (!tabNum) {
+				HeaderSubmit();
+				return;
+			}
+			formNum = 0;
+			for (var n = 0; tabNum != null && tabNum > 0 && n < tabNum; n++) {
+				if (tabs.getTabIFrameEl(tabs.getTab(n)) != null &&
+					tabs.getTabIFrameEl(tabs.getTab(n)).contentWindow.mini
+					.get('btnSubmit') != null) {
+					formNum += 1;
+				}
+			}
+			for (var n = 0; tabNum != null && tabNum > 0 && n < tabNum; n++) {
+				if (tabs.getTabIFrameEl(tabs.getTab(n)) != null) {
+					if (tabs.getTabIFrameEl(tabs.getTab(n)).contentWindow.mini
+						.get('btnSubmit') != null) {
+						tabs.getTabIFrameEl(tabs.getTab(n)).contentWindow.mini
+							.get('btnSubmit').doClick();
+					}
+				}
+			}
+		}
+
+		function headerMainSubmit() {
+			formNum -= 1;
+			if (formNum == 0) {
+				HeaderSubmit();
+			}
+		}
+
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function (e) {
+			//每点击一次重新获取tabs,将array中不包含的去除
+			tabs = mini.get("tabs1");
+			openEdit = [];
+			for (var n = 0; openNodesArray != null && openNodesArray.length > 0 &&
+				n < openNodesArray.length; n++) {
+				if (containsTwo(tabs, openNodesArray[n])) {
+					openEdit.push(openNodesArray[n]);
+				}
+			}
+
+			openNodesArray = openEdit;
+
+			//第二层子节点
+			if (e.node._level == 2) {
+				var id = e.node.id;
+				//获取地址
+				var add = mini.get("pageUrl").getValue();
+				if (add != null && add[e.node.id] != null &&
+					add[e.node.id] != "") {
+					var src = Util.getRightUrl(add[e.node.id]);
+
+					if (contains(openNodesArray, e.node.id)) {
+						var tab2 = {
+							title: e.node.text,
+							name: e.node.id,
+							showCloseButton: true,
+							url: src
+						};
+						tabs.addTab(tab2);
+						tabs.activeTab(tabs.getTab(tab2));
+						openNodesArray.push(e.node.id);
+					}
+				}
+			}
+		});
+
+		function contains(arr, obj) {
+			if (!arr || arr.length == 0) return true;
+			var i = arr.length;
+			while (i--) {
+				if (arr[i] == obj) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		function containsTwo(arr, obj) {
+			if (!arr || arr.length == 0) return false;
+			var i = arr.getTabs().length;
+			while (i--) {
+				if (arr.getTab(i).name == obj) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		//]]>
+	</script>
+<script>
+		SrcBoot.output(['frame/pages/epointworkflow/client/uc/workflowfloatopinion/workflowfloatopinion.js']);
+	</script>
+</body>
+
+</html>

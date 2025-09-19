@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Code item management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<div class="fui-left">
+			<div role="head" title="select the superior code"></div>
+
+			<div role="body">
+				<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="getTreeData" resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right">
+			<!-- toolbar area-->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" iconCls="icon-addcircle"
+					onclick="addCodeItems()">new item code</a><a class="mini-button"
+					iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'info');} else {epoint.confirm('Will delete item code synchronization data delete child node,Sure you want to delete?','',deleteSelected);}">delete item code</a>
+					<a class="mini-button" iconCls="icon-save" onclick="saveAll()">save the code item</a>
+				</div>
+
+				<!--Help button -->
+				<a role="helper" class="mr10">precautions</a>
+
+			</div>
+
+			<!-- Help information area Hidden by default-->
+			<div class="fui-notice hidden">
+				<div>
+					<div style="margin:0px auto;text-align:left;width:700px">
+						<p>
+							Note: for multilevel code, such as the administrative divisions,***Corresponding Numbers for320502, the code item value must be numeric320502And please note that the code length must conform to the classification definition standard。
+						</p>
+						<p>
+							The default code item level value and the code is the same, namely the organization hierarchy using the field。When you don't have an hierarchy concept, the value of this property can be set manually
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="fui-condition">
+				<!-- The form layout -->
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<!-- 3 column -->
+						<div role="row">
+							<div role="control" label="item code" starred="true">
+								<input bind="codeItems.itemText" id="itemText"
+								class="mini-textbox" required="true"
+								requiredErrorText="The text item codeCan't be empty" />
+
+							</div>
+							<div role="control" label="code values" starred="true">
+								<input bind="codeItems.itemValue" id="itemValue"
+								class="mini-textbox" required="true"
+								requiredErrorText="Code item valuesCan't be empty" />
+							</div>
+							<div role="control" label="code level">
+								<input bind="codeItems.itemLevCode" id="itemLevCode"
+								class="mini-textbox" />
+							</div>
+						</div>
+						<!-- Add a hidden field to the tree and the linkage of the table -->
+						<input bind="itemID" id="itemID" class="mini-hidden" />
+					</div>
+				</div>
+				
+				<!-- search button -->
+				<a role="searcher" callback="searchData"></a>
+			</div>
+			<div class="fui-content">
+				<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="itemid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				action="getDataGridData" showPager="true" allowCellSelect="true" allowCellValid="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+						<div type="checkcolumn" width="50"></div>
+
+						<div type="indexcolumn" headerAlign="center" width="50">
+							order
+						</div>
+
+						<div field="itemText"  headerAlign="center" width="100%">
+							text item code
+							<input property="editor" class="mini-textbox" required="true" requiredErrorText="The text item codeCan't be empty" style="width:100%" />
+						</div>
+						<div field="itemValue"  headerAlign="center" width="150">
+							code item values
+							<input property="editor" class="mini-textbox" required="true" requiredErrorText="Code item valuesCan't be empty" style="width:100%" />
+						</div>
+						<div field="itemLevCode"  headerAlign="center" width="150">
+							code item levelvalue
+							<input property="editor" class="mini-textbox"  style="width:100%" />
+						</div>
+						<div field="orderNo" width="50" headerAlign="center" align="right">
+							roworder
+							<input property="editor" class="mini-textbox" vtype="int" style="width:100%"/>
+						</div>
+						<div field="dmAbr1" width="50" headerAlign="center">
+							note1
+							<input property="editor" class="mini-textbox" style="width:100%" />
+						</div>
+						<div field="dmAbr2" width="50" headerAlign="center">
+							note2
+							<input property="editor" class="mini-textbox" style="width:100%" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../rest/resource/jsboot"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("formcodeitemslistaction");
+			
+			// Table object
+			var grid = mini.get("datagrid");
+	    	
+			// Load data in the table after open the table editor
+			grid.on("load", function(e) {
+				var rows = e.sender.findRows();
+				for (var i = 0; i < rows.length; i++) {
+					grid.beginEditRow(rows[i]);
+				}
+			});
+
+			//The treejsobject
+			var tree = mini.get("tree");
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				var id = e.node.objectcode;
+				// To the leftThe treeClick on the nodeidIn a hidden field
+				// Send the second request, in the table will automatically bring conditions areaThe contents of the
+				mini.get('itemID').setValue(id);
+				//Refresh the table
+				searchData();
+			});
+
+			// The new item code
+			function addCodeItems() {
+				if (epoint.validate()) {
+					epoint.execute('addCodeItems', '', msgCallBack);
+				}
+			}
+
+			// save
+			function saveAll() {
+				var grid = mini.get("datagrid");
+				if (grid.isValid() == false) {
+					var error = grid.getCellErrors()[0];
+					grid.beginEditCell(error.record, error.column);
+					return;
+				}
+				epoint.execute('saveAll', ['datagrid','fui-form'], msgCallBack);
+			}
+
+			// delete
+			function deleteSelected() {
+				epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+			}
+
+			// Back off to remind
+			function msgCallBack(data) {
+				var msg =  data.msg;
+				if (msg) {
+					if (msg.indexOf("成功") == -1) {
+						epoint.alert(msg, '', '', 'warning');
+					} else {
+						epoint.alert(msg, '', searchData_Tree(), 'success');
+					}
+				}
+			}
+
+			// Form,The treeThe search of
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+			
+			// Form,The treeThe search of
+			function searchData_Tree() {
+				epoint.refresh(['datagrid', 'fui-form', 'tree'],'',true);
+			}
+			//]]>
+		</script>
+
+	</body>
+
+</html>

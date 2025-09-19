@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xxx dag 流程实例查看</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output(['./css/show.css']);
+    </script>
+</head>
+
+<body>
+    <div class="container" id="container">
+        <div class="diagram" id="task-designer-diagram"></div>
+        <div id="diagram-tooltip-node" class="diagram-tooltip"></div>
+        <div id="diagram-tooltip-link" class="diagram-tooltip"></div>
+		<ul id="node-context-menu" class="diagram-context-menu">
+            <li class="context-menu-item run" data-action="run1">激活节点(校验前置条件)</li>
+            <li class="context-menu-item run" data-action="run2">激活节点(不校验前置条件) </li>
+            <li class="context-menu-item kill" data-action="kill">终止</li>
+        </ul>
+
+        <span class="diagram-refresh-btn action-icon icon-refresh" data-tooltip="重新加载" onclick="load()"></span>
+    </div>
+
+    <div class="right-panel" id="right-panel">
+        <div class="panel-header">节点详情</div>
+        <div class="panel-body">
+            <iframe class="panel-ifr" id="detail-iframe" src="" height="100%" width="100%" frameborder="0" scrolling="no"></iframe>
+        </div>
+        <div class="panel-footer">
+            <span class="design-btn save-btn" onclick="hideDetailPage()">关闭</span>
+        </div>
+    </div>
+    <!-- 节点提示信息模板 -->
+    <template class="hidden" id="node-tooltip-tpl">
+        <ul class="tip-list">
+            <li class="tip-item"><span class="label">触发类型</span><span class="content">{{triggerType}}</span></li>
+            <li class="tip-item"><span class="label">节点状态</span><span class="content">{{statusMsg}}</span></li>
+            <li class="tip-item"><span class="label">触发时间</span><span class="content">{{triggerTime}}</span></li>
+            <li class="tip-item"><span class="label">执行器地址</span><span class="content">{{executorAddress}}</span></li>
+            <li class="tip-item"><span class="label">结束时间</span><span class="content">{{handleTime}}</span></li>
+            <li class="tip-item"><span class="label">执行结果</span><span class="content">{{handleResult}}</span></li>
+            <li class="tip-item"><span class="label">结果状态码</span><span class="content">{{handleCode}}</span></li>
+        </ul>
+    </template>
+    <!-- 路径提示信息模板 -->
+    <template class="hidden" id="link-tooltip-tpl">
+            {{{msg}}}
+            {{^msg}}未经过{{/msg}}
+    </template>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+
+        var iconNameMap = {
+        		'13': 'prerun',
+                '23': 'checkfail',
+                '14': 'running',
+                '25': 'fail',
+                '10': 'running',
+                '24': 'discard',
+                '20': 'success',
+                '21': 'fail',
+                '22': 'fail'
+            };
+            var colorMap = {
+                // 未执行
+                '-1': '#d6d6d6',
+                // 未通过
+                '0': '#f8785f',
+                // 通过
+                '1': '#60c065'
+            };
+            // 节点状态 status 到图标路径的转换
+            function nodeStatus2path(status) {
+            	if(iconNameMap[status]){
+	                return './images/status/' + iconNameMap[status] + '.png';
+            	}
+            }
+            // 路径状态到颜色的转化
+            function linkStatus2Color(status) {
+                return colorMap[status] || '#96bcf2';
+            }
+        
+    </script>
+    <script>
+        SrcBoot.output([
+            './js/go.js',
+            './js/show.js'
+        ]);
+    </script>
+    <script>
+
+        /**
+         * 显示节点详情页
+         * @param {object} nodeData 节点完整数据
+         */
+        function showDetailPage(nodeData) {
+            // nodeData 为节点的完整数据
+            var pageUrl = './taskInstance.html';
+
+            // 拼接参数 
+            var url = Util.addUrlParams(pageUrl, $.extend({}, Util.getUrlParams(), {
+                // 其他参数可以继续添加
+                taskGuid: nodeData.taskGuid,
+                dagTaskInstanceGuid: nodeData.dagTaskInstanceGuid
+            }));
+
+            $('#detail-iframe').attr('src', url);
+
+            // 显示 并将节点名字作为标题
+            $('#right-panel').addClass('show').find('.panel-header').text('[' + nodeData.taskName + ']节点实例');
+        }
+
+        function hideDetailPage() {
+            $('#right-panel').removeClass('show');
+        }
+
+        // 加载数据
+        function load(){
+        	epoint.execute('epointjobdagshowaction.init', '', function(data){
+    			if (data.status) {//成功
+    				designerUtil.setData(JSON.parse(data.initJson));
+    			}else{//失败
+    				epoint.alert(data.msg, '', null, 'info');
+    			}
+    		});
+        }
+        
+        //激活节点(校验前置条件)
+        function runNodeScript1(data){
+        	activeTask(data.status, data.taskGuid, true);
+        }
+        
+        //激活节点(不校验前置条件)
+        function runNodeScript2(data){
+        	activeTask(data.status, data.taskGuid, false);
+        }
+        
+        function killNode(data){
+        	epoint.execute('epointjobdagshowaction.killTask', null, [data.dagTaskInstanceGuid], function(data){
+        		if(data.status){
+	        		epoint.alert(data.msg, '', function(){
+	        			load();
+	        		});
+        		}else{
+        			epoint.alert(data.msg, '', null, 'info');
+        		}
+    		});
+        }
+        
+        //激活节点
+        function activeTask(status, taskGuid, isCheckFlag){
+        	epoint.execute('epointjobdagshowaction.activeTask', null, [taskGuid, isCheckFlag ? '1' : '0'], function(data){
+        		epoint.alert(data.msg, '', null, 'info');
+    		});
+        }
+        
+        //右键菜单显影
+        function beforeNodeCtxMenuShow(data){
+        	if(data && data.status && ((data.status >= 21 && data.status <= 25) || data.status == -1)){//显示run
+        		return 1;
+        	}
+        	if(data && data.status == 10){//显示kill
+        		return 2;
+        	}
+			return 0;
+        }
+        
+        //打开页面后立马加载
+        load();
+
+    </script>
+</body>
+
+</html>

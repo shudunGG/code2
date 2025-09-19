@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Add the log level Settings</title>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" iconCls="icon-save" onclick="saveAndNew">save and new</a>
+				<a class="mini-button" id="addClose" iconCls="icon-save" onclick="saveAndClose">save and close</a>
+				<a class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">shut down</a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="log name" starred="true">
+						<input id="levelname" bind="frameloglevelaction.frameLogLevel.logname" requiredErrorText="Name of the logCan't be empty"
+						class="mini-textbox" required="true" style="width: 100%" />
+					</div>
+					<div role="control" label="log level">
+						<input id="level"  data="[{text:'DEBUG',id:'DEBUG'},{text:'INFO',id:'INFO'},{text:'WARN',id:'WARN'},{text:'ERROR',id:'ERROR'},{text:'FATAL',id:'FATAL'},{text:'ALL',id:'ALL'},{text:'OFF',id:'OFF'}]" textField="text" valueField="id"
+						bind="frameloglevelaction.frameLogLevel.loglevel"
+						class="mini-combobox" style="width: 100%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="start using">
+						<input id="isworking" bind="frameloglevelaction.frameLogLevel.isworking" class="mini-checkbox" style="width: 80%" checked="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="note">
+						<input id="description" bind="frameloglevelaction.frameLogLevel.description"
+						class="mini-textarea"  style="width: 80%" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../frame/fui/js/jsboot.js"></script>
+		<script type="text/javascript">
+			epoint.initPage("frameloglevelaction");
+
+			function saveAndNew() {
+				if (epoint.validate()) {
+					epoint.execute('frameloglevelaction.addLevel','fui-form',newCallback);
+				}
+			}
+			
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('frameloglevelaction.addLevel','fui-form',closeCallback);
+				}
+			}
+			
+			function newCallback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', null, 'info');
+					epoint.clear('fui-form');
+				}
+			}
+
+			function closeCallback(data) {
+				if (data.msg) {
+					var options = {
+				    backParam: 'ok',       //Back to the parent page of parameters
+				    chkMsg: 'successful',          //Check the information(judgemessageDoes it include in the parameter values, If you include trulyShut downWindow, otherwise just do italert,The default is"successful")
+				    needCheck: true     //Whether or not tochkMsgTo check,The default isfalse
+				   };
+					epoint.alertAndClose(data.msg, '', '', options, 'info');
+				}
+			}
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>字段添加</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%;word-break:keep-all">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="业务类别" starred="true">
+						<input class="mini-treeselect" id="businesstype"
+							action="getTreeModel" bind="dataBean.businesstype"
+							showFolderCheckBox="true" showRadioButton="false"
+							onbeforenodeselect="beforenodeselect" showTreeIcon="true"
+							required="true" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="字段名称" starred="true">
+						<input class="mini-textbox" id="name" bind="dataBean.name"
+							required="true" maxLength="50" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="字段编码" starred="true">
+						<input class="mini-textbox" id="encodename"
+							bind="dataBean.encodename" required="true" maxLength="50" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="字段类型" starred="true">
+						<input class="mini-combobox" id="fieldtype"
+							bind="dataBean.fieldtype" action="getFieldTypeList"
+							required="true" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="控件类型" starred="true">
+						<input class="mini-combobox" id="controltype"
+							bind="dataBean.controltype" action="getControlTypeList"
+							onvaluechanged="onControlTypeChanged" required="true" />
+					</div>
+				</div>
+
+				<div role="form" id="treeSelect" class="treeSelect hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequired" text="必填"
+								bind="treeSelect.required" onvaluechanged="onValueChanged" /> <input
+								class="mini-checkbox" id="isreadonly" text="只读"
+								bind="treeSelect.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyText"
+								bind="treeSelect.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="是否多选">
+							<input class="mini-checkbox switch" id="ismultiselect"
+								bind="treeSelect.multiSelect" onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据源">
+							<input class="mini-combobox" id="codeItem" textField="codename"
+								showClose="true" valueField="codename"
+								bind="treeSelect.codeItem" oncloseclick="onCloseClick"
+								action="getCodeMainList" />
+						</div>
+					</div>
+				</div>
+
+				<div role="form" id="organizationSelect"
+					class="organizationSelect hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredOrganization"
+								text="必填" bind="organizationSelect.required"
+								onvaluechanged="onValueChanged" /> <input class="mini-checkbox"
+								id="isreadonlyOrganization" text="只读"
+								bind="organizationSelect.readOnly"
+								onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="模式">
+							<input class="mini-radiobuttonlist" id="modeOrganization "
+								bind="organizationSelect.mode"
+								data="[{id:'people',text:'人员'},{id:'dept',text:'部门'}]"
+								textField="text" valueField="id" value="people" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="交互形式">
+							<input class="mini-radiobuttonlist" id="interactiveOrganization"
+								bind="organizationSelect.interactive"
+								data="[{id:'dropdown',text:'下拉'},{id:'dialog',text:'弹窗'}]"
+								textField="text" valueField="id" value="dropdown" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="选择范围">
+							<input class="mini-radiobuttonlist" id="rangeOrganization"
+								bind="organizationSelect.range"
+								data="[{id:'company',text:'本单位'},{id:'department',text:'本部门'},{id:'all',text:'所有'}]"
+								textField="text" valueField="id" value="company" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="是否多选">
+							<input class="mini-checkbox switch"
+								id="ismultiselectOrganization"
+								bind="organizationSelect.multiSelect"
+								onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextOrganization"
+								bind="organizationSelect.emptyText" />
+						</div>
+					</div>
+				</div>
+
+				<div role="form" id="daterangepicker" class="daterangepicker hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredDaterangepicker"
+								text="必填" bind="dateRangePicker.required"
+								onvaluechanged="onValueChanged" /> <input class="mini-checkbox"
+								id="isreadonlyDaterangepicker" text="只读"
+								bind="dateRangePicker.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextDaterangepicker"
+								bind="dateRangePicker.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="日期格式">
+							<input class="mini-combobox" id="formatDaterangepicker"
+								showClose="true" oncloseclick="onCloseClick"
+								bind="dateRangePicker.format" textField=text valueField="id"
+								data="[{id:'yyyy-MM', text: 'yyyy-MM'}, {id: 'yyyy-MM-dd', text: 'yyyy-MM-dd' },{ id: 'yyyy-MM-dd HH:mm', text: 'yyyy-MM-dd HH:mm' }, { id: 'yyyy-MM-dd HH:mm:ss', text: 'yyyy-MM-dd HH:mm:ss' }]" />
+						</div>
+					</div>
+				</div>
+
+
+				<div role="form" id="combobox" class="combobox hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredCombobox" text="必填"
+								bind="comboBox.required" onvaluechanged="onValueChanged" /> <input
+								class="mini-checkbox" id="isreadonlyCombobox" text="只读"
+								bind="comboBox.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextCombobox"
+								bind="comboBox.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="多选">
+							<input class="mini-checkbox switch" id="ismultiselectCombobox"
+								bind="comboBox.multiSelect" onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据源">
+							<input class="mini-combobox" id="codeItemCombobox"
+								textField="codename" valueField="codename" showClose="true"
+								oncloseclick="onCloseClick" bind="comboBox.codeItem"
+								action="getCodeMainList" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="使用顶层数据源">
+							<input class="mini-checkbox switch" id="useTopCodeItemCombobox"
+								bind="comboBox.useTopCodeItem" onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+				</div>
+
+
+				<div role="form" id="textarea" class="textarea hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredTextArea" text="必填"
+								bind="textArea.required" onvaluechanged="onValueChanged" /> <input
+								class="mini-checkbox" id="isreadonlyTextArea" text="只读"
+								bind="textArea.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextTextArea"
+								bind="textArea.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="默认值">
+							<input class="mini-textbox" id="defaultValueTextArea"
+								bind="textArea.defaultValue" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="最大可输入字数">
+							<input class="mini-textbox" id="maxLengthTextArea"
+								bind="textArea.maxLength" value="10000000" />
+						</div>
+					</div>
+				</div>
+
+				<div role="form" id="radiobuttonlist" class="radiobuttonlist hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredRadioButtonList"
+								text="必填" bind="radioButtonList.required"
+								onvaluechanged="onValueChanged" /> <input class="mini-checkbox"
+								id="isreadonlyRadioButtonList" text="只读"
+								bind="radioButtonList.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="配置方式">
+							<span>远程</span>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据源">
+							<input class="mini-combobox" id="codeItemRadioButtonList"
+								textField="codename" valueField="codename" showClose="true"
+								oncloseclick="onCloseClick" bind="radioButtonList.codeItem"
+								action="getCodeMainList" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="平铺方向">
+							<input class="mini-radiobuttonlist"
+								id="repeatDirectionRadioButtonList"
+								bind="radioButtonList.repeatDirection"
+								data="[{id:'vertical',text:'垂直'},{id:'horizontal',text:'水平'}]"
+								textField="text" valueField="id" value="horizontal" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="平铺显示项个数">
+							<input class="mini-textbox" id="repeatItemsRadioButtonList"
+								bind="radioButtonList.repeatItems" />
+						</div>
+					</div>
+				</div>
+
+
+				<div role="form" id="checkboxlist" class="checkboxlist hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredCheckBoxList"
+								text="必填" bind="checkBoxList.required"
+								onvaluechanged="onValueChanged" /> <input class="mini-checkbox"
+								id="isreadonlyCheckBoxList" text="只读"
+								bind="checkBoxList.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="配置方式">
+							<span>远程</span>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据源">
+							<input class="mini-combobox" id="codeItemCheckBoxList"
+								textField="codename" valueField="codename" showClose="true"
+								oncloseclick="onCloseClick" bind="checkBoxList.codeItem"
+								action="getCodeMainList" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="平铺方向">
+							<input class="mini-radiobuttonlist"
+								id="repeatDirectionCheckBoxList"
+								bind="checkBoxList.repeatDirection"
+								data="[{id:'vertical',text:'垂直'},{id:'horizontal',text:'水平'}]"
+								textField="text" valueField="id" value="horizontal" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="平铺显示项个数">
+							<input class="mini-textbox" id="repeatItemsCheckBoxList"
+								bind="checkBoxList.repeatItems" />
+						</div>
+					</div>
+				</div>
+
+
+				<div role="form" id="buttonedit" class="buttonedit hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredButtonEdit" text="必填"
+								bind="buttonEdit.required" onvaluechanged="onValueChanged" /> <input
+								class="mini-checkbox" id="isreadonlyButtonEdit" text="只读"
+								bind="buttonEdit.readOnly" onvaluechanged="onValueChanged" />
+
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextButtonEdit"
+								bind="buttonEdit.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="数据列表">
+							<input class="mini-combobox" id="popupButtonEdit"
+								textField="PageName" valueField="RowGuid" showClose="true" allowInput="true"
+								oncloseclick="onClosePopupClick" bind="buttonEdit.popup"
+								action="getSFormTableList" onvaluechanged="onTableListChanged" />
+						</div>
+					</div>
+					<div role="row" id="isField" class="isField hidden">
+						<div role="control" label="值字段">
+							<input class="mini-combobox" id="idFieldButtonEdit"
+								textField="FIELDCHINESENAME" valueField="FIELDNAME"
+								bind="buttonEdit.idField" />
+						</div>
+					</div>
+					<div role="row" id="textField" class="textField hidden">
+						<div role="control" label="显示字段">
+							<input class="mini-combobox" id="textFieldButtonEdit"
+								textField="FIELDCHINESENAME" valueField="FIELDNAME"
+								bind="buttonEdit.textField" />
+						</div>
+					</div>
+				</div>
+
+
+				<div role="form" id="textbox" class="textbox hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredTextBox" text="必填"
+								bind="textBox.required" onvaluechanged="onValueChanged" /> <input
+								class="mini-checkbox" id="isreadonlyTextBox" text="只读"
+								bind="textBox.readOnly" onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextTextBox"
+								bind="textBox.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="默认值">
+							<input class="mini-textbox" id="defaultValueTextBox"
+								bind="textBox.defaultValue" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="唯一性校验">
+							<input class="mini-checkbox switch" id="uniqueValidate"
+								bind="textBox.uniqueValidate" onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="格式校验">
+							<input class="mini-combobox" id="vtypeTextBox" showClose="true"
+								oncloseclick="onCloseClick" bind="textBox.vtype"
+								action="getVtypeList" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="正则校验">
+							<input class="mini-textbox" id="regExp" bind="regSource"
+								emptyText="正则表达式">
+						</div>
+					</div>
+					<div role="row">
+						<div role="control">
+							<input class="mini-textbox" id="errorText" bind="errorText"
+								emptyText="错误提示信息">
+						</div>
+					</div>
+				</div>
+				<div role="form" id="datepicker" class="datepicker hidden">
+					<div role="row">
+						<div role="control" label="控件属性">
+							<input class="mini-checkbox" id="isrequiredDatepicker" text="必填"
+								bind="datePicker.required" onvaluechanged="onValueChanged" /> <input
+								class="mini-checkbox" id="isreadonlyDatepicker" text="只读"
+								bind="datePicker.readOnly" onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提示语">
+							<input class="mini-textbox" id="emptyTextDatePicker"
+								bind="datePicker.emptyText" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="日期格式">
+							<input class="mini-radiobuttonlist" id="formatDatePicker"
+								textField="text" valueField="id" repeatDirection="vertical"
+								bind="datePicker.format" repeatItems="5" repeatLayout="flow"
+								data="[{id:'yyyy-MM', text: 'yyyy-MM'}, {id: 'yyyy-MM-dd', text: 'yyyy-MM-dd' },{ id: 'yyyy-MM-dd HH:mm', text: 'yyyy-MM-dd HH:mm' }, { id: 'yyyy-MM-dd HH:mm:ss', text: 'yyyy-MM-dd HH:mm:ss' }]" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="默认日期">
+							<input class="mini-combobox" id="defaultValueDatePicker"
+								action="getDefaultDate" onvaluechanged="dateChanged" /> <input
+								class="mini-hidden" id="dateDefultValue"
+								bind="datePicker.defaultValue" />
+						</div>
+					</div>
+
+					<div role="row" class="defaultValueDate hidden">
+						<div role="control">
+							<input class="mini-datepicker" id="defaultValueDate"
+								showTime="true" format="yyyy-MM-dd H:mm:ss" timeFormat="H:mm:ss"
+								onvaluechanged="dateChanged" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="日期范围">
+							<input class="mini-combobox" id="rangDatePicker"
+								data="[{id:'', text: '留空'}, {id: '指定日期', text: '指定日期' }]"
+								onvaluechanged="dateRangChanged" />
+						</div>
+					</div>
+
+					<div role="row" class="startDate hidden">
+						<div role="control" label="开始">
+							<input class="mini-datepicker" id="startDate"
+								bind="datePicker.minDate" format="yyyy-MM-dd" valueFormat="yyyy-MM-dd" />
+						</div>
+					</div>
+					<div role="row" class="endDate hidden">
+						<div role="control" label="结束">
+							<input class="mini-datepicker" id="endDate"
+								bind="datePicker.maxDate" format="yyyy-MM-dd"
+								ondrawdate="onDrawDate" valueFormat="yyyy-MM-dd" />
+						</div>
+					</div>
+				</div>
+				<div role="form" id="ewebeditor" class="ewebeditor hidden"></div>
+				<div role="form" id="hiddenfield" class="hiddenfield hidden"></div>
+
+				<div role="row">
+					<div role="control" label="排序">
+						<input class="mini-textbox" id="ordernumber"
+							bind="dataBean.ordernumber" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndClose">保存</a> <a class="mini-button"
+			onclick="epoint.closeDialog('close')">取消</a>
+	</div>
+	<!-- jsboot.js会自动把框架页面所需的所有js都加载进来 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('sformfieldaddaction', '', function(data) {
+			if (data) {
+				if (data.businessTypeName) {
+					mini.get('businesstype').setValue(data.businessTypeGuid);
+					mini.get('businesstype').setText(data.businessTypeName);
+				}
+			}
+
+		});
+
+		//新增
+		function saveAndClose() {
+			var reg =  /^[a-zA-Z][a-zA-Z0-9]*$/; 
+			var str = mini.get("encodename").getValue();
+			if (epoint.validate()) {
+			if(!reg.test(str)){
+               epoint.showTips("字段编码只允许是以英文字母开头的英文、数字的组合",  {state : 'warning'});
+              }else{
+            	  if (epoint.validate()) {
+      				epoint.execute('add', 'fui-form', closeCallback);
+      			}
+			  }
+			}
+			
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+			}
+		}
+
+		function beforenodeselect(e) {
+			if (e.node) {
+				if (e.node.id == "f9root") {
+					e.cancel = true;
+				}
+			}
+		}
+
+		function onValueChanged(e) {
+			var checked = this.getChecked();
+			var obj = e.sender.id;
+			mini.get(obj).setValue(checked);
+		}
+
+		function onTableListChanged(e) {
+			if (e.value) {
+				$('.isField').removeClass('hidden');
+				$('.textField').removeClass('hidden');
+				mini.get('idFieldButtonEdit').action = 'sformfieldaddaction.getFieldList("'
+						+ e.value + '")';
+				mini.get('textFieldButtonEdit').action = 'sformfieldaddaction.getFieldList("'
+						+ e.value + '")';
+				mini.get('idFieldButtonEdit').setValue("");
+				mini.get('textFieldButtonEdit').setValue("");
+				epoint.refresh("idFieldButtonEdit");
+				epoint.refresh("textFieldButtonEdit");
+			}
+
+		}
+
+		//改变控件类型所有的属性
+		function onControlTypeChanged(e) {
+			$('.ewebeditor').addClass('hidden');
+			$('.hiddenfield').addClass('hidden');
+			$('.textbox').addClass('hidden');
+			$('.textarea').addClass('hidden');
+			$('.treeSelect').addClass('hidden');
+			$('.organizationSelect').addClass('hidden');
+			$('.daterangepicker').addClass('hidden');
+			$('.datepicker').addClass('hidden');
+			$('.buttonedit').addClass('hidden');
+			$('.checkboxlist').addClass('hidden');
+			$('.radiobuttonlist').addClass('hidden');
+			$('.combobox').addClass('hidden');
+			if (e.value == "textbox") {
+				$('.textbox').removeClass('hidden');
+			} else if (e.value == "textarea") {
+				$('.textarea').removeClass('hidden');
+			} else if (e.value == "treeselect") {
+				$('.treeSelect').removeClass('hidden');
+			} else if (e.value == "organizationselect") {
+				$('.organizationSelect').removeClass('hidden');
+			} else if (e.value == "daterangepicker") {
+				$('.daterangepicker').removeClass('hidden');
+			} else if (e.value == "datepicker") {
+				$('.datepicker').removeClass('hidden');
+			} else if (e.value == "buttonedit") {
+				$('.buttonedit').removeClass('hidden');
+			} else if (e.value == "checkboxlist") {
+				$('.checkboxlist').removeClass('hidden');
+			} else if (e.value == "radiobuttonlist") {
+				$('.radiobuttonlist').removeClass('hidden');
+			} else if (e.value == "combobox") {
+				$('.combobox').removeClass('hidden');
+			} else if (e.value == 'ewebeditor') {
+				$('.ewebeditor').removeClass('hidden');
+			} else if (e.value == 'hiddenfield') {
+				$('.hiddenfield').removeClass('hidden');
+			}
+		}
+
+		function dateChanged() {
+			var datePicker = mini.get('defaultValueDatePicker').getValue();
+			var date = mini.get('defaultValueDate').getValue();
+			if ("" == datePicker || "[currDate]" == datePicker) {
+				mini.get('dateDefultValue').setValue(datePicker);
+				$('.defaultValueDate').addClass("hidden");
+			} else {
+				$('.defaultValueDate').removeClass("hidden");
+				mini.get('dateDefultValue').setValue("");
+				if (date && date != '') {
+					mini.get('dateDefultValue').setValue(date);
+				}
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function onClosePopupClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			mini.get('idFieldButtonEdit').setValue("");
+			mini.get('textFieldButtonEdit').setValue("");
+			$('.isField').addClass('hidden');
+			$('.textField').addClass('hidden');
+
+		}
+
+		function dateRangChanged() {
+			var datePicker = mini.get('rangDatePicker').getValue();
+			if ("" == datePicker) {
+				mini.get('startDate').setValue("");
+				mini.get('endDate').setValue("");
+				$('.startDate').addClass("hidden");
+				$('.endDate').addClass("hidden");
+			} else {
+				$('.startDate').removeClass("hidden");
+				$('.endDate').removeClass("hidden");
+			}
+		}
+
+		function onDrawDate(e) {
+			var date = e.date;
+			var end = mini.get('startDate').getValue();
+			if (date.getTime() <= end - (24 * 60 * 60 * 1000)) {
+				e.allowSelect = false;
+			}
+		}
+	</script>
+</body>
+
+</html>

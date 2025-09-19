@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>Depots table</title>
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<!-- This must have,it is loaded with some loading effect -->
+		<div class="page-loading"></div>
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" iconCls="icon-save" onclick="addNew">save and new</a>
+				<a class="mini-button" id="addClose" iconCls="icon-save" onclick="add">save and close</a>
+				<a class="mini-button" id="save" iconCls="icon-save" onclick="saveModify">save changes</a>
+				<a class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">Shut down</a>
+			</div>
+		</div>
+		<div class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="source data table name" starred="true">
+						<div class="mini-autocomplete" textField="text" id="sourcetablename"
+						valueField="id" bind="dataBean.sourcetablename" required="true"
+						requiredErrorText="source data table nameCan't be empty"
+						action="getComplete"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="after target data name" starred="true">
+						<input bind="dataBean.totablename" class="mini-textbox" required="true"
+						requiredErrorText="target data table nameCan't be empty"/>
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="data source of depots" >
+						<input bind="dataBean.todbid" action="getTenantguidModel" emptyText="Select the data source..." showNullItem="true" nullItemText="Select the data source..."
+						textField="text" valueField="id" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="belongs to the tenant">
+						<input class="mini-treeselect" action="getTreeModel" multiSelect="true" showFilter="true"
+						style="width: 400px;" showFolderCheckBox="true" loadWhenChecked="true"
+						textField="text" valueField="id" parentField="pid" bind="dataBean.tenantguid"/>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//<![CDATA[
+			// Initialize the page
+			epoint.initPage('frametenanttableaction', '', initCallBack);
+
+			var sourcetablename = mini.get("sourcetablename");
+			// Initialization callback
+			function initCallBack(data) {
+				if (data.edit) {
+					//Hide the new button
+					mini.get('addNew').setVisible(false);
+					mini.get('addClose').setVisible(false);
+					sourcetablename.setText(sourcetablename.getValue());
+				} else {
+					//Hide the modify button
+					mini.get('save').setVisible(false);
+				}
+			}
+
+			// new
+			function addNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+
+			// new
+			function add() {
+				if (epoint.validate()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				}
+			}
+
+			// edit
+			function saveModify() {
+				if (epoint.validate()) {
+					epoint.execute('save', 'fui-form', closeCallback);
+				}
+			}
+
+			// newOperation of the callback
+			function newCallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					epoint.alert(data.msg, '', null, 'info');
+					if (data.success) {
+						// Empty form
+						epoint.clear('fui-form');
+					}
+				}
+			}
+
+			// Shut downOperation of the callback
+			function closeCallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

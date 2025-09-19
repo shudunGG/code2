@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>统一认证</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="ip类型" starred="true">
+						<input id="iptype" class="mini-radiobuttonlist"
+							onvaluechanged="iptypechange" action=getIpAddressItem
+							bind="dataBean.iptype" required="true"
+							requiredErrorText="ip类型不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择类型" starred="true">
+						<input id="ipmanagertype" class="mini-radiobuttonlist"
+							action="getLeiXingItem" bind="dataBean.ipmanagertype"
+							required="true" requiredErrorText="选择类型不能为空!" />
+					</div>
+				</div>
+				<div role="row" id="ipdizhi">
+					<div role="control" label="ip地址" starred="true">
+						<input id="ipaddress" class="mini-textbox" style="width: 60%"
+							onvalidation="onIPValidation" bind="ipaddress" required="true"
+							requiredErrorText="ip地址不能为空!" />
+					</div>
+				</div>
+				<div role="row" id="ipdizhiduan" style="display: none">
+					<div role="control" label="ip地址段" starred="true">
+						<table style="width: 60%">
+							<tr>
+								<td><input id="ipduanqian" class="mini-textbox"
+									starred="true" bind="ipduanqian" style="width: 97%"
+									onvalidation="onIPValidation" required="true"
+									requiredErrorText="ip地址不能为空!" /></td>
+								<td style="width: 23px">—</td>
+								<td><input id="ipduanhou" class="mini-textbox"
+									starred="true" bind="ipduanhou" style="width: 100%"
+									onvalidation="onIPValidation" required="true"
+									requiredErrorText="ip地址不能为空!" /></td>
+							</tr>
+						</table>
+
+					</div>
+				</div>
+				<div role="row" id="ipdizhiyu" style="display: none">
+					<div role="control" label="ip地址域" starred="true">
+						<table style="width: 60%">
+							<tr>
+								<td><input id="ipyuqian" class="mini-textbox"
+									required="true" bind="ipyuqian" style="width: 97%"
+									onvalidation="onIPValidation" requiredErrorText="ip地址不能为空!" /></td>
+								<td style="width: 23px">/</td>
+								<td><input id="ipyuhou" class="mini-textbox" bind="ipyuhou"
+									required="true" style="width: 30%" vtype="int;max:32,min:0"
+									requiredErrorText="ip地址不能为空!" /></td>
+							</tr>
+						</table>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-accordions">
+			<div role="accordion">
+				<div role="head" title="黑名单列表"></div>
+				<div role="body">
+					<!-- 条件区域 -->
+					<div class="fui-condition">
+						<div class="fui-form" id="fui-form1">
+							<div id="cform" role="form">
+								<div role="row">
+									<div role="control" label="ip地址">
+										<input id="searchblcakip" class="mini-textbox"
+											bind="searchblcakip" /> <input bind="searchwhiteip"
+											id="hidwhiteip" class="mini-hidden" />
+									</div>
+								</div>
+								<a role="searcher" callback="searchDataB"></a>
+							</div>
+						</div>
+					</div>
+					<!-- 内容区域 -->
+					<div id="blackdatagrid" class="mini-datagrid" idField="rowguid"
+						action="getBlackGridData" sortOrder="desc" showPager="true"
+						allowResize="false" multiSelect="true" allowCellEdit="true"
+						allowCellSelect="true" editNextOnEnterKey="true"
+						editNextRowCell="true">
+						<div property="columns">
+							<div type="indexcolumn" width="20" headerAlign="center">序</div>
+							<div field="clientip" width="80" align="left"
+								headerAlign="center">IP地址</div>
+							<div field="iptype" width="80" align="center"
+								headerAlign="center">IP类型</div>
+							<div width="20" align="center" headerAlign="center"
+								renderer="onDeldererB">删除</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="白名单列表"></div>
+				<div role="body">
+					<!-- 条件区域 -->
+					<div class="fui-condition">
+						<div class="fui-form" id="fui-form2">
+							<div id="cform1" role="form">
+								<div role="row">
+									<div role="control" label="ip地址">
+										<input id="searchwhiteip" class="mini-textbox"
+											bind="searchwhiteip" onvaluechanged="whitevaluechanged" />
+									</div>
+								</div>
+
+							</div>
+						</div>
+						<a class="mini-button" id="searchW" role="searcher"
+							onclick="searchDataW();" id="btnAddRecord"></a>
+					</div>
+					<!-- 					内容区域 -->
+					<div id="whitedatagrid" class="mini-datagrid" idField="rowguid"
+						action="getWhiteGridData" sortOrder="desc" showPager="true"
+						allowResize="false" multiSelect="true" allowCellEdit="true"
+						allowCellSelect="true" editNextOnEnterKey="true"
+						editNextRowCell="true">
+						<div property="columns">
+							<div type="indexcolumn" width="20" headerAlign="center">序</div>
+							<div field="clientip" width="80" align="left"
+								headerAlign="center">IP地址</div>
+							<div field=iptype width="80" align="center" headerAlign="center">IP类型</div>
+							<div width="20" align="center" headerAlign="center"
+								renderer="onDeldererW">删除</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" onclick="addIP();"
+			id="btnAddRecord">新增IP</a> <a class="mini-button"
+			onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('loginipmanageraction', null, initCallBack);
+
+		function initCallBack() {
+			$("#searchW").removeClass("mini-button");
+			$(".form-row").removeClass("hidden");
+			$(".cond-srh-btn-toggle").remove();
+			mini.get("iptype").setValue("0");
+			mini.get("ipmanagertype").setValue("1");
+		}
+
+		function iptypechange(e) {
+			if (e.value == "0" || e == "refresh") {
+				$("#ipdizhi").show();
+				$("#ipdizhiduan").hide();
+				$("#ipdizhiyu").hide();
+			} else if (e.value == "1") {
+				$("#ipdizhi").hide();
+				$("#ipdizhiduan").show();
+				$("#ipdizhiyu").hide();
+			} else if (e.value == "2") {
+				$("#ipdizhi").hide();
+				$("#ipdizhiduan").hide();
+				$("#ipdizhiyu").show();
+			}
+		}
+
+		function whitevaluechanged() {
+			mini.get("hidwhiteip").setValue(
+					mini.get("searchwhiteip").getValue());
+		}
+
+		function addIP() {
+			if (epoint.validate()) {
+				epoint.execute('add', '@all', function(data) {
+					if (data) {
+						epoint.showTips(data.msg,  {state : 'success'});
+						searchDataB(data.map);
+						searchDataW(data.map);
+					}
+				});
+			}
+		};
+
+		// 表格的刷新
+		function searchDataB(map) {
+			epoint.refresh([ 'blackdatagrid', 'fui-form1' ], function() {
+			});
+		}
+		function searchDataW(map) {
+			epoint.refresh([ 'whitedatagrid', 'fui-form2' ], function() {
+			});
+		}
+
+		var onDeldererW = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove", "openWhite");
+		};
+
+		function openWhite() {
+			epoint.confirm('确认要删除吗?', '', function() {
+				epoint.execute('delWhite', 'whitedatagrid', searchDataW);
+				epoint.showTips('删除成功', {state : 'success'});
+			});
+		};
+
+		var onDeldererB = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove", "openBlack");
+		};
+
+		function openBlack() {
+			epoint.confirm('确认要删除吗?', '', function() {
+				epoint.execute('delBlack', 'blackdatagrid', searchDataB);
+				epoint.showTips('删除成功', {state : 'success'});
+			});
+		}
+
+		function onIPValidation(e) {
+			var val = e.value;
+			if (val != "") {
+				var re = new RegExp(
+						"^((25[0-5]|2[0-4]\\d|[1]{1}\\d{1}\\d{1}|[1-9]{1}\\d{1}|\\d{1})($|(?!\\.$)\\.)){4}$");
+
+				if (!re.test(val.trim())) {
+					e.isValid = false;
+					e.errorText = "ip地址格式错误";
+				}
+			}
+
+		}
+	</script>
+</body>
+</html>

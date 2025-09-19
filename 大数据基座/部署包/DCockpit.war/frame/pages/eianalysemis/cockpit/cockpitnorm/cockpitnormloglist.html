@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="版块名称">
+						<input class="mini-textbox" bind="dataBean.platename" />
+					</div>
+					<div role="control" label="指标名称">
+						<input class="mini-textbox" bind="dataBean.normname" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="卡片名称">
+						<input id="search_CardName" class="mini-textbox"
+							bind="dataBean.cardname" />
+					</div>
+					<div role="control" label="操作类型">
+						<input id="search_OperateType" class="mini-combobox" valueField="id"
+							textField="text"
+							data="[{id:'1',text:'浏览'},{id:'2',text:'点赞'},{id:'3',text:'收藏'},{id:'4',text:'评论'},{id:'5',text:'订阅'},{id:'6',text:'取消订阅'},{id:'98',text:'访问数字看板'},{id:'99',text:'其他'}]"
+							bind="dataBean.operatetype" showClose="true"
+							oncloseclick="onCloseClick" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="PlateName" headerAlign="center" align="center">版块名称</div>
+				<div field="NormName" headerAlign="center" align="center">指标名称</div>
+				<div field="CardName" headerAlign="center" align="center">卡片名称</div>
+				<div field="UserName" headerAlign="center" align="center">用户名称</div>
+				<div field="OperateName" headerAlign="center" align="center">操作</div>
+				<div field="OperateDate" headerAlign="center" align="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">操作时间</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitnormloglistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+		function onCloseClick (e) {
+	        var obj = e.sender;
+	        obj.setText ("");
+	        obj.setValue ("");
+        }
+	</script>
+</body>
+</html>

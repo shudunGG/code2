@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>版块管理列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="专题管理"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getTreeModel" style="width: 300px; padding: 5px;"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="openAdd">新增卡片</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle" onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}"> 删除选定 </a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="卡片名称">
+							<input class="mini-textbox" bind="dataBean.cardName" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="cardCateGuid" bind="dataBean.cardCateGuid" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="cardName" headerAlign="center" width="100"  renderer="onDetailRenderer">卡片名称</div>
+					<div field="apiCode" headerAlign="center" align="center" width="100">ApiCode</div>
+					<div field="liableper" headerAlign="center" align="center" width="100">卡片负责人</div>
+					<div field="telephone" headerAlign="center" align="center" width="100">联系电话</div>
+					<div field="statusText" headerAlign="center" align="center" width="100">状态</div>
+					<div field="orderNum" headerAlign="center" align="center" width="100">排序号</div>
+					<!-- 操作列 -->
+					<div name="operate" type="actioncolumn" headerAlign="center" align="center" renderer="onSubit">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitmobilecardlistaction', null, function(data) {
+		});
+		
+		function onDetailRenderer(e) {;
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid + '\')" style="color:blue;">' + e.value + '</a>';
+		}
+		
+		// 弹出明细窗口
+		function openDetail(guid) {
+			/* epoint.openDialog('详细信息', "./cockpitmobileplatedetail?guid=" + guid,
+					searchData, {
+						'width' : 1200,
+						'height' : 600
+					}); */
+		}
+		
+		var onSubit = function(e) {
+			var status = e.row.status;
+			//启用
+			if(status==1){
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit")+"&nbsp;&nbsp;"+epoint.renderCell(e, "action-icon icon-pause", "pause")+"&nbsp;&nbsp;"+epoint.renderCell(e, "action-icon icon-trash", "deleteConfirm")+"&nbsp;&nbsp;"+epoint.renderCell(e, "action-icon icon-gear", "openNorm");
+			}
+			//停用
+			else{
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit")+"&nbsp;&nbsp;"+epoint.renderCell(e, "action-icon icon-start", "start")+"&nbsp;&nbsp;"+epoint.renderCell(e, "action-icon icon-trash", "deleteConfirm")+"&nbsp;&nbsp;"+epoint.renderCell(e, "action-icon icon-gear", "openNorm");
+			}
+		}
+		
+		//弹出授权指标领域页面
+		function openConf(e){
+			epoint.openDialog("授权指标分类", './cockpitmobilecardconfnormset?guid=' + e, callBack, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+		//配置指标
+		function openNorm(e){
+			epoint.openDialog("指标配置", './cockpitmobilecardnorm?cardguid=' + e, callBack, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+		
+		// 弹出修改窗口
+		function openEdit(e) {
+			epoint.openDialog("修改卡片", './cockpitmobilecardedit?guid=' + e, callBack, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+		
+		//单条删除
+		function deleteConfirm(id){
+			epoint.confirm('确认要删除吗？', '', function() {
+				epoint.execute('delete', '', [ id ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			});
+		}
+		
+		//停用
+		function pause(id){
+			epoint.confirm('确认要停用吗？', '', function() {
+				epoint.execute('pause', '', [ id ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			});
+		}
+		
+		//启用
+		function start(id){
+			epoint.execute('start', '', [ id ], function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', searchData());
+				}
+			});
+		}
+		
+		var gridTree = mini.get("datagrid");
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('cardCateGuid').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增版块', "./cockpitmobilecardadd", searchData, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function columnCallBack() {
+			epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+		}
+
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', searchData);
+		}
+		
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

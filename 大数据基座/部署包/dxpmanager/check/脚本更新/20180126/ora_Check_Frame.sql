@@ -1,0 +1,1 @@
+select count(*) from user_tab_columns where table_name = upper('api_sync_log') and column_name = upper('description') and data_type=upper('clob')

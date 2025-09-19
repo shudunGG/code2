@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Get data from XML</title>
+<script src="../../../frame/fui/js/cssboot.js" type="text/javascript"></script>
+<script type="text/javascript">
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+<body style="overflow: auto;">
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="addbtn" onclick="save">保存修改</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+<div class="fui-content">
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" vtype="maxLength:20" />
+				</div>
+			</div>
+
+			<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false">
+				<div name="tabs1" title="文件">
+<!-- 					<div role="row">
+						<div role="control" label="Hadoop Cluster" starred="true">
+							<input id="hadoopCluster" name="hadoopCluster" class="mini-combobox"
+								allowInput="true" showClose="false" style="width: 100%"
+								textField="text" valueField="id" action="getPreFields" 
+								required="true"/>
+						</div>
+					</div> -->
+					<div role="row">
+						<div role="control" label="文件/文件夹" starred="true">
+							<div id="filePath" name="filePath"
+								class="mini-textbox" required="true"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="拓展名" starred="true">
+							<div id="extension" name="extension"
+								class="mini-textbox" required="true"></div>
+						</div>
+					</div>
+				</div>
+				<div name="tabs2" title="内容">
+					<div role="row">
+						<div role="control" label="追加方式">
+							<div id="append" name="append"
+								class="mini-checkbox"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="分隔符">
+							<div id="separator" name="separator"
+								class="mini-textbox"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="封闭符">
+							<div id="enclosure" name="enclosure" class="mini-textbox"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="格式">
+							<input id="fileformat" name="fileformat" class="mini-combobox"
+								allowInput="false" showClose="false" style="width: 100%"
+								textField="text" valueField="id" data="[{text:'DOS',id:'DOS'},{text:'Unix',id:'Unix'},{text:'mixed',id:'mixed'}]"  >						
+						</div>
+					</div>
+
+					<input id="keyTableData" name="keyTableData" style="width: 100%"
+						class="mini-hidden">
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar" id="btns" style="padding-top: 1px">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="addmapper">添加映射</a> <a id="deletetype"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content" style="padding-top: 1px">
+		<div id="datagrid" name="datagrid" class="mini-datagrid" idField="id"
+			multiSelect="true" allowCellValid="true" allowCellEdit="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			oncellcommitedit="OnCellCommitEdit" oncellbeginedit="OnCellBeginEdit"
+			showPager="false" allowCellSelect="true" editNextOnEnterKey="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="55"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="name" headerAlign="center" align="center" width="200"
+					maxLength="8">
+					名称<input property="editor" class="mini-textbox"
+						emptyText="请输入名称..." inputStyle="text-align:center"
+						style="width: 100%" />
+				</div>
+				<div field="type" headerAlign="center" align="center" width="200"
+					maxLength="8" type="comboboxcolumn">
+					类型<input property="editor" class="mini-combobox"
+						emptyText="请选择类型..." textField="text" data="valueTypeList"
+						valueField="id" inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="foramt" headerAlign="center" align="center" width="200"
+					maxLength="8" type="comboboxcolumn">
+					格式<input property="editor" class="mini-combobox"
+						emptyText="请选择格式..." textField="text" data="formatList"
+						valueField="id" inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="length" headerAlign="center" align="center" width="200"
+					maxLength="8">
+					长度<input property="editor" class="mini-textbox"
+						inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="precision" headerAlign="center" align="center"
+					width="200" maxLength="8">
+					精度<input property="editor" class="mini-textbox"
+						inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="currencySymbol" headerAlign="center" align="center"
+					width="200" maxLength="8">
+					货币符号<input property="editor" class="mini-textbox"
+						inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="decimalSymbol" headerAlign="center" align="center"
+					width="200" maxLength="8">
+					小数点符号<input property="editor" class="mini-textbox"
+						inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="groupSymbol" headerAlign="center" align="center"
+					width="200" maxLength="8">
+					组<input property="editor" class="mini-textbox"
+						inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="trimType" headerAlign="center" align="center"
+					width="200" maxLength="8" type="comboboxcolumn">
+					去除空字符的格式<input property="editor" class="mini-combobox"
+						textField="text" data="trimTypeList" valueField="id"
+						inputStyle="text-align:center" style="width: 100%" />
+				</div>
+				<div field="repeat" width="100" align="center" type="checkboxcolumn"
+					truevalue="1" falsevalue="0" headerAlign="center">null</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<script src="../../../frame/fui/js/jsboot.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var trimTypeList;
+		var valueTypeList;
+		var formatList;
+
+		var grid = mini.get("datagrid");
+
+		grid.load();
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('hadoopfileoutputaction?stepId=' + nodeInfo.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			if (e.trimTypeList) {
+				trimTypeList = e.trimTypeList;
+			}
+			if (e.valueTypeList) {
+				valueTypeList = e.valueTypeList;
+			}
+			if (e.formatList) {
+				formatList = e.formatList;
+			}
+			var nodeName = nodeData.stepname;
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			//初始化
+/* 			if (!nodeData) {
+				doNotFailIfNoFile.setChecked(true);
+			} */
+		}
+
+		//新增类别
+		function addmapper() {
+			var datas = grid.getData();
+			var newRow = {};
+			grid.addRow(newRow, 'last');
+
+		}
+
+		function OnCellCommitEdit(e) {
+			console.log(e);
+			var grid = e.sender;
+			var record = e.record;
+			var field = e.field, value = e.value;
+			if (field == "type") {
+				grid.updateRow(record, {
+					format : "",
+				});
+			}
+
+		}
+		function OnCellBeginEdit(e) {
+			var grid = e.sender;
+			var record = e.record;
+			var field = e.field, value = e.value;
+			var editor = e.editor;
+			if (field == "foramt") {
+				var id = record.type;
+
+				if (id) {
+					epoint.execute("getFormatByType", '', [ id ],
+							function(data) {
+								editor.setData(data);
+
+							});
+				} else {
+					e.cancel = true;
+				}
+			}
+		}
+
+		function setGridData() {
+			var datas = grid.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"name" : row.name,
+					"xpath" : row.xpath,
+					"element_type" : row.element_type,
+					"result_type" : row.result_type,
+					"type" : row.type,
+					"foramt" : row.foramt,
+					"length" : row.length,
+					"precision" : row.precision,
+					"currencySymbol" : row.currencySymbol,
+					"groupSymbol" : row.groupSymbol,
+					"decimalSymbol" : row.decimalSymbol,
+					"trimType" : row.trimType,
+					"repeat" : row.repeat,
+				});
+			}
+			mini.get('keyTableData').setValue(JSON.stringify(array));
+		}
+
+		//删除选中
+		function deleteSelected() {
+			grid.removeRows(grid.getSelecteds(), false);
+			setGridData();
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute('save', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+	</script>
+</body>
+
+</html>

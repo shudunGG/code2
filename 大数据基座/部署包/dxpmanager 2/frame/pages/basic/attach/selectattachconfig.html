@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>选择附件数据源</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getTreeData"
+			resultAsTree="false" onbeforenodeselect="beforenodeselect"></ul>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('attachinfolistaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+
+		// 点击事件
+		tree.on("nodeselect", function(e) {
+			var attachGuid = e.node.attachGuid;
+			var name = e.node.text;
+			epoint.closeDialog(attachGuid + ";" + name);
+		});
+		
+		var beforenodeselect = function(e){
+			if (e.isLeaf == false || e.record.ckr == false
+					|| e.record.path == 'parent'
+					|| e.record.noClick == true) {
+				e.cancel = true;
+			}
+		}
+	</script>
+</body>
+
+</html>

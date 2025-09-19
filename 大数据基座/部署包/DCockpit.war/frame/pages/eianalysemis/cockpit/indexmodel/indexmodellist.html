@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标模板列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd" id="btnAddRecord"> 新增记录
+			</a> <a id="btnDel" class="mini-button" onclick="deleteData"> 删除选定 </a><a
+				id="btnImport" class="mini-button" onclick="importData"> 确认导入</a>
+			<div id="uploader" class="mini-webuploader" pickerText="导入数据"
+				action="getDataImportModel" limitType="xls,xlsx"
+				mimeTypes=".xls,.xlsx" dataImport="true"
+				onuploadaccept="UploadSuccess" auto="true" showDefaultUI="false"
+				onuploadfinished="uploadFinished" onuploadstart="uploadStart"
+				style="margin-left: 8px;"></div>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="模板名称">
+						<input id="name" class="mini-textbox" bind="name" />
+					</div>
+					<div role="control" label="发布时间">
+						<input id="start" class="mini-datepicker" style="width: 44%;"
+							format="yyyy-MM-dd" onValuechanged="validateDate(this)"
+							bind="startDate" showClose="true" oncloseclick="onCloseClick" />
+						<span style="width: 12%; text-align: center">至</span> <input
+							id="end" onValuechanged="validateDate(this)"
+							class="mini-datepicker" style="width: 44%;" bind="endDate"
+							showClose="true" oncloseclick="onCloseClick" format="yyyy-MM-dd" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" showPager="true" style="height: 100%;"
+			allowResize="true" multiSelect="false" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" allowHeaderWrap="true" allowCellWrap="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="name" headerAlign="center" width="100%" align="center">模板名称</div>
+				<div field="remark" headerAlign="center" width="150" align="center">备注</div>
+				<div field="publishtime" headerAlign="center" width="200"
+					align="center">发布时间</div>
+				<div width="120" align="center" headerAlign="center"
+					renderer="onFileDownLoadRenderer">下载文件</div>
+			</div>
+		</div>
+	</div>
+	<form id="download_form" method="post" enctype="multipart/form-data">
+	</form>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../fui/js/jsboot.js"></script>
+	<script>
+		//初始化页面
+		var datagrid = mini.get("datagrid");
+		epoint.initPage('indexmodellistaction', null, function(data) {
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录', "./indexmodeladd", searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function deleteData() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		//　日期控件的验证
+		var start = mini.get("start");
+		var end = mini.get("end");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'start') {
+						epoint.alert("开始时间不能大于结束时间！");
+						start.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间！");
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		// 绘制行查看按钮
+		var onFileDownLoadRenderer = function(e) {
+			if (e.record.attachguid != '') {
+				return epoint.renderCell(e, "action-icon icon-download", "fileDownLoad", 'epoint_total');
+			}
+		};
+
+		// 弹出明细窗口
+		function fileDownLoad(e) {
+			var form = document.getElementById('download_form');
+			//form.action = "indexmodellistaction.action?cmd=getContent&attachGuid=" + e.attachguid;
+			form.action = Util.getRootPath() + "rest/download/downloadmodelfile?attachGuid=" + e.attachguid;
+			form.submit();
+		}
+		//选择模板进行导入
+		function importData() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要导入的记录!', '', null, 'warning');
+			} else {
+				epoint.execute("importModel", 'datagrid', mini.get('datagrid').getSelected().attachguid, callback);
+			}
+		}
+		function UploadSuccess(data) {
+			epoint.alert(data.ret.extraDatas.msg, null, searchData);
+		}
+
+		//上传控件开始，展示转圈效果图
+		function uploadStart() {
+			epoint.showLoading();
+		}
+
+		//上传完毕，隐藏转圈效果图，刷新页面
+		function uploadFinished() {
+			epoint.hideLoading();
+			searchData();
+		}
+	</script>
+</body>
+</html>

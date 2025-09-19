@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>快捷方式管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="add">新增快捷</a> <a
+			class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="linkGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="linkName" width="150">快捷方式名称</div>
+				<div field="linkUrl" width="100%">对应地址</div>
+				<div field="orderNumber" width="100">排序号</div>
+				<div field="xkck" width="80">新开窗口</div>
+				<div field="iconAddress" width="140">对应图片</div>
+				<div name="pedit" width="80" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('quicklinklistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增 修改回调
+		function addEditCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param, {state : 'success'});
+				}
+				searchData();
+			}
+		}
+
+		//新增元件
+		function add() {
+			var settings = {
+				'width' : 700,
+				'height' : 500
+			};
+			epoint.openDialog('新增快捷',
+					'framemanager/orga/uiset/quicklink/quicklinkadd?',
+					addEditCallBack, settings);
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg,  {state : 'success'});
+					searchData();
+				} else {
+					epoint.showTips(msg, {state : 'warning'});
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+
+		function editItems(linkGuid) {
+			var settings = {
+				'width' : 700,
+				'height' : 500
+			};
+			epoint.openDialog('修改快捷',
+					'framemanager/orga/uiset/quicklink/quicklinkedit?linkGuid='
+							+ linkGuid, addEditCallBack, settings);
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems",
+					"linkGuid")
+		};
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

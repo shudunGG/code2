@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据中心-文件上传</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style>
+.unit {
+	float: left;
+	width: 20px;
+	padding-left: 3px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节点域" starred="true">
+						<input id="nodeGuid" bind="nodeGuid" class="mini-combobox"
+							required="true" requiredErrorText="节点域不能为空"
+							action="getNodeGuidList" width="80%" onvaluechanged="nodechange"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据源类型" starred="true">
+						<span id="dataSourceType" class="mini-radiobuttonlist"
+							autoload="true" bind="dataSourceType" action="getDatasourceType"
+							onValueChanged="selectType" width="80%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据源" starred="true">
+						<input id="fromds" action="getFromDSList" required="true"
+							value="mysql" allowInput="true" bind="fromDs"
+							onValueChanged="selectFromDs" class="mini-combobox main-input"
+							showClose="true" requiredErrorText="数据源不能为空" width="80%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="表" starred="true">
+						<input id="fromtable" action="getFromTableList" allowInput="true"
+							bind="fromTable" required="true" class="mini-combobox main-input"
+							showClose="true" requiredErrorText="源表不能为空" width="80%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="目标库" starred="true">
+						<input id="targetds" action="getTargetDsList" allowInput="true"
+							bind="targetDs" required="true" class="mini-combobox main-input"
+							showClose="true" requiredErrorText="目标hive库不能为空" width="80%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="where条件" starred="true">
+						<input id="condition" bind="condition" class="mini-textarea" width="80%"/>
+					</div>
+				</div>
+				<div role="row">
+					<input class="mini-hidden" id="schedulerType"
+						bind="scheduler.schedulertype" /> <input class="mini-hidden"
+						id="hour" bind="scheduler.hour" /> <input class="mini-hidden"
+						id="minutes" bind="scheduler.minutes" />
+					<div role="control" label="调度配置">
+						<input id="type" class="mini-radiobuttonlist" textField="text"
+							valueField="value" action="getSchedulerTypeSelectItem"
+							onvaluechanged="onSchedulerTypeChanged" />
+					</div>
+				</div>
+				<div role="row" id="intervalUnitDiv">
+					<div role="control" label="间隔单位" starred="true">
+						<input id="intervalUnit" class="mini-combobox" textField="text"
+							valueField="value"
+							data="[{'text':'秒','value':'1'},{'text':'分','value':'2'}]"
+							required="true" onvaluechanged="onIntervalTypeChanged" />
+					</div>
+				</div>
+				<div role="row" id="intervalDiv">
+					<div role="control" starred="true" label="时间间隔" id="interval">
+						<input id="intervalSeconds" class="mini-textbox" required="true"
+							requiredErrorText="时间间隔不能为空" bind="scheduler.intervalseconds"
+							width="90%" vtype="int;range:1,86400" /> <input
+							id="intervalMinutes" class="mini-textbox" required="true"
+							requiredErrorText="时间间隔不能为空" bind="scheduler.intervalMinutes"
+							width="90%" vtype="int;range:1,1440" /> <span id='unit'
+							style="width: 5px; padding-left: 5px">分</span>
+					</div>
+				</div>
+				<div role="row" id="timingTypeDiv">
+					<div role="control" label="定时类型" starred="true">
+						<input id="timingType" class="mini-combobox" textField="text"
+							valueField="value" inputStyle="text-align:left;"
+							data="[{'text':'每天','value':'1'},{'text':'每周','value':'2'},{'text':'每月','value':'3'}]"
+							value="1" onvaluechanged="onTimingTypeChanged" required="true" />
+					</div>
+				</div>
+				<div role="row" id="dayDiv">
+					<div role="control" label="时间" starred="true">
+						<input id="dayHour" maxValue="23" class="mini-spinner" name="h"
+							minValue="0" width="25%" onvaluechanged="onHourChanged"
+							required="true" /> <span class="unit">时</span> <input
+							id="dayMinutes" maxValue="59" class="mini-spinner" name="m"
+							minValue="0" width="25%" onvaluechanged="onMinuteChanged"
+							required="true" /> <span class="unit">分</span>
+					</div>
+				</div>
+				<div role="row" id="weekDiv">
+					<div role="control" label="时间" starred="true">
+						<input id="week" class="mini-combobox" bind="scheduler.weekday"
+							action="getWeekDaySelectItem" width="25%" required="true"
+							popupHeight="140px" /> <span class="unit">&nbsp;</span> <input
+							id="weekHour" maxValue="23" class="mini-spinner" name="h"
+							minValue="0" width="25%" onvaluechanged="onHourChanged"
+							required="true" /> <span class="unit">时</span> <input
+							id="weekMinutes" maxValue="59" class="mini-spinner" name="m"
+							minValue="0" width="25%" onvaluechanged="onMinuteChanged"
+							required="true" /> <span class="unit">分</span>
+					</div>
+				</div>
+				<div role="row" id="monthDiv">
+					<div role="control" label="时间" starred="true">
+						<input id="monthDay" class="mini-spinner" width="25%"
+							bind="scheduler.dayofmonth" required="true" maxValue="31" /><span
+							class="unit">日</span> <input id="monthHour" maxValue="23"
+							class="mini-spinner" name="h" minValue="0" width="25%"
+							onvaluechanged="onHourChanged" required="true" /> <span
+							class="unit">时</span> <input id="monthMinute" maxValue="59"
+							class="mini-spinner" name="m" minValue="0" width="25%"
+							onvaluechanged="onMinuteChanged" required="true" /> <span
+							class="unit">分</span>
+					</div>
+				</div>
+				<div role="row" id="cronDiv">
+					<div role="control" label="cron表达式" starred="true">
+						<input id="cron" class="mini-textbox" required="true"
+							requiredErrorText="cron不能为空" bind="scheduler.cron" width="80%"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar-bottom text-center">
+		<div class="btn-group mr10"
+			style="float: none; display: inline-block;">
+			<a class="mini-button mini-btn-primary" onclick="confirmadd">确认</a> <a
+				class="mini-button mini-btn-primary" onclick="clear">清空</a>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+</body>
+</html>
+
+
+<script>
+		// 初始化页面
+		var rowguid;
+		var type;
+		epoint.initPage('dxpmodeltableimportinfoaction', null, function(data) {
+			valueSetting();
+			// 调整元素显示和隐藏
+			onSchedulerTypeChanged();
+		});
+
+		function confirmadd() {
+			if (epoint.validate()) {
+				//调度值清除不需要的
+				var scheduler = mini.get('type');
+				var schedulerType = mini.get('schedulerType');
+				//intervalUnitDiv
+				var intervalUnit = mini.get('intervalUnit');
+				//intervalSecondsDiv
+				var intervalSeconds = mini.get('intervalSeconds');
+				//intervalMinutesDiv
+				var intervalMinutes = mini.get('intervalMinutes');
+				//timingTypeDiv
+				var timingtype = mini.get('timingType');
+				//dayDiv
+				var dayHour = mini.get('dayHour');
+				var dayMinutes = mini.get('dayMinutes');
+				//weekDiv
+				var week = mini.get('week');
+				var weekHour = mini.get('weekHour');
+				var weekMinutes = mini.get('weekMinutes');
+
+				//monthDiv
+				var monthDay = mini.get('monthDay');
+				var monthHour = mini.get('monthHour');
+				var monthMinute = mini.get('monthMinute');
+
+				var hour = mini.get('hour');
+				var minutes = mini.get('minutes');
+
+				if (scheduler.getValue() == 1) {
+					timingClear();
+					cronClear();
+					if (intervalUnit.getValue() == '1') {
+						//秒
+						intervalMinutes.setValue('');
+						hour.setValue('');
+						minutes.setValue('');
+					} else if (intervalUnit.getValue() == '2') {
+						//分
+						intervalSeconds.setValue('');
+						hour.setValue('');
+						minutes.setValue('');
+					}
+				} else if (scheduler.getValue() == 2) {
+					intervalClear();
+					cronClear();
+					if (timingtype.getValue() == '1') {
+						//每天
+						epoint.clear('weekDiv');
+						epoint.clear('monthDiv');
+					} else if (timingtype.getValue() == '2') {
+						//每周
+						epoint.clear('dayDiv');
+						epoint.clear('monthDiv');
+					} else if (timingtype.getValue() == '3') {
+						//每月
+						epoint.clear('dayDiv');
+						epoint.clear('weekDiv');
+					}
+				} else if (scheduler.getValue() == 3) {
+					intervalClear();
+					timingClear();
+					hour.setValue('');
+					minutes.setValue('');
+				} else if (scheduler.getValue() == 0) {
+					intervalClear();
+					timingClear();
+					cronClear();
+					hour.setValue('');
+					minutes.setValue('');
+				}
+
+				epoint.execute('save', "", function(data) {
+					if (data.msg.indexOf('成功') != -1
+							|| data.msg.indexOf('流程异常') != -1) {
+						epoint.alertAndClose(data.msg);
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			}
+		}
+
+		function selectType(e) {
+			mini.get('fromtable').setValue('');
+			mini.get('fromds').setValue('');
+			epoint.refresh([ 'dataSourceType', 'fromds', 'fromtable','nodeGuid' ]);
+		}
+
+		function selectFromDs(e) {
+			mini.get('fromtable').setValue('');
+			epoint.refresh([ 'fromtable','fromds','nodeGuid','dataSourceType']);
+		}
+
+		function clear() {
+			mini.get('fromtable').setValue('');
+			mini.get('fromds').setValue('');
+		}
+
+		function onSchedulerTypeChanged() {
+			var select = mini.get('type').getValue();
+			if (select === '1') {
+				TimeIntervalToggle();
+				mini.get("schedulerType").setValue(1);
+			} else if (select === '2') {
+				timingToggle();
+			} else if (select === '0') {
+				noneToggle();
+				mini.get("schedulerType").setValue(0);
+			} else if (select === '-1') {
+				noneToggle();
+				mini.get("schedulerType").setValue(-1);
+			} else {
+				customToggle();
+				mini.get("schedulerType").setValue(5);
+			}
+		}
+
+		function TimeIntervalToggle() {
+			$("#intervalUnitDiv").css('display', 'block');
+			$("#intervalDiv").css('display', 'block');
+			onIntervalTypeChanged();
+			$("#timingTypeDiv").css('display', 'none');
+			$("#dayDiv").css('display', 'none');
+			$("#weekDiv").css('display', 'none');
+			$("#monthDiv").css('display', 'none');
+			$("#cronDiv").css('display', 'none');
+		}
+
+		function onIntervalTypeChanged() {
+			var select = mini.get('intervalUnit').getValue();
+			var intervalSeconds = mini.get('intervalSeconds');
+			var intervalMinutes = mini.get('intervalMinutes');
+			if (select == 1) {
+				$('#unit').html('秒');
+				intervalSeconds.setVisible(true);
+				intervalMinutes.setVisible(false);
+			} else {
+				$('#unit').html('分');
+				intervalSeconds.setVisible(false);
+				intervalMinutes.setVisible(true);
+			}
+		}
+
+		function timingToggle() {
+			$("#intervalUnitDiv").css('display', 'none');
+			$("#intervalDiv").css('display', 'none');
+			$("#timingTypeDiv").css('display', 'block');
+			$("#cronDiv").css('display', 'none');
+			onTimingTypeChanged();
+		}
+
+		function onTimingTypeChanged() {
+			var select = mini.get('timingType').getValue();
+			if (select == 1) {
+				$("#dayDiv").css('display', 'block');
+				$("#weekDiv").css('display', 'none');
+				$("#monthDiv").css('display', 'none');
+				mini.get("schedulerType").setValue(2);
+			} else if (select == 2) {
+				$("#dayDiv").css('display', 'none');
+				$("#weekDiv").css('display', 'block');
+				$("#monthDiv").css('display', 'none');
+				mini.get("schedulerType").setValue(3);
+			} else {
+				$("#dayDiv").css('display', 'none');
+				$("#weekDiv").css('display', 'none');
+				$("#monthDiv").css('display', 'block');
+				mini.get("schedulerType").setValue(4);
+			}
+
+		}
+
+		function customToggle() {
+			$("#intervalUnitDiv").css('display', 'none');
+			$("#intervalDiv").css('display', 'none');
+			$("#timingTypeDiv").css('display', 'none');
+			$("#dayDiv").css('display', 'none');
+			$("#weekDiv").css('display', 'none');
+			$("#monthDiv").css('display', 'none');
+			$("#cronDiv").css('display', 'block');
+		}
+
+		function noneToggle() {
+			$("#intervalUnitDiv").css('display', 'none');
+			$("#intervalDiv").css('display', 'none');
+			$("#timingTypeDiv").css('display', 'none');
+			$("#dayDiv").css('display', 'none');
+			$("#weekDiv").css('display', 'none');
+			$("#monthDiv").css('display', 'none');
+			$("#cronDiv").css('display', 'none');
+		}
+
+		function onHourChanged(e) {
+			mini.get("hour").setValue(e.value);
+		}
+
+		function onMinuteChanged(e) {
+			mini.get("minutes").setValue(e.value);
+		}
+
+		function valueSetting() {
+			var typeValue = mini.get("schedulerType").getValue();
+			// 时间间隔
+			if (typeValue === 1) {
+				mini.get('type').setValue('1');
+				if (mini.get('intervalSeconds').getValue() > 0) {
+					//秒
+					mini.get('intervalUnit').setValue('1');
+					$('#unit').html('秒');
+				} else if (mini.get('intervalMinutes').getValue() > 0) {
+					//分
+					mini.get('intervalUnit').setValue('2');
+					$('#unit').html('分');
+				}
+			} else if (typeValue === 5) {
+				// 自定义表达式
+				mini.get('type').setValue('3');
+			} else if (typeValue === 0) {
+				mini.get('type').setValue('0');
+			} else if (typeValue === -1) {
+				mini.get('type').setValue('-1');
+			} else if (typeValue) {
+				mini.get('type').setValue('2');
+				var hControls = mini.getsByName('h');
+				$.each(hControls, function() {
+					this.setValue(mini.get("hour").getValue());
+				});
+				var mControls = mini.getsByName('m');
+				$.each(mControls, function() {
+					this.setValue(mini.get("minutes").getValue());
+				});
+				if (typeValue === 2) {
+					mini.get('timingType').setValue('1');
+				} else if (typeValue === 3) {
+					mini.get('timingType').setValue('2');
+				} else if (typeValue === 4) {
+					mini.get('timingType').setValue('3');
+				}
+			}
+
+		}
+
+		//时间间隔清理
+		function intervalClear() {
+			epoint.clear('intervalUnitDiv');
+			epoint.clear('intervalDiv');
+		}
+
+		//定时清理
+		function timingClear() {
+			epoint.clear('timingTypeDiv');
+			epoint.clear('dayDiv');
+			epoint.clear('weekDiv');
+			epoint.clear('monthDiv');
+		}
+
+		//cron清理
+		function cronClear() {
+			epoint.clear('cronDiv');
+		}
+		//节点选中
+		function nodechange(){
+			mini.get('fromds').setValue('');
+			mini.get('targetds').setValue('');
+			epoint.refresh(['fromds','dataSourceType','nodeGuid']);
+			epoint.refresh(['targetds','nodeGuid']);
+		}
+
+
+	</script>

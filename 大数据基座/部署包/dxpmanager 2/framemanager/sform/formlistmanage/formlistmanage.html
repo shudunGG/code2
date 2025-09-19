@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>表单设计</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="分类">
+		    <div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" style="margin-top: 5px;margin-right: 5px;" onclick="openType()">分类维护</a>
+			</div>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" action="getTreeData"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addForm" onclick="addFormClick();">新增表单</a> 
+			<a class="mini-button" iconCls="icon-addcircle" id="saveForm" 
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要保存的记录！', '', null, 'warning');} else {save();}">保存表单</a>
+				<a class="mini-button mini-btn-danger" iconCls="icon-removecircle" id="delForm"
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的记录！', '', null, 'warning');} else {del();}">删除选中</a>
+				<a class="mini-button " iconCls="icon-forward"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要导出的记录!', '', null, 'warning');} else {epoint.execute('export','',exporttc)}">脚本导出</a>
+			</div>
+			
+			<input id="database" autoLoad="false" action="getDsTypes" textField="text" valueField="id" class="mini-combobox mr10" width="100"/>
+		</div>
+
+		<div class="fui-condition">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 4列 -->
+					<div role="row">
+						<div role="control" label="表单名称" starred="false">
+							<input id="searchString" bind="searchString" class="mini-textbox" />
+						</div>
+						<div role="control" label="表单Id" starred="false">
+							<input id="searchString1" bind="searchString1" class="mini-textbox" />
+						</div>
+						<!-- div role="control" label="表单表名" starred="false">
+							<input bind="searchString1" class="mini-textbox" onkeypress="searchData();"/>
+						</div-->
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="categoryNum" id="categoryNum" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="tableID" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			    allowCellSelect="true" editNextOnEnterKey="true"
+			    editNextRowCell="true" showPager="true">
+				<div property="columns">
+					<div type="checkcolumn" width="20"></div>
+					<div type="indexcolumn" headerAlign="center" width="20">序</div>
+					<div field="tableID" headerAlign="center" align="left" width="80">ID号</div>
+					<div field="tablename" headerAlign="center" align="left" width="100">数据表中文名称</div>
+					<!-- div field="sql_tablename" headerAlign="center" align="left" width="100">SQL数据表名</div-->
+				    <div field="orderNum" width="50" headerAlign="center" align="right" vType="int;range:0,99999999;required" allowSort="true">
+					排序号 <input property="editor" class="mini-textbox" minWidth="50" inputStyle="text-align:right"  maxLength="8" />
+				    </div>
+					<!--div width="30" headerAlign="center" align="center" renderer="showTableStruct">
+						主表</div-->
+					<div width="30" headerAlign="center" align="center" renderer="showSubTable">
+						子表</div>
+					<div width="30" headerAlign="center" align="center" renderer="edit">
+						修改</div>
+					<div width="30" headerAlign="center" align="center"
+						renderer="showDesign">设计</div>
+					<div width="30" headerAlign="center" align="center"
+						renderer="showPreview">预览</div>
+					<div width="30" headerAlign="center" align="center"
+						renderer="showVersion">版本</div>
+					<div width="30" headerAlign="center" align="center"
+						renderer="showDetail">明细</div>
+					<!-- div width="50" headerAlign="center" align="left" renderer="print">打印模板</div-->
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="appGuid" bind="appGuid"/>
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("formlistmanageaction",'',initCallBack);
+		
+		function initCallBack(data){
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+		}
+		
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('categoryNum').setValue(id);
+			//刷新表格
+			searchData();
+		});
+		
+		function addFormClick(){
+    		epoint.openDialog("新增表单","framemanager/sform/formlistmanage/maintableadd?appGuid="+mini.get("appGuid").getValue()+"&category="+mini.get('categoryNum').getValue(), addCallBack, {
+    			'width':700,
+    			'height':450
+    		});
+    	}
+		
+    	// 打开主表
+    	function showTableStruct(e) {
+			return epoint.renderCell(e, "action-icon icon-gear","showTableStructPage");
+		}
+    	
+    	function showTableStructPage(tableId){
+    		epoint.openDialog("主表结构","framemanager/sform/formlistmanage/maintablestructlist?tableId="+tableId,
+    				addCallBack);
+    	}
+    	
+    	//打开子表
+    	function showSubTable(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "showSubTablePage");
+		}
+    	
+    	function showSubTablePage(tableId){
+    		var appGuid = mini.get("appGuid").getValue();
+    		epoint.openDialog("子表列表","framemanager/sform/formlistmanage/subformlistmanage?parentTableId="+tableId+"&appGuid="+appGuid, 
+    				addCallBack);
+    	}
+    	
+    	//修改
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit","createEditDialog");
+		}
+		
+		function createEditDialog(data) {
+			epoint.openDialog("修改表单","framemanager/sform/formlistmanage/maintableadd?tableId="+ data, addCallBack, {
+    			'width':700,
+    			'height':450
+    		});
+		}
+		
+		//版本
+		function showVersion(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"showVersionDialog");
+		}
+
+		function showVersionDialog(tableId) {
+			epoint.openDialog("表单版本",
+					"framemanager/sform/formlistmanage/formversiondesign?tableId=" + tableId,
+					addCallBack);
+		}
+    	
+    	//设计
+    	function showDesign(e) {
+			return epoint.renderCell(e, "action-icon icon-gear","showDesignDialog");
+		}
+    	
+    	function showDesignDialog(tableId) {
+			//根据tableId获取版本个数确定跳转方案
+			epoint.execute('getDesignUrl', '', [tableId], function(args) {
+				window.open("formdesign?tableId=" + tableId + "&versionId=" + args.Versionid);
+			});
+		}
+    	
+    	//预览
+		function showPreview(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"showPreviewDialog");
+		}
+
+		function showPreviewDialog(tableId) {
+			epoint.execute('getPreviewUrl', '', [tableId], showUrl);
+		}
+
+		//打印模板
+		function print(e) {
+			return epoint.renderCell(e, "action-icon icon-print", "printModel");
+		}
+
+		function printModel(tableId) {
+			//打印模板方法
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl, addCallBack);
+			} else {
+				epoint.alertAndClose("当前表单没有预览页面或没有启用的版本！", '', null, 'warning');//edit 状态都为停用时，给提示
+			}
+		}
+		
+		//明细
+		function showDetail(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "showDetailDialog");
+		}
+
+		function showDetailDialog(tableId) {
+			epoint.openDialog("记录明细",
+					"frame/pages/epointsform/showdetaillist?tableId=" + tableId,
+					addCallBack);
+		}
+		
+		// 保存
+		function save() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+
+		// 删除
+		function del() {
+			epoint.execute('del', [ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+			    epoint.alert(msg, '', function(){
+			    	epoint.refresh(['datagrid', 'fui-form'],'',true);
+			    }, 'info');
+			}
+		}
+		
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		
+		function openType() {
+			epoint.openDialog('过程类别',
+					"framemanager/sform/formlistmanage/epointsformtablecategorylist?appGuid="+mini.get("appGuid").getValue(),
+					updateTableTree, {
+						'width' : 1000
+					});
+		}
+		
+		// 表格的搜索
+		function updateTableTree() {
+			epoint.refresh([ 'tree', 'fui-form' ], '', true);
+		}
+		
+		// 导出sql语句
+		function exporttc(data) {
+			var combox = mini.get("database");
+			epoint.openDialog(combox.getText() + '脚本导出',
+					"framemanager/sform/formlistmanage/basicinfoexport?tableIDs="
+							+ data.exportlist + "&databaseType="
+							+ combox.getValue(), '', {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

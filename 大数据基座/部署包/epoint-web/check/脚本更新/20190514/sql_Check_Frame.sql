@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns  where  table_name = 'workflow_workitem_history' and column_name='ACTIVITYNAME' and data_type='varchar' and character_maximum_length=250

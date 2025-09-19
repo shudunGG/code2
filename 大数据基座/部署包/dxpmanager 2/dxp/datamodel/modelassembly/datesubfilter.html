@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>时间过滤</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" vtype="maxLength:20"
+							required="true" emptyText="请输入步骤名称" requiredErrorText="步骤名称不能为空"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="时间字段" starred="true">
+						<input class="mini-combobox" id="pdatefield" name="pdatefield"
+							required="true" oncloseclick="onCloseClick" showClose="true" requiredErrorText="时间字段不能为空"/>
+					</div>
+					<div role="control" label="范围" starred="true">
+						<input class="mini-outputtext" style="width: 19px" value="近 "></input>
+						<input id="pbeforevalue" name="pbeforevalue" class="mini-textbox"
+							style="width: 160px" vtype="int;range:1,2147483647" required="true" requiredErrorText="范围不能为空"/> <input
+							id="pbeforetype" name="pbeforetype" class="mini-combobox"
+							required="true" style="width: 80px; margin-left: 1px"  vtype="int;range:1,2147483647"
+							inputStyle="text-align:center"
+							data="[{'id':'天','text':'天'},{'id':'月','text':'月'},{'id':'年','text':'年'}]"
+							textField="text" valueField="id"  requiredErrorText="范围单位不能为空"  />
+
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="精确范围" starred="true">
+						<input class="mini-combobox" style="width: 80px" id="paccurate" requiredErrorText="精确范围不能为空"
+							name="paccurate" required="true" oncloseclick="onCloseClick"
+							data="[{'id':'天','text':'天'},{'id':'秒','text':'秒'}]" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var pdatefield = mini.get('pdatefield');
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modeldatesubfilteraction?stepId=' + nodeInfo.key,
+					{
+						'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+					}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {
+			epoint.execute("getPreFields", null, null, function(ret) {
+				pdatefield.setData(ret);
+			});
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate('@all', true)) {
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{@title}</title>
+     <!-- 请修改相对路径 -->
+    <script src="{@outsideNum}frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+    <!-- 隐藏按钮id不能修改 -->
+	<div class="hidden">
+		<a class="mini-button" id="btnSaveFrom" onclick="saveFrom">保存</a>
+		<a class="mini-button" id="btnSubmit" onclick="submit">提交</a>
+	</div>
+    
+    <!-- 内容区域 -->
+    <div class="fui-content">
+    	<div id="fui-form" class="fui-form">
+    		<div role="form">
+    		{@tbConatainer}
+    		</div>
+    	</div>
+    </div>
+    
+    <!-- 请修改相对路径 -->
+    <script src="{@outsideNum}rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'frame/pages/epointworkflow/js/tableproperty.js']);
+	</script>
+    <script>
+    	// 初始化页面
+    	epoint.initPage('{@ActionName}', '', function(data){
+			setControlsAccessRight(data);
+		});
+    	
+		function saveFrom() {
+			if (epoint.validate()) {
+				epoint.execute('saveForm', 'fui-form', newCallback);
+			} else
+				parent.ShowTdOperate(true);
+		}
+
+		function submit() {
+			if (epoint.validate()) {
+				epoint.execute('submit', 'fui-form', newCallback);
+			} else
+				parent.ShowTdOperate(true);
+		}
+		
+		// 新增操作的回调,必须回调handlecontrols中的headerMainSubmit触发流程流转
+		function newCallback(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				parent.ShowTdOperate(true);
+			} else {
+				parent.headerMainSubmit();
+			}
+		}
+    </script>
+</body>
+</html>

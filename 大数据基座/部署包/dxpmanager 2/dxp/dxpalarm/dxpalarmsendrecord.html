@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>告警记录</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.type-choose {
+	width: 80%;
+	padding-top: 12px;
+}
+
+.type-choose>li {
+	float: left;
+	text-align: center;
+	font-size: 16px;
+	color: #5c5c5c;
+	cursor: pointer;
+}
+
+.search-input {
+	float: left;
+	height: 32px;
+	line-height: 32px;
+	margin: 0 10px 0 15px;
+}
+
+.search-input {
+	width: 186px;
+	box-sizing: border-box;
+	border: 1px solid #dddddd;
+	border-radius: 4px;
+	padding-left: 10px;
+	line-height: 24px;
+	outline: none;
+}
+
+.grid {
+	margin: 10px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar fui-condition">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="delete"
+				onclick="delSel()">删除</a>
+		</div>
+		<div class="right-btn-area r">
+			<input bind="msgType" action="getMsgTypeList" id="msgType"
+				emptyText="请选择消息类型" showNullItem="true"
+				class="search-input mini-combobox" /><input id="daterangepicker"
+				class="mini-daterangepicker search-input" bind="startDate,endDate"
+				rangeType="date" emptyText="请选择发送时间范围" /><a id="search"
+				class="search-button btn r mini-button" onclick="searchData">搜索</a>
+		</div>
+	</div>
+
+
+	<!-- 表格区域 -->
+	<div class="mini-fit grid">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" showPager="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="msgTypeName" width="80" headerAlign="center">类型</div>
+				<div field="userName" width="80" headerAlign="center" align="center">发送对象</div>
+				<div field="ouName" width="100" headerAlign="center" align="center">所属部门</div>
+				<div field="senddate" width="80" headerAlign="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center" allowSort="true">发送时间</div>
+				<div field="templateName" width="80" headerAlign="center"
+					align="center">消息模板</div>
+				<div field="isSend" width="80" headerAlign="center" align="center"
+					renderer="onSendStatusRenderer" allowSort="true">发送状态</div>
+				<div width="50" headerAlign="center" renderer="onDetailRenderer"
+					align="center">详情</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpsendmsgrecordaction','',function(){
+			 if (mini.get('datagrid').getSelecteds().length === 0) {
+		            buttonDisable();
+		        }
+		});
+
+		var onDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "detail");
+		}
+
+		var grid = mini.get('datagrid');
+		grid.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+
+		function detail(e) {
+			epoint.openDialog('详情', 'dxp/dxpalarm/dxpsendmsgdetail?rowguid='
+					+ e);
+		}
+		function buttonEnable() {
+			mini.get('delete').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('delete').disable();
+		}
+
+		var onSendStatusRenderer = function(e) {
+			var color = 'red';
+			var value = '';
+			if (e.value == '1') {
+				color = '#00a65a';
+				value = '已发送';
+			} else {
+				color = '#d2d6de';
+				value = '未发送';
+			}
+			return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+					+ value + '</span>';
+		}
+
+		function delSel() {
+			epoint.confirm('确认删除所选记录？', '删除确认', function() {
+				epoint.execute('delSel', '', function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.alertAndRefresh(data.msg);
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			})
+		}
+
+		function searchData() {
+			mini.get('datagrid').reload();
+		}
+	</script>
+</body>
+</html>

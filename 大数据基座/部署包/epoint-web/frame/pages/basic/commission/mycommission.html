@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新增流程代理人</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row" id="leaderRow" style="display: none;">
+					<div role="control" label="授权人" starred="true">
+						<input class="mini-treeselect" textField="text" style="width: 61%"
+							action="userTreeModal" id="userTree" multiSelect="false" 
+							required="required" onbeforenodeselect="beforenodeselect"
+							requiredErrorText="授权人必选!" />
+					</div>
+				</div>
+				<div role="row" style="display: none;" id="ouTreeRow">
+					<div role="control" label="授权人部门选择">
+						<input class="mini-treeselect" action="ouTreeModal" id="ouTree"  oncloseclick="onCloseClick"
+							style="width: 61%" multiSelect="false"  showClose="true"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="代办人" starred="true">
+						<input class="mini-treeselect" action="userTreeModal2"
+							id="handleManTree" multiSelect="false" required="required"
+							canCheckParent="false" filterMode="server" showFilter="true"
+							style="width: 61%" onbeforenodeselect="beforenodeselect"
+							requiredErrorText="代办人必选!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="授权方式">
+						<div class="mini-radiobuttonlist" repeatItems="3"
+							bind="fcs.commissionType" id="granttype" textField="text"
+							valueField="id"
+							data="[{id:'20',text:'按时间授权'},{id:'30',text:'按单据授权'}]"></div>
+					</div>
+				</div>
+				<div role="row" id="time">
+					<div role="control" label="代办时间">
+						<input id="start" onValuechanged="validateDate(this)"
+							class="mini-datepicker mr10" bind="fcs.commissionFromDate"
+							width="28.5%" format="yyyy-MM-dd HH:mm:ss"
+							data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" showTime="true" />
+							<span style="margin-left: 10px;margin-right: 20px">至</span>
+						<input id="end" onValuechanged="validateDate(this)"
+							class="mini-datepicker" bind="fcs.commissionToDate" width="28.5%"
+							format="yyyy-MM-dd HH:mm:ss"
+							data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" showTime="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="待办事宜双向显示">
+						<input class="mini-checkbox" text="如果允许：在被代办人的待办事宜中也会显示该事宜"
+							bind="fcs.canShowInWaitHandle" trueValue="1" falseValue="0">
+						</input>
+					</div>
+				</div>
+				<div role="row" id="showwait">
+					<div role="control" label="允许查看">
+						<input class="mini-checkbox" text="如果允许：代办人能查看被代办人的已办事宜"
+							bind="fcs.canShowInWaitHandleDone" trueValue="1" falseValue="0">
+						</input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="代办后办理人显示">
+						<div class="mini-radiobuttonlist" repeatItems="3"
+							bind="fcs.canUpdateWorkItemUser" textField="text" valueField="id"
+							data="[{id:'2',text:'显示为代办人（也就是实际办理人）'},{id:'0',text:'仍然显示为被代办人'},{id:'1',text:'同时显示代理人和被代办人'}]"></div>
+					</div>
+				</div>
+
+				<!-- 存放唯一标识 -->
+				<input bind="fcs.commissionGuid" id="commissionGuid"
+					class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+	
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" onclick="addCommission" id="addCommission">确定添加</a>
+		<a class="mini-button" state="primary" onclick="saveCommission" id="saveCommission">保存修改</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("mycommissionaction", "", initCallback);
+
+		function initCallback(data) {
+			if (data.count > 0) {
+				document.getElementById("ouTreeRow").style.display = "";
+			}
+			if (data.isAdmin == 1) {
+				document.getElementById("leaderRow").style.display = "";
+			}
+			if (data.add == 1) {
+				mini.get("saveCommission").setVisible(false);
+			} else {
+				mini.get("addCommission").setVisible(false);
+			}
+			if (mini.get("granttype").getValue() == 30) {
+				document.getElementById("time").style.display = "none";
+				document.getElementById("showwait").style.display = "none";
+			}
+		}
+
+		var userTree = mini.get("userTree");
+
+		var ouTree = mini.get("ouTree");
+
+		ouTree.tree.setAutoLoad(true);
+
+		function beforenodeselect(e) {
+			//禁止选中 ckr=false节点
+			if (e.node.ckr == false)
+				e.cancel = true;
+		}
+
+		userTree
+				.on(
+						"valuechanged",
+						function(e) {
+							if (mini.get("granttype").getValue() == 30) {
+								epoint.showTips("授权人发生变化，单据授权数据已删除，请重新添加！", {state : 'warning'});
+							}
+							//首先判断是否需要显示部门树
+							epoint
+									.execute(
+											"hasSeconOu",
+											"",
+											[ e.value ],
+											function(data) {
+												mini.get("ouTree").setValue(
+														data.ouGuid);
+												if (data.count > 0) {
+													ouTree
+															.load(Util
+																	.getRightUrl(epoint
+																			.dealRestfulUrl("mycommissionaction/getOuTreeModal?userguid="
+																					+ e.value)));
+													document
+															.getElementById("ouTreeRow").style.display = "";
+												} else {
+													document
+															.getElementById("ouTreeRow").style.display = "none";
+												}
+											});
+						});
+
+		ouTree.on("valuechanged",
+				function(e) {
+					if (e.value != 'f9root') {
+						if (mini.get("granttype").getValue() == 30) {
+							epoint.showTips("部门发生变化，非当前部门的单据已被删除！",  {state : 'warning'});
+							//删除单据
+							epoint.execute("deleteByOU", "", [ e.value ]);
+						}
+					}
+				});
+
+		//授权方式选择
+		mini
+				.get("granttype")
+				.on(
+						"valuechanged",
+						function(e) {
+							if (e.value == 20) {
+								document.getElementById("time").style.display = "";
+								document.getElementById("showwait").style.display = "";
+							} else if (e.value == 30) {
+								if (mini.get("ouTree").getValue() == "") {
+									epoint.showTips("按单据授权时，请先选择授权人部门！",  {state : 'warning'});
+									mini.get("granttype").setValue(20);
+									return;
+								}
+								document.getElementById("time").style.display = "none";
+								document.getElementById("showwait").style.display = "none";
+								//打开单据选择页面
+								epoint
+										.openDialog(
+												"授权事项",
+												'frame/pages/basic/commission/commissionhandlelist?commissionGuid='
+														+ mini
+																.get(
+																		"commissionGuid")
+																.getValue(),
+												"",
+												{
+													onload : function() {
+														var param = {
+															'leadGuid' : mini
+																	.get(
+																			"userTree")
+																	.getValue(),
+															'ouGuid' : mini
+																	.get(
+																			"ouTree")
+																	.getValue() == 'f9root' ? ''
+																	: mini
+																			.get(
+																					"ouTree")
+																			.getValue(),
+															'commissionGuid' : mini
+																	.get(
+																			"commissionGuid")
+																	.getValue()
+														};
+														var iframe = this
+																.getIFrameEl();
+														iframe.contentWindow
+																.pageLoad(param);
+													}
+												});
+							}
+						});
+
+		//添加代理人
+		function addCommission() {
+			if (epoint.validate()) {
+				epoint.execute("addCommission", "", function(data) {
+					if (data.success) {
+						epoint.closeDialog(data.success);
+					} else {
+						epoint.showTips(data.msg, {state : 'danger'});
+					}
+				});
+			}
+		}
+
+		//　日期控件的验证
+		var start = mini.get("start");
+		var end = mini.get("end");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'start') {
+						epoint.showTips("开始时间不能大于结束时间！", {state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("结束时间不能小于开始时间！",  {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		//保存修改
+		function saveCommission() {
+			if (epoint.validate()) {
+				epoint.execute("saveCommission", "", function(data) {
+					if (data.success) {
+						epoint.closeDialog(data.success);
+					} else {
+						epoint.showTips(data.msg,  {state : 'danger'});
+					}
+				});
+			}
+		}
+		
+		//清除授权人部门
+		function onCloseClick(){
+			mini.get('ouTree').setValue('');
+			mini.get('ouTree').setText('');
+		}
+		
+		var ouTree = mini.get('ouTree');
+		ouTree.on('beforenodeselect', function(obj) {
+			if (obj.selected.id =="f9root") {
+				obj.cancel=true
+			}
+		 
+		});
+
+		//]]>
+	</script>
+
+</body>
+</html>

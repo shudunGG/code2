@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>新点一体化数据管理平台</title>
+    <script src="../../../js/cssboot.js"></script>    
+    <!-- <link rel="stylesheet" href="./datamanager.css"> -->
+</head>
+
+<body>
+    <!-- loading效果 -->
+    <div id="loading" class="mini-mask mini-fixed hidden">
+        <div class="mini-mask-background"></div>
+        <div class="mini-mask-msg mini-mask-loading" style="display: block; margin-left: -30px; margin-top: -30px; z-index: 1000;"></div>
+    </div>
+    <!-- 头部 -->
+    <div id="header-container" class="header-container clearfix">
+        <div id="menu-trigger" class="menu-trigger l"></div>
+        <!-- 全局搜索 -->
+        <div class="header-search classify-search l clearfix" id="header-search"></div>
+        <!-- 标题 -->
+        <div class="datamanager-title ver-inner-md font-0">
+            <img src="./images/logo.png" class="logo ver-md"/>
+            <span class="title-txt ver-md">新点一体化数据管理平台</span>
+        </div>
+        <!-- quick btn -->
+        <div class="header-actions-area">
+            <!-- actions -->
+            <div class="header-action-btns l clearfix" id="header-action-btns">
+                <span class="header-action-btn remind " data-ref="msgRemind">
+                    <i class="remind-num hidden header-action-btn-tip"></i>
+
+                    <!-- <div class="new-remind-wrap hidden" id="new-remind-wrap">
+                        <span class="icon"></span>
+                        <span class="text">您有新的消息提醒</span>
+                        <span class="close"></span>
+                    </div> -->
+                </span>
+                <span class="header-action-btn chart " data-ref="msgEMsg">
+                    <i class="emsg-num hidden header-action-btn-tip"></i>
+                </span>
+            </div>
+            <!-- user -->
+            <div class="user-info" id="user-info">
+                <div class="user-info-summary ver-inner-md font-0">
+                    <img src="./images/header/user-portrait.png" alt="" class="user-portrait ver-md">
+                </div>
+                <div id="user-action-panel" class="user-action-panel">
+                    <div class="user-action-panel-inner">
+                        <div class="user-info-detail" id="user-info-detail">
+                            <img src="./images/header/user-portrait.png" alt="" class="user-portrait">
+                            <span class="user-name"></span>
+                            <span class="user-dept"></span>
+                        </div>
+                        <ul class="user-action-list">
+                            <li class="user-action-item person-info" data-id="person-info-setting" id="person-info-setting"   data-name="个人信息维护" title="个人信息维护" data-url="/pages/frame/sysconf/personalset/personalinfo/personalinfo.proto.html">个人信息维护</li>
+                            <li class="user-action-item role-change hidden" data-id="user-role-change"  data-name="兼职切换" title="兼职切换">兼职切换</li>
+                            <!-- 此处扩展时添加 li 即可 -->
+                            <!-- <li class="user-action-item css样式类需定义图标" title="显示的名字"  url="要打开的链接地址" data-opentype="打开方式 tabsnav/dialog/blank之一" data-id="一个标识，请勿重复，可以不配置自动生成生成" script="如果打开一个链接不能满足需求，可以在此配置一段js脚本，将在点击时执行，配置url后此项无效" >显示的名字</li> -->
+                            <!-- 扩展demo -->
+                            <!-- <li class="user-action-item extlink1" title="扩展链接1" url="https://www.baidu.com/" data-opentype="tabsnav" data-id="person-extitem1">扩展链接1</li>
+                            <li class="user-action-item extlink2" title="扩展2" script="epoint.openDialog('个性化打开', 'abc', function (e){alert(e);})">扩展链接2</li> -->
+                            <li class="user-action-item logout" title="注销登录">注销登录</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全局菜单 -->
+    <div id="global-menu" class="global-menu hide">
+        <div id="all-menu" class="all-menu">
+            <div class="all-menu-inner relative">
+                <span class="all-menu-icon"></span>
+                <span class="all-menu-txt box-inline">全部模块</span>
+                <span class="all-menu-row"></span>
+            </div>
+            <!-- 全部模块 -->
+            <!-- <div class="all-menu-box">
+                <div id="all-menu-search" class="all-menu-search ver-inner-md">
+                    <span class="allmenu-search-icon box-inline ver-md"></span>
+                    <input id="allmenu-search-input" type="text" class="allmenu-search-input ver-md" placeholder="请输入关键字">
+                </div>
+                <div id="all-menu-body" class="all-menu-body relative">
+                </div>
+            </div> -->
+        </div>
+        <!-- 快捷菜单 -->
+        <div id="quick-menu-list" class="quick-menu-list font-0"></div>
+    </div>
+    <!-- 全部模块 -->
+    <div id="all-menu-box" class="all-menu-box">
+        <div id="all-menu-search" class="all-menu-search ver-inner-md">
+            <span class="allmenu-search-icon box-inline ver-md"></span>
+            <input id="allmenu-search-input" type="text" class="allmenu-search-input ver-md" placeholder="请输入关键字">
+        </div>
+        <div id="all-menu-body" class="all-menu-body relative">
+        </div>
+    </div>
+
+    <!-- 右侧滑动弹窗 -->
+    <div id="msg-panel" class="msg-panel hidden">
+        <!-- 消息 -->
+        <div id="msgRemind" class="msg-panel-detail ">
+            <h2 class="msg-panel-head">消 &nbsp; 息
+                <i class="msg-panel-hide"></i>
+            </h2>
+            <div class="msg-panel-content">
+            </div>
+        </div>
+        <!-- E讯 -->
+        <div id="msgEMsg" class="msg-panel-detail">
+            <h2 class="msg-panel-head tab">
+                <span class="panel-hd-tab active">E讯提醒</span>
+                <span class="panel-hd-tab hidden" data-ref="online-user">在线人员(
+                    <span class="online-user-num">0</span>)</span>
+                <i class="msg-panel-hide"></i>
+            </h2>
+            <div class="msg-panel-content">
+                <ul class="emsg-recent-list empty"></ul>
+                <iframe id="online-user" class="emsg-online-user hidden" width="100%" height="100%" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+    <!-- 主体 -->
+    <div class="main left-none" id="main">
+        <div class="left-nav" id="left-menu">
+            <span class="left-nav-trigger"></span>
+            <div class="left-nav-container">
+
+            </div>
+        </div>
+        <div class="main-content relative">
+            <div class="main-content-inner">
+                <!-- tabsnav 相关容器配置 -->
+                <div class="main-content-ifr-wrap" id="main-ifr-wrap"></div>
+                <div class="main-content-tab-wrap" id="main-tab-wrap"></div>
+            </div>
+            <div class="cover-wrap" id="cover-wrap"></div>
+        </div>
+    </div>
+    <!-- TabsNav容器 -->
+    <!-- <div class="main-content-tab-wrap" id="main-tab-wrap"></div> -->
+    
+    <!-- 声音提示 js动态添加IE加载iframe 非IE使用audio -->
+    <div id="msg-sound"></div>
+    
+    <script id="quick-menu-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="quick-menu-box">
+            <a id="quick-menu-{{code}}" class="quick-menu relative box-inline" data-id="{{code}}" data-name="{{name}}" data-opentype="{{openType}}" data-url="{{url}}">
+                <span class="quick-menu-icon {{icon}}"></span>
+                <span class="quick-menu-txt box-inline text-ellipsis">{{name}}</span>
+                <span class="quick-menu-close"></span>
+                <span class="quick-menu-drag"></span>
+            </a>
+            <div class="quick-menu-subbox">
+                {{#items}}
+                <a id="quick-menu-{{code}}" class="quick-menu-sub relative box-inline" data-id="{{code}}" data-name="{{name}}" data-opentype="{{openType}}" data-url="{{url}}">
+                    <span class="quick-menu-txt box-inline text-ellipsis">{{name}}</span>
+                    <span class="quick-menu-close"></span>
+                </a>
+                {{/items}}
+            </div>
+        </div>
+        {{/list}}
+    </script>
+    <script id="quick-menu-sub-tpl" type="text-mustache">
+        {{#list}}
+        <a class="quick-menu-sub relative box-inline" data-id="{{code}}" data-name="{{name}}" data-opentype="{{openType}}" data-url="{{url}}">
+            <span class="quick-menu-txt box-inline text-ellipsis">{{name}}</span>
+            <span class="quick-menu-close"></span>
+        </a>
+        {{/list}}
+    </script>
+    <script id="allmenu-block-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="all-menu-block">
+            <div class="allmenu-item relative level1" id="all-menu-{{code}}" data-id="{{code}}" data-name="{{name}}" data-opentype="{{openType}}" data-url="{{url}}" data-hassub="{{hasSub}}" data-icon="{{icon}}">
+                <span class="allmenu-item-flag"></span>
+                <span class="allmenu-item-txt text-ellipsis box-inline">{{name}}</span>
+            </div>
+            {{#items}}
+            <div id="all-menu-{{code}}" class="allmenu-item relative" data-id="{{code}}" data-name="{{name}}" data-opentype="{{openType}}" data-url="{{url}}" data-hassub="{{hasSub}}" data-icon="{{icon}}">
+                <span class="allmenu-item-flag"></span>
+                <span class="allmenu-item-txt text-ellipsis box-inline">{{name}}</span>
+            </div>
+            {{/items}}
+        </div>
+        {{/list}}
+    </script>
+    <script>
+        SrcBoot.mock = true;
+    </script>
+    <script src="../../../js/jsboot.js"></script>
+    <script src="./test/test.js"></script>
+    <script>
+        var getDataUrl = 'https://fe.epoint.com.cn/mock/26/themedataaction',
+            getQuickMenuUrl = epoint.dealRestfulUrl(getDataUrl + '/getQuickMenu'), // 获取快捷菜单
+            getMenuUrl = epoint.dealRestfulUrl(getDataUrl + '/getMenu'), // 获取菜单
+            getUserInfoUrl = epoint.dealRestfulUrl(getDataUrl + '/getUserInfo'), // 获取用户信息
+            saveCommonMenuUrl = epoint.dealRestfulUrl(getDataUrl + '/saveCommonMenu'); // 保存用户配置的常用菜单
+
+        var UserSettings = {
+            logout: function () {
+                // 已经默认做了是否退出的提醒，确定后才会调用此函数
+                Util.getSafeLocation().href = Util
+                    .getRightUrl('rest/logout?isCommondto=true');
+            },
+            // 兼职切换处理函数
+            changeRole: function (userGuid) {
+                // 未做提醒 逻辑需要自己实现
+                // 参数为后端返回的userGuid
+                var url = "frame/orga/user/switchparttime?userguid=" + userGuid;
+                epoint.openDialog("账号选择", url, function (result) {
+                    if (result == 'success') {
+                        Util.getSafeLocation().reload();
+                    }
+                }, {
+                    'width': 850,
+                    'height': 350
+                });
+            }
+        };
+        // 消息提醒tip配置
+        var RemindTipsCfg = {
+            timeout: 60 * 1000, // 自动关闭时间 单位毫秒 0 不自动关闭
+            show: true // 是否启用
+        };
+        var onlineUserIframe = document.getElementById('online-user');
+        // 在线人员选项卡配置
+        var OnlineUserSettings = {
+            // 是否显示
+            show: true,
+            // 对应页面地址
+            url: '../../../../frame/orga/user/onlineuser',
+            // 每次显示E讯面板时都会触发该方法
+            onRefreshData: function (callback) {
+                // 调用在线人员页面中的刷新数据方法
+                // 同时tab上的在线人数需要更新，但考虑到获取数据是异步操作，所以需要在refreshData方法中获取到在线人数后调用callback方法
+                try {
+                    onlineUserIframe.contentWindow.refreshData(callback);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        };
+        // e讯
+        var EmsgConfig = {
+            // baseUrl: epoint.dealRestfulUrl('exundataaction/eXun'),
+            baseUrl: 'https://fe.epoint.com.cn/mock/26/themedataaction/exundataaction/eXun',
+            treeUrl: epoint.dealRestfulUrl("exundataaction/getTree"),
+            websocketUrl: "../../../../../websocket/eXun",
+            historyUrl: "frame/pages/basic/communication/exun/exunmsg",
+            groupImg: "../../emsg/images/emsg-group-bg.png",
+            userImg: "../../emsg/images/emsg-user-error.jpg",
+            // 发送邮件的地址，如果配置了将显示E讯窗口上方显示发送邮件 经在URL后自动拼接收件人guid，多个以“;”分隔
+            // 约定 如果有多人，参数名为ToUserGuidList 一个人则参数名为ToUserGuid
+            sendEmailUrl: '',
+            showErrorMsg: true
+        };
+
+        // 全文检索分类
+        var fullSearchCateUrl = './test/fullsearchCates.json';
+
+        // 消息中心配置
+        var MsgCenterConfig = {
+            "typeListUrl": getDataUrl + '/getTypeListUrl', // 类型接口
+            "msglistUrl": getDataUrl + '/getMsglistUrl', // 右侧列表接口
+            "markToReadUrl": getDataUrl + '/markToReadUrl', // 标记为已读接口，多个用逗号隔开
+            "deleteUrl": getDataUrl + '/deleteUrl', // 删除接口, 类型为all表示删除所有，不然直接传id，多个逗号隔开
+            "msgTipsUrl": getDataUrl + '/getMsgTipsUrl' // 消息提醒接口，返回各个类别的数据和总数
+        }
+
+        //消息中心高级设置
+        var MsgCenterSetting = {
+            getMessageSettingUrl: getDataUrl + '/getMessageSetting', // 获取参数数据
+            saveMessageSettingUrl: getDataUrl + '/saveMessageSettingUrl' //保存 
+        }
+
+    </script>
+    <script>
+        // 前端原型使用远程数据模拟时 ie8/9不支持响应头中直接 Access-Control-Allow-Origin 来启用跨域支持
+        if (Util.browsers.isIE8 || Util.browsers.isIE9) {
+            jQuery.support.cors = true;
+        }
+    </script>
+    <script>
+        SrcBoot.output([
+            'frame/fui/js/widgets/classifysearch/classifysearch.js',
+            // 'frame/fui/js/widgets/tabsnav/tabsnav.js',
+            './lib/tabsnav.js',
+            'frame/fui/js/widgets/msgcenter/msgcenter.js',
+            './datamanager.js'
+        ]);
+    </script>
+</body>
+
+</html>

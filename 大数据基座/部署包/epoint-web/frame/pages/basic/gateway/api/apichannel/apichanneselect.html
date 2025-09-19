@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>高可用通道</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar" id="toolbar1">
+		<a class="mini-button" id="addClose" onclick="saveAndClose">确定选择</a>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="row_guid" multiSelect="false"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" multiSelect="false">
+				<div property="columns">
+					<div width="40" type="checkcolumn"></div>
+					<div type="indexcolumn" width="40">序</div>
+					<div field="upstream_name" width="100">名称</div>
+					<div field="order_number" width="30">排序值</div>
+					<div field="create_date" width="30"
+						data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">创建时间</div>
+					<div width="20" renderer="onDetailRenderer">查看</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('apichanneselectaction');
+
+		//管理操作列
+		var onOperationRenderer = function(e) {
+			return '<a href="javascript:void(0);" onclick="openManage(\''
+					+ e.row.row_guid + '\');" title="管理">管理';
+
+		};
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function saveAndClose() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('还未选择通道!', '', null, 'warning');
+			} else {
+				epoint.execute('save', '', function(data) {
+					epoint.closeDialog(data.rowguid + ";" + data.name + ";"
+							+ data.encodename + ";" + data.rowguid);
+				});
+			}
+		}
+
+		function openManage(rowguid) {
+			epoint.openDialog("高可用通道管理",
+					"frame/pages/basic/gateway/api/apichannel/apichanneltargetlist?rowguid="
+							+ rowguid, '', {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+
+		function onDetailRenderer(e) {
+			// 绘制行查看按钮
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		}
+
+		// 弹出明细窗口
+		function openDetail(id) {
+			epoint.openDialog('详细信息',
+					"frame/pages/basic/gateway/api/apichannel/apichanneldetail?guid="
+							+ id, searchData, {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+	</script>
+</body>
+</html>

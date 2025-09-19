@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>方案管理</title>
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+
+</head>
+<body>
+	<!--必须有，加载时的loading效果  -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<a onclick="save" class="mini-button">保存</a>
+	</div>
+	<div class="fui-content" align="center">
+		<div class="fui-form" id="fui-form">
+			<div role="form" id="form">
+				<table>
+					<tr>
+						<td colspan="4"><input id="datatable" class="mini-combobox"
+							style="width: 250px" textField="text" valueField="id"
+							onvaluechanged="onTableChange" action="dataTableModel"
+							allowInput="false" showNullItem="true" nullitemText="请选择" /><input
+							bind="selectedItems" id="selectedItems" class="mini-hidden" /></td>
+					</tr>
+					<tr>
+						<td>
+							<div id="waitselect" class="mini-listbox"
+								style="width: 250px; height: 350px" textField="text"
+								valueField="id" showCheckBox="true" multiSelect="true"
+								onitemdblclick="itemdblclick">
+
+								<div property="columns">
+									<div header="字段名" field="displayfieldname"></div>
+								</div>
+							</div>
+						</td>
+						<td style="width: 20px; text-align: center;"><input
+							type="button" value=">" onclick="add()" style="width: 40px;" /><br />
+							<input type="button" value=">>" onclick="addAll()"
+							style="width: 40px;" /><br /> <input type="button"
+							value="&lt;&lt;" onclick="removeAll()" style="width: 40px;" /><br />
+							<input type="button" value="&lt;" onclick="removes()"
+							style="width: 40px;" /><br /></td>
+						<td>
+							<div id="selected" class="mini-listbox"
+								style="width: 250px; height: 350px;" showCheckBox="true"
+								multiSelect="true" onitemdblclick="selecteditemdblclick">
+								<div property="columns">
+									<div header="来源表" field="sqltablename"></div>
+									<div header="字段名" field="displayfieldname"></div>
+								</div>
+							</div>
+						</td>
+						<td
+							style="width: 50px; text-align: center; vertical-align: center">
+							<input type="button" value="上移" onclick="upItem()"
+							style="width: 55px;" /> <input type="button" value="下移"
+							onclick="downItem()" style="width: 55px;" />
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+
+	<script type="text/javascript">
+		//<![CDATA[ 
+		var tree = mini.get("tree");
+		var waitselect = mini.get("waitselect");
+		var selected = mini.get("selected");
+
+		epoint.initPage("schemeshowinfomanageaction", "", function(data) {
+			onTableChange(mini.get("datatable"));
+
+			epoint.execute("getSelectedModel", null, null, function(result) {
+				selected.setData(result);
+			});
+		});
+		function onTableChange(e) {
+			epoint.execute("getWaitSelectModel", null, [ e.value ], function(
+					result) {
+				waitselect.setData(result);
+			});
+		}
+		var add = function() {
+			var items = waitselect.getSelecteds();
+			addToSelected(items)
+		}
+		var addAll = function() {
+			var items = waitselect.getData();
+			addToSelected(items);
+		}
+
+		var addToSelected = function(items) {
+			for (var i = 0, len = items.length; i < len; i++) {
+				var item = items[i];
+				var selectedItems = selected.getData();
+				var exist = false;
+				for (var j = 0, length = selectedItems.length; j < length; j++) {
+					var selectedItem = selectedItems[j];
+					if (selectedItem.fieldname == item.fieldname) {
+						exist = true;
+						break;
+					}
+				}
+				if (!exist) {
+					selected.addItem(item);
+				}
+			}
+		}
+
+		var removes = function() {
+			var items = selected.getSelecteds();
+			selected.removeItems(items);
+		}
+		var removeAll = function() {
+			var items = selected.getData();
+			selected.removeItems(items);
+		}
+		var upItem = function() {
+			var items = selected.getSelecteds();
+			for (var i = 0, l = items.length; i < l; i++) {
+				var item = items[i];
+				var index = selected.indexOf(item);
+				selected.moveItem(item, index - 1);
+			}
+		}
+		var downItem = function() {
+			var items = selected.getSelecteds();
+			for (var i = items.length - 1; i >= 0; i--) {
+				var item = items[i];
+				var index = selected.indexOf(item);
+				selected.moveItem(item, index + 1);
+			}
+		}
+
+		var save = function() {
+			var data = selected.getData();
+			mini.get("selectedItems").setValue(mini.encode(data));
+			epoint.execute("save", null, null, function(rtn) {
+				if (rtn && rtn.msg) {
+					epoint.alertAndClose(rtn.msg);
+				}
+			});
+		}
+
+		// 保存操作的回调
+		var saveCallback = function(data) {
+			var msg = data.msg;
+			epoint.alertAndClose(msg);
+
+		}
+
+		//字段双击事件
+		function itemdblclick(e) {
+			addToSelected([ e.item ]);
+		}
+
+		//字段双击事件
+		function selecteditemdblclick(e) {
+			selected.removeItem(e.item);
+		}
+		//]]>
+	</script>
+</body>
+</html>

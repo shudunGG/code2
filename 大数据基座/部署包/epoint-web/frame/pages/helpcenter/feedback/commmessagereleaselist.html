@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>信息发布列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="问题分类">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" onclick="openType()"
+					tooltip="分类维护"></a>
+			</div>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%"  loadOnExpand="true"
+				action="getTreeData"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" id="addMessage"
+				onclick="addMessageClick();">信息发布</a> <a class="mini-button"
+				id="saveForm"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要保存的消息！', {state : 'warning'});} else {save();}">消息保存</a>
+			<a class="mini-button" state="danger" id="delMessage"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的消息！',  {state : 'warning'});} else {del();}">删除选中</a>
+
+			<!-- a class="mini-button" iconCls="icon-addcircle" id="helpCenter" onclick="heplCenter();">帮助中心</a-->
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="searchString" bind="searchString"
+					emptyText="请输入消息标题搜索" onenter="searchData" /> <input
+					class="mini-hidden" bind="categoryNum" id="cCategoryNum" /> <a
+					class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="cmessageguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getTableModal" allowCellEdit="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true" showPager="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="cmessagetitle" width="100%">消息标题</div>
+					<div field="ordernum" width="100" vtype="int;range:0,99999999"
+						allowSort="true">
+						排序号 <input property="editor" class="mini-textbox" minWidth="50"
+							inputStyle="text-align:right" />
+					</div>
+					<div width="80" renderer="edit">编辑</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("commmessagereleaselistaction");
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('cCategoryNum').setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		
+		function addMessageClick() {
+			if (tree.getValue() && tree.getValue() != "f9root") {
+				epoint.openDialog("消息发布",
+						"frame/pages/helpcenter/feedback/commmessagereleaseadd?cCategoryNum="
+								+ mini.get('cCategoryNum').getValue(),
+						addCallBack, {
+							'width' : 1000,
+							'height' : 650
+						});
+			}
+			else {
+				epoint.showTips("请先选择问题分类!", {state : 'warning'});
+			}
+		}
+
+		//修改
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"createEditDialog");
+		}
+
+		function createEditDialog(data) {
+			epoint.openDialog("编辑发布内容",
+					"frame/pages/helpcenter/feedback/commmessagereleaseadd?cMessageGuid="
+							+ data, addCallBack, {
+						'width' : 1000,
+						'height' : 650
+					});
+		}
+
+		// 保存
+		function save() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+
+		// 删除
+		function del() {
+			epoint.confirm("是否确定删除?", '', function() {
+				epoint.execute('del', [ 'datagrid', 'fui-form' ], msgCallBack);
+			});
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.showTips(msg,  {state : 'success'});
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips("发布成功！",  {state : 'success'});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function openType() {
+			epoint.openDialog('分类维护',
+					"frame/pages/helpcenter/feedback/commcategorymanagelist",
+					updateTableTree, {
+						'width' : 1000
+					});
+		}
+
+		// 表格的搜索
+		function updateTableTree() {
+			epoint.refresh([ 'tree', 'fui-form' ], '', true);
+		}
+
+		function heplCenter() {
+			epoint.openDialog("帮助中心",
+					"frame/pages/helpcenter/commonquestion/show", addCallBack,
+					{
+						'width' : 1300,
+						'height' : 1000
+					});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

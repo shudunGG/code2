@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title></title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ "../../dataintegration/css/common.css",
+			"../../css/common.css", "../../dataintegration/css/mission.css",
+			"../../dataintegration/css/mission_node.css" ]);
+</script>
+<style>
+.search-button {
+	margin: 6px 14px 0 6px;
+}
+
+.search-input {
+	margin: 6px 15px 0 0;
+}
+
+.work-name {
+	margin-top: -8px;
+}
+
+.top {
+	padding-left: 13px;
+}
+</style>
+</head>
+
+<body>
+	<div class="main ">
+		<div class="top clearfix">
+			<ul class="type-choose l clearfix" style="width:10%">
+				<li data-id="01">消息队列监控</li>
+			</ul>
+			<ul class="range-list clearfix r">
+				<li data-id="01" class="date-item active">今日</li>
+				<li data-id="02" class="date-item">昨日</li>
+				<li data-id="03" class="date-item">近一周</li>
+				<li data-id="04" class="date-item">本月</li>
+				<li data-id="05" class="date-item">本年度</li>
+			</ul>
+			<div class=" r">
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<p class="l work-name">积压量：</p>
+						<select id="data-choose" class="search-input">
+							<option value=""></option>
+							<option value="0-100">&lt;100</option>
+							<option value="100-500">100&ndash;500</option>
+							<option value="500-1000">500&ndash;1000</option>
+							<option value="1000-10000">1000&ndash;10000</option>
+							<option value="10000-">&gt;10000</option>
+						</select>
+						<p class="l work-name">topic名称：</p>
+						<input class="search-input" placeholder="请输入关键词" id="search"
+							type="text"> <a class="search-button btn"
+							onclick="searchData();">搜索</a> <input
+							id="topicName" class="mini-textbox" bind="topicName"
+							style="display: none;" /> <input id="range" class="mini-textbox"
+							bind="range" style="display: none;" /> <input id="backlog"
+							class="mini-textbox" bind="backlog" style="display: none;" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="content clearfix mini-fit">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true" action="getDataGridModel"
+				style="width: 100%; height: 100%" showPager="true">
+				<div property="columns">
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="topicname" headerAlign="center" align="center">topic名称</div>
+					<div field="publishcount" headerAlign="center" align="center">发布量</div>
+					<div field="consumecount" headerAlign="center" align="center">消费量</div>
+					<div field="groupcount" headerAlign="center" align="center">订阅组数</div>
+					<div field="backlog" headerAlign="center" align="center">积压量</div>
+					<div headerAlign="center" align="center" renderer="onOptRender">操作</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpkafkatopicmonitoraction');
+
+		var $rangeList = $(".range-list");
+
+		$rangeList.on("click", "li", function() {
+			var that = $(this), id = that.data("id");
+			that.addClass("active").siblings().removeClass("active");
+			mini.get('range').setValue(id);
+			searchData();
+		});
+
+		var $dataChoose = $("#data-choose");
+		$dataChoose.bind('change', function() {
+			mini.get('backlog').setValue($dataChoose.val());
+		});
+
+		$('#search').bind('input propertychange', function() {
+			mini.get('topicName').setValue($('#search').val());
+		}).bind('keyup', function(event) {
+			if (event.keyCode == "13") {
+				searchData();
+			}
+		});
+
+		function onOptRender(e) {
+			return '<a onclick="messageList(' + "'"
+					+ e.row.rowguid + "'," + "'" + e.row.backlog + "'"
+					+ ');" >' + '消息查询' + '</a>' + '<span>&nbsp;&nbsp;</span>'
+					+ '<a " onclick="consumeList('
+					+ "'" + e.row.rowguid + "'" + ');" >' + '消费查看' + '</a>';
+		}
+
+		function messageList(rowguid, backlog) {
+			epoint.openDialog("消息查看",
+					'dxp/kafka/monitor/dxpkafkatopicmessagelist?topicGuid='
+							+ rowguid + '&backlog=' + backlog, function() {
+						searchData();
+					}, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		function consumeList(rowguid) {
+			Util.getSafeLocation().setHref(
+					'dxpkafkagroupmonitor?topicGuid=' + rowguid);
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="dialog.js?v=11.9"></script>
+
+<script type="text/javascript">
+document.write ("<link href='../language/" + lang.ActiveLanguage + ".css?v=" + EWEB.V + "' type='text/css' rel='stylesheet'>");
+document.write ("<link href='../skin/" + config.Skin + "/dialog.css?v=" + EWEB.V + "' type='text/css' rel='stylesheet'>");
+
+var sAction = "ALL";
+var sTitle = lang["DlgImageMarginAll"];
+
+var oControl;
+var oSeletion;
+
+var sMarginTop = "";
+var sMarginBottom = "";
+var sMarginLeft = "";
+var sMarginRight = "";
+
+if (EWEBSelection.GetType() == "Control") {
+	oControl = EWEBSelection.GetSelectedElement();
+	if (oControl.tagName=="IMG" && GetAttribute(oControl, "_ewebeditor_fake_tag")==""){
+		sAction = "SEL";
+		sTitle = lang["DlgImageMarginSel"];
+		sMarginTop = RemovePX(GetStyleAttribute(oControl, "margin-top"));
+		sMarginBottom = RemovePX(GetStyleAttribute(oControl, "margin-bottom"));
+		sMarginLeft = RemovePX(GetStyleAttribute(oControl, "margin-left"));
+		sMarginRight = RemovePX(GetStyleAttribute(oControl, "margin-right"));
+	}
+}
+
+var sCaption = lang["DlgImageMargin"] + "(" + sTitle + ")";
+document.write("<title>" + sCaption + "</title>");
+
+
+function InitDocument(){
+	lang.TranslatePage(document);
+
+	$("d_top").value = sMarginTop;
+	$("d_bottom").value = sMarginBottom;
+	$("d_left").value = sMarginLeft;
+	$("d_right").value = sMarginRight;
+	
+	parent.InnerDialogLoaded(sCaption);
+}
+
+
+function ok(){
+	sMarginTop = AddUnitPX(BaseTrim($("d_top").value));
+	sMarginBottom = AddUnitPX(BaseTrim($("d_bottom").value));
+	sMarginLeft = AddUnitPX(BaseTrim($("d_left").value));
+	sMarginRight = AddUnitPX(BaseTrim($("d_right").value));
+
+	if (sAction == "SEL") {
+		try{oControl.style.marginTop = sMarginTop;}catch(e){};
+		try{oControl.style.marginBottom = sMarginBottom}catch(e){};
+		try{oControl.style.marginLeft = sMarginLeft}catch(e){};
+		try{oControl.style.marginRight = sMarginRight}catch(e){};
+	}else{
+		var els=EWEB.EditorDocument.getElementsByTagName("IMG");
+		for (var i=els.length-1; i>=0; i--){
+			var el=els[i];
+			var s_Attr = GetAttribute(el, "_ewebeditor_fake_tag");
+			if (!s_Attr){
+				try{el.style.marginTop = sMarginTop}catch(e){};
+				try{el.style.marginBottom = sMarginBottom}catch(e){};
+				try{el.style.marginLeft = sMarginLeft}catch(e){};
+				try{el.style.marginRight = sMarginRight}catch(e){};
+			}
+		}
+	}
+
+	parent.Ok();
+}
+
+
+</script>
+
+
+</head>
+<body onload="InitDocument()">
+<table border=0 cellpadding=0 cellspacing=5 id=tabDialogSize><tr><td>
+
+
+<table border=0 cellpadding=0 cellspacing=0 align=center>
+<tr>
+	<td>
+	<fieldset>
+	<legend><span lang=DlgImageMarginLegend></span></legend>
+	<table border=0 cellpadding=5 cellspacing=0 width="100%">
+	<tr><td>
+
+		<table border=0 cellpadding=0 cellspacing=2 width="100%">
+		<tr>
+			<td noWrap width="20%"><span lang=DlgImageMarginTop></span>:</td>
+			<td noWrap width="29%"><input style="width:80px" type=text id=d_top size=10 value=""></td>
+			<td width="2%">&nbsp;</td>
+			<td noWrap width="20%"><span lang=DlgImageMarginBottom></span>:</td>
+			<td noWrap width="29%"><input style="width:80px" type=text id=d_bottom size=10 value=""></td>
+		</tr>
+		<tr>
+			<td noWrap width="20%"><span lang=DlgImageMarginLeft></span>:</td>
+			<td noWrap width="29%"><input style="width:80px" type=text id=d_left size=10 value=""></td>
+			<td width="2%">&nbsp;</td>
+			<td noWrap width="20%"><span lang=DlgImageMarginRight></span>:</td>
+			<td noWrap width="29%"><input style="width:80px" type=text id=d_right size=10 value=""></td>
+		</tr>
+		</table>
+
+	</td></tr>
+	</table>
+	</fieldset>
+	</td>
+</tr>
+<tr><td height=5></td></tr>
+<tr><td noWrap align=right><input type=submit class="dlgBtnCommon dlgBtn" value='' id="btn_ok" onclick="ok()" lang=DlgBtnOK>&nbsp;&nbsp;<input type=button class="dlgBtnCommon dlgBtn" value='' onclick="parent.Cancel()" lang=DlgBtnCancel></td></tr>
+</table>
+
+
+</td></tr></table>
+
+
+</body>
+</html>

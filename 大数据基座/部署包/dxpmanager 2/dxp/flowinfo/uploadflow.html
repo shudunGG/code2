@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作业导入</title>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+<div class="fui-content">
+    <div class="fui-form" id="fui-form1">
+        <div role="form">
+            <div id="form" class="fui-form">
+                <div role="form">
+                    <div role="row">
+                        <div role="control" label="作业名称" starred="true">
+                            <input id="schedulerType" bind="flowName" class="mini-textbox" vtype="maxLength:100"
+                                   required="true" requiredErrorText="作业名称不能为空"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="节点域" starred="true">
+                            <input id="nodeGuid" bind="nodeGuid" class="mini-combobox"
+                                   required="true" requiredErrorText="节点域不能为空"
+                                   action="dxpdatadeveloplistaction.getNodeGuidList"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="livy地址">
+                            <input id="livyPath" bind="livyPath" class="mini-textbox"/>
+                        </div>
+                    </div>
+                   <!--  <div role="row">
+                        <div role="control" label="hdp类型">
+                            <input id="hadooptype" bind="hdpType" class="mini-combobox" action="getHadoopType"/>
+                        </div>
+                    </div> -->
+                    <div role="row">
+                        <div role="control" label="作业zip包" starred="true">
+                            <div id="uploader" class="mini-webuploader" pickerText="导入zip" 
+                                 action="getFileUploadModel" limitType="zip" fileNumLimit="1" dataImport="true"
+                                 auto="true"></div>
+                        </div>
+                    </div>
+                    <!-- <div role="row">
+                        <div role="control" label="关联作业" >
+                           <input id="relateflow"  onbuttonclick="openRelatePage" bind="relateFlows"
+										allowInput="false" class="mini-buttonedit" emptyText="" />
+							<input id="relateflowval" class="mini-hidden" >
+                        </div>
+                    </div> -->
+                    <div role="row">
+						<div role="control" label="高级配置">
+							<input id="advancedsetting" class="mini-checkbox" text="" width="13px"/>
+						</div>
+						<div role="control"></div>
+					</div>
+                    <div role="row" id="advancedsetting-01">
+                        <div role="control" label="最小内存（M）">
+                            <input id="xms" bind="xms" class="mini-textbox" vtype="int;range:1,2048"/>
+                        </div>
+                    </div>
+                    <div role="row" id="advancedsetting-02">
+                        <div role="control" label="最大内存（M）">
+                            <input id="xmx" bind="xmx" class="mini-textbox" vtype="int;range:1,2048"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-group" style="margin: 0 auto; width: 25%;">
+        <a class="mini-button mini-btn-primary" onclick="save()">确定</a>
+        <a class="mini-button mini-btn-primary" onclick="close()">关闭</a>
+    </div>
+</div>
+
+<script src="../../rest/resource/jsboot"></script>
+<script>
+    var flowguid;
+    var advancedsetting=mini.get('advancedsetting');
+    epoint.initPage('uploadflowaction', '', function (data) {
+        flowguid = data.flowGuid;
+     	//高级配置不展开
+		$('#advancedsetting-01').hide();
+		$('#advancedsetting-02').hide();
+		//mini.get('relateflow').setValue(data.relateFlows);
+		//mini.get('relateflow').setText(data.relateFlowTexts);
+    });
+
+    function save() {
+        if (epoint.validate()) {
+        	if(Util.toInt(mini.get('xms').getValue())>Util.toInt(mini.get('xmx').getValue())){
+        		epoint.alert('最小内存不能大于最大内存');
+        		return;
+        	}
+            epoint.execute('save', '@all', function (data) {
+                if (data.result.indexOf('导入成功')!=-1) {
+                    epoint.alert(data.result, '提示', function () {
+                        epoint.closeDialog(flowguid);
+                    }, 'success');
+                } else {
+                    epoint.alert(data.result);
+                }
+            });
+        }
+    }
+
+    function close() {
+        epoint.closeDialog(flowguid);
+    }
+    
+    function openRelatePage(){
+    	epoint.openTopDialog('关联作业','dxp/flowinfo/selectflowinfolist?flowType=02&&rowguid='+flowguid,function(data){
+    		//epoint.decodeJson(data);
+	    	var name='',val='';
+    		if(data!='close'){
+	    		for(var i=0;i<data.length;i++){
+	    			name+=data[i].flowname+';';
+	    			val+=data[i].rowguid+';';
+	    		}
+				mini.get('relateflow').setValue(val);
+				mini.get('relateflow').setText(name);
+    		}
+    	});
+    }
+    
+    
+    
+  //高级设置
+    advancedsetting.on('valuechanged',function(e){
+    	if(e.value=='true'){
+    		$('#advancedsetting-01').show();
+    		$('#advancedsetting-02').show();
+    	}else{
+    		$('#advancedsetting-01').hide();
+    		$('#advancedsetting-02').hide();
+    	}
+    });
+
+</script>
+</body>
+</html>

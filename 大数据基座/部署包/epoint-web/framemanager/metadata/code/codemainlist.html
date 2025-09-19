@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>代码管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择子系统"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" id="new"
+				onclick="addCodeMain()">新增代码</a> <a class="mini-button" id="save"
+				onclick="saveCodeMain()">保存代码</a> <a class="mini-button" id="move"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要操作的记录!', {state : 'warning'});}else{move();}">转移选中</a>
+			<a class="mini-button" state="danger" id="delete"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的代码！',  {state : 'warning'});} else {epoint.confirm('删除主代码项会同步删除子代码项,确定要删除吗？','',deleteSelected);}">删除代码</a>
+			<a class="mini-button" id="export"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！',  {state : 'warning'});} else {epoint.execute('export','',exportsql)}">脚本导出</a>
+			<a class="mini-button" id="confexport"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！',  {state : 'warning'});} else {epoint.execute('export','',confexportsql)}">脚本导出</a>
+			<input id="database" autoLoad="false" action="getDsTypes"
+				textField="text" valueField="id" class="mini-combobox mr10" />
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="codeName" bind="codeMain.codeName"
+					emptyText="请输入代码名称搜索" onenter="searchData" /> <input
+					class="mini-textbox" id="description" bind="codeMain.description"
+					emptyText="请输入代码说明搜索" onenter="searchData" /> <input
+					class="mini-hidden" bind="categoryNum" id="categoryNum" /> <a
+					class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				按钮“生成脚本A”生成的脚本会判断是否存在CodeID，存在则不添加；不存在则添加，添加后的CodeID和源数据库中CodeID一致。
+			</p>
+			<p>
+				按钮“生成脚本B”生成的脚本会判断是否存在CodeName，存在则修改代码项；不存在则添加，添加后的CodeID和源数据库中CodeID可能不一致。
+			</p>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="codeid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDataGridData" showPager="true"
+				allowCellEdit="true" allowCellSelect="true"
+				ondrawcell="onCheckRender" editNextOnEnterKey="true">
+				<div property="columns">
+					<div type="checkcolumn" name="checkcolumn" width="40"></div>
+
+					<div type="indexcolumn" width="40" align="left">序</div>
+
+					<div field="codeName" name="codeName" width="100%" maxLength="100">
+						代码名称<input property="editor" class="mini-textbox" maxLength="100" />
+					</div>
+					<div field="description" width="400" maxLength="200">
+						代码说明 <input property="editor" class="mini-textbox" maxLength="200" />
+					</div>
+					<div field="dqjs" width="80">当前级数</div>
+					<div width="90" renderer="onCopyRenderer">状态</div>
+					<div type="actioncolumn">
+						操作 <span type="action" icon="icon-edit" onclick="openAdd"
+							renderer="onEditRenderer">子项管理</span> <span type="action"
+							icon="icon-copy" onclick="openCodeItemLev"
+							renderer="onFjdyRenderer">分级定义</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("codemainlistaction", '', initDataBase);
+
+		var isLesseeMode = false;
+		var grid = mini.get("datagrid");
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+
+		function initDataBase(e) {
+			if (Util.getFrameSysParam("onConfmanage")) {
+				$('#export').hide();
+				$('#confexport').show();
+			}
+			else {
+				$('#export').show();
+				$('#confexport').hide();
+			}
+			
+			mini.get("database").setValue("oracle,B");
+			mini.get("database").setText("Oracle");
+
+			if (e.isLesseeMode) {
+				isLesseeMode = e.isLesseeMode;
+			}
+
+			if (!isLesseeMode && isSub == "1") {
+				$('#new').hide();
+				$('#save').hide();
+				$('#delete').hide();
+				$('#move').hide();
+				grid.hideColumn('checkcolumn');
+			}
+		}
+
+		var grid = mini.get("datagrid");
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+
+		grid
+				.on(
+						"cellbeginedit",
+						function(e) {
+							if (e.field == "codeName"
+									|| e.field == "description") {
+								var row = e.record;
+								var editor = e.editor;
+								if (isLesseeMode) {
+									if ((row.nooperate && row.nooperate == true)
+											|| (row.nooperatelessee && nooperatelessee == true)) {
+										editor.setEnabled(false);
+									} else {
+										editor.setEnabled(true);
+									}
+								} else if (!isLesseeMode && isSub == "1") {
+									editor.setEnabled(false);
+								}
+							}
+						});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('categoryNum').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			searchData();
+		});
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			if (e.record.codeid) {
+				e.icon.visible = true;
+			} else {
+				e.icon.visible = false;
+			}
+		};
+
+		// 绘制分级定义按钮
+		var onFjdyRenderer = function(e) {
+			if (e.record.codeid) {
+				e.icon.visible = true;
+			} else {
+				e.icon.visible = false;
+			}
+		};
+
+		// 绘制状态
+		var onCopyRenderer = function(e) {
+			if (e.record._state == "added") {
+				if (isSub == 1) {
+					return "<span style=\"color:blue\">租户</span>";
+				} else {
+					return "<span style=\"color:red\">管理员</span>";
+				}
+			}
+			if (e.record.nooperate && e.record.nooperate == true) {
+				if (e.record.iscopy && e.record.iscopy == true) {
+					url = "<span style=\"color:blue\">已个性化</span>";
+				} else {
+					url = "<a style=\"cursor:pointer;color:green\" onclick=\"copy('"
+							+ e.record.codeid + "')\" >个性化</a>";
+				}
+			} else {
+				if (e.record.baseouguid && e.record.baseouguid != null
+						&& e.record.baseouguid != '') {
+					url = "<span style=\"color:blue\">租户</span>";
+				} else {
+					url = "<span style=\"color:red\">管理员</span>";
+				}
+
+			}
+			return url;
+		};
+
+		function copy(codeid) {
+			epoint.execute('copy', '', codeid, searchKeepPage);
+		}
+		// 新增
+		function addCodeMain() {
+			var grid = mini.get("datagrid");
+			var newRow = {
+				//name : "new"
+				isAllowToAll : "true",
+				nooperate : false
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditCell(newRow, "codeName");
+		}
+
+		// 保存
+		function saveCodeMain() {
+			epoint.execute('saveCodeMain', [ 'datagrid', 'categoryNum' ],
+					msgCallBack);
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+
+		// 打开修改页面
+		function openAdd(row) {
+			var subStr = isSub == '1' ? 'isSub=1&' : '';
+			epoint.openDialog('代码子项管理',
+					'framemanager/metadata/code/codeitemslist?' + subStr
+							+ 'codeID=' + row.codeid, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 打开分级定义页面
+		function openCodeItemLev(row) {
+			var subStr = isSub == '1' ? 'isSub=1&' : '';
+			epoint.openDialog('分级定义',
+					'framemanager/metadata/code/codeitemlevlist?' + subStr
+							+ 'codeID=' + row.codeid, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		
+		// 导出sql语句
+		function exportsql(data) {
+			var combox = mini.get("database").getValue();
+			var obj = combox.split(",");
+			var subStr = isSub == '1' ? 'isSub=1&' : '';
+			epoint.openDialog(mini.get("database").getText() + '脚本导出',
+					"framemanager/metadata/code/codemainexport?" + subStr
+							+ "codeID=" + data.exportlist + "&databaseType="
+							+ obj[0] + "&type=" + obj[1], '', {
+						'width' : 900,
+						'height' : 450
+					});
+		}
+		
+		// 导出sql语句
+		function confexportsql(data) {
+			var selected = mini.get('datagrid').getSelecteds();
+			var ids = selected.map(function (item, index, array) {
+				return item.codeid;
+			});
+			epoint.execute('confcodemainlistaction.confExport', '@none', [ids.join()], msgCallBack);
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg, {state : 'success'});
+				} else {
+					epoint.showTips(msg, {state : 'warning'});
+				}
+			}
+			searchKeepPage();
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		// 转移选中
+		function move() {
+			epoint.execute('codemainlistaction.move', 'datagrid', movetc);
+		}
+
+		function movetc(data) {
+			var subStr = isSub == '1' ? 'isSub=1&' : '';
+			epoint.openDialog('转移子系统',
+					"framemanager/metadata/code/codemaintransfer?" + subStr
+							+ "guidlist=" + data.movelist, movetcCallBack, {
+						'width' : 500,
+						'height' : 400
+					});
+		}
+
+		function movetcCallBack(msg) {
+			if (msg && msg != 'close') {
+				epoint.showTips(msg, {state : 'success'});
+				searchKeepPage();
+			}
+		}
+
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onCheckRender(e) {
+			//此功能只是隐藏掉选择框，但是还是可以被选到的，注意！！！！，要配合beforeselect使用
+			if (e.record.nooperate) {
+				var nooperate = e.record.nooperate;
+				if (nooperate == true && e.cellCls === "mini-checkcolumn"
+						&& !e.record.iscopy) {
+					e.cellHtml = "";
+				}
+			}
+			if (e.record.nooperatelessee) {
+				var nooperatelessee = e.record.nooperatelessee;
+				if (nooperatelessee == true && e.cellCls === "mini-checkcolumn") {
+					e.cellHtml = "";
+				}
+			}
+		}
+		grid.on("beforeselect", function(e) {
+			if (e.record.nooperate) {
+				var nooperate = e.record.nooperate;
+				if (nooperate == true && !e.record.iscopy) {
+					e.cancel = true;
+				}
+			}
+			if (e.record.nooperatelessee) {
+				var nooperatelessee = e.record.nooperatelessee;
+				if (nooperatelessee == true) {
+					e.cancel = true;
+				}
+			}
+		});
+		//]]>
+	</script>
+
+</body>
+
+</html>

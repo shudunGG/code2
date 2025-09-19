@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<title>Tenant management changes</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save" onclick="saveModify">save and close</a> <a
+				class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">Cancel the change</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="tenantname" starred="true">
+						<input id="tenantname" class="mini-textbox"
+							bind="dataBean.tenantname" required="true"
+							requiredErrorText="The tenant nameCan't be empty!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="sign name" starred="true">
+						<input id="tenantsysname" class="mini-textbox"
+							bind="dataBean.tenantsysname" required="true"
+							requiredErrorText="The tenant sign the nameCan't be empty!"
+							onvalidation="onEnglishValidation" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input id="ordernumber" class="mini-textbox"
+							bind="dataBean.ordernumber" vtype="int"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// Initialize the page
+		epoint.initPage('frametenanteditaction');
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		/* Whether or not English+digital */
+		function isEnglish(v) {
+			var re = new RegExp("^[a-zA-Z]+$");
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		function onEnglishValidation(e) {
+			if (e.isValid) {
+				if (isEnglish(e.value) == false) {
+					e.errorText = "The tenant sign the nameMust be in English";
+					e.isValid = false;
+				}
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The new process agent</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- Wait for the tooltip -->
+	<div class="page-loading"></div>
+
+	<!-- Button area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addCommission" iconCls="icon-save"
+				id="addCommission">sure add</a><a class="mini-button"
+				onclick="saveCommission" iconCls="icon-save" id="saveCommission">save changes</a>
+			<a class="mini-button" onclick="epoint.closeDialog"
+				iconCls="icon-removecircle">cancel</a>
+		</div>
+	</div>
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row" id="leaderRow" style="display: none;">
+					<div role="control" label="authorized person" starred="true">
+						<input class="mini-treeselect" textField="text"
+							action="userTreeModal" id="userTree" multiSelect="false"
+							required="required" onbeforenodeselect="beforenodeselect"
+							requiredErrorText="The authorized personWill choose!" />
+					</div>
+				</div>
+				<div role="row" style="display: none;" id="ouTreeRow">
+					<div role="control" label="choice department">
+						<input class="mini-treeselect" action="ouTreeModal" id="ouTree"
+							multiSelect="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="agent" starred="true">
+						<input class="mini-treeselect" action="userTreeModal2"
+							id="handleManTree" multiSelect="false" required="required"
+							canCheckParent="false" 
+							onbeforenodeselect="beforenodeselect" requiredErrorText="Do STH for sb the personWill choose!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="authorization way">
+						<div class="mini-radiobuttonlist" repeatItems="3"
+							bind="fcs.commissionType" id="granttype" textField="text"
+							valueField="id"
+							data="[{id:'20',text:'According to the time authorization'},{id:'30',text:'According to the authorization documents'}]"></div>
+					</div>
+				</div>
+				<div role="row" id="time">
+					<div role="control" label="agent time">
+						<input id="start" onValuechanged="validateDate(this)"
+							class="mini-datepicker mr10" bind="fcs.commissionFromDate"
+							width="30%" format="yyyy-MM-dd"
+							data-options="{'format':'yyyy-MM-dd'}" /> <input id="end"
+							onValuechanged="validateDate(this)" class="mini-datepicker"
+							bind="fcs.commissionToDate" width="30%" format="yyyy-MM-dd"
+							data-options="{'format':'yyyy-MM-dd'}" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="two-way display">
+						<input class="mini-checkbox" text="If allowed to:The matter will also be shown in the agent's charge d'affaires"
+							bind="fcs.canShowInWaitHandle" trueValue="1" falseValue="0">
+						</input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="allow to see">
+						<input class="mini-checkbox" text="If allowed to:The agent can see the agent has been done"
+							bind="fcs.canShowInWaitHandleDone" trueValue="1" falseValue="0">
+						</input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="transactor display">
+						<div class="mini-radiobuttonlist" repeatItems="3"
+							bind="fcs.canUpdateWorkItemUser" textField="text" valueField="id"
+							data="[{id:'1',text:'Show as the agent(that is, the actual transactor)'},{id:'0',text:'Is still displayed as the agent'}]"></div>
+					</div>
+				</div>
+
+				<!-- Store the unique id -->
+				<input bind="fcs.commissionGuid" id="commissionGuid"
+					class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+        //Initialize the page
+        epoint.initPage ("mycommissionaction", "", initCallback);
+        
+        function initCallback (data)
+        {
+	        if (data.count > 0)
+	        {
+		        document.getElementById ("ouTreeRow").style.display = "";
+	        }
+	        if (data.isAdmin == 1)
+	        {
+		        document.getElementById ("leaderRow").style.display = "";
+	        }
+	        if (data.add == 1)
+	        {
+		        mini.get ("saveCommission").setVisible (false);
+	        }
+	        else
+	        {
+		        mini.get ("addCommission").setVisible (false);
+	        }
+	        if (mini.get ("granttype").getValue () == 30)
+	        {
+		        document.getElementById ("time").style.display = "none";
+	        }
+        }
+
+        var userTree = mini.get ("userTree");
+        
+        var ouTree = mini.get ("ouTree");
+        
+        ouTree.tree.setAutoLoad (true);
+        
+        function beforenodeselect(e) {
+            //Ban on selected ckr=falsenode
+            if (e.node.ckr == false) e.cancel = true;
+        }
+
+        userTree.on ("valuechanged", function (e)
+        {
+	        if (mini.get ("granttype").getValue () == 30)
+	        {
+		        epoint.alert ("The authorized personChange, authorization data deleted documents, please add again!",null,null,'warning');
+	        }
+	        //First of all determine whether need to display department tree
+	        epoint.execute ("hasSeconOu", "", [
+		        e.value
+	        ], function (data)
+	        {
+		        mini.get ("ouTree").setValue (data.ouGuid);
+		        if (data.count > 0)
+		        {
+			        ouTree.load (epoint.dealRestfulUrl("mycommissionaction/getOuTreeModal?userguid=" + e.value));
+			        document.getElementById ("ouTreeRow").style.display = "";
+		        }
+		        else
+		        {
+			        document.getElementById ("ouTreeRow").style.display = "none";
+		        }
+	        });
+        });
+        
+        ouTree.on ("valuechanged", function (e)
+        {
+	        if (e.value != 'f9root')
+	        {
+		        if (mini.get ("granttype").getValue () == 30)
+		        {
+			        epoint.alert ("Change department, has the current department documentsbeDeleted!",null,null,'warning');
+			        //Delete the documents
+			        epoint.execute ("deleteByOU", "", [
+				        e.value
+			        ]);
+		        }
+	        }
+        });
+        
+        //Authorization waychoose
+        mini.get ("granttype").on (
+                "valuechanged",
+                function (e)
+                {
+	                if (e.value == 20)
+	                {
+		                document.getElementById ("time").style.display = "";
+	                }
+	                else if (e.value == 30)
+	                {
+		                document.getElementById ("time").style.display = "none";
+		                //Open the documentchoosepage
+		                epoint.openDialog ("Authorized matters",
+		                        'mis/sysconf/commission/commissionhandlelist?commissionGuid='
+		                                + mini.get ("commissionGuid").getValue (), "",
+		                        {
+			                        onload : function ()
+			                        {
+				                        var param =
+				                        {
+				                            'leadGuid' : mini.get ("userTree").getValue (),
+				                            'ouGuid' : mini.get ("ouTree").getValue () == 'f9root' ? '' : mini.get (
+				                                    "ouTree").getValue (),
+				                            'commissionGuid' : mini.get ("commissionGuid").getValue ()
+				                        };
+				                        var iframe = this.getIFrameEl ();
+				                        iframe.contentWindow.pageLoad (param);
+			                        }
+		                        });
+	                }
+                });
+        
+        //Add the agent
+        function addCommission ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("addCommission", "", function (data)
+		        {
+			        if (data.success)
+			        {
+				        epoint.alertAndClose (data.msg, null, null,
+				        {
+					        backParam : data.success
+				        },'success');
+			        }
+			        else
+			        {
+				        epoint.alert (data.msg,null,null,'error');
+			        }
+		        });
+	        }
+        }
+
+        //　Verification of date of control
+        var start = mini.get ("start");
+        var end = mini.get ("end");
+        
+        function validateDate (e)
+        {
+	        if (start.getValue () && end.getValue ())
+	        {
+		        if (!epoint.validateDateInterval (start, end, 0))
+		        {
+			        if (e.id == 'start')
+			        {
+				        epoint.alert ("Start time is not greater than end time!",null,null,'warning');
+				        start.setValue (null);
+			        }
+			        else
+			        {
+				        epoint.alert ("Over time is not less than start time!",null,null,'warning');
+				        end.setValue (null);
+			        }
+		        }
+	        }
+        }
+
+        //save changes
+        function saveCommission ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("saveCommission", "", function (data)
+		        {
+			        if (data.success)
+			        {
+				        epoint.alertAndClose (data.msg, null, null,
+				        {
+					        backParam : data.success
+				        },'success');
+			        }
+			        else
+			        {
+				        epoint.alert (data.msg, null, null, 'error');
+			        }
+		        });
+	        }
+        }
+
+        //]]>
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>部门列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 页面内容区域 -->
+	<div class="fui-left">
+		<div role="head" title="选择部门"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%"
+				textField="text" idField="id" parentField="pid"
+				action="getTreeModel" filterMode="server" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a id="addOu" class="mini-button" state="primary" onclick="addOu">新增部门</a>
+			<a id="saveAll" class="mini-button" onclick="saveAll">保存修改</a> <a
+				id="addStepSize" class="mini-button" onclick="addStepSize">调整排序步长</a>
+			<a class="mini-dataexport l" id="dataexport" gridId="datagrid"
+				fileName="部门列表" action="getExportModel" extraId="fui-form"
+				exportAction="frameoulistaction.export"></a>
+		</div>
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden"></div>
+		<!-- 条件区域 -->
+		<div class="fui-search" opened="false" primaryControl="ouName">
+			<div class="fui-form" id="fui-form" style="margin-right: 100px">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="部门名称">
+							<input bind="ouName" class="mini-textbox" id="ouName" />
+						</div>
+						<div role="control" label="部门简称">
+							<input bind="ouShortName" class="mini-textbox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="只显示直属部门">
+							<div name="onlyDirect" bind="isDirect" class="mini-checkbox"
+								onvaluechanged="searchData"></div>
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+						class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a> <a role="reset"
+				callback="resetCallback"></a> <a role="close"
+				callback="closeCallback"></a>
+
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="ouguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" allowCellEdit="true" showPager="true"
+				action="getDataGridData" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="ouname" width="300" sortOrder="desc"
+						vtype="required;maxLength:50">
+						部门名称 <input property="editor" class="mini-textbox"
+							style="width: 100%" maxlength="50" />
+					</div>
+					<div field="oushortName" width="200" sortOrder="desc"
+						vtype="maxLength:50">
+						部门简称 <input property="editor" class="mini-textbox"
+							style="width: 100%" />
+					</div>
+					<div field="orderNumber" width="80" vtype="int;range:0,99999999"
+						allowSort="true" sortOrder="desc">
+						排序 <input property="editor" class="mini-textbox"
+							vtype="int;range:0,99999999" inputStyle="text-align:right"
+							style="width: 100%" />
+					</div>
+					<div field="isbaseou" width="120" renderer="onOuAdminRenderer">独立单位</div>
+					<!-- 独立部门管理员guid  -->
+					<div field="ouadminuserguid" visible="false"></div>
+					<div field="issubwebflowtext" width="80">子流转</div>
+					<div type="actioncolumn" name="optColumn">
+						操作 <span type="action" icon="icon-edit" onclick="editOu"
+							renderer="onEditRenderer">修改</span> <span type="action"
+							icon="icon-remove" onclick="deleteOu" renderer="onDelRenderer">删除</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		//初始化页面
+		epoint.initPage('frameoulistaction', '', initGrid);
+
+		$(document).ready(function() {
+			// 将导出按钮文字设置为“导出”
+			$("#dataexport").find(".mini-button-text").text("导出")
+			$("#dataexport").click(function(e) {
+				$("#dataexport").find(".mini-button-text").text("导出")
+			});
+		});
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 在表格数据加载完之后打开表格编辑状态
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+		grid.on("cellbeginedit", function(e) {
+			if (e.field == "ouname" || e.field == "oushortName"
+					|| e.field == "orderNumber") {
+				var row = e.record;
+				var editor = e.editor;
+				var enabled = row.canOperateBaseOu == "0" ? false : true;
+				editor.setEnabled(enabled);
+			}
+		});
+
+		//soa需要隐藏列
+		function initGrid(e) {
+			if (e.enableSOA == true) {//要隐藏掉增删改操作
+				mini.get('addOu').setVisible(false);
+				mini.get('saveAll').setVisible(false);
+				grid.hideColumn("optColumn"); //隐藏操作列
+			}
+		}
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect",
+				function(e) {
+					if (e.node) {
+						var id = e.node.id;
+						//将左侧树点击的节点id放到隐藏域中
+						mini.get('leftTreeNodeGuid').setValue(
+								id == 'f9root' ? "" : id);
+					}
+					//刷新表格
+					searchData();
+				});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 弹出新增窗口
+		function addOu() {
+			var parentOUGuid = mini.get('leftTreeNodeGuid').getValue();
+			var url = 'framemanager/orga/orga/ou/frameouadd?parentOUGuid='
+					+ parentOUGuid;
+			if (isSub) {
+				url += '&isSub=' + isSub;
+			}
+			epoint.openDialog("新增部门", url, addCallBack, {
+				'width' : 970,
+				'height' : 580
+			});
+		}
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param, {state : 'success'});
+				}
+				epoint.refresh([ 'tree', 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		function editCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param, {state : 'success'});
+				}
+				epoint.refresh([ 'tree', 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+		// 弹出修改窗口
+		function editOu(row) {
+			var url = 'framemanager/orga/orga/ou/frameouedit?ouguid='
+					+ row.ouguid;
+			if (isSub) {
+				url += '&isSub=' + isSub;
+			}
+			epoint.openDialog("修改部门", url, editCallBack, {
+				'width' : 970,
+				'height' : 580
+			});
+		}
+
+		// 删除一行数据
+		function deleteOu(row) {
+			// 弹出确认框
+			epoint.confirm("确认删除?", '', function() {
+				epoint.execute("deleteOu", '', [ row.ouguid ], function(data) {
+					if (data.msg) {
+						epoint.showTips(data.msg,  {state : 'success'});
+						epoint.refresh([ 'tree', 'datagrid', 'fui-form' ], '',
+								true);
+					}
+				});
+			});
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			if (e.record.canOperateBaseOu == 0) {
+				e.icon.visible = false;
+			}
+		};
+
+		// 绘制行删除按钮
+		var onDelRenderer = function(e) {
+			if (e.record.canOperateBaseOu == 0) {
+				e.icon.visible = false;
+			}
+		};
+
+		//保存列表修改
+		function saveAll() {
+
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+
+			epoint.execute("saveAll", [ 'datagrid', 'fui-form' ],
+					function(data) {
+						epoint.showTips(data.msg,  {state : 'success'});
+						epoint.refresh([ 'datagrid', 'fui-form', 'tree' ], '',
+								true);
+					});
+
+			//if(epoint.validate("datagrid")){
+			//	epoint.execute("saveAll",[ 'datagrid', 'fui-form' ],function(data){
+			//		epoint.alert(data.msg);
+			//		searchData();
+			//	});
+			//}
+		}
+
+		// 独立部门单元格个性化
+		var onOuAdminRenderer = function(e) {
+			var record = e.record;
+			var row = e.row;
+			var field = e.field;
+			var value = e.value;
+			var ouadminuserguid = row.ouadminuserguid
+			// 是否独立单位
+			if (field == "isbaseou") {
+				if (value == "是") {
+					if (ouadminuserguid) {
+						e.cellHtml = '<a href="javascript:void(0)" onclick="baseouManagerEdit(\''
+								+ row.ouguid
+								+ '\',\''
+								+ ouadminuserguid
+								+ '\')">已设置管理员</a>'
+					} else {
+						e.cellHtml = '<a href="javascript:void(0)" onclick="baseouManagerEdit(\''
+								+ row.ouguid
+								+ '\')" style="color: #FF0000">设置管理员</a>'
+					}
+				} else {
+					e.cellHtml = value;
+				}
+
+			}
+
+			return e.cellHtml;
+		}
+
+		// 选择独立部门管理员对话框
+		function baseouManagerEdit(ouguid, userguids) {
+			// 拼接参数
+			var param = 'ouguid='
+					+ ouguid
+					+ '&selectionMode=multiple&isWithoutSub=true&withoutSelectedTab=true';
+			// 拼接已选人员GUID
+			if (userguids) {
+				var userArray = userguids.split(",");
+				var selectUserGuid = userArray.join('_gtig_epoint_');
+				param += '&selectUserGuid=' + selectUserGuid;
+			}
+
+			epoint.openDialog('选择管理员',
+					'framemanager/orga/orga/ou/selectouuser?' + param,
+					dealSelectBaseouManager, {
+						width : 663,
+						height : 442
+					});
+		}
+
+		// 选择独立部门管理员对话框处理
+		function dealSelectBaseouManager(rtnValue) {
+			if (rtnValue != 'close') {
+				// 获取当前操作行
+				var row = grid.getSelected();
+				var val = rtnValue.split('_SPLIT_');
+				// 用户ID，转换成可被selectouuser页面识别的形式
+				var ouadminuserguid = "";
+				if (val[0]) {
+					var userGuidArray = val[0].split(';');
+					var selectUserGuid = userGuidArray.join('_gtig_epoint_');
+					ouadminuserguid = selectUserGuid;
+				}
+				epoint.execute("updateOuadmin", '', [ row.ouguid,
+						ouadminuserguid ], function(param) {
+					if (param.success) {
+						epoint.alert(param.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			}
+
+		}
+
+		// 增加步长
+		function addStepSize() {
+
+			// 打开步长选择对话框
+			epoint
+					.openDialog(
+							'选择步长',
+							'frame/pages/basic/stepsize/selectstepsize?data=2,3,5,10,20',
+							dealSelectStepSize, {
+								width : 500,
+								height : 200
+							});
+		}
+
+		// 选择步长的回调
+		function dealSelectStepSize(rtnValue) {
+			if (rtnValue && rtnValue != 'close'&& rtnValue != 'ok') {
+				epoint.execute("addOuStepSize?stepsize=" + rtnValue,
+						[ 'fui-form' ], function(data) {
+							epoint.showTips(data.msg,  {state : 'success'});
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						});
+			}
+		}
+
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

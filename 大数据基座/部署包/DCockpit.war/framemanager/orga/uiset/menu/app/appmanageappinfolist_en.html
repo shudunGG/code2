@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Application management</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="Application category"></div>
+		<div role="body">
+			<ul id="tree" name="tree" class="mini-tree"
+				style="width: 100%; height: 100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"
+				action="getTreeModel" resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();"
+					id="btnAddRecord"> new application </a> <a class="mini-button"
+					iconCls="icon-save" onclick="saveAll();" id="btnUpdateRecord">save the application
+				</a> <a class="mini-button" iconCls="icon-minuscircle" id="btnDel"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}">delete selected
+				</a>
+			</div>
+		</div>
+		<!-- conditions area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="top applications">
+							<div name="topOnly" bind="appmanageappinfolistaction.topOnly"
+								checked="true" class="mini-checkbox"
+								onvaluechanged="searchData();"></div>
+						</div>
+					</div>
+				</div>
+				<!--On the left side of the desktopguid  -->
+				<input bind="appmanageappinfolistaction.category" id="category"
+					class="mini-hidden" />
+				<!--On the left side of the applicationguid  -->
+				<input bind="appmanageappinfolistaction.parentguid" id="parentguid"
+					class="mini-hidden" />
+			</div>
+		</div>
+
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" action="getDataGridData" showPager="true"
+				style="width: 100%; height: 100%;" showFooter="false"
+				allowSortColumn="false" multiSelect="true" allowResize="true"
+				allowCellEdit="true" allowCellSelect="true" allowCellValid="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">order</div>
+					<div field="appname" width="200" headerAlign="center">
+						application name <input property="editor" id="appname" class="mini-textbox"
+							inputStyle="text-align:left" />
+					</div>
+					<div field="url" width="100%" headerAlign="center">
+						application address <input property="editor" id="url" class="mini-textbox"
+							inputStyle="text-align:left" />
+					</div>
+					<div field="categoryname" width="150" headerAlign="center"
+						align="center">belongs to the category</div>
+					<div field="isdisable" width="150" headerAlign="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0" align="center">start using</div>
+					<div field="opentoall" width="80" headerAlign="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0" align="center">
+						fully open</div>
+					<div width="50" align="center" headerAlign="center"
+						renderer="onEditRenderer">edit</div>
+					<div width="120" align="center" headerAlign="center"
+						renderer="onRightRenderer">permissions</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		epoint.initPage("appmanageappinfolistaction");
+
+		var tree = mini.get("tree");
+
+		// Click on the left side of the tree to refresh the right form
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			var pid = e.node.pid;
+			var text = e.node.text;
+			var code = e.node.objectcode;
+			//Would click on the left side of the tree nodeidIn a hidden field
+			if (id != "" && id != 'f9root') {
+				if (code != 'desk') {
+					mini.get("parentguid").setValue(id);
+					mini.get("category").setValue("");
+				} else {
+					mini.get("category").setValue(id);
+					mini.get("parentguid").setValue("");
+				}
+			} else {
+				mini.get("parentguid").setValue("");
+				mini.get("category").setValue("");
+			}
+			//Refresh the table
+			updateTable();
+		});
+
+		function saveAll() {
+			if (epoint.validate()) {
+				epoint.execute('saveAll', '', callback);
+			}
+		}
+
+		function openAdd() {
+			var parentguid = mini.get("parentguid").getValue();
+			var categoryguid = mini.get("category").getValue();
+			var settings = {
+				'width' : 1100,
+				'height' : 550
+			};
+			epoint.openDialog('new application',
+					'framemanager/orga/uiset/menu/app/appmanageappinfoadd?categoryguid='
+							+ categoryguid + '&parentguid=' + parentguid,
+					addCallBack, settings);
+		}
+
+		// Draw Edit Columns button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editApp",
+					"rowguid");
+		};
+
+		function editApp(rowguid) {
+			var settings = {
+				'width' : 1100,
+				'height' : 550
+			};
+			epoint.openDialog('editapplication',
+					'framemanager/orga/uiset/menu/app/appmanageappinfoedit?rowguid='
+							+ rowguid, addCallBack, settings);
+		}
+
+		// delete data
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function(){
+					epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+				}, 'info');
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form', "tree"]);
+		}
+
+		function updateTable() {
+			epoint.refresh(['datagrid', 'fui-form']);
+		}
+
+		// Draw Edit Columns button
+		var onRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"rightSetting", "rowguid");
+		};
+
+		function rightSetting(rowguid) {
+			var settings = {
+				'width' : 800,
+				'height' : 550
+			};
+			epoint.openDialog('applicationpermissions',
+					'framemanager/orga/uiset/menu/app/appsettingallowtoall?portaletguid='
+							+ rowguid, '', settings);
+		}
+		//]]>
+	</script>
+</body>
+</html>

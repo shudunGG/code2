@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>转移角色选择</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+<script>
+	SrcBoot.output([ '../../../../framemanager/orga/uiset/menu/module/subscribemodule/checkboxtree.css' ]);
+</script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">确定选择</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="转移角色选择"></div>
+				<div role="body">
+					<div class="tree-container" id="tree-container"></div>
+				</div>
+			</div>
+			<input id="showfields" bind="showFields" class="mini-hidden"/>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var ITEM_TPL = '\
+		<span class="cb-container level-1 asblock">\
+		    <input type="checkbox" id="{{value}}" dataid="{{value}}" class="cb-cb"><span class="cb-show"></span><label for="{{value}}" class="cb-label">{{text}}</label>\
+		</span>\
+		<div class="check-group" >\
+		  {{{subItems}}}\
+		</div>\
+		';
+
+		var SUBITEM_TPL = '\
+		<span class="cb-container level-2" data-ctext="{{text}}" data-pytext="{{py}}">\
+		    <input type="checkbox" id="{{value}}" dataid="{{value}}" class="cb-cb"><span class="cb-show"></span><label for="{{value}}" class="cb-label">{{text}}</label>\
+		</span>\
+		';
+
+
+		epoint.initPage('userroleselectaction', '', function(data) {
+			//绘制表、字段层级关联选择
+			$(genCheckhtml(data))
+					.appendTo($("#tree-container").empty());
+
+			//定义级联点击事件
+			$(".tree-container").on('click', '.cb-cb', function() {
+				var $cb = $(this).parent();
+				var checked = $(this).prop('checked');
+				if ($cb.hasClass('level-1')) { //如果点了表，级联触发字段选择
+					$cb.next().find('.cb-container').filter(function (i,el) {
+			              return !$(el).hasClass('hidden');
+		            }).each(function(i, item) {
+						var $item = $(item);
+						if (checked) {
+							$item.find('.cb-cb').prop('checked', true);
+						} else {
+							$item.find('.cb-cb').prop('checked', false);
+						}
+					});
+				}
+
+				//将选择项组装后放到hidden控件中
+				var selectshowfields = '';
+				$(".check-group").find('.cb-cb').each(function(i, item) {
+					var $cb = $(this).parent();
+					if ($(this).prop('checked')) {
+						selectshowfields += ';' + $(this).attr('dataid');
+					}
+				});
+				if (selectshowfields.length > 0){
+				    selectshowfields = selectshowfields.substring(1);
+				}
+				mini.get("showfields").setValue(selectshowfields);
+			});
+		});
+
+		var okey = '', filterTimer;
+		$(".tree-container").on(
+				'keyup',
+				'.filter-input',
+				function(e) {
+					var $target = $(e.target), $group = $target
+							.siblings('.check-group'), key = $
+							.trim(e.target.value);
+
+					if (key != okey) {
+						if (filterTimer) {
+							clearTimeout(filterTimer);
+						}
+						filterTimer = setTimeout(function() {
+							doFilter($group, key);
+						}, 400);
+					}
+
+				});
+
+		var doFilter = function($group, key) {
+			if (key === '') {
+				$group.children().removeClass('hidden');
+			} else {
+				key = key.toLocaleLowerCase();
+				$group.children().each(
+						function(i, item) {
+							var $item = $(item);
+							var ctext = $item[0].dataset.ctext.toLocaleLowerCase();
+							var pytext = $item[0].dataset.pytext.toLocaleLowerCase();
+
+							if (ctext.indexOf(key) > -1
+									|| pytext.indexOf(key) > -1) {
+								$item.removeClass('hidden');
+							} else {
+								$item.addClass('hidden');
+							}
+						});
+			}
+
+			okey = key;
+		};
+
+		function genCheckhtml(data) {
+			var html = [];
+			$.each(JSON.parse(data.allOptions), function(i, item) {
+				var subhtml = [];
+				$.each(JSON.parse(data[item.value]), function(j, subitem) {
+					subhtml.push(Mustache.render(SUBITEM_TPL, $.extend(subitem,
+							{
+								type : ''
+							}
+							)));
+				});
+
+				html.push(Mustache.render(ITEM_TPL, $.extend(item, {
+					subItems : joinArr(subhtml, ''),
+					type:''
+				})));
+			});
+			html
+					.push('<input type="text" class="filter-input mini-textbox-border"/><i class="filter-icon icon-search"></i>');
+			return joinArr(html, '');
+		}
+
+		function saveAndClose() {
+			var roles = mini.get("showfields").getValue();
+			if(roles != null && roles.length>0){
+			     epoint.closeDialog(roles);
+			}else{
+			     epoint.alert('请选择要转移的角色','','','warning');
+			}
+		}
+
+		var joinArr = function(arr, c) {
+			if (c === undefined) {
+				c = '';
+			}
+			if (!arr || !arr.length) {
+				return '';
+			}
+			var str = arr[0], i = 1, l = arr.length;
+			while (i < l) {
+				str += c + arr[i];
+				i++;
+			}
+			return str;
+		};
+
+		
+	</script>
+</body>
+</html>

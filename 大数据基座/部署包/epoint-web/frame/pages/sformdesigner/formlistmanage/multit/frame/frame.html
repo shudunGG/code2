@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="../../../../../fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="../layout/layout.css">
+<title>多表合一</title>
+<style>
+.container {
+	width: 100%;
+	height: 100%;
+}
+</style>
+</head>
+
+<body>
+	<div class="container">
+		<iframe id="main-iframe" width="100%" height="100%" frameborder="0"
+			class="main-iframe" scrolling="no"></iframe>
+	</div>
+	<script src="../../../../../fui/js/jsboot.js"></script>
+
+	<script>
+		var guid = Util.getUrlParams('guid');
+		var isSub = Util.getUrlParams('isSub');
+		if ("add" != Util.getUrlParams('type')) {
+			$("#main-iframe").attr('src',
+							"../create/create?rowguid=" + guid + "&isSub="
+									+ isSub);
+		} else {
+			$("#main-iframe").attr(
+					'src',
+					"../create/create?isSub=" + isSub + "&categoryNum="
+							+ Util.getUrlParams('categoryNum'));
+		}
+		var pageList = [ {
+			url : "../create/create"
+		}, {
+			url : "../select/select"
+		}, {
+			url : "../merge/merge"
+		}, {
+			url : "../layout/layout"
+		} ], activeIndex = 0;
+		var $mainIframe = $('#main-iframe');
+		function goPrev(rowguid, isSub) {
+			activeIndex -= 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub);
+		}
+		function goNext(rowguid, isSub) {
+			activeIndex += 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub);
+		}
+
+		function goCustomPrev(rowguid, isSub, relationguid) {
+			activeIndex -= 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub + "&relationguid="
+					+ relationguid);
+		}
+		function goCustomNext(rowguid, isSub, relationguid) {
+			activeIndex += 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub + "&relationguid="
+					+ relationguid);
+		}
+
+		//调用子页面方法
+		function onCloseForm() {
+			var type = Util.getUrlParams('type');
+			if (type != "edit") {
+				document.getElementById("main-iframe").contentWindow
+						.onCloseForm();
+			}
+
+		}
+
+		function closeDialog() {
+			epoint.closeDialog("success");
+		}
+	</script>
+</body>
+
+</html>

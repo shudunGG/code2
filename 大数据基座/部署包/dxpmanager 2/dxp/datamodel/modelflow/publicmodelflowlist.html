@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>模型管理</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+    <style>
+	.diy-grid-icon.icon-view {
+	    background-image: url(./images/icon-view.png)
+    }
+
+    .diy-grid-icon.icon-view:hover {
+        background-image: url(./images/icon-view-h.png)
+    }
+    </style>
+</head>
+<body>
+<div class="page-loading"></div>
+
+<div class="fui-left">
+    <div role="head" title="选择分组">
+    </div>
+    <div role="body">
+        <ul id="tree" class="mini-filtertree" textField="text" idField="id"
+            parentField="pid" action="dxpflowgroupaction.getTreeModel"
+            resultAsTree="false" filterMode="server">
+        </ul>
+    </div>
+</div>
+
+<div class="fui-right">
+    <!-- 按钮区域 -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a
+                    class="mini-button "
+                    id="import" onclick="upload()">导入模型</a>
+        </div>
+    </div>
+
+    <!-- 条件区域 -->
+    <div class="fui-search" primaryControl="flowName" opened="false">
+        <!-- 表单布局 -->
+        <div class="fui-form" id="fui-form">
+            <div role="form">
+                <div role="row">
+                    <div role="control" label="流程名称">
+                        <input bind="dataBean.flowName" id="flowName"
+                               class="mini-textbox"/>
+                    </div>
+                    <div role="control" label="模型类型">
+                        <input bind="dataBean.flowType" id="flowType"
+                               data="[{text:'所有',id:'9'},{text:'图形建模',id:'1'},{text:'向导式建模',id:'2'}]"
+                               class="mini-combobox"/>
+                    </div>
+                </div>
+                <input bind="groupGuid" id="groupGuid" class="mini-hidden"/>
+            </div>
+        </div>
+        <!-- 搜索按钮 -->
+        <a role="searcher" callback="searchData"></a>
+    </div>
+
+    <!-- 表格区域 -->
+    <div class="fui-content">
+        <form id="download_form" method="post" enctype="multipart/form-data"></form>
+        <div id="datagrid" name="datagrid" class="mini-datagrid"
+             idField="rowguid" multiSelect="true" pagerType="pagination"
+             onshowrowdetail="onShowRowDetail" style="width: 100%; height: 100%;"
+             showPager="true" action="getDataGridData">
+            <div property="columns">
+                <div type="expandcolumn" width="30">展开</div>
+                <div type="indexcolumn" width="50" headerAlign="center">序</div>
+                <div field="flowname" width="200" headerAlign="center"
+                     align="center">流程名称
+                </div>
+                <div field="nodename" width="100" headerAlign="center"
+                     align="center">所属节点域
+                </div>
+                <div field="publishstatusname" width="100" headerAlign="center"
+                     align="center">发布状态
+                </div>
+                <div field="flowtype" visible="false">流程类型</div>
+                <div field="isdagchild" visible="false">dag节点</div>
+                <div field="haschild" visible="false">存在子流程</div>
+                <div field="generatedate" width="160" headerAlign="center"
+                     data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+                     dateFormat="yyyy-MM-dd HH:mm:ss" align="center">生成日期
+                </div>
+                <div field="operatedate" width="160" headerAlign="center"
+                     data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+                     dateFormat="yyyy-MM-dd HH:mm:ss" align="center">更新日期
+                </div>
+                <!-- <div field="jobstatus" width="80" headerAlign="center" align="center"
+                    renderer="onStatusRender">状态</div> -->
+                <div field="nodeguid" headerAlign="center" align="center"
+                     visible="false">节点guid
+                </div>
+                <div align="center" headeralign="center" width="60" renderer="viewRender">预览</div>
+            </div>
+        </div>
+        <div id="detailGrid_JobForm" style="display: none;"
+             style="width:100%;height:150px;">
+            <div id="flowinfogrid" class="mini-datagrid"
+                 action="getFlowInfoGridData" idField="rowguid" showPager="false"
+                 allowRowSelect="false">
+                <div property="columns">
+                    <div type="indexcolumn" field="index" headerAlign="center"
+                         align="center" width="15">序
+                    </div>
+                    <div field="flowName" width="300" headerAlign="center"
+                         align="center">名称
+                    </div>
+                    <div field="jobStatus" width="150" headerAlign="center"
+                         align="center" renderer="onStatusRender">状态
+                    </div>
+                    <div width="80" headerAlign="center" align="center"
+                         renderer="onScheduleRenderer">调度配置
+                    </div>
+                    <div field="outputtype" visible="false"></div>
+                    <div field="modeltype" visible="false"></div>
+                    <div field="log" width="80" headerAlign="center" align="center"
+                         renderer="onLogRenderer">运行日志
+                    </div>
+                    <div field="log" width="80" headerAlign="center" align="center"
+                         renderer="onResultRenderer">查看结果
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../../rest/resource/jsboot"></script>
+<script>
+		epoint.initPage('dxpmodeldatadeveloplistaction');
+
+		var tree = mini.get('tree');
+		tree.on('beforenodeselect', function(e) {
+			console.log(e);
+			if (e.node.id == 'f9root') {
+				mini.get('groupGuid').setValue('');
+			} else {
+				mini.get('groupGuid').setValue(e.node.id);
+			}
+			searchData();
+		});
+
+		function viewRender(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"View", "rowguid,flowtype");
+		}
+
+		function View(data) {
+			if (data.flowtype == '2') {
+				epoint.alert('向导式建模不能预览');
+			} else {
+				epoint.openDialog("预览", 'dxp/datamodel/modelflow/preview?rowguid=' + data.rowguid,
+						null, {
+				'width' : 850,
+				'height' : 620
+			});
+			}
+		}
+
+		var grid = mini.get('datagrid');
+
+		function addGroup() {
+			epoint.openDialog("新增分组", "dxp/flowinfo/flowgroupadd", function() {
+				epoint.refresh('tree');
+			}, {
+				'width' : 650,
+				'height' : 420
+			})
+		}
+
+		function onExportRenderer(e) {
+			if (e.row.publishstatusname == '未发布') {
+				return '';
+			}
+			return epoint.renderCell(e, "action-icon modicon-86", "exportKTR");
+		}
+		function exportKTR(e) {
+			var form = document.getElementById('download_form');
+			form.action = "dxpmodeldatadeveloplistaction.action?cmd=exportKTR&flowGuid="
+					+ e;
+			form.submit();
+		}
+
+		function onResultRenderer(e) {
+			if (e.row.publishstatusname == '未发布') {
+				return '';
+			}
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openResultDetail", "rowguid,outputtype");
+		}
+
+		function openResultDetail(e) {
+			epoint.execute('checkTableIsExist','',e.rowguid,function(data){
+				if(data.msg){
+					epoint.alert(data.msg);
+					return;
+				}
+				if (e.outputtype == '2') {
+				epoint.openDialog('查看结果',
+						'dxp/datamodel/modelflow/modelresultviewchart?flowGuid='
+								+ e.rowguid);
+				} else {
+					epoint.openDialog('查看结果',
+						'dxp/datamodel/modelflow/modelresultviewdata?flowGuid='
+								+ e.rowguid);
+				}
+
+			});
+
+		}
+
+		function moveFlow() {
+			let array = grid.getSelecteds();
+			let guidArray = [];
+			for (var i = 0; i < array.length; i++) {
+				guidArray.push(array[i].rowguid);
+			}
+			let guid = guidArray.join(",");
+			epoint.openDialog("移动集成", "dxp/flowinfo/flowgroupselect?guid="
+					+ guidArray, searchData(), {
+				'width' : 700,
+				'height' : 420
+			})
+		}
+
+		function onStatusRender(e) {
+			var color = 'red';
+			if (e.value == '交换中') {
+				color = '#f39c12';
+			} else if (e.value == '已停止') {
+				color = '#d2d6de';
+			} else if (e.value.indexOf('运行中') != -1) {
+				color = '#00a65a';
+			} else {
+				color = '#dd4b39';
+			}
+			return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+					+ e.value + '</span>';
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], null, true);
+		}
+
+		var onLogRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-49",
+					"openLogList", "rowguid,flowName");
+		};
+
+		var onScheduleRenderer = function(e) {
+			if (e.record.isdagchild||e.record.modeltype=='3'||e.record.modeltype=='4') {
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon modicon-97",
+					"openScheduleList");
+		};
+
+		function openScheduleList(e) {
+			epoint.openDialog('调度配置',
+					'dxp/datamodel/modelflow/taskconfigNew?guid=' + e, null, {
+						'width' : 700,
+						'height' : 350
+					});
+		}
+
+		var onChangeStatusRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-49", "start",
+					"rowguid");
+		}
+
+		function openLogList(e) {
+			console.log(e);
+			epoint.openDialog(e.flowName,
+					'dxp/flowinfo/dxpschedulerloglist?guid=' + e.rowguid, null,
+					{
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		function deleteFlow() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的交换!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认删除吗?', '', function() {
+					epoint.execute('deleteFlow', '', function(data) {
+						if (data.msg.indexOf('成功') != -1) {
+							epoint.alert(data.msg, '', function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				});
+			}
+		}
+
+		function freshFlowCache() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要刷新的交换!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认刷新吗?', '', function() {
+					epoint.execute('freshFlowCache', '', function(data) {
+						if (data.msg.indexOf('成功') != -1) {
+							epoint.alert(data.msg, '', function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				});
+			}
+		}
+
+		function onTitleRenderer(e) {
+			return '<a href="javascript:void(0);" onclick="editFlow(' + "'"
+					+ e.row.rowguid + "'" + ')" >' + e.value + '</a>';
+		}
+
+		function editFlow(e) {
+			var groupid = mini.get('groupGuid').getValue();
+			epoint.openDialog('流程编辑', './editdevflowinfo?groupid=' + groupid
+					+ '&flowGuid=' + e, function(data) {
+				mini.get('datagrid').reload();
+			}, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		function openDataDev() {
+			var groupid = mini.get('groupGuid').getValue();
+			epoint.openDialog('新建流程', './adddevflowinfo?groupid=' + groupid,
+					function(data) {
+						epoint.execute('checkFile', '', data);
+						mini.get('datagrid').reload();
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function buttonEnable() {
+			mini.get('move').enable();
+			mini.get('del').enable();
+			mini.get('start').enable();
+			mini.get('stop').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('move').disable();
+			mini.get('del').disable();
+			mini.get('start').disable();
+			mini.get('stop').disable();
+		}
+
+		function onTransRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-fix", "addTrans",
+					"rowguid,nodeguid,flowtype");
+		}
+
+		function addTrans(e) {
+			if(e.flowtype=='2'){
+				window.open("../../../dxp/datamodel/guidemodel/choose?rowguid="
+					+ e.rowguid + "&nodeGuid=" + e.nodeguid);
+			}else{
+				window.open("../../../dxp/datamodel/modelflow/model?flowGuid="
+					+ e.rowguid + "&nodeGuid=" + e.nodeguid + "&flowtype="
+					+ e.flowtype);
+			}
+		}
+
+		function onValueChanged(e) {
+			var sender = e.sender;
+			if (sender.id == 'beginDate') {
+				var todate = mini.get('endDate').getValue();
+				if (todate) {
+					if (sender.value.getTime() > todate.getTime()) {
+						epoint.alert('开始时间不能大于结束时间！', '', function() {
+							epoint.clear(sender.id);
+						});
+					}
+				}
+			} else if (sender.id == 'endDate') {
+				var bedate = mini.get('beginDate').getValue();
+				if (bedate) {
+					if (sender.value.getTime() < bedate.getTime()) {
+						epoint.alert('结束时间不能小于开始时间！', '', function() {
+							epoint.clear(sender.id);
+						});
+					}
+				}
+			}
+		}
+
+		function startJob() {
+			// start标志变量启动作业
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择启动的作业!', '', null, 'warning');
+			} else {
+				epoint.execute('doJobWork', '', 'start', function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.alert(data.msg, '', function() {
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, 'success');
+					} else {
+						epoint.alert(data.msg, '', '', 'warning');
+					}
+				});
+			}
+		}
+
+		function stopJob() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择停止的作业!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要停止吗?', '', function() {
+					// stop 标志变量停用作业
+					epoint.execute('doJobWork', '', 'stop', function(data) {
+						if (data.msg.indexOf('成功') != -1) {
+							epoint.alert(data.msg, '', function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				});
+			}
+		}
+		var employee_grid = mini.get("flowinfogrid");
+		var detailGrid_Form = document.getElementById("detailGrid_JobForm");
+
+		function onShowRowDetail(e) {
+
+			var grid = e.sender;
+			var row = e.record;
+			var td = grid.getRowDetailCellEl(row);
+			td.appendChild(detailGrid_Form);
+			detailGrid_Form.style.display = "block";
+			employee_grid.load({
+				modelGuid : row.rowguid
+			});
+		}
+
+
+		function upload() {
+			var groupid = mini.get('groupGuid').getValue();
+			epoint.openDialog('导入模型', './uploadflow?groupid=' + groupid,
+					function(data) {
+						epoint.execute('checkFile', '', data);
+						mini.get('datagrid').reload();
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+
+		function download() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				var data = {
+					allmodelguid : ids.join(',')
+				};
+				var downloadurl = "dxpmodeldatadeveloplistaction.action?cmd=exportModel";
+				var form = document.getElementById("download_form");
+				DownLoadFile({
+					url : downloadurl,
+					data : data
+				});
+				searchData();
+			} else {
+				epoint.alert("请选择要导出的模型!");
+			}
+		}
+
+		var DownLoadFile = function(options) {
+			var config = $.extend(true, {
+				method : 'post'
+			}, options);
+			var $iframe = $('<iframe id="down-file-iframe" />');
+			var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+			$form.attr('action', config.url);
+			for ( var key in config.data) {
+				$form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+			}
+			$iframe.append($form);
+			$(document.body).append($form);
+			$form[0].submit();
+			$form.remove();
+		}
+
+
+
+
+</script>
+</body>
+</html>

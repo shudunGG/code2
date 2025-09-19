@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title></title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ 'frame/pages/epointworkflow/css/popup.css',
+			'frame/pages/epointworkflow/css/workflowdesign.css' ]);
+</script>
+
+<style type="text/css">
+A {
+	color: black;
+	text-decoration: none;
+}
+
+A:hover {
+	color: red;
+	text-decoration: underline;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div id="fuiContent" class="fui-content">
+		<!-- 			<input bind="processinstanceflowchartbrowseraction.processVersionInstanceGuid" -->
+		<!-- 				class="mini-textbox" style="display:none;"/> -->
+		<!-- 			<input bind="workitemlistnewaction.manage" -->
+		<!-- 				class="mini-textbox" style="display:none;"/> -->
+
+		<div id="tabs1" class="mini-tabs" activeIndex="0"
+			style="width: 100%; height: 100%;" plain="false">
+			<div title="流程图">
+				<div style="float: right;" id="table1">
+					<table border="0" cellpadding="0" cellspacing="0"
+						style="height: 40px; font-size: 9pt;">
+						<tr align="right">
+							<td style="width: 80px" align="center">图例<br /> 说明
+							</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/noTransActivity.png"
+								alt='未开始的步骤' title='这个步骤尚未开始办理。'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>未开始的步骤</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/waitTodo.png"
+								alt='这个步骤正在办理。' title='待办理的步骤'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>待办理的步骤</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/doneActivity.png"
+								alt='已完成的步骤' title='这个步骤已经办理完成。'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>已完成的步骤</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/overdatedDone.png"
+								alt='这个步骤已超期。' title='超期的已完成步骤（超期标识可配置）'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>超期的已完成步骤</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/overdatedUndone.png"
+								alt='这个步骤已超期。' title='超期的待处理步骤（超期标识可配置）'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>超期的待处理步骤</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/noChanges.png"
+								alt='未流转路径' title='没有流转过的路径'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>未流转路径</td>
+							<td style="width: 10px"></td>
+							<td><img src="../image/FlowChartIco/hasChanges.png"
+								alt='已流转路径' title='已经流转过的路径'
+								style="border: 0; width: 40; height: 40;" /></td>
+							<td>已流转路径</td>
+						</tr>
+					</table>
+				</div>
+				<div id="WorkFlowWrapper" style="overflow: hidden"></div>
+				<div id="panel">
+					<div id="info" runat="server"
+						style="position: absolute; display: none; width: 750px; height: 260px; z-index: 102; opacity: 100; border: solid 1px #CCCCCC; padding: 0px;">
+						<div id="pnlHead1" class="head">
+							<div id="ActivityName" class="title"
+								style="width: 730px; padding: 0px 0px 0px 0px;"></div>
+							<div id="btnCloseParent" style="float: right; opacity: 100;">
+								<img id="btnClose" src="../image/DragPanel/close.gif"
+									style="cursor: pointer;" description="关闭" title="#{msgs.gb}"
+									width="15" />
+							</div>
+						</div>
+						<div>
+							<iframe id='PageDetail'
+								style="width: 100%; height: 230px; border: 0px" frameborder="0"></iframe>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div title="办理过程">
+				<div id="datagrid1" class="mini-datagrid" sortOrder="desc"
+					idField="workItemGuid" multiSelect="true"
+					style="width: 100%; height: 100%;" allowResize="true"
+					action="getResultListModel" showPager="false">
+					<div property="columns">
+
+						<div type="indexcolumn" headerAlign="center" width="35">序</div>
+						<div field="activityName" width="120" align="center"
+							headerAlign="center">步骤</div>
+						<div field="username" width="120" align="center"
+							headerAlign="center">处理人员</div>
+						<div field="operationname" width="120" align="center"
+							headerAlign="center">操作</div>
+						<div field="reDate" width="150" align="center"
+							dateFormat="yyyy-MM-dd HH:mm:ss" headerAlign="center">收到时间
+						</div>
+						<div field="opDate" width="150" align="center"
+							dateFormat="yyyy-MM-dd HH:mm:ss" headerAlign="center">处理时间
+						</div>
+						<div field="handleopinion" width="100%" align="center"
+							headerAlign="center" validateLevel="3">处理意见</div>
+						<div field="sendusername" width="120" align="center"
+							headerAlign="center">提交人员</div>
+					</div>
+				</div>
+			</div>
+			<div title="步骤说明">
+				<div id="datagrid2" class="mini-datagrid" idField="attachguid"
+					multiSelect="true" action="getResultListModel1"
+					style="width: 100%; height: 100%;" allowResize="true"
+					showPager="false">
+					<div property="columns">
+						<div field="activityName" headerAlign="center" align="center">
+							步骤 <input property="editor" class="mini-textbox"
+								style="width: 100%;" minWidth="200" />
+						</div>
+						<div field="note" width="100" headerAlign="center">
+							说明<input property="editor" class="mini-textbox"
+								style="width: 100%;" minWidth="200" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'frame/pages/epointworkflow/js/raphael-min.js',
+				'frame/pages/epointworkflow/js/graffle.js',
+				'frame/pages/epointworkflow/js/workflowbrowser_new.js',
+				'frame/pages/epointworkflow/js/raphael.export.js' ]);
+	</script>
+	<script>
+		epoint.initPage("workitemlistnewaction");
+		//epoint.initPage("processinstanceflowchartbrowseraction");
+
+		var panel_detailPanel = $("#panel").children().get(0).id;
+		var DetailPanelId = panel_detailPanel.replace(/:/g, "\\:");
+		$(document).ready(
+				function() {
+					try {
+						if (!window.frameElement) {
+							window.moveTo(0, 0);
+							window.resizeTo(window.screen.availWidth,
+									window.screen.availHeight);
+						}
+					} catch (err) {
+					}
+
+					$('.ui-tabs-panel').each(function() {
+						$(this).height($(window).height() - 33);
+						$(this).width($(document).width() - 4);
+
+					});
+					$("#panel").height(0);
+
+					$("#table1").attr("style", "height:44px;");
+
+					epoint.execute('readJson', '', ReadXMLHd);
+					$("#btnClose").click(function() {
+						$("#" + DetailPanelId).hide();
+					});
+
+					$(window).resize(function() {
+						$('.ui-tabs-panel').each(function() {
+							$(this).height($(window).height() - 33);
+							$(this).width($(document).width() - 4);
+						});
+					})
+					$(document).click(function() {
+						$("#" + DetailPanelId).hide();
+					});
+				});
+	</script>
+
+</body>
+
+</html>

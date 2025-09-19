@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>转换属性</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a>
+		</div>
+	</div>
+
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="转换名称" starred="true">
+				<input id="changeName" name="changeName" class="mini-textbox" vtype="maxLength:50"
+					required="true" emptyText="请输入转换名称"  requiredErrorText="转换名称不能为空"  style="width: 70%" />
+			</div>
+		</div>
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="记录数" starred="true">
+				<input id="rowSize" name="rowSize" class="mini-textbox" vtype="int;range:1,100000" 
+					required="true" value="10000" style="width: 70%" />
+			</div>
+		</div>
+	</div>
+
+		<script src="../../frame/fui/js/jsboot.js"></script>
+
+
+
+		<script>
+			
+			function pageLoad() {
+				//从父页面获取表单数据
+				var property = Util.getUrlParams('property');
+				if (property && "undefined" != property) {
+					var form = new mini.Form("#form");
+					form.setData(JSON.parse(property));
+				}else{
+					var changeName = Util.getUrlParams('taskName');
+					var form = new mini.Form("#form");
+					var property = {
+							changeName:changeName,
+							rowSize:10000
+					}
+					form.setData(property);
+				}
+			}
+			
+			//保存修改
+			function saveModify() {
+				if (epoint.validate()) {
+					var form = new mini.Form("#form");
+					var data = form.getData(true, false);
+					epoint.closeDialog(data);
+				}
+			}
+
+		</script>
+</body>
+
+</html>

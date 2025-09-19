@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>服务基本信息</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="add" onclick="saveAndClose">保存参数</a>
+		<a class="mini-button" state="primary" onclick="saveAndEdit" id="edit">
+			保存参数 </a> <a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="参数名称" starred="true">
+						<input class="mini-textbox" required="true" id="name"
+							bind="dataBean.name" requiredErrorText="参数名称不能为空!" maxLength="50" />
+					</div>
+					<div role="control" label="参数数据类型" starred="true">
+						<input class="mini-combobox" required="true"
+							action="getTypeSelectItem" id="type" bind="dataBean.type"
+							requiredErrorText="参数数据类型不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否必须" starred="true">
+						<input class="mini-radiobuttonlist" required="true" id="ismust"
+							action="getIsMustSelectItem" bind="dataBean.ismust"
+							requiredErrorText="是否必须类型不能为空!" />
+					</div>
+					<div role="control" label="参数类型">
+						<input class="mini-radiobuttonlist" id="paramstype"
+							action="getParamsType" bind="dataBean.paramstype">
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="参数位置" starred="true">
+						<input class="mini-combobox" required="true"
+							action="getpositionSelectItem" id="position"
+							bind="dataBean.position" requiredErrorText="参数位置不能为空!" />
+					</div>
+					<div role="control" label="排序值">
+						<input class="mini-textbox" id="ordernumber"
+							bind="dataBean.ordernumber" vType="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="描述">
+						<input class="mini-textarea" id="description"
+							bind="dataBean.description" maxLength="200" />
+					</div>
+					<div role="control" label="示例">
+						<input class="mini-textarea" id="example" bind="dataBean.example"
+							maxLength="100" />
+					</div
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apirequestparamsaction', '', initCallBack);
+
+		function initCallBack(data) {
+			if (data.add) {
+				mini.get("edit").hide();
+			} else {
+				mini.get("add").hide();
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndEdit() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', newCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data && data.msg && data.fail) {
+				epoint.showTips(data.msg, {
+					state : 'warning'
+				});
+				// 清空表单
+				mini.get('name').setValue('');
+			} else if (data.msg) {
+				epoint.closeDialog(data.msg);
+				// 清空表单
+				epoint.clear('fui-form');
+			}
+		}
+	</script>
+</body>
+</html>

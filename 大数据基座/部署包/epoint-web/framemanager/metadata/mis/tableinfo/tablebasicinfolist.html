@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据表结构</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择子系统"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="tablebasicinfolistaction.getTreeData" resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" id="addBtn" onclick="add()">添加数据表</a>
+			<a class="mini-button" id="saveBtn" onclick="saveAll()">保存信息</a> <a
+				class="mini-button" id="transferBtn"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要操作的记录!', {state : 'warning'});}else{move();}">转移选中</a>
+			<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！', {state : 'warning'});} else {exportXml();}">导出XML</a> <a
+				class="mini-button" onclick="importXmlData" id="btnImportData">导入数据 </a>
+			<a class="mini-button" state="danger" id="deleteBtn"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录！',  {state : 'warning'});} else {epoint.confirm('删除该内容会同步删除其关联的所有信息，并且会删除数据库系统表,确定要删除吗?（物理表删除，请手动去数据库删除！）','',function(){deleteSelected();});}">删除选中</a>
+
+			<div class="mini-btn-group">
+				<a class="mini-button" id='exportBtn'
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要导出的记录!',  {state : 'warning'});} else {epoint.execute('tablebasicinfolistaction.export','',exporttc)}">脚本导出</a>
+
+				<input id="database" autoLoad="false"
+					action="tablebasicinfolistaction.getDsTypes" textField="text"
+					valueField="id" class="mini-combobox mr10" width="100"
+					style="margin-left: 8px" />
+			</div>
+		</div>
+		<div class="fui-search" opened="false" primaryControl="searchString1">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form" style="margin-right: 100px">
+				<div role="form">
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="中文名称">
+							<input bind="tablebasicinfolistaction.searchString1"
+								id="searchString1" class="mini-textbox" />
+
+						</div>
+						<div role="control" label="SQL表名">
+							<input bind="tablebasicinfolistaction.searchString2"
+								class="mini-textbox" />
+						</div>
+					</div>
+
+					<!-- 2列 -->
+					<div role="row">
+						<div role="control" label="ID号">
+							<input bind="tablebasicinfolistaction.searchString3"
+								class="mini-textbox" />
+						</div>
+						<div role="control"></div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="tablebasicinfolistaction.leftTreeNodeGuid"
+						id="categoryNum" class="mini-hidden" />
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a> <a role="reset"
+				callback="resetCallback"></a> <a role="close"
+				callback="closeCallback"></a>
+
+		</div>
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+		
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="tableid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true"
+				action="tablebasicinfolistaction.getDataGridData" showPager="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true"
+				oncellbeginedit="cellBeginEdit" onbeforeselect="beforeselect">
+				<div property="columns">
+					<div type="checkcolumn" name="checkcolumn" width="40"></div>
+
+					<div type="indexcolumn" width="40" align="left">序</div>
+
+					<div field="tableid" width="80">ID号</div>
+					<div field="tablename" width="140" vType="maxLength:50;required">
+						数据表中文名称 <input property="editor" class="mini-textbox"
+							minWidth="120" />
+					</div>
+					<div field="sql_tablename" width="150">SQL数据表名</div>
+					<div field="ordernum" width="80" vtype="int;range:0,99999999">
+						排序号 <input property="editor" class="mini-textbox" minWidth="30"
+							maxLength="8" vType="range:0,99999999;int;required"
+							inputStyle="text-align:right" />
+					</div>
+					<div width="80" renderer="onBjgRenderer" field="bjg">表结构</div>
+					<div width="60" renderer="onEditRenderer" field="edit">修改</div>
+					<!--<div width="50" align="center" headerAlign="center"
+						renderer="onSqRenderer">授权</div>
+					 <div width="30" align="center" headerAlign="center"
+						renderer="onDataRenderer">数据</div> -->
+					<div width="80" renderer="onDmscRenderer">代码生成</div>
+					<div name="xtzd" width="100" renderer="onXtzdRenderer" field="Xtzd">系统字段配置</div>
+					<div name="zbglzd" width="100" renderer="onZbglzdRenderer"
+						field="glzd">关联字段配置</div>
+					<div name="bsq" width="80" renderer="onBsqRenderer">表授权</div>
+					<div name="bjgsq" width="100" renderer="onBjgsqRenderer">表结构授权</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		var isLesseeMode = false;
+		var isAdmin = false;
+		var isOuAdmin = false;
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+		var grid = mini.get('datagrid');
+		var urlparams = Util.getUrlParams();
+		//初始化页面
+		epoint.initPage("tablebasicinfolistaction", '', initDataBase);
+
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+			if (e.isLesseeMode) {
+				isLesseeMode = e.isLesseeMode;
+			}
+			if (e.isAdmin) {
+				isAdmin = e.isAdmin;
+			}
+			if (e.isOuAdmin) {
+				isOuAdmin = e.isOuAdmin;
+			}
+
+			if (!isLesseeMode && isSub == '1') {
+				$('#addBtn').hide();
+				$('#saveBtn').hide();
+				$('#transferBtn').hide();
+				$('#deleteBtn').hide();
+				$('#exportBtn').hide();
+				$('#database').hide();
+				grid.hideColumn("checkcolumn");
+			}
+
+			if (urlparams.pageType) {
+				//如果url含参数pageType，隐藏删除按钮、转移按钮，以及操作按钮列：系统字段及主表关联字段维护
+				$('#transferBtn').hide();
+				$('#deleteBtn').hide();
+				//$("#transferBtn").css("display","none");
+				//$("#deleteBtn").css("display","none");
+				mini.get('datagrid').hideColumn("xtzd");
+				mini.get('datagrid').hideColumn("zbglzd");
+				mini.get('datagrid').hideColumn("bsq");
+				mini.get('datagrid').hideColumn("bjgsq");
+			} else {
+				//冻结前几列
+				grid.setFrozenStartColumn(0);
+				grid.setFrozenEndColumn(8);
+			}
+			$(window).resize();
+		}
+
+		function cellBeginEdit(e) {
+			if (!isLesseeMode && isSub == '1'
+					&& (e.field == 'ordernum' || e.field == 'tablename')) {
+				e.cancel = true;
+			}
+		};
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('categoryNum').setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		// 绘制表结构按钮
+		var onBjgRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc", "tableStruct",
+					"tableid,tabletype,tablename,sql_tablename");
+		};
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "updateInfo",
+					"tableid,tabletype");
+		};
+
+		// 绘制授权按钮
+		var onSqRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-gear", "setViewRight");
+		};
+		// 绘制授权按钮
+		var onSqRenderer2 = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"setViewRight2");
+		};
+
+		// 绘制数据按钮
+		var onDataRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"processPageUrl");
+		};
+
+		// 绘制代码生成按钮
+		var onDmscRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-floderopen",
+					"codepro");
+		};
+
+		// 表结构
+		function tableStruct(e) {
+			var config = epoint.decodeJson(e);
+			if (config.tabletype == 3) {
+				epoint.openDialog('实体结构',
+						'frame/epointmis/backend/TableStructViewList?tableID='
+								+ config.tableid + "&isSub=" + isSub,
+						function() {
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, {
+							'width' : 1200,
+							'height' : 550
+						});
+			} else {
+				var url = 'framemanager/metadata/mis/tableinfo/tablestructlist?tableID='
+						+ config.tableid;
+				if (urlparams.pageType) {
+					url += '&pageType=' + urlparams.pageType;
+				}
+				url += "&isSub=" + isSub;
+				epoint.openDialog(e.tablename + '(' + e.sql_tablename + ')',
+						url, function() {
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						});
+			}
+		}
+
+		// 修改
+		function updateInfo(e) {
+			var row = grid.getSelected();
+			if (!isLesseeMode && isSub == '1') {
+				epoint.showTips("非系统管理员不可以修改管理员创建的表!", {
+					state : 'warning'
+				});
+				return;
+			}
+			var config = epoint.decodeJson(e);
+			if (config.tabletype == 3) {
+				epoint.openDialog('修改实体',
+						'frame/epointmis/backend/TableBasicViewEdit?tableID='
+								+ config.tableid + "&isSub=" + isSub, function(
+								param) {
+							if (param && param != "close") {
+								epoint.showTips(param, {
+									state : 'success'
+								});
+							}
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, {
+							'width' : 1000,
+							'height' : 400
+						});
+			} else if (config.tabletype == 5) {
+				epoint.openDialog('修改填报表',
+						'frame/epointmis/backend/FillInTableEdit?tableID='
+								+ config.tableid + "&isSub=" + isSub,
+						searchData, {
+							'width' : 1200,
+							'height' : 550
+						});
+			} else {
+				epoint.openDialog('修改数据表',
+						'framemanager/metadata/mis/tableinfo/tablebasicinfoedit?tableID='
+								+ config.tableid + "&isSub=" + isSub, function(
+								param) {
+							if (param & param != 'close') {
+								epoint.showTips(param, {
+									state : 'success'
+								});
+							}
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}, {
+							'width' : 970,
+							'height' : 480
+						});
+			}
+		}
+
+		// 授权
+		function setViewRight(tableID) {
+			var row = grid.getSelected();
+			if (!isLesseeMode && isSub == '1') {
+				epoint.showTips("非管理员不可以授权管理员创建的表!", {
+					state : 'warning'
+				});
+				return;
+			}
+			epoint.openDialog('设置数据表权限',
+					'framemanager/metadata/mis/tableinfo/settingviewright?tableID='
+							+ tableID + "&isSub=" + isSub, searchData, {
+						'width' : 800,
+						'height' : 650
+					});
+		}
+
+		// 数据
+		function processPageUrl() {
+		}
+
+		// 代码生成
+		function codepro(tableID) {
+			epoint.openDialog('生成代码',
+					'framemanager/metadata/mis/tableinfo/tablecodeproduct?tableID='
+							+ tableID + "&isSub=" + isSub, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 900,
+						'height' : 500
+					});
+		}
+
+		// 新增
+		function add() {
+			epoint.openDialog('添加数据表',
+					'framemanager/metadata/mis/tableinfo/tablebasicinfoadd?guid='
+							+ mini.get("categoryNum").getValue() + "&isSub="
+							+ isSub, function(param) {
+						if (param & param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 970,
+						'height' : 520
+					});
+		}
+
+		// 删除结构
+		function deleteSelected() {
+			epoint.execute('tablebasicinfolistaction.deleteSelected', [
+					'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		// 保存信息
+		function saveAll() {
+			if (mini.get('datagrid').isValid()) {
+				epoint.execute('tablebasicinfolistaction.saveAll', [
+						'datagrid', 'fui-form' ], msgCallBack);
+			}
+		}
+
+		// 转移选中
+		function move() {
+			epoint.execute('tablebasicinfolistaction.move', 'datagrid', movetc);
+		}
+
+		function movetc(data) {
+			epoint.openDialog('转移子系统',
+					"framemanager/metadata/mis/tableinfo/tablecategoryselect?guidlist="
+							+ data.movelist + "&isSub=" + isSub,
+					function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param,{state : 'success'});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 500,
+						'height' : 400
+					});
+		}
+
+		function movetcCallBack(msg) {
+			if (msg && msg != 'close') {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 导出sql语句
+		function exporttc(data) {
+			var combox = mini.get("database");
+			epoint.openDialog(combox.getText() + '脚本导出',
+					"framemanager/metadata/mis/tableinfo/tablebasicinfoexport?tableIDs="
+							+ data.exportlist + "&databaseType="
+							+ combox.getValue() + "&isSub=" + isSub, '', {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {
+					state : 'success'
+				});
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function UploadSuccess() {
+			epoint.showTips('导入成功', {
+				state : 'success'
+			});
+		}
+
+		// 绘制系统字段配置按钮
+		var onXtzdRenderer = function(e) {
+			if (!isLesseeMode && isSub == '1') {
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"systemStructConfig", "tableid");
+		};
+		// 配置
+		function systemStructConfig(tableId) {
+			epoint.openDialog('系统字段配置',
+					'framemanager/metadata/mis/tableinfo/systemstructconfiglist?tableId='
+							+ tableId + "&isSub=" + isSub, searchKeepPage, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		// 绘制主子表关联字段配置按钮
+		var onZbglzdRenderer = function(e) {
+			if (!isLesseeMode && isSub == '1') {
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"fieldRelationConfig", "tableid");
+		};
+
+		// 配置
+		function fieldRelationConfig(tableId) {
+			epoint.openDialog('字段关联配置',
+					'framemanager/metadata/mis/tableinfo/tablefieldrelationconfiglist?goalTableId='
+							+ tableId + "&isSub=" + isSub, searchKeepPage, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		// 表单权限
+		var onBsqRenderer = function(e) {
+			if (!isLesseeMode && isSub == '1') {
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"tableRightConfig", "tableid");
+		};
+
+		// 配置
+		function tableRightConfig(tableId) {
+			epoint.openDialog('表单权限配置',
+					'framemanager/metadata/mis/tableinfo/tablerightconfiglist?tableId='
+							+ tableId, searchKeepPage, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		// 表结构权限
+		var onBjgsqRenderer = function(e) {
+			if (!isLesseeMode && isSub == '1') {
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"tableStructRightConfig", "tableid");
+		};
+
+		// 配置
+		function tableStructRightConfig(tableId) {
+			epoint.openDialog('表结构权限配置',
+					'framemanager/metadata/mis/tableinfo/tablestructrightconfiglist?tableId='
+							+ tableId, searchKeepPage, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		grid
+				.on(
+						"drawcell",
+						function(e) {
+							if (e.columnIndex == 0 && isLesseeMode) {
+								if ((e.record.baseouguid == '' && isOuAdmin && (!isAdmin || isSub == '1'))
+										|| (e.record.baseouguid != ''
+												&& (!isOuAdmin || isSub == '') && isAdmin)) {
+									e.cellHtml = "";
+								}
+							} else if (e.columnIndex == 0 && !isLesseeMode
+									&& isSub == '1') {
+								e.cellHtml = "";
+							}
+							if ((e.field == 'edit' || e.field == 'subRight'
+									|| e.field == 'Xtzd' || e.field == 'glzd')
+									&& isLesseeMode) {
+								if ((e.record.baseouguid == '' && isOuAdmin && (!isAdmin || isSub == '1'))
+										|| (e.record.baseouguid != ''
+												&& (!isOuAdmin || isSub == '') && isAdmin)) {
+									e.cellHtml = "";
+								}
+							} else if ((e.field == 'edit'
+									|| e.field == 'subRight'
+									|| e.field == 'Xtzd' || e.field == 'glzd')
+									&& !isLesseeMode && isSub == '1') {
+								e.cellHtml = "";
+							}
+							if (e.field == 'bjg' && isLesseeMode) {
+								if (e.record.baseouguid != '' && isSub != '1') {
+									e.cellHtml = "";
+								}
+							}
+
+						});
+
+		function beforeselect(e) {
+			if (isLesseeMode) {
+				if ((isOuAdmin && (!isAdmin || isSub == '1') && e.record.baseouguid == '')
+						|| ((!isOuAdmin || isSub == '') && isAdmin && e.record.baseouguid != '')) {
+					e.cancel = true;
+
+				}
+			} else if (!isLesseeMode && isSub == "1") {
+				e.cancel = true;
+
+			}
+		}
+		
+		// 导出xml
+		function exportXml() {
+			epoint.execute('exportXmlCheck', 'datagrid', function(data){
+				if(data.msg){
+					epoint.showTips(data.msg, {
+						state : 'warning'
+					});
+					return;
+				}
+				var form = document.getElementById('download_form');
+				form.action = "../../../../"
+						+ epoint
+								.dealRestfulUrl("tablebasicinfolistaction/exportXml?isCommondto=true&exportids="
+										+ data.ids);
+				form.submit();
+			});
+		}
+
+		// 导入数据
+		function importXmlData() {
+			epoint.openDialog('数据表数据导入',
+					"framemanager/metadata/mis/tableinfo/importtablebasicinfo",
+					function(param) {
+						if (param != 'close') {
+							if (param == "导入成功！") {
+								epoint.showTips(param, {
+									state : 'info'
+								});
+							} else {
+								epoint.alert(param, "", "", "warning");
+							}
+						}
+						searchKeepData();
+					}, {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+		
+		//]]>
+	</script>
+
+</body>
+
+</html>

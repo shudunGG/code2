@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Form design</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="The category">
+		    <div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" style="margin-top: 5px;" onclick="openType()">Category</a>
+			</div>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" action="getTreeData"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" id="addForm" onclick="addFormClick();">The new form</a> 
+				<a class="mini-button" iconCls="icon-addcircle" id="saveForm" 
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select you want to save record!', '', null, 'warning');} else {save();}">Save the form</a>
+				<a class="mini-button" iconCls="icon-removecircle" id="delForm"
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {del();}">delete selected</a>
+				<a class="mini-button" iconCls="icon-forward"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select record which need export!', '', null, 'warning');} else {epoint.execute('export','',exporttc)}">data export</a>
+			</div>
+			<input id="database" autoLoad="false" action="getDsTypes" textField="text" valueField="id" class="mini-combobox mr10" width="100"/>
+		</div>
+
+		<div class="fui-condition">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 4column -->
+					<div role="row">
+						<div role="control" label="Form name" starred="false">
+							<input id="searchString" bind="searchString" class="mini-textbox"/>
+						</div>
+						<div role="control" label="Form Id" starred="false">
+							<input id="searchString1" bind="searchString1" class="mini-textbox"/>
+						</div>
+						<!-- div role="control" label="Form the name of the table" starred="false">
+							<input bind="searchString1" class="mini-textbox" onkeypress="searchData();"/>
+						</div-->
+					</div>
+					<!-- Add a hidden field to the tree and the linkage of the table -->
+					<input bind="categoryNum" id="categoryNum" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="tableID" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			    allowCellSelect="true" editNextOnEnterKey="true"
+			    editNextRowCell="true" showPager="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" headerAlign="center" width="50">order</div>
+					<div field="tableID" headerAlign="center" align="left" width="150">IDNo.</div>
+					<div field="tablename" headerAlign="center" align="left" width="100%">Data table name in Chinese</div>
+					<!--  div field="sql_tablename" headerAlign="center" align="left" width="100">SQLThe data table name</div-->
+				    <div field="orderNum" width="50" headerAlign="center" align="right" vType="maxLength:5;int;required" allowSort="true">
+					roworderNo. <input property="editor" class="mini-textbox" minWidth="30" inputStyle="text-align:right" />
+				    </div>
+					<!--div width="30" headerAlign="center" align="center" renderer="showTableStruct">
+						The main table</div-->
+					<div width="30" headerAlign="center" align="center" renderer="showSubTable">
+						Child table</div>
+					<div width="50" headerAlign="center" align="center" renderer="edit">
+						edit</div>
+					<div width="50" headerAlign="center" align="center"
+						renderer="showDesign">design</div>
+					<div width="50" headerAlign="center" align="center"
+						renderer="showPreview">preview</div>
+					<div width="50" headerAlign="center" align="center"
+						renderer="showVersion">version</div>
+					<div width="50" headerAlign="center" align="center"
+						renderer="showDetail">detail</div>
+					<!-- div width="50" headerAlign="center" align="left" renderer="print">Print the template</div-->
+				</div>
+			</div>
+		</div>
+	</div>
+	
+    <input class="mini-hidden" id="appGuid" bind="appGuid"/>
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("formlistmanageaction",'',initCallBack);
+		
+		function initCallBack(data){
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+		}
+		
+		//The treejsobject
+		var tree = mini.get("tree");
+		// Click on the left side of theThe treeRefresh the form on the right side
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// To the leftThe treeClick on the nodeidIn a hidden field
+			// At the second request, the form is sent automatically bring conditions the contents of the area
+			mini.get('categoryNum').setValue(id);
+			//Refresh the table
+			searchData();
+		});
+		
+		function addFormClick(){
+    		epoint.openDialog("The new form","framemanager/sform/formlistmanage/maintableadd?appGuid="+mini.get("appGuid").getValue()+"&category="+mini.get('categoryNum').getValue(), addCallBack, {
+    			'width':700,
+    			'height':450
+    		});
+    	}
+		
+    	// Open theThe main table
+    	function showTableStruct(e) {
+			return epoint.renderCell(e, "action-icon icon-gear","showTableStructPage");
+		}
+    	
+    	function showTableStructPage(tableId){
+    		epoint.openDialog("The main tablestructure","framemanager/sform/formlistmanage/maintablestructlist?tableId="+tableId,
+    				addCallBack);
+    	}
+    	
+    	//Open theChild table
+    	function showSubTable(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "showSubTablePage");
+		}
+    	
+    	function showSubTablePage(tableId){
+    		var appGuid = mini.get("appGuid").getValue();
+    		epoint.openDialog("Child tablelist","framemanager/sform/formlistmanage/subformlistmanage?parentTableId="+tableId+"&appGuid="+appGuid, 
+    				addCallBack);
+    	}
+    	
+    	//edit
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit","createEditDialog");
+		}
+		
+		function createEditDialog(data) {
+			epoint.openDialog("editThe form","framemanager/sform/formlistmanage/maintableadd?tableId="+ data, addCallBack, {
+    			'width':700,
+    			'height':450
+    		});
+		}
+		
+		//version
+		function showVersion(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"showVersionDialog");
+		}
+
+		function showVersionDialog(tableId) {
+			epoint.openDialog("formversion",
+					"framemanager/sform/formlistmanage/formversiondesign?tableId=" + tableId,
+					addCallBack);
+		}
+    	
+    	//design
+    	function showDesign(e) {
+			return epoint.renderCell(e, "action-icon icon-gear","showDesignDialog");
+		}
+    	
+    	function showDesignDialog(tableId){
+    		//according to tableId,get the num of version to make sure the Jump scheme
+    		epoint.execute('getDesignUrl', '', [tableId], function(args) {
+				window.open("formdesign?tableId=" + tableId + "&versionId=" + args.Versionid);
+			});
+    	}
+    	
+    	//预览
+		function showPreview(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"showPreviewDialog");
+		}
+
+		function showPreviewDialog(tableId) {
+			epoint.execute('getPreviewUrl', '', [tableId], showUrl);
+		}
+
+		//打印模板
+		function print(e) {
+			return epoint.renderCell(e, "action-icon icon-print", "printModel");
+		}
+
+		function printModel(tableId) {
+			//打印模板方法
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl, addCallBack);
+			} else {
+				epoint.alertAndClose("当前表单没有预览页面或没有启用的版本！", '', null, 'warning');//edit 状态都为停用时，给提示
+			}
+		}
+		
+		//明细
+		function showDetail(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "showDetailDialog");
+		}
+
+		function showDetailDialog(tableId) {
+			epoint.openDialog("记录明细",
+					"frame/pages/epointsform/showdetaillist?tableId=" + tableId,
+					addCallBack);
+		}
+		
+		// save
+		function save() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+
+		// delete
+		function del() {
+			epoint.execute('del', [ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+			    epoint.alert(msg, '', function(){
+			    	epoint.refresh(['datagrid', 'fui-form'],'',true);
+			    }, 'info');
+			}
+		}
+		
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		
+		function openType() {
+			epoint.openDialog('过程类别',
+					"framemanager/sform/formlistmanage/epointsformtablecategorylist?appGuid="+mini.get("appGuid").getValue(),
+					updateTableTree, {
+						'width' : 1000
+					});
+		}
+		
+		// 表格的搜索
+		function updateTableTree() {
+			epoint.refresh([ 'tree', 'fui-form' ], '', true);
+		}
+		
+		// 导出sql语句
+		function exporttc(data) {
+			var combox = mini.get("database");
+			epoint.openDialog(combox.getText() + '脚本导出',
+					"framemanager/sform/formlistmanage/basicinfoexport?tableIDs="
+							+ data.exportlist + "&databaseType="
+							+ combox.getValue(), '', {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

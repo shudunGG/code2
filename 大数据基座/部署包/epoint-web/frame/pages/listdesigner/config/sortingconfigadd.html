@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>排序字段配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="数据表选择" starred="true">
+					<div id="dataTable" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.tableId" action="getTableList"
+						onvaluechanged="selectTableChange(this.value)" required="true"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表字段选择" starred="true">
+					<div id="dataField" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.fieldId" required="true"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序方式" starred="true">
+					<div class="mini-radiobuttonlist" id="sortOrder"
+						bind="dataBean.sortorder"
+						data="[{id:'0',text:'升序'},{id:'1',text:'降序'}]" required="true" /></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int;range:0,99999999" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存并关闭</a> 
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('sortingconfigaddaction', '', initCallBack);
+
+		function initCallBack(data) {
+			if (data.type && data.type == "edit") {
+				if (data.tableName) {
+					mini.get("dataTable").setText(data.tableName);
+				}
+				if (data.fieldName) {
+					mini.get("dataField").setText(data.fieldName);
+				}
+				selectTableChange(mini.get("dataTable").getValue());
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+			    epoint.closeDialog(data.msg);
+			}
+		}
+
+		function selectTableChange(tabelId) {
+			if (tabelId) {
+				epoint.execute("dataTableValueChange", 'fui-form', [ tabelId ],
+						mcallback);
+			}
+		}
+
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				mini.get("dataField").setData(data.fieldslist);
+				if (mini.get("dataField").getValue() == ""
+						|| mini.get("dataField").getValue() == null) {
+					mini.get("dataField").select(0);
+				}
+
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>元件模板列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="模板分类">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" style="margin-top: 5px;margin-right: 5px;"
+					onclick="openType()">元件模板类别</a>
+			</div>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" action="getTreeModel"
+				style="height: 100%" showTreeIcon="true"
+				textField="text" idField="id" expandOnNodeClick="true">
+			</ul>
+		</div>
+		
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();" id="btnAddRecord">新增元件模板 </a> 
+				<a class="mini-button" iconCls="icon-save" onclick="saveOrder()">修改排序</a> 
+				<a id="btnDel"
+					class="mini-button mini-btn-danger"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('将同时删除该模板的元件,确认要删除吗?','',deleteSelect);}">
+					删除选定 </a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="元件名称">
+							<input class="mini-textbox" bind="componentname" />
+						</div>
+					</div>
+				</div>
+				<input class="mini-hidden" bind="selectTree" id="selectTree"/>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="20"></div>
+					<div type="indexcolumn" width="30" headerAlign="center">序</div>
+					<div field="componentname" headerAlign="center" align="left">元件名称</div>
+					<div field="sizex" headerAlign="center" align="center" width="50">所占宽的格数</div>
+					<div field="sizey" headerAlign="center" align="center" width="50">所占高的格数</div>
+					<div field="themecheck" headerAlign="center" align="center" width="50">是否随主题换肤</div>
+					<div field="moreurl" headerAlign="center" align="center">更多打开地址</div>
+					<div field="newurl" headerAlign="center" align="center">新增打开地址</div>
+					<div width="50" align="center" headerAlign="center" field="openwith">打开方式</div>
+					<div field="orderNumber" width="40" align="right"
+						headerAlign="center" allowSort="true" sortOrder="desc" vtype="int;range:0,99999999">
+						排序<input property="editor" class="mini-textbox" vtype="int;range:0,99999999" maxLength="8"
+							inputStyle="text-align:right" style="width: 100%;" />
+					</div>
+					<div width="20" align="center" headerAlign="center"
+						renderer="onEditRenderer">修改</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="appGuid"/>
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('componenttemplatelistaction', null, initCallback);
+		
+		var attr = Util.getUrlParams('moduleCode');
+		var moduleCode = attr == undefined ? '' : attr;
+		
+		var tree = mini.get("tree");
+		tree.on("nodeclick", function(e) {
+			mini.get("selectTree").setValue(e.node.id);
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		var codeId = "";
+
+		function initCallback(e) {
+			if (e && e.codeId) {
+				codeId = e.codeId;
+			}
+			if(e && e.appGuid){
+				mini.get("appGuid").setValue(e.appGuid);
+			}
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var selectTree = mini.get("selectTree").getValue();
+			epoint.openDialog('新增记录',
+					"framemanager/ui/template/componenttemplate?moduleCode=" + moduleCode + "&selectTree="
+					+ selectTree+"&appGuid="+mini.get("appGuid").getValue(), searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "edit",
+					"rowguid");
+		};
+		// 弹出修改窗口
+		function edit(guid) {
+			var url = 'framemanager/ui/template/componenttemplate?moduleCode=' + moduleCode + '&guid=' + guid;
+			epoint.openDialog("修改模板", url, searchData, {
+				'width' : 1100,
+				'height' : 500
+			});
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//打开服务类别
+		function openType() {
+			console.log(codeId);
+			epoint.openDialog('元件模板类别',
+					"framemanager/metadata/code/codeitemslist?codeID=" + codeId,
+					updateTree, {
+						'width' : 1000
+					});
+		}
+
+		// 刷新tree
+		function updateTree() {
+			epoint.refresh([ 'tree' ]);
+		}
+
+		function saveOrder() {
+			var grid = mini.get('datagrid');
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveOrder', '', searchData);
+		}
+	</script>
+</body>
+</html>

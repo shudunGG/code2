@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>统一认证配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../fui/js/cssboot.js"></script>
+<style>
+.dot-status-1 .mini-button-menu:before {
+	content: '';
+	background-color: green;
+	display: inline-block;
+	width: .08rem;
+	height: .08rem;
+	border-radius: 50%;
+}
+
+.dot-status-0 .mini-button-menu:before {
+	content: '';
+	background-color: red;
+	display: inline-block;
+	width: .09rem;
+	height: .09rem;
+	border-radius: 50%;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="save()"> 保存配置</a>
+	</div>
+
+	<div class="fui-content">
+
+		<div class="fui-block">
+			<div class="fui-block-hd">是否同步</div>
+			<div class="fui-block-bd">
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div id="issyncrole" name="issyncrole" class="mini-checkbox"
+								bind="dataBean.issyncrole" style="margin: 10px" text="角色"
+								readOnly="false" onvaluechanged="onRoleValueChanged"></div>
+							<div id="issyncaddress" name="issyncaddress" text="群组"
+								bind="dataBean.issyncaddress" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"
+								onvaluechanged="onAddressValueChanged"></div>
+							<div id="issyncwaithandle" name="issyncwaithandle" text="待办"
+								bind="dataBean.issyncwaithandle" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"
+								onvaluechanged="onWaithandleValueChanged"></div>
+							<div id="issyncmessage" name="issyncmessage" text="消息"
+								bind="dataBean.issyncmessage" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"
+								onvaluechanged="onMessageValueChanged"></div>
+							<div id="issyncuserconfig" name="issyncuserconfig" text="用户配置"
+								bind="dataBean.issyncuserconfig" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"
+								onvaluechanged="onUserConfigValueChanged"></div>
+							<div id="issyncworkflow" name="issyncworkflow" text="工作流"
+								bind="dataBean.issyncworkflow" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"></div>
+							<div id="issyncopinion" name="issyncopinion" text="我的意见"
+								bind="dataBean.issyncopinion" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"></div>
+							<div id="issyncpersonaladdress" name="issyncpersonaladdress" text="个人群组"
+								bind="dataBean.issyncpersonaladdress" style="margin: 10px"
+								class="mini-checkbox" readOnly="false"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">主动推送</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div id="binddomain" name="binddomain" class="mini-checkbox"
+								bind="dataBean.binddomain" style="margin: 10px" text="开启"
+								readOnly="false" truevalue="1" falsevalue="0"
+								onvaluechanged="checkEntryName"></div>
+							<div id="appentryname" name="appentryname" class="mini-hidden"
+								bind="dataBean.appentryname"></div>
+							<div id="callbackurl" name="callbackurl" class="mini-hidden"
+								bind="dataBean.callbackurl"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">组织机构订阅</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<a class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin-top: 10px; margin-left: -10px"
+								onclick="onUserClick">用户</a> <a class="mini-button" plain="true"
+								style="margin-top: 10px; margin-left: -10px"
+								iconCls="icon-addcircle" onclick="onRoleClick">角色</a> <a
+								class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin-top: 10px; margin-left: -10px"
+								onclick="onAddressClick">群组</a> <a class="mini-button"
+								plain="true" iconCls="icon-addcircle"
+								style="margin-top: 10px; margin-left: -10px"
+								onclick="onApiClick">服务</a>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">消息订阅</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<a class="mini-button" plain="true" iconCls="icon-addcircle"
+								onclick="onMessageClick"
+								style="margin-top: 10px; margin-left: -13px">消息</a> <a
+								class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin-top: 10px; margin-left: -13px"
+								onclick="onWaithandleClick">待办</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">参数订阅</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="control">
+							<a class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin-top: 10px; margin-left: -15px"
+								onclick="onUserConfigClick">用户配置</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block" id="customblock">
+			<div class="fui-block-hd">自定义</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<span role="control" id="custom"></span> <span id="syncadd"
+							class="mini-button" onclick="addVariable()"
+							iconCls="icon-addcircle">添加</span>
+					</div>
+					<br> <span class="text-assist"><span style="color: red">开启主动推送后</span>支持自定义配置额外的同步业务，需要自行开发订阅管理页以及监听处理</span><br>
+					<span class="text-assist">注：绿色表示同步已开启；红色表示同步已关闭，点击按钮进行切换</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script type="text/x-tpl" id="params-item-tpl">
+         <a class="mini-menubutton dot-status-{{status}}" menu="#popupMenu{{clienttag}}" style="margin-left: 1px;">{{clientname}}</a>
+	     <ul id="popupMenu{{clienttag}}" class="mini-menu" style="display: none;">
+		       <li style="display:{{display}} ;" onclick="onSubChange('{{status}}','{{clienttag}}','{{clientname}}','{{subscribepage}}')">订阅管理</li>
+		       <li onclick="onCustomModify('{{rowguid}}')">修改/删除</li>
+		       <li onclick="delCustom('{{status}}','{{clienttag}}')">{{statusdes}}</li>
+         </ul>
+    </script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appsubscriptionscopeaction', '', function(e) {
+			if (e.data) {
+				generateHtml(JSON.parse(e.data));
+			}
+		});
+
+		var appguid = Util.getUrlParams('rowguid');
+
+		function save() {
+			epoint.execute('save', '', saveCallBack);
+		}
+
+		function saveCallBack(data) {
+			if (data.msg) {
+				if (data.data) {
+					$('#custom').children().remove();
+				}
+				if (data.nopush) {
+					//TODO
+					mini.get('binddomain').setValue(0);
+					epoint.showTips(data.msg, {
+						state : 'warning'
+					});
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'info'
+					});
+					searchData();
+				}
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'fui-form' ]);
+		}
+
+		function onUserClick(e) {
+			epoint.openDialog('设置用户范围',
+					"frame/pages/basic/gateway/app/appinfomanage/appuserscopesetting?guid="
+							+ appguid, userClickCallBack, {
+						'width' : 1000,
+						'height' : 750
+					});
+		}
+
+		function userClickCallBack(e) {
+			if (mini.get('binddomain').getValue() == '1'
+					&& mini.get('issyncuserconfig').getValue() == 'true'
+					&& e != 'close') {
+				epoint.confirm('订阅范围如果变更需立即通知客户端更新？', '', function() {
+					epoint.execute('clientRefresh', '', 'FrameUser',
+							function() {
+								epoint.showTips("操作成功！", {
+									state : 'success'
+								});
+							});
+				});
+			}
+		}
+
+		function onRoleClick(e) {
+			epoint.openDialog('角色分发',
+					"frame/pages/basic/gateway/app/appinfomanage/approlesetting?guid="
+							+ appguid, roleClickCallBack, {
+						'width' : 1000,
+						'height' : 750
+					});
+		}
+
+		function roleClickCallBack(e) {
+			if (mini.get('binddomain').getValue() == '1'
+					&& mini.get('issyncrole').getValue() == 'true'
+					&& e != 'close') {
+				epoint.confirm('订阅范围如果变更需立即通知客户端更新？', '', function() {
+					epoint.execute('clientRefresh', '', 'FrameRole',
+							function() {
+								epoint.showTips("操作成功！", {
+									state : 'success'
+								});
+							});
+				});
+			}
+		}
+
+		function onAddressClick(e) {
+			epoint.openDialog('设置群组',
+					"frame/pages/basic/communication/groupmanagement/groupauthorizeduserlist?guid="
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onApiClick(e) {
+			epoint.openDialog('订阅服务',
+					"frame/pages/basic/gateway/app/appinfomanage/subscribeapi?appguid="
+							+ appguid, function(param) {
+						if (param && param != "close") {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onMessageClick(e) {
+			epoint.openDialog('消息订阅配置',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribemessage?appguid='
+							+ appguid + '&messagetype=message',
+					function(param) {
+						if (param && param != "close") {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onWaithandleClick(e) {
+			epoint.openDialog('待办订阅配置',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribemessage?appguid='
+							+ appguid + '&messagetype=waithandle', function(
+							param) {
+						if (param && param != "close") {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onUserConfigClick(e) {
+			epoint.openDialog('用户配置订阅',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribeuserconfig?appguid='
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function checkEntryName() {
+			var appentryname = mini.get('appentryname').getValue();
+			var binddomain = mini.get('binddomain').getValue();
+			var callbackurl = mini.get('callbackurl').getValue();
+
+			if (!appentryname && binddomain == '1') {
+				mini.prompt("开启主动推送需配置业务接口地址头", "请输入", function(action, value) {
+					if (action == "ok") {
+						mini.get("appentryname").setValue(value);
+					} else {
+						mini.get("binddomain").setValue('0');
+					}
+				});
+			}
+		}
+
+		function onSubChange(status, clienttag, clientname, subpage) {
+			if (subpage) {
+				var url;
+				if (subpage.indexOf('?') != -1) {
+					url = subpage + '&appguid=' + appguid;
+				} else {
+					url = subpage + '?appguid=' + appguid;
+				}
+				epoint.openDialog(clientname, url, function(data) {
+					if (mini.get('binddomain').getValue() == '1'
+							&& status == '1') {
+						epoint.confirm('订阅范围如果变更是否立即通知客户端更新？', '', function() {
+							epoint.execute('clientRefresh', '', clienttag,
+									function() {
+										epoint.showTips("操作成功！", {
+											state : 'success'
+										});
+									});
+						});
+					}
+				}, {
+					'width' : 1000,
+					'height' : 550
+				});
+			}
+		}
+
+		function addVariable() {
+			epoint.openDialog('新增自定义接入配置',
+					"frame/pages/basic/gateway/app/appinfomanage/soacustomconfig?appguid="
+							+ appguid, customConfigCallBack, {
+						'width' : 800,
+						'height' : 350
+					});
+		}
+
+		function generateHtml(data) {
+			var paramsTpl = $('#params-item-tpl').html();
+			var i = 0;
+			var j = 0;
+			if (data.length > 0) {
+				for (var i = 0; i < data.length; i++) {
+					if (data[i].clientname && data[i].clienttag) {
+						var html = [];
+						html.push(Mustache.render(paramsTpl, data[i]));
+						$('#custom').append(html.join(''));
+						mini.parse();
+						j++;
+					}
+				}
+			}
+		}
+
+		function delCustom(status, tag) {
+			if (status == 1) {
+				epoint.confirm('确认关闭？', '', function() {
+					epoint.execute('cancelSync', '', tag, customCallBack);
+				});
+			} else {
+				epoint.execute('startSync', '', tag, customCallBack);
+			}
+		}
+
+		function customConfigCallBack(data) {
+			if (data != 'close') {
+				epoint.showTips("修改成功！", {state : 'success'});
+				$('#custom').children().remove();
+				epoint.refresh([ 'fui-form' ]);
+			}
+		}
+
+		function customCallBack(data) {
+			if (data != 'close') {
+				$('#custom').children().remove();
+				epoint.refresh([ 'fui-form' ]);
+				epoint.showTips("操作成功！开启或关闭订阅后客户端需手动重启生效", {
+					state : 'warning'
+				});
+			}
+		}
+
+		function onCustomModify(rowguid) {
+			epoint.openDialog('修改自定义接入配置',
+					"frame/pages/basic/gateway/app/appinfomanage/soacustomconfig?rowguid="
+							+ rowguid + "&appguid=" + appguid,
+					customConfigCallBack, {
+						'width' : 800,
+						'height' : 350
+					});
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>udf jar管理</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary " id="addJar"
+				onclick="openAdd">新增函数</a> <a class="mini-button" id="deleteUdf"
+				onclick="deleteUdf">删除函数</a> <a class="mini-button" id="saveOrder"
+				onclick="saveOrder">保存排序</a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="jarName" opened="false">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="函数名称">
+						<input bind="jarName" id="jarName"
+							class="mini-textbox" />
+					</div>
+					<div role="control" label="是否启用">
+						<input bind="enable" id="enable" class="mini-combobox"
+							data="[{'text':'未启用','id':0},{'text':'启用','id':1}]"/>
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="类型">
+						<input bind="type" id="type" class="mini-combobox"
+							data="[{'text':'hive','id':0},{'text':'presto','id':1}]"/>
+					</div>
+					<div role="control"></div>
+				</div> -->
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 表格区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true" allowCellSelect="true"
+			allowCellValid="true" allowCellEdit="true" editNextOnEnterKey="true"
+			style="width: 100%; height: 100%;" showPager="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="25"></div>
+				<div type="indexcolumn" width="25" headerAlign="center">序</div>
+				<div field="udfname" width="80" align="center" headerAlign="center" align="left">函数名称</div>
+				<div field="dsname" width="70" align="center" headerAlign="center" renderer="onDsnameRenderer">数据源</div>
+				<div field="jarclasspath" width="140" align="center" headerAlign="center" renderer="onClasspathRenderer">函数实现类路径</div>
+<!-- 				<div field="type" width="50" align="center" headerAlign="center" renderer="onTypeRenderer">类型</div>
+ -->				<div field="ordernum" width="40" align="center" headerAlign="center">排序
+					<input property="editor" class="mini-textbox" style="width: 100%;" />
+				</div>
+				<div width="40" headerAlign="center" align="center" renderer="onEditRenderer">编辑</div>
+
+			</div>
+		</div>
+	</div>
+	
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpmodeludfmanageraction', '', function(data) {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				buttonDisable();
+			}
+		});
+
+		var grid = mini.get('datagrid');
+		//隐藏第五列生成状态和第八列调度状态
+		grid.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+
+		function openAdd() {
+			epoint.openDialog("新增函数", "./modeludfadd", function() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}, {
+				'width' : 900,
+				'height' : 450
+			})
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon modicon-64", "edit",
+					"rowguid");
+		}
+		
+		function onDsnameRenderer(e) {
+			if(e.value == ''){
+				return '-';
+			}else{
+				return e.value;
+			}
+		}
+		
+		function onClasspathRenderer(e) {
+			if(e.value == ''){
+				return '-';
+			}else{
+				return e.value;
+			}
+		}
+		
+		function onTypeRenderer(e) {
+			if(e.value == 0){
+				return 'hive';
+			}else{
+				return 'presto';
+			}
+		}
+
+		function edit(data) {
+			epoint.openDialog("修改函数", "./modeludfadd?rowguid=" + data,
+					function() {
+						epoint.refresh(['datagrid', 'fui-form']);
+					}, {
+						'width' : 900,
+						'height' : 450
+					})
+		}
+		
+		function deleteUdf(){
+			epoint.confirm('确认删除吗?', '', function() {
+				epoint.execute('deleteSel', '@all', closeCallback);
+			});
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功') != -1) {
+				epoint.alertAndRefresh(data.msg);
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+		
+		function buttonEnable() {
+			mini.get('deleteUdf').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('deleteUdf').disable();
+		}
+		
+		function saveOrder(){
+			epoint.execute('saveOrder', '@all', closeCallback);
+		}
+		
+		
+	</script>
+</body>
+</html>

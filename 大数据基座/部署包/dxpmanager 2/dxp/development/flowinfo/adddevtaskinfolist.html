@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>节点域管理</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <!-- 请修改相对路径 -->
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <div class="btn-group">
+        <a class="mini-button mini-btn-primary mr10" iconCls="icon-addcircle" onclick="addTrans()">新建转换</a>
+        <a class="mini-button mini-btn-danger mr10" iconCls="icon-minuscircle" onclick="deleteTrans()">删除转换</a>
+    </div>
+</div>
+<div class="fui-search" primaryControl="transName" opened="false">
+<!-- 表单布局 -->
+        <div class="fui-form" id="fui-form">
+            <div role="form">
+                <div role="row">
+                	<div role="control" label="转换名称">
+                        <input bind="transName" id="transName" class="mini-textbox"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 搜索按钮 -->
+        <a role="searcher" callback="searchData"></a>
+</div>
+<!-- 内容区域 -->
+<div id="fuiContent" class="fui-content">
+    <div id="datagrid" class="mini-datagrid" idField="rowguid"
+         action="getDataGridData" sortOrder="desc" showPager="true"
+         style="height: 100%;" allowResize="true" multiSelect="true"
+         allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+         editNextRowCell="true">
+        <div property="columns">
+            <div type="checkcolumn" width="40" headerAlign="center"></div>
+            <div type="indexcolumn" width="20" headerAlign="center">序</div>
+            <div field="taskname" width="80" headerAlign="center" align="center">转换名称</div>
+            <div field="publishstatusname" width="80" headerAlign="center" align="center">发布状态</div>
+				<div field="rowguid" width="80" headerAlign="center" align="center"
+					renderer="onEditRenderer">转换开发</div>
+			</div>
+    </div>
+</div>
+
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/jsboot.js"></script>
+<script>
+	var flowtype = Util.getUrlParams('flowtype');
+    // 初始化页面
+    var nodeGuid = "";
+    epoint.initPage('dxpdatadeveloptasklistaction', '', function (data) {
+        flowguid = data.flowGuid;
+        nodeGuid = data.nodeGuid;
+    });
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid', 'fui-form']);
+    }
+
+    function onEditRenderer(e) {
+		return epoint.renderCell(e, "action-icon icon-edit", "editFlow","rowguid");
+	}
+
+	function editFlow(rowguid) {
+		 /* if(flowtype == '03'){
+			epoint.alert('治理转换暂时不支持编辑', '',null, 'warning');
+		}else{  */
+			window.open("../../../dxp/development/add-taskdevelopment?id="+rowguid+"&nodeguid="+nodeGuid);
+		 //} 
+	}
+	
+	function deleteTrans() {
+		if (mini.get('datagrid').getSelecteds().length == 0) {
+			epoint.alert('请选择要删除的转换!', '', null, 'warning');
+		} else {
+			epoint.confirm('确认删除吗?', '', function() {
+				epoint.execute('deleteTrans', '', function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.alert(data.msg, '', function() {
+							epoint.refresh('datagrid', '', true);
+						}, 'success');
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			});
+		}
+	}
+	
+	function addTrans() {
+        epoint.openDialog("新建转换", "./adddevtaskinfo?flowGuid="+flowguid, function () {
+        	epoint.refresh(['datagrid', 'fui-form']);
+        }, {
+            'width': 800,
+            'height': 300
+        })
+    }
+</script>
+</body>
+</html>

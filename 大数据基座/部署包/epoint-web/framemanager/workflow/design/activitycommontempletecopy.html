@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>活动名称修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="save" onclick="saveModify">确认保存 </a>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="活动名称" starred="true">
+						<input id="activityName" bind="workflowActivity.ActivityName"
+							class="mini-textbox" required="true" requiredErrorText="活动名称不能为空" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		mini.parse();
+		epoint.initPage('activitycommontempletecopyaction');
+		// 保存操作的回调
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', '', callback);
+			}
+		}
+		function callback(data) {
+			var textValue = mini.get('activityName').getValue();
+			var param = {
+				Added : !data.edit,
+				Edit : data.edit,
+				ID : Util.getUrlParams('MaxID'),
+				NodeType : 'Manual',
+				Text : textValue
+			};
+			setDialogValue(param, !data.edit)
+			epoint.closeDialog();
+		}
+
+		function setDialogValue(param, edit) {
+			parent.dialogvalueset(param);
+			tag = edit;
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>

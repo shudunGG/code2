@@ -1,0 +1,136 @@
+#################################### 以下是客户端需要关注的配置项 ####################################
+#################################### 权限认证配置项（如果需要接入统一认证平台，需要配置的属性） ####################################
+# 权限验证方式，0：本地认证(默认)；1：REST认证(需要普通模式认证平台)；2：REST认证(需要微服务模式认证平台)
+verification_type= {{ .Env.verificationtype }}
+# 定义客户端Id(默认的管理应用请填写admin)
+client_id= {{ .Env.clientid }}
+# 定义客户端安全key(默认的管理应用请填写admin)
+client_secret= {{ .Env.clientsecret }}
+# 统一认证服务器地址
+server_url= {{ .Env.ssoinfurl }}
+# 统一认证服务器内网地址,如果统一认证服务器没有内外网之分，则这边不用配置，如果有内外网之分，则这边配置内网地址，server_url中配置外网地址
+# 微服务模式接入时此参数配置统一认证的微服务地址，格式<http://应用服务名称/应用的服务访问路径前缀>，如http://epointframesso/epoint-sso-web
+server_intranet_url= {{ .Env.serverintraneturl }}
+# 客户端回掉地址
+redirect_url= {{ .Env.redirecturl }}
+# 客户端回掉内网地址
+redirect_intranet_url=
+# 授权页面展示方式	
+display= {{ .Env.display }}
+# 授权范围,用逗号分隔
+scope= {{ .Env.scope }}
+# 是否启用单点登出功能
+ssoenabled= {{ .Env.ssoenabled }}
+# 是否保留登录页
+save_login_page=
+
+# 不需要登录就能访问的页面,默认有框架的一些登录页、错误页,多个用;分割，/在最后代表目录，比如check/则check下的所有子页面都不拦截，/在最前面代表根，比如/check，则http://IP：port/epoint-web/check这种才能匹配
+NoNeedAuthPages=frame/pages/basic/personalset/myinfomodify2;frame/pages/basic/personalset/myinfomodify3;epointsform/;check/;openplatform/public/;openplatform/devplatform/;actuator/
+# 不需要登录就能访问的action,默认有框架的loginaction,多个用;分割，如果想所有action都不拦截,配置此参数为应用名称
+NoNeedAuthActions=myinfomodifyaction2;myinfomodifyaction3;formcommonaddaction;formcommondetailaction;formcommonaddecaction;formcommonaction;formversionsearchaction;receiveLog;systemmonitor
+# 不需要登录就能访问的action方法,默认有框架的loginaction.autoLoad;loginaction.getLoginData,多个用;分割
+NoNeedAuthMethods=/rest/systemstatus/frametables
+# 需要授权拦截的路径前缀，一般是一些服务接口，不需要登录验证，默认的有/rest、/services、.action,多个用;分割
+NeedAuthServersPrefixs=
+
+#################################### 登录属性 ####################################
+# 成功跳转地址 默认取配置(最高优先级，如果设置此参数 首页默认都跳这个地址)
+success_url=frame/fui/pages/themes/grace/grace
+# 登出后跳转地址
+logout_url=
+# 失败跳转地址
+failure_url=
+# 登录页面地址 默认frame/pages/login/login
+login_url=
+
+# 登录类型注册，如果登录时弹出登录类型非法的提示，请在此注册你的登录类型，多个用，分隔
+loadtypes=
+# 是否开启使用token恢复会话的功能，开启配置为1，默认不开启
+use_token_recover_session=
+
+# 开启验证码功能默认关闭，配置1打开
+openVerifyCode=
+
+# 统一认证单点登出采用反向消息通知的方式，默认不启用，启用配置为1
+sso_logout_sendmessage=
+
+#################################### client（如果需要接入CAS，需要配置的属性） ####################################
+# 是否启用cas登录
+iscasenabled=
+# cas服务端外网地址 http://localhost:8050/cas3
+casServerLoginUrl=
+# cas服务端内网地址 http://localhost:8050/cas3
+casServerUrlPrefix=
+# 本地回调地址 http://localhost:8070/EpointFrame
+casService=
+
+
+#################################### 服务端需关注的配置 ####################################
+# 默认服务端授权页路径(默认为/login/oauth2authorize)
+authorize_url=
+# 是否开启接口身份认证，默认开启，即所有访问接口的无状态请求都需要携带授权令牌，如果想要关闭可以设置为0
+force_authentication=
+
+# 是否启用并发人数控制功能, 默认启用， 配置0为不启用
+session_control=
+# 支持并发人数上限，比如我可以在2台电脑上登录，则设置数量为2， 默认为1
+max_session=
+# 是否踢出后来登录的，默认是不踢出，即后者登录的用户踢出前者登录的用户，如果希望禁止后来用户登录，则这里配置为1
+kickout_after=
+
+# 默认token过期时间(1800秒) 
+token_expires_in=
+# 默认refreshtoken过期时间(86400秒)
+refreshtoken_expires_in=
+# JS API认证相关配置，js_ticket持续时间，单位：秒，默认7200秒即2小时
+jsapi_jsTicket_validTime=
+
+# 是否返回原生OAUTH响应
+original_data_format=
+# 手机短信验证码的实现接口配置
+sendShortMessageOutClass=
+# 是否开启授权功能，默认不开启，开启请配置为1
+authorizaiton_enabled=
+# 记住我的时间，单位天，默认30天
+rememberMeTime=
+
+#################################### 管理个性化内容 ####################################
+# 应用数据提供实现，默认本地实现，配置示例：com.epoint.sso.asp.mgt.AspClientManagerImpl、com.epoint.sso.frame.mgt.FrameClientManagerImpl
+clientmanager=
+# 服务数据提供实现，默认本地实现，配置示例：com.epoint.sso.asp.mgt.AspServerManagerImpl、com.epoint.sso.frame.mgt.FrameServerManagerImpl
+servermanager=
+# 用户数据提供实现，默认本地实现，配置示例：com.epoint.sso.asp.mgt.AspUserManagerImpl、com.epoint.sso.frame.mgt.FrameUserManagerImpl
+usermanager=
+
+
+#################################### 认证客户端固定配置（一般情况可不关注）####################################
+# 过滤器链管理个性化
+filterchainmanager=com.epoint.basic.shiro.FrameFilterChainManager
+# oauth登录本地个性化
+oauthlogininternalimpl=com.epoint.basic.shiro.login.oauth.OAuthLoginInternalImpl
+# SpringCloud服务容器实现
+springcloudcontainerinfo=com.epoint.basic.shiro.containerinfo.SpringCloudContainerInfoImpl
+# 通用登录本地个性化
+logininternalimpl=
+
+#################################### session管理相关 ####################################
+# 是否开启集群模式，默认不开启(0)，开启配置1
+clustered_enabeld={{ .Env.clusteredenabled }}
+# session过期时间(单位：分钟， 默认：30分钟)
+session_expired_time={{ .Env.sessionexpiredtime }}
+# session延时忽略配置，例如配置getMsgCount,则框架的会话轮询会请求会无效，结合session过期时间配置，可以控制用户的会话保持时间。其他忽略的请求也可配置在这，多个用“，”分隔
+session_delayed_ignore=
+# 不需要集群处理的页面，比如报表的jsp页面，内部存在部分会话属性无法被序列化，而且报表不需要进行会话共享,配置示例：index.jsp,使用分号分隔，匹配规则为indexof
+noneed_clusedsession_page=
+
+# 控制是否禁用快捷登录,配置成1时 禁用；当系统登录用第三方登录时，快捷登录无效，所以需要设置为1 
+closeQuickLogin={{ .Env.closequicklogin }}
+
+# 强制进行https证书校验，=1时启用; 其他情况默认绕过https证书认证
+force_https_cer_auth=
+# 登录频率限制，配置示例{30秒允许登录3次:30ss3}、{1分钟允许登录3次:1mm3}、{1小时允许登录3次:1hh3}，如果还想加入锁定时间，可以在最后拼上#120(单位秒)
+loginFrequency=
+# 登录锁定，失败X次锁定Y分钟，配置示例：X;Y ，默认配置5;15即失败5次之后锁定15分钟，关闭配置为close
+loginFailedLock=
+# 登录ip限制，配置之后仅允许配置的ip进行访问，多个以;分割
+allowip=

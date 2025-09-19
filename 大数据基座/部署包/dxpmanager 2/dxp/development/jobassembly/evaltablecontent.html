@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>计算表中的记录数</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a>
+		</div>
+	</div>
+	
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="padding-top: 1px">
+			<div role="form">
+				<div role="row" style="padding-top: 1px">
+					<div role="control" label="流程名称" starred="true">
+						<input id=changeName name="changeName" class="mini-textbox"
+							required="true" emptyText="请输入流程名称" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择数据库" starred="true">
+						<input id="dataSource" name="dataSource" class="mini-combobox" bind="dataSource" 
+						allowInput="true" showClose="true" requiredErrorText="选择数据库不能为空"
+						style="width: 100%" textField="text" onValueChanged="selectDatasource"
+							valueField="id" action="getDataSourceList" required="true"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="目标模式名">
+						<input id="schema" name="schema" class="mini-textbox"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="目标表名称" starred="true">
+						<input id="tableName" name="tableName" class="mini-combobox" bind="tableName"
+						allowInput="true" showClose="true" requiredErrorText="选择数据表不能为空" 
+						 style="width: 100%" textField="text" valueField="text" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="满足成功条件的行数" starred="true">
+						<input id="successCondition" name="successCondition" class="mini-combobox" bind="successCondition"
+						allowInput="false" showClose="true" requiredErrorText="满足条件不能为空"
+						 style="width: 100%" textField="text" valueField="id" required="true" action="getSuccessConditionList"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数值">
+						<input class="mini-textbox" showNullItem="false" vtype="int" value="0" name="limit"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="自定义SQL">
+						<div  class="mini-checkbox" name="useCustomSQL"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="使用变量替换">
+						<div  class="mini-checkbox" name="useVars"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="在执行前清空结果行列表">
+						<div  class="mini-checkbox" name="clearResultList"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="在结果中添加行">
+						<div  class="mini-checkbox" name="addRowsResult"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="SQL脚本">
+						<input class="mini-textarea" showNullItem="false" name="customSQL"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('changeName');
+		var dataSource = mini.get('dataSource');
+		var tableName = mini.get('tableName');
+		var nodeData;
+		var nodeInfo;
+		
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.changeName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			epoint.initPage('evaltablecontentaction', {'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, '');
+			selectDatasource(dataSource);
+			//selectTableName(tableName);
+
+		}
+		
+		//获取form表单数据
+ 		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate()) {
+				var data = form.getData(true, false);
+				
+				console.log(data);
+				epoint.closeDialog(mini.encode(data));
+			}
+		}
+		
+		//选择数据来源s
+		function selectDatasource(e){
+	    	dataSource.setValue(e.value);
+	    	tableName.setValue("");
+	    	epoint.execute("getTableList", '', '', function(data) {
+	    		tableName.setData(data);
+			});
+		}
+		
+		//选择数据来源s
+		function selectTableName(e){
+			console.log(e);
+	    	tableName.setValue(e.value);
+		}
+		
+	</script>
+</body>
+
+</html>

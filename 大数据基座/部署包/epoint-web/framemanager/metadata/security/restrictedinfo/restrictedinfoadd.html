@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>限频黑名单表添加</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" state="primary"
+			onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+			onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content" style="margin-left: 130px">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="受限对象类型">
+						<div class="mini-radiobuttonlist" repeatItems="2" textField="text"
+							valueField="value" value="dialog" bind="dataBean.restrictedtype"
+							id="openwith"
+							data="[{value:'mobile',text:'系统用户手机号码'},{value:'ip',text:'IP地址'}]">
+						</div>
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="受限对象实例">
+						<div id="restrictedobj" class="mini-textbox"
+							bind="dataBean.restrictedobj"></div>
+					</div>
+					<div role="control"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('restrictedinfoaddaction');
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") != -1) {
+					epoint.showTips(data.msg, {
+						state : 'success'
+					});
+					// 清空表单
+					epoint.clear('fui-form');
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'error'
+					});
+				}
+
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") != -1) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'error'
+					});
+				}
+			}
+		}
+	</script>
+</body>
+</html>

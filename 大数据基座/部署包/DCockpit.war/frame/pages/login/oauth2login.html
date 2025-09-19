@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新点统一认证登录页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../fui/js/cssboot.js"></script>
+</head>
+
+<body style="text-align: center">
+	<h3>新点统一认证登录页面</h3>
+	<hr />
+	<ul>
+		<li><input id="username" style="width: 200px" /></li>
+		<li><input id="password" style="width: 200px" /></li>
+		<li><a style="cursor: pointer;" onclick="login()">登录</a></li>
+	</ul>
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 配置变量 -->
+	<script>
+		function login() {
+			$.ajax({
+				type : 'POST',
+				url : Util.getRightUrl("rest/oauth2/login"),
+				data : {
+					"username" : $("#username").val(),
+					"password" : $("#password").val()
+				},
+				success : function(data) {
+					var dataJson = eval('(' + data + ')');
+					// 返回的data格式：{'url':'登录成功后的跳转地址','error':'登录失败信息'}
+					if (dataJson.error) {
+						alert(dataJson.error);
+					} else {
+						window.location.href = dataJson.url;
+					}
+				},
+				error : function(e) {
+					alert(e.status);
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-scheduling-data
+	xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
+	version="1.8">
+
+	<!-- 建议保留 -->
+	<pre-processing-commands>
+		<delete-jobs-in-group>*</delete-jobs-in-group>  <!-- clear all jobs in scheduler -->
+		<delete-triggers-in-group>*</delete-triggers-in-group> <!-- clear all triggers in scheduler -->
+	</pre-processing-commands>
+
+	<!-- 建议保留 -->
+	<processing-directives>
+		<!-- if there are any jobs/trigger in scheduler of same name (as in this 
+			file), overwrite them -->
+		<overwrite-existing-data>true</overwrite-existing-data>
+		<!-- if there are any jobs/trigger in scheduler of same name (as in this 
+			file), and over-write is false, ignore them rather then generating an error -->
+		<ignore-duplicates>false</ignore-duplicates>
+	</processing-directives>
+
+	<schedule>
+		<!-- 节点心跳包 -->
+		<job>
+			<name>DxpNodeDetailCheckJob</name>
+			<job-class>com.epoint.dxp.node.task.DxpNodeDetailCheckJob</job-class>
+		</job>
+		<trigger>
+			<simple>
+				<name>HeartBeatJobInterval</name>
+				<job-name>DxpNodeDetailCheckJob</job-name>
+				<repeat-count>-1</repeat-count>
+				<repeat-interval>60000</repeat-interval>
+			</simple>
+		</trigger>
+	</schedule>
+	<!-- 统计归并任务 -->
+	<schedule>
+		<job>
+			<name>DxpTransCountMergerJob</name>
+			<job-class>com.epoint.dxp.transcount.task.DxpTransCountMergerJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>TransCountMergerJob_trigg</name>
+				<job-name>DxpTransCountMergerJob</job-name>
+				<cron-expression>0 0 2 * * ?</cron-expression>
+				<!-- <cron-expression>0 0/1 * * * ? *</cron-expression> -->
+			</cron>
+		</trigger>
+	</schedule>
+
+	<!-- 执行次数统计任务 -->
+	<schedule>
+		<job>
+			<name>DxpExecutecountJob</name>
+			<job-class>com.epoint.dxp.executecount.task.DxpExecutecountJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>ExecutecountJob_trigg</name>
+				<job-name>DxpExecutecountJob</job-name>
+				<cron-expression>0 0 3 * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+
+	<!-- 消息集成作业执行中数据入库 -->
+	<schedule>
+		<job>
+			<name>DxpMsmQCountJob</name>
+			<job-class> com.epoint.dxp.msmq.task.DxpMsmQCountTask</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>DxpMsmQCountJob_trigg</name>
+				<job-name>DxpMsmQCountJob</job-name>
+				<cron-expression>0 0/1 * * * ? *</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+
+	<!-- topic发布量统计任务 -->
+	<schedule>
+		<job>
+			<name>DxpKafkaTopicPublishCountJob</name>
+			<job-class>com.epoint.dxp.kafka.task.DxpKafkaTopicPublishCountJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>TopicPublishCountJob_trigg</name>
+				<job-name>DxpKafkaTopicPublishCountJob</job-name>
+				<cron-expression>0 0 0 * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+	<!-- group消费量统计任务 -->
+	<schedule>
+		<job>
+			<name>DxpKafkaGroupConsumeCountJob</name>
+			<job-class>com.epoint.dxp.kafka.task.DxpKafkaGroupConsumeCountJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>GroupConsumeCountJob_trigg</name>
+				<job-name>DxpKafkaGroupConsumeCountJob</job-name>
+				<cron-expression>0 0 0 * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+	<!--监控任务 -->
+	<schedule>
+		<job>
+			<name>DxpMonitorJob</name>
+			<job-class>com.epoint.dxp.alarm.task.DxpMonitorTask</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>DxpMonitorTrigger</name>
+				<job-name>DxpMonitorJob</job-name>
+				<cron-expression>0 0 0/2 * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+	<!--告警任务 -->
+	<schedule>
+		<job>
+			<name>DxpAlarmJob</name>
+			<job-class>com.epoint.dxp.alarm.task.DxpAlarmTask</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>DxpAlarmTrigger</name>
+				<job-name>DxpAlarmJob</job-name>
+				<cron-expression>0 0 0/3 * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+</job-scheduling-data>

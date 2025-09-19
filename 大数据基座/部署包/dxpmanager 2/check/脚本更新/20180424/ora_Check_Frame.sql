@@ -1,0 +1,1 @@
+select count(*) from  user_tab_columns where table_name = upper('api_runtime_alert_info')

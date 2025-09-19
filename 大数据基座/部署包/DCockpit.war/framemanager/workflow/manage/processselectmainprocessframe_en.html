@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Select the affiliated</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet"
+	href="../css/workflowicons.css?releaseNo=#{version.version}" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="openAddPage()">new the affiliated</a> <a class="mini-button"
+				iconCls="icon-removecircle" id="btnok" onclick="btnOK()">confirm the choice</a> <a
+				class="mini-button" iconCls="icon-removecircle" id="cancelbtn"
+				onclick="btnDelSelect()">delete selected</a>
+		</div>
+	</div>
+
+	<input id="hidMainPVActivityGuid" bind="hidMainPVActivityGuid"
+		class="mini-hidden"></input>
+
+	<ul id="tree" class="mini-tree" style="height: 100%"
+		action="getTreeModel" showRadioButton="true" showTreeIcon="true"></ul>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("processselectmainprocessframeaction");
+
+		var processVersionGuid = Util.getUrlParams('processVersionGuid');
+
+		//The treejsobject
+		var tree = mini.get("tree");
+		// Click on the left side of theThe treeRefresh the form on the right side
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// To the leftThe treeClick on the nodeidIn a hidden field
+			// Send the second request, in the table will automatically bring conditions areaThe contents of the
+			mini.get('hidMainPVActivityGuid').setValue(id);
+		});
+
+		function openAddPage() {
+			epoint.openDialog('Select the affiliatedprocess',
+					"framemanager/workflow/manage/processaddmainprocess?processVersionGuid="
+							+ processVersionGuid, searchData, {
+						'width' : 900
+					});
+		}
+
+		function searchData() {
+			epoint.refresh('tree','',true);
+		}
+
+		function btnOK() {
+			epoint.execute('btnOK', '', function() {
+				var options = {
+					backParam: mini.get('hidMainPVActivityGuid').getValue(),
+				};
+				epoint.alertAndClose("The affiliated success!",'','',options, 'success');
+			});
+		}
+
+		function btnDelSelect() {
+			epoint.execute('btnDelSelect', '', function() {
+				epoint.alertAndClose("Deleted successfully!", '', null, null, 'success');
+			});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

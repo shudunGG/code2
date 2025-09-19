@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>集成监控</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.grid {
+	margin: 10px;
+}
+.mini-disabled:before {
+    color:#cdced1;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar fui-condition">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save" onclick="save()">保存设置</a>
+		</div>
+		<div class="btn-group mr10">
+			<a class="mini-button" id="start" onclick="start()">开启推送</a>
+			<a class="mini-button" id="stop" onclick="stop()">关闭推送</a>
+		</div>
+			<a class="mini-button" id="init" onclick="init()">配置列表初始化</a>
+	</div>
+
+
+	<!-- 表格区域 -->
+	<div class="mini-fit grid">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true" allowCellEdit="true" 
+			style="width: 100%; height: 100%;" showPager="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div field="alarmtypeName" width="100" headerAlign="center">告警类型</div>
+				<div type="checkboxcolumn" field="status" width="80" headerAlign="center"
+					align="center" trueValue="1" falseValue="0">开启通知</div>
+				<div type="checkboxcolumn" field="isSysMsg" width="80" headerAlign="center">系统消息</div>
+				<div type="checkboxcolumn"  field="isMsmMsg" width="80" headerAlign="center" align="center"
+					>手机短信 </div>
+				<div type="checkboxcolumn" field="isEmailMsg" width="80" headerAlign="center"
+					 align="center">邮件通知</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpalarmmsgsettingaction','',function(){
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+	            buttonDisable();
+	        }
+		});
+
+		function save(){
+			epoint.execute('save','','',function(data){
+				if(data.msg){
+					epoint.alertAndRefresh(data.msg);
+				}else{
+					epoint.alert(data.msg);
+				}
+			});
+		}
+		
+		function init(){
+			epoint.execute('init','','',function(data){
+				if(data.msg){
+					epoint.alertAndRefresh(data.msg);
+				}else{
+					epoint.alert(data.msg);
+				}
+			});
+		}
+		
+		
+		var grid = mini.get("datagrid");
+		
+		grid.on("drawcell", function(e) {
+			var field = e.field,
+			rowIndex = e.rowIndex, record = e.record,
+            columnIndex = e.columnIndex;
+       		if(field == 'status'){
+			    setTimeout(function(){
+	                $(grid.getCellEl(rowIndex,columnIndex)).find('.mini-grid-checkbox').addClass('switch');
+	            },1);
+            }
+       		if((field=='isSysMsg'||field=='isMsmMsg'||field=='isEmailMsg')&&record.status==0){
+			    setTimeout(function(){
+			    	$(grid.getCellEl(rowIndex,3)).find('.mini-grid-checkbox').addClass('mini-disabled');
+					$(grid.getCellEl(rowIndex,4)).find('.mini-grid-checkbox').addClass('mini-disabled');
+					$(grid.getCellEl(rowIndex,5)).find('.mini-grid-checkbox').addClass('mini-disabled');
+	            },1);
+            }
+		});
+		
+		grid.on("cellendedit", function(e){
+			var rowIndex = e.rowIndex;
+			if(e.field=='status'&&e.value==0){
+				//通知关闭时，将改告警后的所有配置置为不可用
+				$(grid.getCellEl(rowIndex,3)).find('.mini-grid-checkbox').addClass('mini-disabled');
+				$(grid.getCellEl(rowIndex,4)).find('.mini-grid-checkbox').addClass('mini-disabled');
+				$(grid.getCellEl(rowIndex,5)).find('.mini-grid-checkbox').addClass('mini-disabled');
+			}
+		});
+		
+		grid.on("cellbeginedit", function(e){
+			var record = e.record, field = e.field;
+			if((field=='isSysMsg'||field=='isMsmMsg'||field=='isEmailMsg')&&record.status==0){
+				//通知关闭时，将改告警后的所有配置置为不可用
+				e.cancel=true;
+			}
+		});
+		
+		grid.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+		function buttonEnable() {
+			mini.get('start').enable();
+			mini.get('stop').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('start').disable();
+			mini.get('stop').disable();
+		}
+		
+		
+		function start(){
+			if(grid.getSelecteds().length==0){
+				epoint.alert('请选择需要开启的配置');
+				return;
+			}
+			epoint.execute('updateStatus','','1',function(data){
+				if(data.msg){
+					epoint.alertAndRefresh(data.msg);
+				}
+			});
+		}
+		
+		function stop(){
+			if(grid.getSelecteds().length==0){
+				epoint.alert('请选择需要关闭的配置');
+				return;
+			}
+			epoint.execute('updateStatus','','0',function(data){
+				if(data.msg){
+					epoint.alertAndRefresh(data.msg);
+				}
+			});
+		}
+		function searchData() {
+			mini.get('datagrid').reload();
+		}
+	</script>
+</body>
+</html>

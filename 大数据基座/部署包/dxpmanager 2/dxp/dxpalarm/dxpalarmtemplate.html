@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>集成监控</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.top {
+	height: 100px;
+	background: #fff;
+	overflow: hidden;
+	padding-left: 0px;
+	font-size: 16px;
+	color: #5c5c5c;
+	border-bottom: 1px solid #ebebeb;
+	box-shadow: 0 1px 8px 0 rgba(75, 75, 75, 0.14);
+}
+
+.type-choose {
+	width: 80%;
+	padding-top: 12px;
+}
+
+.type-choose>li {
+	float: left;
+	text-align: center;
+	font-size: 16px;
+	color: #5c5c5c;
+	cursor: pointer;
+}
+
+.search-input {
+	float: left;
+	height: 32px;
+	line-height: 32px;
+	margin: 0 10px 0 15px;
+}
+
+.search-input {
+	width: 186px;
+	box-sizing: border-box;
+	border: 1px solid #dddddd;
+	border-radius: 4px;
+	padding-left: 10px;
+	line-height: 24px;
+	outline: none;
+}
+
+.situation-item>div {
+	margin: 0 12px;
+	text-align: center;
+	padding-top: 7px;
+}
+
+.situation-item>div>p {
+	height: 35px;
+}
+
+.type-choose>li.first {
+	width: 20%;
+	border-right: 1px solid #ebebeb;
+}
+
+.situation-item {
+	float: left;
+	width: 13%;
+}
+
+.situation-item>div>span {
+	font-weight: bold;
+}
+
+.grid {
+	margin: 10px;
+}
+
+.deal {
+	margin-left: 15px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar fui-condition">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="add" onclick="add()">新增模板</a>
+		</div>
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="start" onclick="start()">启用</a>
+			<a class="mini-button mini-btn-primary" id="stop" onclick="stop()">停用</a>
+			<a class="mini-button mini-btn-primary" id="delete"
+				onclick="delSel()">删除</a>
+		</div>
+		<div class="right-btn-area r">
+			<input bind="templateName" emptyText="请输入模板名"
+				id="searchDataSourceName" class="search-input mini-textbox" /> <a
+				id="search" class="search-button btn r mini-button"
+				onclick="searchData">搜索</a>
+		</div>
+	</div>
+
+
+	<!-- 表格区域 -->
+	<div class="mini-fit grid">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" showPager="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="templateName" width="100" headerAlign="center">模板名称</div>
+				<div field="templatetypeName" width="80" headerAlign="center"
+					align="center">类型</div>
+				<div field="templateContent" width="250" headerAlign="center">模板内容</div>
+				<div field="status" width="80" headerAlign="center" align="center"
+					renderer="onstatusRenderer">状态</div>
+				<div field="status" width="120" headerAlign="center"
+					renderer="onDealRenderer" align="center">操作</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpalarmtemplatelistaction','',function(){
+			 if (mini.get('datagrid').getSelecteds().length === 0) {
+		            buttonDisable();
+		        }
+		});
+		var grid=mini.get('datagrid');
+		var onstatusRenderer = function(e) {
+			if (e.value == 1) {
+				return epoint.renderCell(e, "action-icon icon-start",
+						"changeStatus","rowguid,status");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause",
+						"changeStatus","rowguid,status");
+			}
+		}
+
+		var onDealRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-trash",
+					"delRow")
+					+ epoint.renderCell(e, "action-icon icon-edit deal",
+							"edit");
+		}
+		
+		function changeStatus(e){
+			epoint.execute('changeStatus','',[e.rowguid,e.status],function(data){
+				if(data.msg.indexOf('成功')!=-1){
+					epoint.alertAndRefresh(data.msg);
+				}else{
+					epoint.alert(data.msg);
+				}
+			});
+		}
+		
+		function start(){
+			if(grid.getSelecteds().length==0){
+				epoint.alert('请选择需要启动的模板');
+				return;
+			}
+			epoint.execute('changeStatusBat','','1',function(data){
+				if(data.msg.indexOf('成功')!=-1){
+					epoint.alertAndRefresh(data.msg);
+				}else{
+					epoint.alert(data.msg);
+				}
+			});
+		}
+		
+		function stop(){
+			if(grid.getSelecteds().length==0){
+				epoint.alert('请选择需要停止的模板');
+				return;
+			}
+			epoint.execute('changeStatusBat','','0',function(data){
+				if(data.msg.indexOf('成功')!=-1){
+					epoint.alertAndRefresh(data.msg);
+				}else{
+					epoint.alert(data.msg);
+				}
+			});
+		}
+		
+		function delRow(e){
+			epoint.confirm('确认删除该模板？','删除确认',function(){
+				epoint.execute('delRow','',e,function(data){
+					if(data.msg.indexOf('成功')!=-1){
+						epoint.alertAndRefresh(data.msg);
+					}else{
+						epoint.alert(data.msg);
+					}
+				});
+			})
+		}
+		
+		function delSel(){
+			if(grid.getSelecteds().length==0){
+				epoint.alert('请选择需要删除的模板');
+				return;
+			}
+			epoint.confirm('确认删除所选模板？','删除确认',function(){
+				epoint.execute('delSel','',function(data){
+					if(data.msg.indexOf('成功')!=-1){
+						epoint.alertAndRefresh(data.msg);
+					}else{
+						epoint.alert(data.msg);
+					}
+				});
+			})
+		}
+
+		function add() {
+			epoint.openDialog('新增模板', 'dxp/dxpalarm/dxpsendmsgtemplateadd',
+					function(data) {
+						if(data=='ok'){
+							searchData();
+						}
+					}, {
+						"width" : 800,
+						"height" : 550
+					});
+		}
+		
+	
+		function edit(e) {
+			epoint.openDialog('修改模板',
+					'dxp/dxpalarm/dxpsendmsgtemplateadd?rowGuid=' + e,
+					function(data) {
+						if (data == 'ok') {
+							searchData();
+						}
+					}, {
+						"width" : 800,
+						"height" : 550
+					});
+		}
+
+		grid.on('selectionchanged', function(e) {
+			if (e.selecteds.length > 0) {
+				buttonEnable();
+			} else {
+				buttonDisable();
+			}
+		});
+		
+		function buttonEnable() {
+			mini.get('delete').enable();
+			mini.get('start').enable();
+			mini.get('stop').enable();
+		}
+
+		function buttonDisable() {
+			mini.get('delete').disable();
+			mini.get('start').disable();
+			mini.get('stop').disable();
+		}
+		
+		function searchData() {
+			mini.get('datagrid').reload();
+		}
+	</script>
+</body>
+</html>

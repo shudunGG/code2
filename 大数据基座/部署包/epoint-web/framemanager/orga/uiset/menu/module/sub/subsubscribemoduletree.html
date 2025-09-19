@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ '../subscribemodule/checkboxtree.css' ]);
+</script>
+</head>
+
+<body>
+	
+	<div class="fui-notice tips-box clearfix">
+		<div id="red" class="tip-item red">红色表示公开</div>
+		<div id="yellow" class="tip-item yellow">黄色表示已授权给用戶所在部门</div>
+		<div id="blue" class="tip-item blue">蓝色表示已授权给用戶角色</div>
+	</div>
+	<div class="fui-content">
+		<div class="tree-container" id="tree-container">
+			<!-- <span class="cb-container">
+            <input type="checkbox" id="cb1" class="cb-cb">
+            <span class="cb-show"></span>
+            <label for="cb1" class="cb-label">菜单项目1</label>
+        </span> -->
+		</div>
+	</div>
+	<div class="fui-toolbar bottom">
+		<span class="mini-button" state="primary" onclick="save">保存</span> 
+		<span class="mini-button" onclick="reset">重置</span>
+	</div>
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([
+		// 模拟数据
+		// './data/mockdata.js',
+		// end
+		'../subscribemodule/checkboxtree.js' ]);
+	</script>
+	<script>
+		var roleGuid = Util.getUrlParams('roleGuid');
+		if (roleGuid) {
+			$("#blue").hide();
+			$("#yellow").hide();
+		}
+		Util.ajax({
+			url : epoint.dealRestfulUrl('subsubscribemoduleaction/init'),
+			dataType : 'JSON'
+		}).done(function(data) {
+			init(data);
+		});
+
+		var init = (function() {
+			// 记录初始数据 用于重置
+			var initData;
+			return function(data) {
+				if (data) {
+					initData = data;
+				}
+				initData && checkboxTree.init(initData);
+			}
+		})();
+
+		function save() {
+			// alert(checkboxTree.getData());
+			epoint.execute('subsubscribemoduleaction.save', '', checkboxTree
+					.getData(), function(data) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				}
+			});
+			// 保存成功后 刷新
+		}
+
+		function reset() {
+			init();
+		}
+		// generateHtml(data);
+	</script>
+</body>
+
+</html>

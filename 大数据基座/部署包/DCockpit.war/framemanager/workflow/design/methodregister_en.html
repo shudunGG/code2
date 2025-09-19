@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Register new method</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" iconCls="icon-save"
+				onclick="if(epoint.validate()){btnSaveClick();}">new and close</a> <a
+				class="mini-button" iconCls="icon-removecircle"
+				onclick="epoint.closeDialog">cancel the add</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="control" style="color: #CDBA96">method statement</div>
+			<div role="row">
+				<div role="control" label="method names" starred="true">
+					<input id="methodName" class="mini-textbox"
+						bind="workflowMethod.methodName" required="true"
+						requiredErrorText="Method namesCan't be empty!" />
+				</div>
+				<div role="control" label="method sort code">
+					<input id="orderNum" class="mini-textbox" bind="workflowMethod.orderNum" vtype="int;maxLength:8"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="type the full path" starred="true">
+					<input id="typeName" class="mini-textbox"
+						bind="workflowMethod.typeName" required="true"
+						requiredErrorText="Type the full pathCan't be empty!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="methods note">
+					<input id="note" class="mini-textbox" bind="workflowMethod.note" />
+				</div>
+				<div role="control" label="return type">
+					<input id="returnValueType" class="mini-textbox"
+						bind="workflowMethod.returnValueType" />
+				</div>
+			</div>
+			<div role="control" style="color: #CDBA96">methods the
+				parameter list</div>
+			<div role="row">
+				<div role="control" label="parameter name" starred="true">
+					<input id="paraName" class="mini-textbox" bind="paraName" />
+				</div>
+				<div role="control" label="sort code">
+					<input id="ordinal" class="mini-textbox" bind="ordinal" vtype="int;maxLength:8"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" class="btn-group mr10">
+					<a class="mini-button" id="btnAdd" width="140px" onclick="add">new
+						parameters</a> <a class="mini-button" id="btnDel" width="140px"
+						onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select parameters to delete!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelected);}">delete
+						selected</a>
+				</div>
+			</div>
+			<div role="row">
+				<div class="control-field span5">
+					<p class="text-danger">When only the configuration and a
+						parameter value is[#=ExecutionContext#]Only available on the
+						context object</p>
+				</div>
+			</div>
+		</div>
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="mpguid" multiSelect="true" action="getDefaultModel"
+			showPager="false" style="width: 100%; height: 100%;"
+			allowResize="true" allowCellEdit="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">order</div>
+				<div field="mpname" width="80" headerAlign="center">
+					parameter name <input property="editor" class="mini-textbox"
+						minWidth="80" />
+				</div>
+				<div field="selected" type="checkboxcolumn" headerAlign="center"
+					width="20" align="center">encryption</div>
+				<div field="lazyguid" width="50" headerAlign="center">
+					type <input class="mini-textbox" minWidth="50" />
+				</div>
+				<div field="mpvalue" width="60" headerAlign="center">
+					parameter value <input id="txtMPValue" property="editor"
+						class="mini-textbox" minWidth="60" />
+				</div>
+				<div field="orderNum" width="30" headerAlign="center" align="right">
+					sort code<input property="editor" class="mini-textbox"
+						minWidth="20" inputStyle="text-align:right" vtype="int" />
+				</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">relevant data</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="processVersionGuid"
+		bind="processVersionGuid" />
+
+
+
+	<script type="text/javascript">
+		var miniLocal = 'en_US.js';
+	</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('methoddesignaction');
+
+		// The new method
+		function btnSaveClick() {
+			if (checkParam()) {
+				epoint.execute("btnSaveClick", '', closeCallback);
+			}
+		}
+
+		// The new parameters
+		function add() {
+			if (checkParaName() && checkOrdinal()) {
+				epoint.execute("add", '', callback);
+			}
+		}
+
+		//The new callback event
+		function newCallback(data) {
+			epoint.alert(data.msg, '', null, 'info');
+			epoint.refresh([ "datagrid" ],'',true);
+		}
+
+		// Draw the lineThe relevant databutton
+		var tempRow;
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "setParValue",
+					"mpguid");
+		};
+
+		function setParValue(mpguid) {
+			tempRow = mini.get("datagrid").getSelected();
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('The relevant data',
+					'framemanager/workflow/design/designhelper?mode=context&processVersionGuid='
+							+ processVersionGuid, setParValueOperJS,
+					addCallBack);
+		}
+
+		function setParValueOperJS(data) {
+			if (data && data != 'close') {
+				var s = data.split(';')[1];
+				mini.get('datagrid').updateRow(tempRow, {
+					"mpvalue" : "[#=" + s + "#]"
+				});
+			}
+		}
+
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content', 'fui-form' ],'',true);
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+		function checkParam() {
+			var inputs = document.getElementsByTagName("input");
+			for (var i = 0; i < inputs.length; i++) {
+				if (inputs[i].id.indexOf("txtMPValue") > -1) {
+					if (mini.get(inputs[i].id).getValue() == "") {
+						epoint
+								.alert("At least one methodThe parameter valueIs empty。Do you confirm to the empty string as parameters?", '', null, 'warning');
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		function checkParaName() {
+			var input = mini.get("paraName").getValue();
+			if (input == null || input == "") {
+				epoint.alert("The parameter nameCan't be empty!", '', null, 'warning');
+				return false;
+			}
+			return true;
+		}
+
+		function checkOrdinal() {
+			var input = mini.get("ordinal").getValue();
+			var re = /^[0-9]*[0-9][0-9]*$/;
+			if (input == null || input == "") {
+				epoint.alert("Sort codeCan't be empty!", '', null, 'warning');
+				return false;
+			}
+			if (!re.test(input)) {//Determine the input is an integer  
+				epoint
+						.alert("Sort codeMust be greater than or equal to0The integer!", '', null, 'warning');
+				return false;
+			}
+			return true;
+		}
+
+		// Delete the parameter data
+		function deleteSelected() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				if (data.msg == "This name already exists") {
+					epoint.alert(data.msg, '', null, 'warning');
+				} else
+					epoint.alert(data.msg, '', searchData, 'success');
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

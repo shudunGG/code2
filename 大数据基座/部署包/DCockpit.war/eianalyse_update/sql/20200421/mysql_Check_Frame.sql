@@ -1,0 +1,1 @@
+select count(*) from information_schema.TABLES where TABLE_SCHEMA=DATABASE() and TABLE_NAME='livy_session_active_record'

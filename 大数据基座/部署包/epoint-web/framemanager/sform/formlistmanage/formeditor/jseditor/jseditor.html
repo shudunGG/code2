@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="renderer" content="webkit" />
+    <title>js编辑器</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="../js/codemirror/codemirror.css" />
+    <link rel="stylesheet" href="./jseditor.css" />
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <!-- toolbar区域 -->
+    <div class="fui-toolbar">
+        <a class="mini-button" onclick="saveData">保存</a>
+        <a class="mini-button" onclick="epoint.closeDialog">取消</a>
+        <a role="helper" showtype="tooltip"> </a>
+    </div>
+    <!-- 帮助信息区域 默认隐藏-->
+    <div class="fui-notice hidden">
+        <p><em>注意：</em>此js编辑器是面向有一定开发经验的程序员，想要控制的控件Id可以通过单机选择右上方区域内的控件来替代填充。例var a= mini.get("[#=单行输入框3=]").getValue();</p>
+    </div>
+    <!-- 内容区域 -->
+    <div class="fui-content" id="fui-content">
+        <div class="edit-content">
+            <div class="edit-content-border">
+                <h3 class="edit-content-hd">JavaScript</h3>
+                <div class="edit-content-bd" id="jsEditor"></div>
+            </div>
+        </div>
+        <div class="edit-tool" id="editTool">
+            <div class="edit-tool-control">
+            	<h3 class="edit-control-hd">控件</h3>
+                <div class="edit-control-bd">
+                	<ul class="edit-control-list" id="controlList"></ul>
+                </div>
+            </div>
+            <div class="edit-tool-variable">
+            	<h3 class="edit-variable-hd">常用值</h3>
+                <div class="edit-variable-bd">
+                	<ul class="edit-variable-list clearfix" id="variableList"></ul>
+                </div>
+            </div>
+        </div>
+        <input class="mini-hidden" id="mainContent" bind="content"/>
+    </div>
+    <script src="../../../../../rest/resource/jsboot"></script>
+    <script>
+    	SrcBoot.output([
+    		'../js/codemirror/codemirror.js',
+    		'../js/codemirror/mode/javascript/javascript.js',
+    		'./jseditor.js'
+    	]);
+    </script>
+    <script>
+         //js解析设计面板上的控件
+         var ckeIframe = $(window.parent.document.getElementById('cke_editor1')).find('iframe')[0];
+         var ckeWin = ckeIframe.contentWindow;
+         var ckeDoc = ckeWin.document;
+	     var inputs = ckeDoc.getElementsByTagName('input');
+	     var str = "[";
+	     for(var m=0; inputs != null && inputs.length>0 && m<inputs.length; m++){
+	    	 if(inputs[m].className != null && inputs[m].className !=""
+	    			 && inputs[m].className != "datagrid" && inputs[m].className != "datagridnew"){
+	    		 var name = inputs[m].attributes.datafieldcn.nodeValue;
+        		 if (inputs[m].className=="textbox"){// 文本框
+        			 str+="{img:'text',name:'"+name+"'},";
+                 }else if (inputs[m].className=="textarea") {// 多行文本控件
+                     str+="{img:'textarea',name:\""+name+"\"},";
+                 }
+                 else if (inputs[m].className=="datetextbox" || inputs[m].className=="datetimepick") {// 日期控件
+                     str+="{img:'calendar',name:\""+name+"\"},";
+                 }
+                 else if (inputs[m].className=="dropdowntextbox") {// 下拉框
+                     str+="{img:'select',name:\""+name+"\"},";
+                 }
+                 else if (inputs[m].className=="radiobuttonlist") {// 单选按钮组控件
+                     str+="{img:'radio',name:\""+name+"\"},";
+                 }
+                 else if (inputs[m].className=="checkboxlist") {// 复选框组控件
+                     str+="{img:'checkbox',name:\""+name+"\"},";
+                 }
+                 else if (inputs[m].className=="macro") {// 宏控件
+                     str+="{img:'macro',name:\""+name+"\"},";
+                 }
+                 else if (inputs[m].className=="fileupload") {//文件上传
+                     str+="{img:'fileupload',name:\""+name+"\"},";
+                 }
+                 else if(inputs[m].className=="calculatecontrol"){//计算控件
+                     str+="{img:'calculate',name:\""+name+"\"},";
+                 }
+                 else{//可扩展控件
+                     str+="{img:'richeditoricon',name:\""+name+"\"},";
+                 }
+             } 
+        }
+	    if(str.length>1){
+	    	str=str.substring(0,str.length-1);
+	    }
+	    str +="]";
+	    var json = Util.safeEval('(' + str + ')');
+	    
+	    //如果有已保存的jsContent内容则加载，如果无则初始化显示一段固定js
+	    var htm = epoint.decodeUtf8(window.parent.document.getElementById('jsContent').value);
+	    if(htm == null || htm == ""){
+	    	htm = 'function myScript(){return 100;}\n';
+	    }
+	    
+	    var data = {
+	        js: htm.replace(/_EpSingleQuotes_/g,'\"'),
+	        controls: json,
+	        variables:['当前时间', '用户名', '部门名']
+	    };
+	    
+	    initPage(data);
+
+    	function saveData() {
+    		var value = getEditorValue();
+    		value.replace(/_EpSingleQuotes_/g,'\"');
+    		window.parent.document.getElementById('jsContent').value= epoint.encodeUtf8(value);
+    		epoint.closeDialog();	
+    	}
+    	
+    	Util.hidePageLoading();
+    </script>
+</body>
+
+</html>

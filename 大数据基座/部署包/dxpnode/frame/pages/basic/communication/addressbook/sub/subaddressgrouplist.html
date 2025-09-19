@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>群组设置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add">确定添加</a> <a class="mini-button"
+				onclick="saveAll">保存修改</a>
+		</div>
+	</div>
+
+
+	<div class="fui-condition">
+		<!-- 条件区域 -->
+		<div class="fui-form" id="fui-form" style="width: 95%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="父级群组">
+						<input class="mini-treeselect" multiSelect="false" id="tree1"
+							showRadioButton="true"
+							bind="frameMyAddressGroup.parentgroupguid"
+							allowSelect="false" action="getTreeData" />
+					</div>
+					<div role="control" label="群组名称" starred="true">
+						<input bind="frameMyAddressGroup.groupName"
+							class="mini-textbox" required="true" requiredErrorText="群组名称不能为空"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="排序号">
+						<input
+							bind="frameMyAddressGroup.orderNumber"
+							class="mini-textbox" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<input bind="serarchId" id="serarchId" class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-pagertree"
+			idField="groupguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" treeColumn="groupname"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div name="groupname" field="groupname" width="100%"
+					vtype="maxLength:50" headerAlign="center">
+					群组名称 <input property="editor" class="mini-textbox" />
+				</div>
+				<div field="ordernumber" headerAlign="center" align="center"
+					vtype="int;range:0,99999999" width="200">
+					排序值 <input property="editor" class="mini-textbox" />
+				</div>
+				<div field="sum" width="150" headerAlign="center" align="center">包含联系人数量</div>
+				<div width="100" align="center" headerAlign="center"
+					renderer="onDelRenderer">删除</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+<script src="../../../../../../rest/resource/jsboot"></script>
+
+<!-- 配置变量 -->
+<script>
+	//<![CDATA[  
+	//初始化页面
+	epoint.initPage("subaddressgrouplistaction", "", function() {
+		//树js对象
+		var tree = mini.get("tree1");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeclick", function(e) {
+			if (e.node) {
+				var id = e.node.id;
+				mini.get("tree1").setValue(id);
+			}
+		});
+
+		if (mini.get("tree1").getText() == "群组") {
+			mini.get("tree1").setText("");
+		}
+	});
+
+	// 表格的搜索
+	function searchDataExcludeTree() {
+		epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+	}
+
+	// 绘制行删除按钮
+	var onDelRenderer = function(e) {
+		return epoint.renderCell(e, "action-icon icon-remove", "deleteSelect",
+				"groupguid");
+	};
+
+	//新增按钮回调
+	// 新增操作的回调
+	function newCallback(data) {
+		if (data.msg) {
+			epoint.alert(data.msg, null, null, 'info');
+			if (data.success) {
+				// 清空表单
+				epoint.clear('fui-form');
+				epoint.refresh([ "datagrid", "fui-form" ], '', true);
+			}
+		}
+	}
+
+	//新增按钮
+	function add() {
+		if (epoint.validate()) {
+			epoint.execute('add', 'fui-form', newCallback);
+		}
+	}
+
+	//删除按钮
+	function deleteSelect(groupguid) {
+		epoint.execute('getCount', "", [ groupguid ], function(args){
+			var msg = "";
+			if (args.msg) {
+				msg = args.msg +"您确定删除选中记录？如果确定删除，那么子分组向上升一级"; 
+			}
+			else {
+				msg += "您确定删除选中记录?";
+			}
+		epoint.confirm(msg, "", function(action) {
+			epoint.execute("delete", "", [ groupguid ], function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, null, null, 'info');
+					epoint.refresh([ "datagrid", "fui-form" ], '', true);
+				}
+			});
+		});
+	  });
+	}
+	//保存回调事件
+	function saveCallback(data) {
+		epoint.alert(data.msg, null, null, 'info');
+		epoint.refresh([ "datagrid", "fui-form" ], '', true);
+	}
+
+	//保存修改
+	function saveAll() {
+		// 表格对象
+		var grid = mini.get("datagrid");
+		grid.validate();
+		if (grid.isValid() == false) {
+			//alert("请校验输入单元格内容");
+			var error = grid.getCellErrors()[0];
+			grid.beginEditCell(error.record, error.column);
+			return;
+		}
+		epoint.execute('saveAll', 'datagrid', saveCallback);
+	}
+
+	//]]>
+</script>
+</html>

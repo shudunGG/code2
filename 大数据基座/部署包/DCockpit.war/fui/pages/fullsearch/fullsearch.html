@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html "zh-CN" style="font-size: 10px;">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="renderer" content="webkit" />
+<script src="../../js/cssboot.js"></script>
+<link rel="stylesheet" href="./css/fullsearch.css">
+<title>全文检索</title>
+</head>
+
+<body style="background: #fff">
+	<div class="fs-head">
+		<ul id="category" class="fs-category clearfix">
+			<!-- <li class="fs-category-item active">全部</li>
+            <li class="fs-category-item">邮件</li>
+            <li class="fs-category-item">信息</li>
+            <li class="fs-category-item">公文</li>
+            <li class="fs-category-item more">更多
+                <ul class="fs-category-more">
+                    <li class="fs-category-item">培训</li>
+                    <li class="fs-category-item">培训</li>
+                    <li class="fs-category-item">培训</li>
+                </ul>
+            </li> -->
+		</ul>
+		<div class="fs-search">
+			<input id="swd" type="text" class="fs-search-input" />
+			<button id="searchBtn" class="fs-search-btn">搜索</button>
+		</div>
+	</div>
+	<div class="fs-condition">
+		<label class="fs-condition-label l">排序 ：</label>
+		<ul id="sort" class="fs-sort">
+			<li class="fs-sort-item" data-name="infodate"><span
+				class="sort-lbl">发布时间</span></li>
+			<li class="fs-sort-item" data-name="relevant"><span
+				class="sort-lbl">相关程度</span></li>
+		</ul>
+		<span id="advs-switch" class="fs-advs-switch">高级搜索</span>
+	</div>
+	<div id="advs-content" class="fs-advs-content hidden">
+		<div id="advs-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<label class="form-label">包含以下<b>全部</b>关键词：
+					</label>
+					<div class="form-control span5">
+						<input id="wd_all" name="wd_all" class="mini-textbox"
+							emptyText="词语用 “空格” 隔开" />
+					</div>
+				</div>
+				<div role="row">
+					<label class="form-label">包含以下<b>任意</b>关键词：
+					</label>
+					<div class="form-control span5">
+						<input id="wd_any" name="wd_any" class="mini-textbox"
+							emptyText="词语用 “空格” 隔开" />
+					</div>
+				</div>
+				<div role="row">
+					<label class="form-label"><b>不包含</b>以下关键词：</label>
+					<div class="form-control span5">
+						<input id="wd_exc" name="wd_exc" class="mini-textbox"
+							emptyText="词语用 “空格” 隔开" />
+					</div>
+				</div>
+				<div role="row">
+					<!--  <label class="form-label">选择文件类型：</label>
+                    <div class="form-control span1">
+                        <input id="file_type" name="file_type" class="mini-combobox" data="fileTypeData"/>
+                    </div> -->
+					<label class="form-label">检索范围：</label>
+					<div class="form-control span1">
+						<input id="search_range" name="search_range" class="mini-combobox"
+							data="searchRangeData" />
+					</div>
+					<!--  <label class="form-label">索引分类：</label>
+                    <div class="form-control span1">
+                        <input id="index_type" name="index_type" class="mini-combobox" data="indexTypeData" />
+                    </div> -->
+				</div>
+				<div role="row">
+					<label class="form-label">选择时间：</label>
+					<div class="form-control span5">
+						<input id="time" name="time" class="mini-radiobuttonlist"
+							value="0" width="420"
+							data="[{id:0,text:'不限时间'},{id:1,text:'一天内'},{id:7,text:'一周内'},{id:30,text:'一月内'},{id:365,text:'一年内'},{id:'custom',text:'自定义'}]" />
+						<div class="fs-time-choice" id="time_range">
+							<input id="startTime" name="start_time" class="mini-datepicker"
+								width="120" /> 至 <input id="endTime" name="end_time"
+								class="mini-datepicker" width="120" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fs-advs-ft">
+			<button class="fs-advs-btn" role="search">搜索</button>
+			<button class="fs-advs-btn" role="reset">重置</button>
+			<button class="fs-advs-btn grey" role="close">关闭</button>
+		</div>
+		<div class="fs-advs-blabk"></div>
+	</div>
+	<div id="fs-content" class="fs-content">
+		<div class="fs-content-left">
+			<ul id="grid" class="fs-grid empty">
+			</ul>
+			<div class="mini-pagination fs-grid-pager" id="pager"
+				onpagechanged="onPageChanged" showReloadButton="false"
+				showPageIndex="true" showPageInfo="true"></div>
+		</div>
+		<div class="fs-content-right">
+			<h3 id="ri-title" class="fs-ri-title"></h3>
+			<i id="ri-close" class="fs-ri-close"></i>
+			<ul id="ri-list" class="fs-ri-list">
+				<li class="fs-ri-item"></li>
+			</ul>
+		</div>
+	</div>
+
+	<script type="text/x-template" id="categoryItemTpl">
+        <li class="fs-category-item{{#active}} active{{/active}}" id="{{guid}}" data-tocategorys="{{tocategorys}}" >{{name}}</li>
+    </script>
+	<script type="text/x-template" id="riItemTpl">
+        <li class="fs-ri-item" data-url="{{linkurl}}" data-guid="{{id}}" title="{{title}}">{{title}}</li>
+    </script>
+	<script type="text/x-template" id="gridItemTpl">
+        <li class="fs-grid-item" data-guid="{{id}}" data-title="{{pureTitle}}" data-categorynum="{{syscategory}}" >
+            <div class="fs-grid-type">
+                <div class="fs-type-border" style="background-image:url({{typeImg}})">
+                    <span class="fs-type-txt">{{typeName}}</span>
+                </div>
+            </div>
+            <div class="fs-grid-info" data-guid="{{id}}">
+                <div class="fs-info-hd clearfix">
+                    <p class="fs-info-title" data-url="{{linkurl}}">{{{title}}}</p>
+                    <div class="fs-info-operation" data-typeguid="{{syscategory}}">
+                        {{{optBtn}}}
+                    </div>
+                </div>
+                <div class="fs-info-bd">
+                    {{{content}}}
+                </div>
+                <div class="fs-info-ft">
+                    <span class="fs-info-time">{{infodate}}</span>
+                    <span class="fs-info-ri">相关信息</span>
+                </div>
+            </div>
+        </li>
+    </script>
+	<!-- 全部下的用户模板 -->
+	<script type="text/x-template" id="userInOneTpl">
+        <li class="fs-grid-item user-inone" data-type="user">
+            <h2 class="grid-item-title">与<span class="kw">{{wd}}</span>有关的用户</h2>
+            {{#hasUserTab}}<button class="view-all" title="查看全部相关的用户">全部</button>{{/hasUserTab}}
+            <ul class="hrid-item-sublist user-list">
+                {{{subList}}}
+            </ul>
+            {{#total}}<span class="count">共计{{total}}个相关用户</span>{{/total}}
+        </li>
+    </script>
+	<!-- 全部下的模块模板 -->
+	<script type="text/x-template" id="moduleInOneTpl">
+        <li class="fs-grid-item module-inone" data-type="module" >
+            <h2 class="grid-item-title">与<span class="kw">{{wd}}</span>有关的功能</h2>
+            {{#hasModuleTab}}<button class="view-all" title="查看全部相关的功能">全部</button>{{/hasModuleTab}}
+            <ul class="hrid-item-sublist module-list">
+                {{{subList}}}
+            </ul>
+            {{#total}}<span class="count">共计{{total}}个相关功能</span>{{/total}}
+        </li>
+    </script>
+	<!-- 用户模板 -->
+	<script type="text/x-template" id="userItemTpl">
+        <li class="sublist-item user-item" data-usergiud="{{guid}}" data-guid="{{guid}}">
+            <img src="{{portrait}}" alt="{{name}}" class="user-portrait">
+            <div class="user-info">
+                <span class="name">{{{hlname}}}</span>
+                <span class="position">{{{position}}}</span>
+                <span class="dept">{{{dept}}}</span>
+                <div class="user-actions">
+                    <span class="mail"></span>
+                    <span class="msg"></span>
+                    <span class="sms"></span>
+                </div>
+            </div>
+        </li>
+    </script>
+	<!-- 模块模板 -->
+	<script type="text/x-template" id="moduleItemTpl">
+        <li class="sublist-item module-item" data-id="{{code}}" title="{{name}}" data-url="{{url}}" data-opentype="{{openType}}">
+            <span class="icon-module {{icon}}" style="background:{{iconBg}}"></span>
+            <span class="module-info">{{{hlname}}}</span>
+            <div class="module-fullpath">{{{fullpathHTML}}}</div>
+            <button class="module-btn btn-open">打开</button>
+        </li>
+    </script>
+	<!-- 模块路径模板 -->
+	<script type="text/x-template" id="modulePathTpl">
+        <span class="module-path {{#url}}hasLink{{/url}}" title="{{name}}" data-id="{{code}}" data-url="{{url}}" data-opentype="{{openType}}">{{{hlname}}}
+        </span>
+    </script>
+	<script>
+		// 页面显示的最大分类个数
+		var maxCategoryNum = 4;
+		// 获取分类的请求地址
+
+		// 获取相关数据接口
+		var getRelatedInfoUrl = '';
+
+		//全文检索接口
+		var searchDataUrl = '';
+
+		// 获取用户信息接口地址
+		var getUserInfoUrl = '';
+
+		// 搜索结果的标题点击事件
+		var onGridItemClick = function(title, url) {
+			//            window.open(url);
+			epoint.openDialog(title, url);
+
+		}
+
+		// 相关信息列表点击事件
+		var onRiItemClick = function(e) {
+			epoint.openDialog('相关信息', e.url);
+		}
+
+		// 高级搜索中文件类型下拉框的数据源
+		var fileTypeData = [ {
+			id : 'all',
+			text : '不限文件类型'
+		}, {
+			id : '1',
+			text : '邮件'
+		}, {
+			id : '2',
+			text : '文档'
+		} ];
+
+		// 高级搜索中检索范围下拉框的数据源
+		var searchRangeData = [ {
+			id : 'title;content',
+			text : '所有'
+		}, {
+			id : 'title',
+			text : '标题'
+		}, {
+			id : 'content',
+			text : '内容'
+		} ];
+
+		// 高级搜索中索引分类下拉框的数据源
+		var indexTypeData = [ {
+			id : 'all',
+			text : '不限索引'
+		}, {
+			id : '1',
+			text : '邮件索引'
+		}, {
+			id : '2',
+			text : '文档索引'
+		} ];
+	</script>
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<script>
+		SrcBoot.output([ './js/clamp.min.js',
+				'fui/js/lib/jquery.nicescroll.min.js', './js/fullsearch.js' ]);
+	</script>
+	<script>
+		epoint.initPage('fullsearchaction', '', function(data) {
+			//是否能用
+			//    if (data.canUse) {
+			//是否配置地址
+			if (data.ftsUrl) {
+				getRelatedInfoUrl = data.ftsUrl
+						+ 'rest/inteligentSearch/getRelatedInfo';
+				//全文检索接口
+				searchDataUrl = data.ftsUrl
+						+ 'rest/inteligentSearch/getFullTextData';
+			}else {
+				// 无全文检索则无高级搜索
+				$('body').addClass('hide-condition');
+			}
+
+			//  getRelatedInfoUrl = 'http://192.168.201.44:8080/inteligentsearch/rest/inteligentSearch/getRelatedInfo';
+			//全文检索接口
+			//  searchDataUrl = 'http://192.168.201.44:8080/inteligentsearchrest/inteligentSearch/getFullTextData';
+
+			//加载完成后，调用搜索
+
+			// }
+			getCategoryData();
+		});
+	</script>
+</body>
+
+</html>

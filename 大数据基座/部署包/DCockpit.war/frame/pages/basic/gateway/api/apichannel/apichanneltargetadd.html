@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>新增高可用通道</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">新增</a> <a
+				class="mini-button" id="btnClose" onclick="epoint.closeDialog">取消添加</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="Target" starred="true">
+						<input bind="dataBean.target_host" class="mini-textbox"
+							onvalidation="onIPValidation" required="true"
+							requiredErrorText="Target不能为空!">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="权重" starred="true">
+						<input class="mini-textbox" bind="dataBean.weight" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('apichanneltargetaddaction', '', function(data){
+			
+		});
+		//新增
+		
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', function(data) {
+					if (data && data.msg) {
+						if (data.success) {
+							epoint.alertAndClose(data.msg);
+						} else {
+							epoint.alert(data.msg);
+						}
+					}
+				});
+			}
+		}
+
+		function onIPValidation(e) {
+			var val = e.value;
+			if (val != "") {
+				var re = new RegExp(
+						"^((25[0-5]|2[0-4]\\d|[1]{1}\\d{1}\\d{1}|[1-9]{1}\\d{1}|\\d{1})($|(?!\\.$)\\.)){4}$");
+
+				if (!re.test(val.trim())) {
+					e.isValid = false;
+					e.errorText = "ip地址格式错误";
+				}
+			}
+
+		}
+	</script>
+</body>
+</html>

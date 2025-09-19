@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>文本处理</title>
+    <!-- 请修改相对路径 -->
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <div class="btn-group mr10">
+        <a class="mini-button" id="addNew" onclick="confirmadd">保存修改</a> <a
+            class="mini-button" id="cancleadd" onclick="epoint.closeDialog">取消添加</a>
+    </div>
+</div>
+
+<!-- 内容区域 -->
+<div class="fui-content">
+    <div id="form" class="fui-form" style="width: 90%">
+        <div role="form">
+            <div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" required="true"
+							emptyText="请输入步骤名称"  vtype="maxLength:20" requiredErrorText="步骤名称不能为空"/>
+					</div>
+				</div>
+            <div role="row">
+                <div role="control" label="结果字段" starred="true">
+                    <input class="mini-textbox" id="addid" name="addid" required="true"
+                           onvalidation="englishjy" requiredErrorText="请填写结果字段名称!"
+                           emptyText="请输入结果字段..."/>
+                </div>
+
+                <div role="control" label="结果字段中文注释" starred="true">
+                    <input class="mini-textbox" id="addname" name="addname" required="true"
+                           requiredErrorText="请填写结果字段中文注释!" emptyText="请输入结果字段中文注释..."/>
+                </div>
+            </div>
+            <div role="row">
+                <div role="control" label="处理文本字段" starred="true">
+                    <input id="selectfield" name="selectfield" class="mini-combobox" textField="text" action="getPreFields"
+                           valueField="id" emptyText="请选择文本字段..." required="true"
+                           allowInput="false" showNullItem="false" nullItemText="请选择文本字段..."
+                           requiredErrorText="请选择处理文本字段!"/>
+                </div>
+
+                <div role="control" label="处理类型" starred="true">
+                    <input class="mini-combobox" style="width: 100%" id="type" name="type"
+                           required="true" oncloseclick="onCloseClick" allowInput="false"
+                           emptyText="请选择文本处理类型..." onvaluechanged="changeType"
+                           data="[{'id':'getIDCards','text':'身份证提取'},{'id':'getPhoneNumbers','text':'联系电话提取'},{'id':'getCarNumbers','text':'车牌号提取'},{'id':'getYHKNumbers','text':'银行卡号提取'},{'id':'getChineseNr','text':'中国人名识别'},{'id':'getEnglishNr','text':'外国音译人名识别'},{'id':'getJanpaneseNr','text':'日本人名识别'},{'id':'getLocationNs','text':'地名识别'},{'id':'getOrganizationNs','text':'机构名识别'},{'id':'getOrganizationRecognize','text':'关键词提取'},{'id':'getExtractSummary','text':'自动摘要'},{'id':'getExtractPhrase','text':'短语提取'},{'id':'getconvertToTraditionalChinese','text':'转换为繁体字'},{'id':'getconvertToSimplifiedChinese','text':'转换为简体字'}]"
+                            requiredErrorText="请选择处理类型!"/>
+                </div>
+            </div>
+
+
+            <div role="row" id="showcount" style="display: none" starred="true">
+                <div role="control" label="提取数量">
+                    <input class="mini-textbox" id="count"   name="count" required="true" vtype="int;range:1,100"
+                           style="width: 40%" requiredErrorText="请填写提取数量!"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/jsboot.js"></script>
+<script>
+		// 初始化页面
+		var form = new mini.Form("#form");
+        var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modelkeywordextrationaction?stepId=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+        function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+            var value = mini.get("type").getValue();
+			if (value == 'getOrganizationRecognize'
+					|| value == 'getExtractSummary'
+					|| value == 'getExtractPhrase') {
+				$("#showcount").show();
+			} else {
+				$("#showcount").hide();
+			}
+		}
+
+		function englishjy(e) {
+			var reg = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+			var v = reg.test(e.value);
+			if (!v) {
+				e.errorText = "必须以字母开头，英文、数字、下划线作为字段组合名称!";
+				e.isValid = false;
+			}
+		}
+
+		function changeType() {
+			var value = mini.get("type").getValue();
+			if (value == 'getOrganizationRecognize'
+					|| value == 'getExtractSummary'
+					|| value == 'getExtractPhrase') {
+				$("#showcount").show();
+			} else {
+				$("#showcount").hide();
+			}
+		}
+
+		function findObjByparameterType(data, parameterType) {
+			for (var i = 0; i < data.length; i++) {
+				if (parameterType == data[i].parameterType) {
+					return data[i];
+				}
+			}
+		}
+
+		//保存
+		function confirmadd() {
+			//读取参数控件列表中的值
+			var nodeForm = getForm();
+			if (epoint.validate('@all', true)) {
+				epoint.execute("saveForm", '',[nodeInfo,nodeForm],function(data){
+					if(data.success == 'success'){
+						epoint.closeDialog(nodeForm);
+					}else{
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+</script>
+</body>
+</html>

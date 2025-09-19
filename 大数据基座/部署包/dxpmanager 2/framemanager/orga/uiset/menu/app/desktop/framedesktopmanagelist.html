@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>桌面管理列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();"
+				id="btnAddRecord">新增记录 </a> <a class="mini-button"
+				iconCls="icon-save" onclick="saveModify();" id="btnUpdateRecord">保存修改</a>
+			<a id="btnDel" class="mini-button mini-btn-danger"
+				iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="桌面名称">
+						<input id="search_desktopNames" class="mini-textbox"
+							bind="dataBean.desktopnames" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="desktopnames" headerAlign="center" align="left"
+					width="100%">桌面名称</div>
+				<div field="desktopicon" headerAlign="center" align="center"
+					width="230">桌面图标</div>
+				<div field="ordernum" headerAlign="center" align="right" width="100">
+					排序 <input property="editor" class="mini-textbox" vtype="int;range:0,99999999"
+						inputStyle="text-align:right" style="width: 100%;" />
+				</div>
+				<div field="isDisableStr" headerAlign="center" width="100"
+					type="checkboxcolumn" truevalue="1" falsevalue="0" align="center">禁用/启用</div>
+				<div field="opentoall" width="80" headerAlign="center"
+					type="checkboxcolumn" truevalue="1" falsevalue="0" align="center">完全公开</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onRightRenderer">权限</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('framedesktopmanagelistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint
+					.openDialog(
+							'新增记录',
+							"framemanager/orga/uiset/menu/app/desktop/framedesktopmanageadd",
+							function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+							}, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"framemanager/orga/uiset/menu/app/desktop/framedesktopmanageedit?guid="
+							+ id, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 绘制行权限按钮
+		var onRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"rightSetting", "rowguid");
+		};
+
+		function rightSetting(rowguid) {
+			var settings = {
+				'width' : 800,
+				'height' : 550
+			};
+			epoint.openDialog('桌面权限',
+					'framemanager/orga/uiset/menu/app/desktop/framedesktopright?portaletguid='
+							+ rowguid, '', settings);
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('saveModify', '', callback);
+			}
+		}
+	</script>
+</body>
+</html>

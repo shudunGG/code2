@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+	<!-- 连接服务器配置 -->
+	<rabbit:connection-factory id="connectionFactory"
+		host="192.168.209.16" port="5672" username="epoint" password="epoint"
+		virtual-host="/" />
+
+	<!-- 当前声明的exchange和queue会在服务器上自动生成 -->
+	<rabbit:admin connection-factory="connectionFactory" />
+
+	<!-- rabbitTemplate -->
+	<rabbit:template id="rabbitTemplate"
+		connection-factory="connectionFactory" />
+
+	<!-- 1定义门户渠道队列 -->
+	<rabbit:queue name="remindGatewayQueue" />
+
+	<!-- 2定义移动端渠道队列 -->
+	<rabbit:queue name="remindMobileQueue" />
+
+	<!-- 3定义企业微信渠道队列 -->
+	<rabbit:queue name="remindWeiXinQueue" />
+
+	<!-- 4定义短信渠道队列 -->
+	<rabbit:queue name="remindSmsQueue" />
+
+	<!-- 5定义钉钉渠道队列 -->
+	<rabbit:queue name="remindDingDingQueue" />
+
+	<!-- 6定义epoint-msg渠道队列 -->
+	<rabbit:queue name="remindMsgQueue" />
+
+	<!-- 7定义其他渠道队列 -->
+	<rabbit:queue name="remindOtherQueue" />
+
+	<!-- 消费者 -->
+	<bean id="remindChannelListener"
+		class="com.epoint.frame.service.message.remind.listener.RemindChannelListener" />
+
+	<!-- 配置监听器 -->
+	<!-- the container will acknowledge the message automatically, unless the 
+		MessageListener throws an exception -->
+
+	<!-- 1门户监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="20" prefetch="1">
+		<rabbit:listener queues="remindGatewayQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 2移动端监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="20" prefetch="1">
+		<rabbit:listener queues="remindMobileQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+
+	<!-- 3企业微信监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="5" prefetch="1">
+		<rabbit:listener queues="remindWeiXinQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 4短信监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="5" prefetch="1">
+		<rabbit:listener queues="remindSmsQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 5钉钉监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="5" prefetch="1">
+		<rabbit:listener queues="remindDingDingQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 6msg监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="1" prefetch="1">
+		<rabbit:listener queues="remindMsgQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+	<!-- 7其他监听器 -->
+	<rabbit:listener-container
+		connection-factory="connectionFactory" acknowledge="manual"
+		concurrency="20" prefetch="1">
+		<rabbit:listener queues="remindOtherQueue" ref="remindChannelListener" />
+	</rabbit:listener-container>
+</beans>

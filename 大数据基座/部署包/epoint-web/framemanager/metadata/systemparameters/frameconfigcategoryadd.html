@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>新增系统参数类别</title>
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<!-- 必须有，加载时的loading效果 -->
+		<div class="page-loading"></div>
+		
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<!-- 表单区域 -->
+			<div id="fui-form" class="fui-form" style="width: 90%">
+				<div role="form">
+					<!-- 2列 -->
+					<div role="row" style="word-break:keep-all">
+						<div role="control" label="分类名称" starred="true">
+							<input  bind="frameConfigCateGory.cateGoryName" class="mini-textbox" required="true" requiredErrorText="分类名称不能为空" maxLength="50"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="备注">
+							<input bind="frameConfigCateGory.cateGoryDes" class="mini-textbox" maxLength="50"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="排序号">
+							<input id="ordernumber" bind="frameConfigCateGory.orderNumber" class="mini-textbox" vtype="int;range:0,99999999" allowSort="true"/>
+						</div>
+					</div>
+					<div style="display:none">
+						<input id="configValue" bind="frameConfigCateGory.cateGoryGuid" class="mini-textbox"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar bottom">
+			<a class="mini-button" state="primary" id="addNew" onclick="addNew">保存并新增</a>
+			<a class="mini-button" id="addClose" onclick="add">保存并关闭</a>
+		</div>
+		
+		<script src="../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//Initialization request 
+			epoint.initPage('frameconfigcategoryaddaction');
+	
+			// New correction operation
+			function newCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.showTips(data.msg, {state : 'success'});
+						epoint.clear('fui-form');
+					} else {
+						epoint.showTips(data.msg,{state : 'error'});
+					}
+				}
+			}
+	
+			function addNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+	
+			// Shut downOperation of the callback
+			function closeCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+					    epoint.closeDialog(data.msg);
+					} else {
+						epoint.showTips(data.msg,{state : 'error'});
+					}
+				}
+			}
+	
+			function add() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', closeCallback);
+				}
+			}
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>隐私详情页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style>
+.un-auth .mini-button.confirm， .un-auth .mini-button.cancel {
+	display: inline-block;
+}
+
+.un-auth .mini-button.revoke {
+	display: none;
+}
+
+.auth .mini-button.confirm， .auth .mini-button.cancel {
+	display: none;
+}
+
+.auth .mini-button.revoke {
+	display: inline-block;
+}
+
+.notice-title {
+	font-size: 18px;
+	font-size: .18rem;
+	text-align: center;
+	color: #333;
+	color: var(- -black-color);
+	margin: 16px 0;
+}
+
+.notice-content {
+	color: #5c5c5c;
+	color: var(- -black-color-1);
+	line-height: 1.5;
+	margin-bottom: 8px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<h2 class="notice-title">隐私声明</h2>
+		<p class="notice-content">
+		<div class="mini-outputtext" bind="privacy.privacystatement"
+			validateLevel="3" escape="false"></div>
+		</p>
+	</div>
+
+	<div class="fui-toolbar-bottom un-auth" id="toolbar">
+		<span id="confirm-btn" class="mini-button confirm" state="primary"
+			onclick="agreeAuth" enabled="false"></span> <span id="cancelBtn"
+			class="mini-button cancel" onclick="cancel">不同意</span>
+		<!-- 隐藏域 -->
+		<input bind="dataBean.rowguid" id="dataBeanRowGuid"
+			class="mini-hidden" />
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		var $toolbar = $('#toolbar');
+		// 初始化页面
+		epoint.initPage('frameprivacyagreeaction', '', initCallback);
+
+		function initCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'warn');
+				return;
+			}
+
+			if (data.add) {
+				// 如果是未授权 则开始授权 倒计时
+				showAuthBtn();
+				startCountDown();
+			} else {
+				if (data.showmsg) {
+					epoint.alert("没有已发布的隐私声明", '', function() {
+						epoint.closeDialog("没有已发布的隐私声明");
+					})
+				} else {
+					// 如果是已授权 则显示撤销授权即可
+					showRevokeBtn();
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success == "success") {
+					epoint.closeDialog(msg);
+				} else {
+					epoint.alert(msg, '', null, 'info');
+				}
+			}
+		}
+
+		// 显示授权按钮
+		function showAuthBtn() {
+			$toolbar.removeClass('auth').addClass('un-auth').find('>.revoke')
+					.remove();
+		}
+
+		// 显示撤销授权
+		function showRevokeBtn() {
+			$toolbar.removeClass('un-auth').addClass('auth').find(
+					'>.confirm,>.cancel').remove();
+		}
+
+		/**
+		 *  开始倒计时 sec 为倒计时总时间 默认5
+		 */
+		function startCountDown(sec) {
+			var btn = mini.get('confirm-btn');
+			if (sec === undefined) {
+				sec = 5
+			}
+
+			var s = sec;
+			var timer;
+			go();
+
+			function go() {
+				if (s > 0) {
+					btn.setText('我同意（' + s + '）');
+					s--
+				} else {
+					btn.setText('我同意');
+					btn.setEnabled(true);
+				}
+				setTimeout(go, 1000);
+			}
+		}
+		// 点击了同意授权
+		function agreeAuth() {
+			epoint.execute('save', 'dataBeanRowGuid', '', redirectCallBack);
+		}
+
+		function redirectCallBack() {
+			var url = Util.getUrlParams('uri');
+
+			if (url === undefined) {
+				url = "framemanager/orga/orga/privacy/frameprivacyagree";
+			}
+			if (url && url.indexOf('http') < 0) {
+				url = Util.getRootPath() + url;
+			}
+			Util.getSafeLocation().href = url;
+		}
+		//  不同意按钮点击
+		function cancel() {
+			window.location.href = Util
+					.getRightUrl('rest/logout?isCommondto=true');
+		}
+
+		//  撤销授权
+		function revokeAuth() {
+			myConfirm('是否确认撤销？', '提醒', function() {
+				epoint.execute('revokeAuth', '', function(data) {
+					var msg = data.msg;
+					if (msg) {
+						if (data.success == "success") {
+							epoint.closeDialog('revoke');
+						} else {
+							epoint.alert(msg, '', null, 'info');
+						}
+					}
+				});
+			})
+		}
+
+		// 个性化按钮文字的确认框
+		function myConfirm(m, t, callback) {
+			var okText = mini.MessageBox.buttonText['ok'];
+			var cancelText = mini.MessageBox.buttonText['cancel'];
+
+			mini.MessageBox.buttonText['ok'] = '确认撤销';
+			mini.MessageBox.buttonText['cancel'] = '不撤销';
+			epoint.confirm(m, t, function() {
+				callback();
+				mini.MessageBox.buttonText['ok'] = okText;
+				mini.MessageBox.buttonText['cancel'] = cancelText;
+			}, function() {
+				mini.MessageBox.buttonText['ok'] = okText;
+				mini.MessageBox.buttonText['cancel'] = cancelText;
+			});
+		}
+	</script>
+
+</body>
+
+</html>

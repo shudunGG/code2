@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>帮助中心</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            "./css/common.css",
+            "./css/handbook.css"
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <div class="content-wrap">
+            <div class="l logo-wrap clearfix">
+                <img src="./images/top/help-logo.png" alt="" class="logo">
+            </div>
+            <div class="r header-nav">
+                <ul class="nav-list clearfix">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="./index">首页</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./handbook">使用手册</a>
+                    </li>
+                    <li class="nav-item ">
+                        <a class="nav-link" href="./tool">常用工具</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./show">常见问题</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./notice">维护公告</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="top">
+        <div class="content-wrap">
+            <div class="search-box">
+                <div class="search-input-wrap" id="top-search">
+                    <input class="top-search-input" type="text" placeholder="搜索">
+                    <span class="search-btn"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="content-wrap" style="min-height:calc(100% - 36px)">
+            <div class="handbook-list" id="handbook-list">
+            </div>
+        </div>
+        <!-- div class="footer">
+            <p>服务热线：0518-58188000</p>
+        </div-->
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        var $handbookList = $('#handbook-list');
+        var $topSearchBox = $('#top-search'),
+            $searchInput = $('.top-search-input', $topSearchBox),
+            $searchBtn = $('.search-btn', $topSearchBox);
+        (function (win, $) {
+            var TPL =
+                '<div class="handbook-item" id="handbook-item-{{id}}" data-id="{{id}}" data-title="{{text}}"><p class="handbook-item-name" title="{{text}}">{{text}}</p><div class="handbook-item-btns">{{#previewUrl}}<span class="btn preview" data-url="{{previewUrl}}">在线查看</span>{{/previewUrl}}{{#downloadUrl}}<span class="btn download" data-url="{{downloadUrl}}">下载</span>{{/downloadUrl}}</div></div>';
+            var cache = [];
+
+            function render(data) {
+                if (!data || !data.length) {
+                	$handbookList.empty().addClass('empty');
+                    return;
+                }
+                cache = []
+                var html = '';
+                $.each(data, function (i, item) {
+                    cache.push(item);
+                    html += Mustache.render(TPL, item);
+                });
+
+                return $(html).appendTo($handbookList.empty().removeClass('no-result empty'));
+            }
+            win.genderHTML = render;
+
+            function doSearch() {
+                var v = $.trim($searchInput.val());
+                var $items = $handbookList.removeClass('no-result').find('.handbook-item');
+                if (!v.length) {
+                    return $items.removeClass('hidden');
+                }
+                var resultIds = [];
+                var reg = new RegExp(v, 'i');
+                $.each(cache, function (i, item) {
+                    if (reg.test(item.text)) {
+                        resultIds.push(item.id);
+                    }
+                });
+                $items.addClass('hidden');
+                if (resultIds.length) {
+                    $.each(resultIds, function (i, id) {
+                        $('#handbook-item-' + id).removeClass('hidden');
+                    });
+                } else {
+                    $handbookList.addClass('no-result');
+                }
+            }
+            $searchInput.on('keypress', function (e) {
+                e.which === 13 && doSearch();
+            });
+            $searchBtn.on('click', doSearch);
+        })(this, jQuery);
+    </script>
+    <script>
+        // 获取并渲染内容
+        function getRootPath() {
+    		var loc = Util.getSafeLocation(), host = loc.hostname, protocol = loc.protocol, port = loc.port
+    				? (':' + loc.port)
+    				: '', path = '/' + loc.pathname.split('/')[1] + '/';
+
+    		var rootPath = protocol + '//' + host + port + path;
+
+    		return rootPath;
+    	};
+        
+        Util.ajax({
+            url: Util.getRightUrl('rest/feedbackdatademoaction/getAllCommComprehensiveInfoByType?type=1&isCommondto=true',''),
+            data:{
+            	projectHead: getRootPath()
+            }
+        }).done(function (data) {
+        	var dataJson = JSON.parse(data.allInfoList);
+            genderHTML(dataJson);
+
+            // 如果是主页的搜索
+            var searchKeyWord = Util.getUrlParams('kw');
+            if (searchKeyWord) {
+                searchKeyWord = window.decodeURIComponent(searchKeyWord);
+                $searchInput.val(searchKeyWord);
+                $searchBtn.trigger('click');
+            }
+        });
+        
+        var frameFlag = "1";
+        var checkPreviewSystemParam = function () {
+            return Util.ajax({
+                url: Util.getRightUrl("rest/feedbackdatademoaction/checkPreviewSystemParam?isCommondto=true",""),
+            }).done(function (data) {
+            	if(data && data.flag && data.flag=="未配置"){
+            		frameFlag = "0";
+            	}
+            });
+        };
+        checkPreviewSystemParam();
+        
+        // 事件处理
+        $handbookList.on('click', '.handbook-item .btn', function () {
+            var $this = $(this);
+
+            if ($this.hasClass('preview')) {
+            	if(frameFlag == "1"){
+                    // 预览
+                    if($this.data('url')) {
+                    	setPageView($(this).closest('.handbook-item'));
+                    	window.open($this.data('url'));
+                    }
+                    else {
+                    	epoint.alert("没有上传任何内容，无法下载！");
+                    }
+                }else{
+            		epoint.alert("您没有配置预览地址，请先在系统参数中配置！");
+            	}
+            } else if ($this.hasClass('download')) {
+            	if($this.data('url')) {
+                	setPageView($(this).closest('.handbook-item'));
+                	window.open($this.data('url'));
+            	}
+            	else {
+                	epoint.alert("没有上传任何内容，无法下载！");
+                }
+            }
+        });
+        
+        //点击预览后对访问量加1
+        function setPageView(obj) {
+            return Util.ajax({
+                url: Util.getRightUrl("rest/feedbackdatademoaction/setPageView?isCommondto=true",""),
+                data:{
+                	cInfoGuid: obj.data('id')
+                }
+            }).done(function (data) {
+            });
+        }
+    </script>
+</body>
+
+</html>

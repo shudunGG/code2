@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>过程修改</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<div class="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="过程名称" starred="true">
+						<input class="mini-textbox" required="true" bind="processName"
+							emptyText="过程名称不能为空" style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="类别" id="type">
+						<input class="mini-buttonedit" allowInput="false" bind="itemName"
+							style="width: 100%;" id="classname" onbuttonclick="showSelect()" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否启用">
+						<input class="mini-checkbox" bind="isStart" />
+					</div>
+					<div role="control" label="是否允许被监听">
+						<input class="mini-checkbox" bind="isAllowListener" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input class="mini-textbox" bind="workflowProcess.orderNum"
+							vtype="int;range:0,99999999" />
+					</div>
+					<div role="control" label="开启自定义流程">
+						<input  id="custom" class="mini-checkbox" bind="custom" onValueChanged="showControl"/>
+					</div>
+				</div>
+				<div role="row" id="customType" style="display:none">
+					<div role="control"   label="非弹窗设计模式">
+						<input class="mini-checkbox" bind="customType" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="开启自由流程">
+						<input class="mini-checkbox" bind="freedom" />
+					</div>
+					<div role="control">
+						<span class="text-danger">自由流程与自定义流程无法同时开启！</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textarea" bind="workflowProcess.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<input bind="workflowProcess.classId" id="classid"
+					class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addbtn" onclick="saveProcess()">保存修改</a> 
+		<a class="mini-button" id="cancle" onclick="epoint.closeDialog('ok')">取消</a>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("processbaseinfoeditaction", '', initEdit);
+
+		function initEdit(e) {
+			if (e) {
+				mini.get("classname").setValue(e.name);
+				mini.get("classname").setText(e.name);
+				showControl();
+			}
+		}
+
+		function showSelect() {
+			epoint.openDialog('选择所属类别',
+					'framemanager/workflow/manage/selectItemcode',
+					showSelectOperJS, {
+						'width' : 350,
+						'height' : 400
+					});
+		}
+
+		function saveProcess() {
+			if (epoint.validate()) {
+				epoint.execute('saveProcess', '', saveComplete);
+			}
+		}
+
+		function showSelectOperJS(data) {
+			if (data && data != 'close') {
+				var codeItem = data.split(";")[1];
+				var codeName = data.split(";")[0];
+				mini.get('classname').setValue(codeName);
+				mini.get('classname').setText(codeName);
+				mini.get('classid').setValue(codeItem);
+			}
+		}
+
+		function saveComplete(me) {
+			if (me.msg) {
+				if (me.flag != null && (me.flag == "1")) {
+				    epoint.closeDialog(me.msg);
+				} else {
+					epoint.alert(me.msg, '', '', 'warning');
+				}
+			}
+		}
+		
+		function showControl() {
+			var value = mini.get("custom").getValue();
+			if (value == "true") {
+				$("#customType").show();
+			} else {
+				$("#customType").hide();
+			}
+		}
+		
+		//]]>
+	</script>
+
+</body>
+
+</html>
+

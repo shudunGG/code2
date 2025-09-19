@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The sub-process activities detailed information</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="save">Confirm to save</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="The name of the event" starred="true">
+						<input class="mini-textbox" bind="workflowActivity.activityName" id = "activityName"
+							required="true" requiredErrorText="The name of the eventCan't be empty!"
+							vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The child process" starred="true">
+						<input id="txtSubProcessVersionName"
+							bind="txtSubProcessVersionName"
+							class="mini-buttonedit" emptyText="Direct selectionThe child process"
+							onbuttonclick="selSubProcess" selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Will and the way">
+						<div id="joinType" class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.joinType" textField="text" valueField="id"
+							data="[{id:'20',text:'multichannel'},{id:'30',text:'A single'}]"></div>
+					</div>
+					<div id="split_content" role="control" label="Corresponding branch point">
+						<input bind="workflowActivity.addAttachFileSource"
+							class="mini-buttonedit" id="splitActivityName"
+							emptyText="chooseCorresponding branch point" onbuttonclick="selectSplitActivity"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div id="split_msg" role="row">
+					<div role="control" label="">
+						<span class="text-danger">(If to meet waymultichannel, then you must manually set the corresponding branch node)</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Many people are handled">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.subProMultiTransctorMode" textField="text"
+							valueField="id"
+							data="[{id:'10',text:'Multiple treatment, people is passed to the child process of the first activity'},{id:'20',text:'Multiple handling person, each person independent processing subprocesses and summary'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Call way">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.subProcessSyncType" textField="text"
+							valueField="id" data="[{id:'20',text:'synchronous'},{id:'10',text:'asynchronous'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Convergence of additional conditions">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.multiTransactorMode" textField="text"
+							valueField="id"
+							data="[{id:'10',text:'All child process is complete'},{id:'20',text:'As long as there is a child process is complete'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input class="mini-textbox" bind="workflowActivity.note" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="activityGuid">
+						<input class="mini-textbox" bind="workflowActivity.activityGuid" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="activitylogo">
+						<input class="mini-textbox"
+							bind="workflowActivity.activityDispName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<span class="text-danger">(Used to only positioning to theactivity,Once the setting is not allowed to change,withactivityThe object'sactivityDispNameassociated)</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Hidden domain information -->
+		<input bind="workflowActivity.addAttachFileSource" id="hideSplit" class="mini-hidden" /> 
+		<input bind="workflowActivity.callSubProcessGuid" id="callSubProcessGuid" class="mini-hidden" /> 
+		<input bind="txtSubProcessVersionName" id="txtSubPVName" class="mini-hidden" />
+
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitysubprocessbaseinfoaction', null, initCallback);
+
+		var processVersionGuid;
+
+		function initCallback(data) {
+			mini.get("txtSubProcessVersionName").setText(mini.get("txtSubPVName").getValue());
+			processVersionGuid = data.processVersionGuid;
+			showType(data.joinType);
+			console.dir(data);
+			if (data.txtSubProcessVersionName) {
+				mini.get("txtSubProcessVersionName").setText(data.txtSubProcessVersionName);
+			}
+			if (data.splitActivityName) {
+				mini.get("splitActivityName").setText(data.splitActivityName);
+			}
+		}
+
+		//Join waychoose
+		mini.get("joinType").on("valuechanged", function(e) {
+			if (e.value) {
+				showType(e.value);
+			}
+		});
+
+		//controlJoin wayShow hidden
+		function showType(value) {
+			if (value == "30") {
+				Util.form.hideField("#split_content");
+				document.getElementById("split_msg").style.display = "none";
+			} else if (value == "20") {
+				Util.form.showField("#split_content");
+				document.getElementById("split_msg").style.display = "";
+			}
+		}
+
+		//Confirm to save
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute("saveActivity", "fui-form", function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						if (!data.edit) {
+							parent.updateTab();
+						}
+						var textValue = mini.get('activityName').getValue();
+						var param = {
+							Added : !data.edit,
+							Edit : data.edit,
+							ID : parent.Util.getUrlParams('MaxID'),
+							NodeType : 'SubProcess',
+							Text : textValue
+						};
+						parent.setDialogValue(param);
+					}
+				});
+			}
+		}
+
+		function selSubProcess() {
+			epoint.openDialog("choosesubprocesses",
+					"framemanager/workflow/manage/selectprocess", function(
+							data) {
+						if (data && data != "close") {
+							var datas = data.split(";");
+							mini.get("txtSubProcessVersionName").setText(datas[0]);
+							mini.get("txtSubProcessVersionName").setValue(datas[0]);
+							mini.get("callSubProcessGuid").setValue(datas[1]);
+						}
+					}, {
+						width : 300,
+						height : 480
+					});
+		}
+		
+		//choosemethods
+		function selectSplitActivity() {
+			epoint
+					.openDialog(
+							'chooseBranch point',
+							"framemanager/sform/workflow/design/selectactivity?mode=function&processVersionGuid="
+									+ processVersionGuid, function(data) {
+								if (data && data != "close") {
+									var datas = data.split(";");
+									mini.get("splitActivityName").setValue(datas[0]);
+									mini.get("splitActivityName").setText(datas[0]);
+								}
+							});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

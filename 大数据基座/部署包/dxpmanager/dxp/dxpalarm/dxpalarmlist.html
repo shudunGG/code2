@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>集成监控</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.top {
+	height: 55px;
+	background: #fff;
+	overflow: hidden;
+	padding-left: 0px;
+	font-size: 16px;
+	color: #5c5c5c;
+	line-height: 55px;
+	border-bottom: 1px solid #ebebeb;
+	box-shadow: 0 1px 8px 0 rgba(75, 75, 75, 0.14);
+}
+
+.type-choose {
+	width: 490px;
+}
+
+.type-choose>li.active {
+	color: #2590eb;
+	font-weight: bold;
+	border-bottom: 2px solid #2590eb;
+}
+
+.type-choose>li {
+	float: left;
+	width: 116px;
+	text-align: center;
+	font-size: 16px;
+	color: #5c5c5c;
+	line-height: 53px;
+	cursor: pointer;
+}
+
+.search-input {
+	float: left;
+	height: 32px;
+	line-height: 32px;
+	margin: 0 10px 0 15px;
+}
+
+.search-input {
+	width: 186px;
+	box-sizing: border-box;
+	border: 1px solid #dddddd;
+	border-radius: 4px;
+	padding-left: 10px;
+	line-height: 24px;
+	outline: none;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" textField="text" idField="id"
+				parentField="pid" action="getTreeModel"
+				resultAsTree="false" filterMode="server">
+			</ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="top clearfix">
+			<ul class="type-choose l clearfix">
+				<li class="active" data-id="1">库表集成</li>
+				<li data-id="2">文件集成</li>
+				<li data-id="3">API集成</li>
+				<li data-id="4">消息集成</li>
+			</ul>
+		</div>
+		<div class="content clearfix ">
+			<!-- 按钮区域 -->
+			<div class="fui-toolbar fui-condition">
+				<div class="btn-group mr10">
+					<a class="mini-button mini-btn-primary" id="refresh" onclick="searchData">监控刷新</a>
+				</div>
+				<div class="right-btn-area r">
+					<input bind="dataBean.flowName" emptyText="请输入流程名"
+						id="searchDataSourceName" class="search-input mini-textbox" /> <input
+						bind="dataBean.nodeGuid" id="nodeGuid" class=" mini-hidden" /> <input
+						bind="dataBean.integrationType" id="dataType" class=" mini-hidden" /> <a
+						id="search" class="search-button btn r mini-button" onclick="searchData">搜索</a>
+				</div>
+			</div>
+
+
+			<!-- 表格区域 -->
+			<div class="fui-content">
+				<div id="datagrid" name="datagrid" class="mini-datagrid"
+					idField="rowguid" multiSelect="true"
+					style="width: 100%; height: 100%;" showPager="true"
+					action="getDataGridData">
+					<div property="columns">
+						<div type="indexcolumn" width="50" headerAlign="center">序</div>
+						<div field="flowname" width="200" headerAlign="center">流程名称</div>
+						<div field="tablealarm" width="80" headerAlign="center"
+							align="center">表结构</div>
+						<div field="edxpalarm" width="80" headerAlign="center"
+							align="center">快照表</div>
+						<div field="runningalarm" width="80" headerAlign="center"
+							align="center">运行</div>
+						<div field="dataalarm" width="80" headerAlign="center"
+							align="center">数据</div>
+						<div field="overcountalarm" width="80" headerAlign="center"
+							align="center">积压</div>
+						<div field="cdcalarm" width="80" headerAlign="center"
+							align="center">日志分析</div>
+						<div width="80" headerAlign="center" align="center"
+							renderer="onDetailRenderer">详情</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpalarmlistaction', '@all', function() {
+			initPage();
+		});
+		
+		var onDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+		
+		function openDetail(e){
+			epoint.openDialog('告警详情','dxp/dxpalarm/dxpalarmdetail?rowguid='+e,'',{
+			    width: 1000
+			});
+		}
+		
+		var $type = $(".type-choose");
+		var tree = mini.get('tree');
+		tree.on('beforenodeselect', function(e) {
+			if (e.node.id === 'f9root') {
+				mini.get('nodeGuid').setValue('');
+			} else {
+				mini.get('nodeGuid').setValue(e.node.id);
+			}
+			searchData();
+		});
+		
+		var datagrid=mini.get('datagrid');
+		function bindEvent() {
+			$type.on("click", "li", function() {
+				var that = $(this), id = that.data("id");
+				that.addClass("active").siblings().removeClass("active");
+				mini.get('dataType').setValue(id);
+				if (id == '1') {
+					//库表
+					datagrid.showColumn(2);
+					datagrid.showColumn(3);
+					datagrid.showColumn(6);
+					datagrid.showColumn(7);
+				} else if (id == '2') {
+					//文件
+					datagrid.hideColumn(2);
+					datagrid.hideColumn(3);
+					datagrid.hideColumn(6);
+					datagrid.hideColumn(7);
+				} else if (id == '3') {
+					//API
+					datagrid.showColumn(2);
+					datagrid.hideColumn(3);
+					datagrid.hideColumn(6);
+					datagrid.hideColumn(7);
+				} else if (id == '4') {
+					//消息
+					datagrid.showColumn(2);
+					datagrid.showColumn(3);
+					datagrid.showColumn(6);
+					datagrid.hideColumn(7);
+				}
+				searchData();
+			});
+		}
+
+		function initPage() {
+			var dataType = Util.getUrlParams('dataType');
+			if (typeof (dataType) == 'undefined' || dataType == undefined) {
+				dataType = '01';
+			}
+			var $item = $type.find("li");
+			$.each($item,function(i, obj) {
+				if ($(obj).hasClass("active")
+						&& $(obj).data("id") != dataType) {
+					$(obj).removeClass("active");
+				} else if (!$(obj).hasClass("active")
+						&& $(obj).data("id") == dataType) {
+					$(obj).addClass("active");
+					mini.get('dataType').setValue(dataType);
+				}
+			});
+			bindEvent();
+		}
+
+		function searchData() {
+			mini.get('datagrid').reload();
+		}
+	</script>
+</body>
+</html>

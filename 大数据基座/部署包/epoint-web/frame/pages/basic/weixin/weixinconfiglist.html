@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>企业端微信对接参数配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="saveConfig()"> 保存参数</a> <a
+			class="mini-button" onclick="getToken()">测试连接</a><a
+			class="mini-button"
+			onclick="epoint.confirm('此操作将会覆盖企业微信中部门人员数据！','',initOuUser);">全量覆盖部门人员</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="启用企业微信同步" style="width: 700px">
+						<input class="mini-checkbox" id="weixinenablesync"
+							bind="weixinenablesync" onvaluechanged="enableChanged" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="企业ID" style="width: 700px">
+						<input class="mini-textbox" id="corpid" bind="corpid" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="通讯录凭证密钥" style="width: 700px">
+						<input class="mini-textbox" id="corpsecret" bind="corpsecret" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="用户同步标识字段" starred="true">
+						<div id="sex" class="mini-radiobuttonlist" bind="useridfield"
+							requiredErrorText="用户标识必须选择"
+							data="[{text:'userguid',id:'userguid'},{text:'loginid',id:'loginid'}]"
+							value="userguid" textField="text" valueField="id"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('weixinconfiglistaction', "", initCallBack);
+
+		function initCallBack(param) {
+			epoint.alert("配置页统一转移至统一参数配置页面===>frame/pages/basic/framesetting/framesetting");
+			if (mini.get("weixinenablesync").value == "true") {
+				mini.get("corpid").set({
+					required : true,
+					requiredErrorText : "企业ID不能为空!"
+				});
+				mini.get("corpsecret").set({
+					required : true,
+					requiredErrorText : "应用的凭证密钥不能为空!"
+				});
+				$(".form-label").each(function(i) {
+					if ($(this).html() && $(this).html() != "启用企业微信同步：") {
+						$(this).addClass("required");
+					}
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('fui-form');
+		}
+
+		function saveConfig() {
+			if (epoint.validate()) {
+				epoint.execute('saveConfig', '', callback);
+			}
+		}
+		function getToken() {
+			if (epoint.validate()) {
+				epoint.execute('getToken', '', callback);
+			}
+		}
+		function initOuUser() {
+			if (epoint.validate()) {
+				epoint.execute('initOuUser', '', callback);
+			}
+		}
+		function enableChanged(e) {
+			if (e.value == "true") {
+				mini.get("corpid").set({
+					required : true,
+					requiredErrorText : "企业ID不能为空!"
+				});
+				mini.get("corpsecret").set({
+					required : true,
+					requiredErrorText : "应用的凭证密钥不能为空!"
+				});
+				$(".form-label").each(function(i) {
+					if ($(this).html() && $(this).html() != "启用企业微信同步：") {
+						$(this).addClass("required");
+					}
+				});
+			} else {
+				mini.get("corpid").set({
+					required : false
+				});
+				mini.get("corpsecret").set({
+					required : false
+				});
+				$(".form-label").each(function(i) {
+					if ($(this).html() && $(this).html() != "启用企业微信同步：") {
+						$(this).removeClass("required");
+					}
+				});
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					searchData();
+				});
+			}
+		}
+	</script>
+</body>
+
+</html>

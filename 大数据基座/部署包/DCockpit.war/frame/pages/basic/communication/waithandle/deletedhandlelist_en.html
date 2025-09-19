@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Matter recovery station</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<!-- Wait for the tooltip -->
+		<div class="page-loading"></div>
+
+		<!-- Button area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="deleteSelect">restore selected</a>
+			</div>
+		</div>
+
+		<!-- Condition area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="time">
+							<input name="dateFrom" id="dateFrom" class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" data-options="{'format': 'yyyy-MM-dd'}" bind="dateFrom"
+							showClearButton="true" />
+							<span  style="width:12%;text-align:center">至</span> 
+							<input name="dateTo" id="dateTo" class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" data-options="{'format': 'yyyy-MM-dd'}"
+							bind="dateTo" showClearButton="true" />
+						</div>
+						<div role="control" label="title">
+							<div class="mini-textbox" bind="deletedhandlelistaction.txtTitle"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- Content area -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="messageitemguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="deletedhandlelistaction.getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">
+						order
+					</div>
+					<div field="title" headerAlign="center" width="100%">
+						title
+					</div>
+					<div field="beiZhu" headerAlign="center" width="350"  align="center" >
+						step
+					</div>
+					<div field="handelName" headerAlign="center"  align="center"  width="150">
+						transactor
+					</div>
+					<div field="fromDispName" headerAlign="center"  align="center"  width="150">
+						operator
+					</div>
+					<div field="generateDate" headerAlign="center" dateFormat="yyyy-MM-dd HH:mm:ss" align="center" width="150"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">
+						sendtime
+					</div>
+					<div field="doneDate" headerAlign="center" visible="false"></div>
+				</div>
+			</div>
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("deletedhandlelistaction");
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//Delete the callback event
+			function callback(data) {
+				epoint.alert(data.msg, null, null, 'info');
+			}
+
+			//Get transferred totime
+			function getSelectedDate() {
+				var datagrid = mini.get('datagrid');
+				var daterows = datagrid.getSelecteds();
+
+				var dateids = [];
+				for (var i = 0, l = daterows.length; i < l; i++) {
+					var r = daterows[i];
+					dateids.push(r['doneDate']);
+				}
+
+				return dateids;
+			}
+
+			//Delete the selected row
+			function deleteSelect() {
+				var datagrid = mini.get('datagrid');
+				var ids = datagrid.getSelectedIds();
+				if (ids.length > 0) {
+					epoint.confirm("Determine the restore selected record?", "", function(action) {
+						epoint.execute("deletedhandlelistaction.delete", "", [ids.join(','), getSelectedDate().join(',')], function(data) {
+							if (data.msg) {
+								epoint.alert(data.msg, null, null, 'info');
+								epoint.refresh (['datagrid', 'fui-form'], '', true);
+							}
+						});
+					});
+				} else {
+					epoint.alert("Please select a record to restore!", null, null, 'warning');
+				}
+			}
+			
+			//　Verification of date of control
+			var start = mini.get("dateFrom");
+			var end = mini.get("dateTo");
+	
+			function validateDate(e) {
+				if (start.getValue() && end.getValue()) {
+					if (!epoint.validateDateInterval(start, end, 0)) {
+						if (e.id == 'dateFrom') {
+							epoint.alert("starttimeIs not greater than endtime!", null, null, 'warning');
+							start.setValue(null);
+						} else {
+							epoint.alert("The end of thetimeNot less thanstarttime!", null, null, 'warning');
+							end.setValue(null);
+						}
+					}
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

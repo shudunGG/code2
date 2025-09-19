@@ -1,0 +1,227 @@
+﻿﻿﻿﻿﻿2018/4/23
+--扩展控件信息表extendfieldtwo字段修改长度  --季立霞
+alter table epointsform_extensible_control modify column extendfieldtwo varchar(500);
+
+﻿﻿﻿﻿﻿2018/3/22
+-- 基础信息表添加表控件英文字段创建方式字段，manual手动，其余是自动  --季立霞
+alter table epointsform_table_basicinfo add ctrlencreatetype varchar(12);
+
+
+框架版本9.3.2(2017/5/26)
+
+2017/05/24
+--流程配置 新增流程代理人--刘飞龙
+alter table FRAME_COMMISSIONSET_HANDLE drop constraint PK__FRAME_CO__68DB447D6418C597;
+alter table FRAME_COMMISSIONSET_HANDLE drop column row_id ;
+alter table FRAME_COMMISSIONSET_HANDLE add row_id int not null identity(1,1);
+alter table FRAME_COMMISSIONSET_HANDLE add constraint PK__FRAME_CO__68DB447D6418C597 primary key(row_id);
+
+2017/5/23
+--消息类型表新增typeurl字段--樊志君
+alter table MESSAGES_TYPE add typeurl varchar(200);
+
+2017/5/10
+-- 统一消息日志表增加字段--樊志君
+alter table MESSAGES_LOG add remark varchar(200);
+
+2017/5/8
+--工作项表   工作项新增处理人ouguid--盛佳
+alter table workflow_workitem add ouguid nvarchar(50);
+alter table workflow_workitem_history add ouguid nvarchar(50);
+--消息表   待办新增移动端标识--盛佳
+alter table messages_center add mobilehandletype nvarchar(50);
+alter table messages_center add mobilemessagetag nvarchar(50);
+alter table messages_center add mobilehandleurl nvarchar(500);
+alter table messages_center_histroy add mobilehandletype nvarchar(50);
+alter table messages_center_histroy add mobilemessagetag nvarchar(50);
+alter table messages_center_histroy add mobilehandleurl nvarchar(500);
+
+2017/5/2
+-- 统一消息渠道表增加字段--樊志君
+alter table MESSAGES_CHANNEL add inituserfield varchar(50);
+alter table MESSAGES_CHANNEL add initusertable varchar(50);
+
+2017/4/28
+-- 统一消息相关--樊志君
+-- 消息渠道表
+create table MESSAGES_CHANNEL
+(
+  rowguid           VARCHAR(50) not null,
+  channelid         VARCHAR(50),
+  channelname       VARCHAR(50),
+  isenabletableback int,
+  ordernumber       int,
+  channelapiurl     VARCHAR(500),
+  channelapiparam   VARCHAR(500),
+  channelimpclass   VARCHAR(500),
+  backapiurl     VARCHAR(500),
+  backapiparam   VARCHAR(500)
+);
+alter table MESSAGES_CHANNEL add primary key (rowguid);
+
+-- 消息表
+create table MESSAGES_MESSAGE
+(
+  messageguid       VARCHAR(50) not null,
+  typeguid          VARCHAR(50),
+  fromuserid        VARCHAR(50),
+  fromusername      VARCHAR(50),
+  targetuserid      VARCHAR(50),
+  targetusername    VARCHAR(50),
+  sendtime          date,
+  readtime          date,
+  title             VARCHAR(500),
+  messagecontent    VARCHAR(2000),
+  linkurl           VARCHAR(2000),
+  clientidentifier  VARCHAR(200),
+  clientidentifier2 VARCHAR(200),
+  clientidentifier3 VARCHAR(200),
+  appkey            VARCHAR(50),
+  urgencylevel      int,
+  status            int
+);
+alter table MESSAGES_MESSAGE add primary key (messageguid);
+
+-- 消息历史表
+create table MESSAGES_MESSAGEHISTORY
+(
+  messageguid       VARCHAR(50) not null,
+  typeguid          VARCHAR(50),
+  fromuserid        VARCHAR(50),
+  fromusername      VARCHAR(50),
+  targetuserid      VARCHAR(50),
+  targetusername    VARCHAR(50),
+  sendtime          date,
+  readtime          date,
+  title             VARCHAR(500),
+  messagecontent    VARCHAR(2000),
+  linkurl           VARCHAR(2000),
+  clientidentifier  VARCHAR(200),
+  clientidentifier2 VARCHAR(200),
+  clientidentifier3 VARCHAR(200),
+  appkey            VARCHAR(50),
+  urgencylevel      int,
+  status            int
+);
+alter table MESSAGES_MESSAGEHISTORY add primary key (MESSAGEGUID);
+
+-- 个人自定义发送规则表
+create table MESSAGES_PERSONALRULE
+(
+  rowguid     VARCHAR(50) not null,
+  userid      VARCHAR(50),
+  channelguid VARCHAR(50),
+  typeguid    VARCHAR(50)
+);
+alter table MESSAGES_PERSONALRULE add primary key (rowguid);
+
+-- 发送规则表
+create table MESSAGES_RULE
+(
+  rowguid         VARCHAR(50) not null,
+  channelguid     VARCHAR(50),
+  typeguid        VARCHAR(50),
+  messagetemplate VARCHAR(2000),
+  contentlength    int,
+  isenable        int
+);
+alter table MESSAGES_RULE add primary key (rowguid);
+
+-- 消息类型表
+create table MESSAGES_TYPE
+(
+  rowguid     VARCHAR(50) not null,
+  typeid      VARCHAR(50),
+  typename    VARCHAR(50),
+  ordernumber int,
+  smallicon   VARCHAR(50),
+  bigicon     VARCHAR(50)
+);
+alter table MESSAGES_TYPE add primary key (rowguid);
+
+-- 消息用户表
+create table MESSAGES_USER
+(
+  rowguid         VARCHAR(50) not null,
+  userid          VARCHAR(50),
+  username        VARCHAR(50),
+  channelid       VARCHAR(50),
+  userchanneldata VARCHAR(500),
+  adddate     date,
+  lastupdatetime  date
+);
+alter table MESSAGES_USER add primary key (rowguid);
+
+-- 消息待发表
+create table MESSAGES_WAITSEND
+(
+  messageguid  VARCHAR(50) not null,
+  waitsendtime date,
+  jsondata     text,
+  retrycount   int
+);
+alter table MESSAGES_WAITSEND add primary key (messageguid);
+
+-- 消息日志表
+create table MESSAGES_LOG
+(
+  rowguid         VARCHAR(50) not null,
+  fromuserid      VARCHAR(50),
+  fromusername    VARCHAR(50),
+  targetuserid    VARCHAR(50),
+  targetusername  VARCHAR(50),
+  typeguid        VARCHAR(50),
+  channelguid     VARCHAR(50),
+  sendtime        date,
+  waitsendtime    date,
+  retriedcount    int,
+  remindcontent   VARCHAR(2000),
+  status          int
+);
+alter table MESSAGES_LOG add primary key (rowguid);
+
+框架版本9.3.1(2017/4/1)
+
+2017/3/16
+--分库分表增加源数据源字段
+alter table FRAME_SHARDING add sourcedb int;
+
+2017/3/15
+--增加外部方法结果表 by 季晓伟
+create table workflow_method_result (
+  workitemguid nvarchar(100) not null,
+  jsonresult ntext,
+  pviguid nvarchar(100) default null,
+  note nvarchar(500) default null,
+  operatedate datetime default null,
+  primary key (workitemguid)
+)	
+
+2017/3/14
+--mis table_basicinfo 增加isenableoutds 是否启用联机数据源
+alter table table_basicinfo add isenableoutds int;
+
+2017/3/13
+--工作流新增锁定机制   by 盛佳
+alter table workflow_pvi add lockstatus int;
+--服务表新增模块url字段
+alter table FRAME_SERVICE add relationurl nvarchar(200);
+
+2017/3/8
+--记录数据表Frame_Log(框架日志)
+--创建数据表FRAME_LOG
+CREATE TABLE FRAME_LOG(BELONGXIAQUCODE [NVARCHAR](50) NULL,OPERATEUSERNAME [NVARCHAR](50) NULL,OPERATEDATE datetime NULL,ROW_ID [Numeric](10) NULL,YEARFLAG [NVARCHAR](4) NULL,ROWGUID [NVARCHAR](50) NOT NULL,THREADNAME [NVARCHAR](100) NULL,EVENTLEVEL [NVARCHAR](50) NULL,REQUESTFILENAME [NVARCHAR](100) NULL,LINE_NO [NVARCHAR](50) NULL,FROMIP [NVARCHAR](50) NULL,LOGINID [NVARCHAR](50) NULL,USERGUID [NVARCHAR](50) NULL,USERNAME [NVARCHAR](50) NULL,PAGEPATH [NVARCHAR](200) NULL,BUTTONNAME [NVARCHAR](50) NULL,PAGEPARAMS [NVARCHAR](200) NULL,OPERATOR_TYPE [NVARCHAR](50) NULL,METHODNAME [NVARCHAR](50) NULL,SUBSYSTEM_TYPE [NVARCHAR](50) NULL,OPERATECONTENT [NVARCHAR](500) NULL,OPERATECONTENTBEFORE [NVARCHAR](500) NULL,OPERATETABLE [NVARCHAR](50) NULL,BASEOUGUID [NVARCHAR](50) NULL,OUGUID [NVARCHAR](50) NULL,MACADDRESS [NVARCHAR](50) NULL,RECORDDATE datetime NULL,USERDISPLAYNAME [NVARCHAR](50) NULL,MODULEGUID [NVARCHAR](50) NULL,MODULECODE [NVARCHAR](50) NULL,MODULENAME [NVARCHAR](50) NULL,MODULEURL [NVARCHAR](200) NULL,SERVICENAME [NVARCHAR](50) NULL,SERVICEMETHODNAME [NVARCHAR](50) NULL,PROCESSTYPE [NVARCHAR](50) NULL,ATTACHGUID [NVARCHAR](50) NULL,CONTENT [NVARCHAR](500) NULL,LOGTYPE [NVARCHAR](50) NULL)
+alter table Frame_Log
+add constraint PK_ROWGUID_LOG Primary key(ROWGUID)
+
+--记录数据表frame_log_appender(frame_log_appender)
+--创建数据表FRAME_LOG_APPENDER
+CREATE TABLE FRAME_LOG_APPENDER(BELONGXIAQUCODE [NVARCHAR](50) NULL,OPERATEUSERNAME [NVARCHAR](50) NULL,OPERATEDATE datetime NULL,ROW_ID [Numeric](10) NULL,YEARFLAG [NVARCHAR](4) NULL,ROWGUID [NVARCHAR](50) NOT NULL,APPENDERNAME [NVARCHAR](50) NULL,APPENDERCLASS [NVARCHAR](100) NULL,FILEPATH [NVARCHAR](100) NULL,CONVERSIONPATTERN [NVARCHAR](100) NULL,DSNAME [NVARCHAR](100) NULL,EXPORTTYPE [NVARCHAR](50) NULL)
+alter table frame_log_appender
+add constraint PK_ROWGUID Primary key(ROWGUID)
+
+--记录数据表FRAME_LOG_LEVEL(Frame_log_level)
+--创建数据表FRAME_LOG_LEVEL
+CREATE TABLE FRAME_LOG_LEVEL(LEVELGUID [NVARCHAR](50) NOT NULL,ROW_ID [Numeric](38) NULL,LOGNAME [NVARCHAR](100) NULL,LOGLEVEL [NVARCHAR](5) NULL,GENERATEDATE datetime NULL,ISWORKING [Numeric](38) NULL,DESCRIPTION [NVARCHAR](500) NULL,APPENDERREF [NVARCHAR](500) NULL)
+alter table FRAME_LOG_LEVEL
+add constraint PK_LEVELGUID Primary key(LEVELGUID)

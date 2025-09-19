@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>含材料列表的查看页面</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="lczz" onclick="liuchengzhuizong">流程追踪</a>
+		</div>
+		<a>流程名称:</a><div id="lcmc" bind="title" class="mini-output"></div>
+	</div>
+
+	<div id="fuiContent" class="fui-content">
+		<div style="width: 100%; height: 100%;">
+			<table border="0" cellpadding="0" cellspacing="0" style="width: 100%; height: 100%; font-size: 9pt;">
+				<tr>
+					<td style="width: 20%;height:100%" >
+					    <input class="mini-output" id="" bind="title1" />
+					</td>
+					<td style="width: 80%;height:100%">
+					    <iframe id="main" frameborder="0" scrolling="auto" width="100%" height="100%"></iframe>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="processVersionInstanceGuid" bind="processVersionInstanceGuid"/>
+	
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('handlemainaction','',initCallBack);
+		
+		function initCallBack(){
+			epoint.execute('BodyUrl','',function returnCallBack(data) {
+				if (data.url) {
+					document.getElementById("main").src = data.url;
+				}
+			});
+		}
+
+		function liuchengzhuizong(){
+			var processVersionInstanceGuid=mini.get("processVersionInstanceGuid").getValue();
+			epoint.execute("handlecontrolsaction.processClient", "@none", [processVersionInstanceGuid], ShowChart);
+		}
+		
+		function ShowChart(data){
+			if(data && data.url){
+				epoint.openDialog(
+						"流程页面", data.url, callBack,
+						 {
+							'width' : 1000,
+							'height' : 700
+						});
+			}
+		}
+		
+		function callBack(data){
+        	epoint.refresh([ 'fuiContent' ]);
+		}
+		
+		//]]>
+	</script>
+
+</body>
+</html>

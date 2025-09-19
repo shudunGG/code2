@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>ldap参数配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="saveConfig()">保存参数</a> <a
+			class="mini-button" onclick="tryConnection()">测试连接</a> <a
+			class="mini-button"
+			onclick="epoint.confirm('确认初始化?此操作将会覆盖Ldap中部门用户数据！','',restLdap);">初始化Ldap数据</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="启用Ldap同步" style="width: 700px">
+						<input class="mini-checkbox" id="ldapEnableSync" bind="ldapEnableSync"
+							onvaluechanged="enableChanged" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Ldap数据结构" style="width: 700px">
+						<div id="ldapDataStructure" class="mini-radiobuttonlist" repeatItems="1" repeatLayout="table" repeatDirection="vertical" 
+						textField="text" valueField="id" bind="ldapDataStructure"
+					    data="[{id:'1',text:'用户部门独立'},{id:'2',text:'部门嵌套用户'}]" onvaluechanged="changeValue"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Ldap源" style="width: 700px">
+						<div id="ldapSource" class="mini-radiobuttonlist" repeatItems="1" repeatLayout="table" repeatDirection="vertical" 
+						textField="text" valueField="id" bind="ldapSource"
+					    data="[{id:'1',text:'ApacheDS 或 OpenLDAP'},{id:'2',text:'Active Directory'}]"  onvaluechanged="changeValue"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Ldap连接地址" style="width: 700px"
+						id="ldapIpPortText">
+						<input class="mini-textbox" id="ldapIpPort" bind="ldapIpPort"   onvaluechanged="changeValue"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">Ldap Ip和端口，如果只配ip 默认389端口;例：127.0.0.1:636、127.0.0.1:389、127.0.0.1</div>
+				</div>
+				<div role="row">
+					<div role="control" label="登录DN地址" style="width: 700px"
+						id="ldapBindDnText">
+						<input class="mini-textbox" id="ldapBindDn" bind="ldapBindDn"   onvaluechanged="changeValue"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">登录绑定的DN,例：cn=admin,dc=sys,dc=com 、  uid=admin,ou=system</div>
+				</div>
+				<div role="row">
+					<div role="control" label="登录密码" style="width: 700px"
+						id="ldapPasswordText">
+						<input class="mini-password" id="ldapPassword" bind="ldapPassword"   onvaluechanged="changeValue"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">openldap登录密码:值为slapd.conf的rootpw值;apacheDS:值为uid=admin的密码</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Ldap根路径" style="width: 700px"
+						id="ldapBaseDnText">
+						<input class="mini-textbox" id="ldapBaseDn" bind="ldapBaseDn"   onvaluechanged="changeValue"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">默认值为：dc=sys,dc=com;openldap根路径：值为slapd.conf的suffix值;apacheDS:通过Configuration自己创建并重启apacheDS服务</div>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+    
+        var isChangeValue = false;
+        
+        var tip = new mini.ToolTip();
+        tip.set({
+            target: document,
+            selector: '[data-tooltip], [title]'
+        });
+        
+        $(document).ready(function(){
+            // 为数据结构label添加注释
+            var labelEle = $("#ldapDataStructure").parent().prev();
+            var labelText = labelEle.text();
+            var labelValue = labelText.substring(0, labelText.length - 1);
+            var labelSymbol = labelText.substring(labelText.length - 1, labelText.length);
+            var tipValue = "用户部门独立：用户、部门分开存储</br>部门嵌套用户：用户创建在部门节点下";
+            var helpText = '<a class="action-icon icon-askcircle" data-tooltip="' + tipValue + '" data-placement="top" style="padding-left: 3px;padding-right:2px"/>';
+            labelEle.text("");
+            labelEle.append(labelValue);
+            labelEle.append(helpText);
+            labelEle.append(labelSymbol);
+        });
+	
+		// 初始化页面
+		epoint.initPage('ldapconfiglistaction', "", initCallBack);
+	    
+		function initCallBack(param) {
+			epoint.alert("配置页统一转移至统一参数配置页面===>frame/pages/basic/framesetting/framesetting");
+			if (mini.get("ldapEnableSync").value == "true") {
+				mini.get("ldapSource").set({
+					required : true,
+					requiredErrorText : "Ldap源不能为空!"
+				});
+				mini.get("ldapDataStructure").set({
+					required : true,
+					requiredErrorText : "Ldap数据结构不能为空!"
+				});
+				mini.get("ldapIpPort").set({
+					required : true,
+					requiredErrorText : "Ldap连接地址不能为空!"
+				});
+				mini.get("ldapBindDn").set({
+					required : true,
+					requiredErrorText : "登录DN地址不能为空!"
+				});
+				mini.get("ldapPassword").set({
+					required : true,
+					requiredErrorText : "登录密码不能为空!"
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() != "启用Ldap同步：") {
+								$(this).addClass("required");
+							}
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('fui-form');
+		}
+
+		function saveConfig() {
+			if (epoint.validate()) {
+				epoint.execute('saveConfig', '', callback);
+			}
+		}
+		
+		function tryConnection() {
+			if (epoint.validate()) {
+				if (isChangeValue) {
+					configSaveAlert();
+				} else {
+				    epoint.execute('tryConnection', '', callback);
+				}
+			}
+		}
+
+		function restLdap() {
+			if (epoint.validate()) {
+				if (isChangeValue) {
+                    configSaveAlert();
+                } else {
+                    epoint.execute("restLdap", '', callback);
+                }
+			}
+		}
+
+		function enableChanged(e) {
+			if (e.value == "true") {
+				mini.get("ldapSource").set({
+                    required : true,
+                    requiredErrorText : "Ldap源不能为空!"
+                });
+				mini.get("ldapDataStructure").set({
+                    required : true,
+                    requiredErrorText : "Ldap数据格式不能为空!"
+                });
+				mini.get("ldapIpPort").set({
+					required : true,
+					requiredErrorText : "Ldap连接地址不能为空!"
+				});
+				mini.get("ldapBindDn").set({
+					required : true,
+					requiredErrorText : "登录DN地址不能为空!"
+				});
+				mini.get("ldapPassword").set({
+					required : true,
+					requiredErrorText : "登录密码不能为空!"
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() != "启用Ldap同步：") {
+								$(this).addClass("required");
+							}
+				});
+			} else {
+				mini.get("ldapSource").set({
+                    required : false
+                });
+				mini.get("ldapDataStructure").set({
+                    required : false
+                });
+				mini.get("ldapIpPort").set({
+					required : false
+				});
+				mini.get("ldapBindDn").set({
+					required : false
+				});
+				mini.get("ldapPassword").set({
+					required : false
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() != "启用Ldap同步：") {
+								$(this).removeClass("required");
+							}
+				});
+			}
+			
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					searchData();
+					isChangeValue = false;
+				});
+			}
+		}
+		
+		function changeValue(e){
+			isChangeValue = true;
+		}
+		
+		function configSaveAlert(){
+			epoint.alert('有未保存的配置，请先保存！', '提醒');
+
+		}
+	</script>
+</body>
+
+</html>

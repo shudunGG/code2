@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>多表组合管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<!-- 	<a class="mini-button" state="primary" onclick="openAdd();"
+			id="btnAddRecord"> 新建表单 </a> -->
+			<a id="btnCreat" class="mini-button" state="primary"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要重新生成的记录!', {state : 'warning'});} else {epoint.confirm('确认要重新生成?','',createSelect);}">
+			重新生成 </a>
+		<a id="btnDel" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选中 </a> 
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" id="searchString1" bind="searchString1"
+				emptyText="请输入多表名称搜索" onenter="searchData" /> <a
+				class="mini-button ml8" state="primary" iconCls="icon-search"
+				onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="multitablename" width="250">多表名称</div>
+				<div field="formname" width="auto">表单名称</div>
+				<div field="ordernumber" width="80">排序号</div>
+				<div width="60" renderer="onsearchRenderer">预览</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('epointsformtablerelationlistaction');
+
+		// 弹出新增窗口
+		function openAdd() {
+			//frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=07176f48-6ce2-407f-a4a7-0dfe3c7cbcf7
+			epoint
+					.openDialog(
+							'选择表单',
+							"frame/pages/sformdesigner/multitablerelation/epointsformtablerelationadd",
+							function(param) {
+								if (param && param != 'close') {
+									epoint.showTips(param, {state : 'success'});
+								}
+								searchData();
+							}, {
+								'width' : 1000,
+								'height' : 480
+							});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function createSelect() {
+			epoint.execute("createSelectd", '', callback);
+		}
+
+		/// 绘制预览生成按钮
+		var onsearchRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openShowList");
+
+		};
+
+		function openShowList(id) {
+			epoint.openDialog('预览地址',
+					"frame/pages/sformdesigner/formlistmanage/epointsformpreviewlist?guid="
+							+ id +"&accordion=1",
+					searchData, {
+						'width' : 800,
+						'height' : 400
+					});
+		};
+	</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息表列表</title>
+<style>
+.prosonalmessage-icon-ignore {
+	position: block;
+	top: 50%;
+	right: 3px;
+	width: 16px;
+	height: 12px;
+	margin-top: -6px;
+	background:
+		url('../../../frame/fui/pages/themes/grace/images/icon-eye.png');
+}
+</style>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 `-->
+	<div class="fui-toolbar">
+		<a id="btnDel" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a> <input id="status1" autoLoad="false" action="selectStatusModel"
+			emptyText="待阅" textField="text" valueField="id"
+			onValueChanged="chooseStatus" class="mini-radiobuttonlist" />
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="keyword" opened="false">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="关键字">
+						<input id="keyword" class="mini-textbox" bind="keyWord"
+							width="95%" />
+					</div>
+					<div role="control" label="关键字搜索范围">
+						<input id="scope" class="mini-radiobuttonlist"
+							action="selectScopeModel" bind="scope" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="时间">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options='{"format":"yyyy-MM-dd "}' width="44.5%"
+							format="yyyy-MM-dd HH:mm:ss" align="center" bind="fromTime" /> 
+							<span style="margin-left: 8px;margin-right: 8px">至</span>
+							<input class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options='{"format":"yyyy-MM-dd "}' width="44.5%"
+							format="yyyy-MM-dd HH:mm:ss" align="center" bind="endTime" />
+					</div>
+					<div role="control" label="消息类别">
+						<input class="mini-combobox" bind="typeGuid" width="54%"
+							action="selectTypeModel" />
+					</div>
+				</div>
+				<input class="mini-hidden" id="status" bind="status" />
+			</div>
+		</div>
+		<a role="reset" callback="resetCallback"> <a role="searcher"
+			callback="searchData"></a><a role="close" callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="messageguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellWrap="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="title" width="200" validateLevel="1"
+					renderer="onTitleRender">标题</div>
+				<!-- <div field="isnoneedremind" headerAlign="center" width="20"
+					align="center">是否忽略</div> -->
+				<div field="typename" width="30">消息类型</div>
+				<div field="fromusername" width="40">来源用户名称</div>
+				<div field="sendtime"
+					data-options='{"format":"yyyy-MM-dd HH:mm:ss"}'
+					dateFormat="yyyy-MM-dd HH:mm:ss" width="60">发送时间</div>
+				<div field="urgency" width="40">紧急程度</div>
+				<div renderer="onUpdateMessageRender" width="40">转为已阅</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var opentype = Util.getUrlParams('opentype');
+
+		epoint.initPage('personalmessagelistaction', '', function(e) {
+			if (e.status) {
+				mini.get("status1").setValue(e.status);
+			}
+			if (e.openType && (opentype == null || opentype == "")) {
+				opentype = e.openType;
+			}
+		});
+		// 绘制取消提醒按钮
+		var onUpdateMessageRender = function(e) {
+			if (e.record.status != 0) {
+				return null;
+			}
+			return epoint.renderCell(e,
+					"action-icon prosonalmessage-icon-ignore", "updateMessage",
+					"messageguid");
+		};
+		// 取消提醒
+		function updateMessage(id) {
+			epoint.execute("updateMessage", '', id, function(data) {
+				if (data.msg) {
+					mini.showTips({
+						content : data.msg,
+						state : 'success',
+						x : 'center',
+						y : 'center'
+					});
+				}
+			});
+			setTimeout(searchData, 1000);
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+		function chooseStatus() {
+			var status = mini.get("status1").getValue();
+			mini.get("status").setValue(status);
+			searchData();
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!", {state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!", {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+		//重新绘制标题列
+		function onTitleRender(e) {
+			var url = e.value;
+			var linkurl = e.row['linkurl'];
+			var title = e.row['title'];
+			if (title != "null" && title != ""
+					&& title.indexOf("onclick") == -1) {
+				if (linkurl != "null" && linkurl != "") {
+					if (opentype == "newwindow") {
+						url = "<a style=\"cursor:pointer\" onclick=\"window.open(Util.getRightUrl('"
+								+ linkurl + "'))\" >" + e.value + "</a>";
+					} else {
+						url = "<a style=\"cursor:pointer\" onclick=\"showMessage('"
+								+ linkurl + "')\" >" + e.value + "</a>";
+					}
+				} else {
+					url = "<a style=\"cursor:pointer\">" + e.value + "</a>";
+				}
+				return url;
+			} else {
+				return title;
+			}
+		}
+		//展示消息js
+		function showMessage(linkurl) {
+			epoint.openDialog("消息展示", linkurl, searchData, {
+				'width' : 1100,
+				'height' : 580
+			});
+		}
+
+		function OpenDialogUrl(url, itemguid) {
+			epoint.execute("updateSysRemind", '', itemguid, null);
+			if (url.toLowerCase().indexOf("http") >= 0) {
+				window.open(url);
+			} else {
+				epoint.openDialog("消息展示", url, searchData, {
+					'width' : 1100,
+					'height' : 580
+				});
+			}
+		}
+	</script>
+</body>
+</html>

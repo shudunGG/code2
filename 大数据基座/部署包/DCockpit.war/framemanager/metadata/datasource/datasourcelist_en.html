@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Data management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="add()">new data source</a>
+
+				<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select you want to delete the data source.', '', null, 'warning');} else {deleteItems();}">delete the data source</a>
+
+				<a class="mini-button" iconCls="icon-lock" onclick="lock()">encryption</a>
+
+			</div>
+
+			<input id="pwd" class="mini-textbox"
+			bind="password" style="width: 300px" />
+		</div>
+
+		<div class="fui-condition">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="data source name">
+							<input bind="dataSource.dsname" id="dsName"
+							class="mini-textbox" />
+
+						</div>
+						<div role="control" label="data source type" starred="false">
+							<input name="dsType" showNullItem="true" nullItemText="Please select a..."
+							bind="dataSource.dsType" allowInput="false"
+							emptyText="Please select a..." action="getDsTypes"
+							autoLoad="false" class="mini-combobox" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="dsid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			action="getDataGridData" showPager="true"
+			allowCellEdit="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="10"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="10">
+						order
+					</div>
+
+					<div field="dsname" width="35" headerAlign="center">
+						data source name
+					</div>
+					<div field="connectionString"  headerAlign="center">
+						connection string.
+					</div>
+					<div field="loginuser" width="25" headerAlign="center" align="center">
+						logged in user
+					</div>
+					<div field="loginpwd" width="25" headerAlign="center" align="center">
+						login password
+					</div>
+					<div width="15" align="center" headerAlign="center"
+					renderer="onEditRenderer">
+						edit
+					</div>
+					<div width="15" headerAlign="center" align="center"
+					renderer="onCopyRenderer">
+						copy
+					</div>
+				</div>
+			</div>
+
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>	//<![CDATA[  
+			// Initialize the page
+			epoint.initPage('datasourcelistaction');
+
+			// draweditbutton
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+			};
+
+			// drawcopybutton
+			var onCopyRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-copy", "copyItems");
+			};
+
+			// The new popup Windows
+			function add() {
+				epoint.openDialog('new data source', 'mis/sysconf/datasource/datasource', callBack, {
+					'width' : 1000,
+					'height' : 300
+				});
+			}
+
+			// The pop-upeditwindow
+			function editItems(dsid) {
+				epoint.openDialog("edit data source", 'mis/sysconf/datasource/datasource?dsid=' + dsid, callBack, {
+					'width' : 1000,
+					'height' : 300
+				});
+			}
+
+			// The pop-upcopywindow
+			function copyItems(dsid) {
+				epoint.openDialog("copy data source", 'mis/sysconf/datasource/datasource?dsid=' + dsid + "&extGoal=copy", callBack, {
+					'width' : 1000,
+					'height' : 300
+				});
+			}
+
+			// encryption
+			function lock() {
+				epoint.execute('encrypt', 'pwd', function(data) {
+					mini.get('pwd').setValue(data.msg);
+				});
+			}
+
+			// Delete the selected row
+			function deleteItems() {
+				epoint.execute('deleteSelect', '', msgcallBack);
+			}
+
+			// Back off to remind
+			function msgcallBack(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', function(){
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}, 'info');
+				}
+			}
+
+			// The callback to refresh
+			function callBack(param) {
+				if (param) {
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}
+			}
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+			//]]>	</script>
+	</body>
+
+</html>

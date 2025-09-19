@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'frame_userrole_snapshot' and column_name = 'row_id' and IS_NULLABLE = 'YES'

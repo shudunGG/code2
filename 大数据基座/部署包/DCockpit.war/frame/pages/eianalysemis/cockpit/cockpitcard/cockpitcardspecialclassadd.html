@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>专班信息</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="专班名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.className"
+							required="required" requiredErrorText="专班名称不能为空"
+							vtype="maxLength:50;" emptyText="请填写专班名称..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="责任部门">
+						<input id="liableou" class="mini-treeselect"
+							action="selectouaction.getLazyTreeModal"
+							bind="dataBean.liableouguid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="责任人">
+						<input id="liablePer" class="mini-treeselect"
+							onbeforenodeselect="beforenodeselect"
+							action="selectouuseraction.getTreeModel"
+							bind="dataBean.liablePerGuid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分管领导">
+						<input id="leader" class="mini-treeselect"
+							onbeforenodeselect="beforenodeselect"
+							action="selectouuseraction.getTreeModel"
+							bind="dataBean.leaderguid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="组长">
+						<input id="groupleader" class="mini-treeselect"
+							onbeforenodeselect="beforenodeselect"
+							action="selectouuseraction.getTreeModel"
+							bind="dataBean.groupleaderguid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="副组长">
+						<input id="deputygroupleader" class="mini-treeselect"
+							onbeforenodeselect="beforenodeselect"
+							action="selectouuseraction.getTreeModel"
+							bind="dataBean.deputygroupleaderguid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="组员">
+						<input id="groupmembers" class="mini-treeselect"
+							multiSelect="true" action="selectouuseraction.getTreeModel"
+							bind="dataBean.groupmemberguids" textField="text" valueField="id"
+							parentField="pid" autoCheckParent="true" checkRecursive="true"
+							showFolderCheckBox="true" expandOnLoad="true" showClose="true"
+							oncloseclick="onCloseClick" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitcardspecialclassaddaction', null, function(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+			mini.get("groupmembers").setText(data.groupMemberNames);
+			mini.get("liablePer").setText(data.liablePerName);
+			mini.get("leader").setText(data.leaderName);
+			mini.get("groupleader").setText(data.groupleaderName);
+			mini.get("deputygroupleader").setText(data.deputygroupleaderName);
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		function beforenodeselect(e) {
+			//禁止选中 ckr=false节点
+			if (e.node.ckr == false) {
+				e.cancel = true;
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>变迁线线信息</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<span id="material" style="display: none;">说明：点击选择页面</span> <span
+				id="context" style="display: none;">点击单选框选择相关数据</span> <span
+				id="method" style="display: none;">点击单选框选择方法</span>
+		</div>
+
+		<div class="some-wrap r mr20">
+			<a class="mini-button" id="addcontext" onclick="addnewcontext"
+				style="display: none;">添加新数据</a> <a class="mini-button" state="primary"
+				id="addmethod" onclick="addnewmethods" style="display: none;">注册新方法</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<iframe id="urlLink" frameborder="0" width="100%" height="100%"></iframe>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('designhelperaction', null, initCallBack);
+
+		var mainPVActivityGuid = Util.getUrlParams('mainPVActivityGuid');
+
+		var processVersionGuid = Util.getUrlParams('processVersionGuid');
+
+		//初始化回调事件
+		function initCallBack(data) {
+			if (data.mode == "activityPage") {
+				document.getElementById("material").style.display = "";
+			} else if (data.mode == "context") {
+				document.getElementById("context").style.display = "";
+				document.getElementById("addcontext").style.display = "";
+			} else if (data.mode == "function") {
+				document.getElementById("method").style.display = "";
+				document.getElementById("addmethod").style.display = "";
+			}
+			//  window.frames['urlLink'].location.href = data.urlLink; 
+			document.getElementById("urlLink").src = data.urlLink;
+
+		}
+
+		function addnewcontext() {
+			epoint.openTopDialog('新增相关数据',
+					'framemanager/workflow/design/contextfield?processVersionGuid='
+							+ processVersionGuid + '&mainPVActivityGuid='
+							+ mainPVActivityGuid, setParValueOperJS);
+		}
+
+		function addnewmethods() {
+			epoint.openTopDialog('新增方法',
+					'framemanager/workflow/design/methodlist?processVersionGuid='
+							+ processVersionGuid + '&mainPVActivityGuid='
+							+ mainPVActivityGuid, setParValueOperJS);
+		}
+		
+		function setParValueOperJS(rtnValue) {
+			if (rtnValue || rtnValue == 'close' ) {
+				epoint.initPage('designhelperaction', null, initCallBack);
+            }	
+		}
+
+		function close(data) {
+			epoint.closeDialog(data);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

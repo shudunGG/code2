@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>Position management</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-save"
+				onclick="if(epoint.validate()){epoint.execute('addNew','',newCallback);}">save and new</a> <a
+				class="mini-button" id="addClose" iconCls="icon-save"
+				onclick="if(epoint.validate()){epoint.execute('addJob','',closeCallback);}">save and close</a> <a
+				class="mini-button" id="save" iconCls="icon-save"
+				onclick="if(epoint.validate()){epoint.execute('update','',closeCallback);}">save changes</a> <a
+				class="mini-button" iconCls="icon-removecircle"
+				onclick="epoint.closeDialog">shut down</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="subordinatedepartment" starred="true">
+					<input id="ouName" class="mini-buttonedit" bind="jobaction.ouName"
+						onbuttonclick="selectOu" required="true" emptyText=""  allowInput="false"
+						selectOnFocus="true" requiredErrorText="Subordinate departmentsCan't be empty!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="job title" starred="true">
+					<input id="jobName" class="mini-textbox" bind="frameJob.jobName"
+						required="true" requiredErrorText="Job titleCan't be empty!" vtype="maxLength:50"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="describe">
+					<input id="description" class="mini-textbox"
+						bind="frameJob.description"  vtype="maxLength:50"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="order no">
+					<input id="orderNumber" class="mini-textbox"
+						bind="frameJob.orderNumber" 
+						vtype="int;maxLength:6"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="subordinate personnel" starred="true">
+					<input id="belongDisplayName" class="mini-buttonedit" selectOnFocus="true"
+						bind="frameJob.belongDisplayName" onbuttonclick="selectPerson"  allowInput="false"
+						required="true" requiredErrorText="Subordinate personnelCan't be empty!"/>
+				</div>
+			</div>
+			<input bind="jobaction.ouGuid" id="ouGuid" class="mini-hidden" />
+	<input bind="jobaction.jobGuid" id="jobGuid" class="mini-hidden" />
+	<input bind="jobaction.userGuid" id="userGuid" class="mini-hidden" />
+	<input bind="jobaction.username" id="userName" class="mini-hidden" />
+	<input bind="frameJob.belongUserGuid" id="belongUserGuid" class="mini-hidden" />
+		</div>
+		
+	</div>
+	
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('jobaction', '', initCallBack);
+
+		//bylistPage linked to trigger when the refs
+		function initCallBack(data) {
+			mini.get("ouName").setText(mini.get("ouName").getValue());
+			mini.get("belongDisplayName").setText(
+					mini.get("belongDisplayName").getValue());
+			//If the new
+			if (data.add) {
+				//Hide the modify button
+				mini.get('save').setVisible(false);
+			}
+			//If you change
+			else {
+				//Hide the new button
+				mini.get('addNew').setVisible(false);
+				mini.get('addClose').setVisible(false);
+			}
+		}
+
+		function selectOu(e) {
+			epoint.openDialog('Choose department', "framemanager/orga/orga/ou/selectou",
+					function(param) {
+						if (param && param != 'close' ) {
+							s = param.split(";");
+							if (s[1] == 'f9root') {
+								mini.get("ouName").setText('The root');
+								mini.get("ouName").setValue('The root');
+								mini.get("ouGuid").setValue('');
+							} else {
+								mini.get("ouName").setText(s[0]);
+								mini.get("ouName").setValue(s[0]);
+								mini.get("ouGuid").setValue(s[1]);
+							}
+						}
+					}, {
+						'width' : 300,
+						'height' : 500
+					});
+		}
+
+		function selectPerson() {
+			var uGid=mini.get("belongUserGuid").getValue();
+			var uName=mini.get("belongDisplayName").getValue();
+			epoint.openDialog('选择职位对应的人员',
+					"framemanager/orga/orga/user/selectuser?userName="+uName+"&ouGuid="+ouGuid, openiconOperJS, {
+						'width' : 680,
+						'height' : 900,
+						param : {
+							userGuid : uGid
+						}
+					});
+		}
+
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue!= 'close' ) {
+                var s = rtnValue.split("_SPLIT_");
+                mini.get("userGuid").setValue(s[0]);
+                mini.get("belongUserGuid").setValue(s[0]);
+                mini.get("belongDisplayName").setValue(s[1]);
+                mini.get("belongDisplayName").setText(s[1]); 
+				mini.get("userName").setValue(s[1]);
+            }	
+		}
+
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				// Empty form
+				//if (data.msg.indexOf("successful") != -1) {
+				if(data.success){
+					epoint.clear('fui-form');
+				}
+			}
+		}
+
+		// Shut downOperation of the callback
+		function closeCallback(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("successful") != -1) {
+				if(data.success){
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', null, 'error');
+				}
+			}
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

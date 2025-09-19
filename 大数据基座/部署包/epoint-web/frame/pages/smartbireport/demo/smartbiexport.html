@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>smartbi报表展示</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<form id="download_form" method="post" enctype="multipart/form-data">
+	</form>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="exportpdf" onclick="exportpdf();" state="primary">导出</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<iframe id="urlLink" frameborder="0" width="100%" height="100%"></iframe>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('smartbiexportaction', '', initCallback);
+		function initCallback(data) {
+			if (data.reporturl) {
+				document.getElementById("urlLink").src = data.reporturl;
+			}
+		}
+
+		function exportpdf() {
+			var form = document.getElementById('download_form');
+			var url = "smartbiexportaction/getContent?resid=I402854f8016e1f741f74da03016e22213458116f";
+			//非必须，指定导出文件类型（默认PDF）：备选值 PDF、PNG、WORD、EXCEL、EXCEL2007、HTML
+			//url += "&filetype=WORD";
+			//非必须，指定文件名称(默认resid)
+			//url += "&filename=SmartBI电子表格";
+			form.action = "../../../../" + epoint.dealRestfulUrl(url);
+			form.submit();
+		}
+		//]]>
+	</script>
+</body>
+</html>

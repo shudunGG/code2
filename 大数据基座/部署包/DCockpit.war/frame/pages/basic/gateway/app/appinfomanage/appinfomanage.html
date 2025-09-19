@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的左侧内容 -->
+	<div class="fui-left">
+		<!-- 左侧的内容区域 -->
+		<div role="head" title="应用管理"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right" id="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-save" onclick="saveAll()">保存订阅状态</a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="应用名称">
+							<input class="mini-textbox" bind="appname" />
+						</div>
+					</div>
+				</div>
+				<input bind="classguid" id="classguid" class="mini-hidden" /> <input
+					id="isSub" class="mini-hidden" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true"
+				oncellbeginedit="OnCellBeginEdit" oncellendedit="OnCellEndEdit">
+				<div property="columns">
+					<div type="indexcolumn" width="30" headerAlign="center">序</div>
+					<div field="appname" headerAlign="center">应用名称</div>
+					<div field="appclassname" headerAlign="center">应用类别</div>
+					<div width="80" align="center" headerAlign="center"
+						renderer="onSSORenderer">统一认证</div>
+					<div width="90" align="center" headerAlign="center"
+						renderer="onSetManagerRenderer">设置管理员</div>
+					<div header="订阅范围" headerAlign="center">
+						<div property="columns">
+							<div width="50" align="center" headerAlign="center"
+								renderer="onSetUserScopeRenderer">用户</div>
+							<div width="50" align="center" headerAlign="center"
+								renderer="onSetRoleRenderer">角色</div>
+							<div width="50" align="center" headerAlign="center"
+								renderer="onSetGroupRenderer">群组</div>
+							<div width="50" align="center" headerAlign="center"
+								renderer="onAddApiRenderer">服务</div>
+							<div width="50" align="center" headerAlign="center"
+								renderer="onMessageRenderer">消息</div>
+							<div width="80" align="center" headerAlign="center"
+								renderer="onUserConfigRenderer">用户配置</div>
+						</div>
+					</div>
+					<div header="是否订阅" headerAlign="center">
+						<div property="columns">
+							<div field="issyncrole" width="50" align="center"
+								type="checkboxcolumn" truevalue="1" falsevalue="0"
+								headerAlign="center">角色</div>
+							<div field="issyncaddress" width="50" align="center"
+								type="checkboxcolumn" truevalue="1" falsevalue="0"
+								headerAlign="center">群组</div>
+							<div field="issyncwaithandle" width="50" align="center"
+								type="checkboxcolumn" truevalue="1" falsevalue="0"
+								headerAlign="center">待办</div>
+							<div field="issyncmessage" width="50" align="center"
+								type="checkboxcolumn" truevalue="1" falsevalue="0"
+								headerAlign="center">消息</div>
+							<div field="issyncuserconfig" width="80" align="center"
+								type="checkboxcolumn" truevalue="1" falsevalue="0"
+								headerAlign="center">用户配置</div>
+						</div>
+					</div>
+					<div width="90" align="center" headerAlign="center"
+						renderer="onUserListRenderer">已订阅用户</div>
+					<div width="60" align="center" headerAlign="center"
+						renderer="onModuleRenderer">应用模块</div>
+					<div width="50" name="operate" align="center" headerAlign="center"
+						renderer="onActionRenderer">其他</div>
+
+				</div>
+			</div>
+			<ul id="gridMenu" class="mini-contextmenu">
+				<li iconCls="icon-addcircle" onclick="setElement">元件模板管理</li>
+				<li iconCls="icon-doc" onclick="openForm">在线表单</li>
+				<li iconCls="icon-download" onclick="openAttach">附件管理</li>
+			</ul>
+			</ul>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appinfomanageaction', '', function(e) {
+			if (e.isSub) {
+				mini.get("isSub").setValue(e.isSub);
+			}
+		});
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		function OnCellBeginEdit(e) {
+			if (e.field == "issyncmessage" && e.record.issyncwaithandle == 1) {
+				//e.cancel = true;
+			}
+		}
+
+		function OnCellEndEdit(e) {
+			if (e.field == "issyncwaithandle" && e.value == 1) {
+				if (e.record.issyncmessage == 0) {
+					e.record.issyncmessage = 1;
+					grid.updateRow(e.row, e.record);
+					grid._dataSource._setModified(e.record, 'issyncmessage', 0);
+				}
+			}
+			if (e.field == "issyncmessage" && e.value == 0) {
+				if (e.record.issyncwaithandle == 1) {
+					e.record.issyncwaithandle = 0;
+					grid.updateRow(e.row, e.record);
+					grid._dataSource._setModified(e.record, 'issyncwaithandle',
+							0);
+				}
+			}
+		}
+
+		function onAdd(e) {
+			var menu = e.sender;
+			var row = grid.getSelected();
+			var rowIndex = grid.indexOf(row);
+			alert(row['rowguid']);
+		};
+
+		function saveAll() {
+			epoint.execute('saveAll', '', callback);
+		}
+
+		//绘制设置管理员按钮
+		var onActionRenderer = function(e) {
+			var rowguid = e.row['rowguid'];
+			return "<a  class=\"action-icon icon-gear\"  onclick=\"moreOperate(event,'"
+					+ rowguid + "')\" href=\"javascript:void(0);\" ></a>";
+		};
+
+		function moreOperate(event, id) {
+			var menu = mini.get("gridMenu");
+			menu.showAtEl(event.target);
+		};
+
+		// 弹出在线表单窗口
+		function openForm(e) {
+			var menu = e.sender;
+			var row = grid.getSelected();
+			epoint.openDialog('在线表单',
+					"framemanager/sform/formlistmanage/formlistmanage?appGuid="
+							+ row['rowguid'], searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], null, true);
+		}
+
+		var classguid = mini.get('classguid');
+		var tree = mini.get('tree');
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			console.log(e.node);
+			//将左侧树点击的节点id放到隐藏域中
+			classguid.setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		//绘制设置群组按钮
+		var onSetGroupRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "setGroup");
+		};
+		// 弹出设置管理员窗口
+		function setGroup(id) {
+			epoint.openDialog('设置群组',
+					"frame/pages/basic/communication/groupmanagement/groupauthorizeduserlist?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		//绘制设置管理员按钮
+		var onSetManagerRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "setAdmin");
+		};
+		// 弹出设置管理员窗口
+		function setAdmin(id) {
+			epoint.openDialog('设置管理员',
+					"frame/pages/basic/gateway/app/appinfomanage/appadminsetting?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		//绘制设置用户范围按钮
+		var onSetUserScopeRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-22",
+					"setUserScope");
+		};
+		//
+		var onUserListRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "userList");
+		};
+		// 弹出设置用户范围窗口
+		function setUserScope(id) {
+			epoint.openDialog('设置用户范围',
+					"frame/pages/basic/gateway/app/appinfomanage/appuserscopesetting?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 750
+					});
+		}
+		function userList(id) {
+			epoint.openDialog('查看已经订阅的用户',
+					"frame/pages/basic/gateway/app/appinfomanage/subscribeduserlist?appguid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		//绘制角色分发按钮
+		var onSetRoleRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-1", "setRole");
+		};
+		// 弹出角色分发窗口
+		function setRole(id) {
+			epoint.openDialog('角色分发',
+					"frame/pages/basic/gateway/app/appinfomanage/approlesetting?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 750
+					});
+		}
+		//绘制模块管理按钮
+		var onModuleRenderer = function(e) {
+			if (e.record.apptype && e.record.apptype == 1) {
+				return epoint.renderCell(e, "action-icon modicon-18",
+						"setMobileModule");
+			} else {
+				return epoint.renderCell(e, "action-icon modicon-2",
+						"setModule");
+			}
+		};
+		// 弹出模块管理窗口
+		function setMobileModule(id) {
+			epoint.openDialog('移动模块管理',
+					"framemanager/mobile/module/mobilemodulelist?appGuid="
+							+ id, null, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 弹出模块管理窗口
+		function setModule(id) {
+			epoint.openDialog('pc模块管理',
+					"frame/pages/basic/gateway/app/appinfomanage/appmodulelist?guid="
+							+ id, null, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出元件管理窗口
+		function setElement(e) {
+			var menu = e.sender;
+			var row = grid.getSelected();
+			epoint.openDialog('元件模板管理',
+					"framemanager/ui/template/componenttemplatelist?appGuid="
+							+ row['rowguid'], null, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		//绘制订阅服务按钮
+		var onAddApiRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-15", "addApi");
+		};
+		// 弹出订阅服务窗口
+		function addApi(id) {
+			epoint.openDialog('订阅服务',
+					"frame/pages/basic/gateway/app/appinfomanage/subscribeapi?appguid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 弹出附件管理 窗口
+		function openAttach(e) {
+			var menu = e.sender;
+			var row = grid.getSelected();
+			epoint.openDialog('附件管理',
+					"frame/pages/basic/gateway/app/appinfomanage/appattachinfolist?appguid="
+							+ row['rowguid'], searchData, {
+						'width' : 1000,
+						'height' : 650
+					});
+		}
+		//绘制应用权限 按钮
+		var onAppRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-22",
+					"openAppRight");
+		};
+		// 弹出应用权限窗口
+		function openAppRight(id) {
+			epoint.openDialog('应用权限',
+					"frame/pages/basic/gateway/app/appinfomanage/apprightsetting?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 650
+					});
+		}
+
+		//绘制应用权限 按钮
+		var onSSORenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"openSSOSetting");
+		};
+
+		//统一认证
+		function openSSOSetting(id) {
+			epoint.openDialog('统一认证配置',
+					'frame/pages/basic/gateway/app/appinfomanage/appssosetting?appguid='
+							+ id, searchData, {
+						'width' : 1100,
+						'height' : 700
+					});
+		}
+
+		//绘制应用权限 按钮
+		var onMessageRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"openMessageSetting");
+		};
+
+		//消息订阅
+		function openMessageSetting(id) {
+			epoint.openDialog('消息订阅配置',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribemessage?appguid='
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		var onUserConfigRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-fix",
+					"onUserConfigSetting");
+		};
+
+		function onUserConfigSetting(id) {
+			epoint.openDialog('用户配置订阅',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribeuserconfig?appguid='
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>设备列表详细信息</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="addModule(1);" id="btnAddRecord"
+			iconCls="icon-addcircle"> 新增首页快捷入口</a> <a class="mini-button"
+			iconCls="icon-save" onclick="saveAll()">保存排序</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice">
+		<p>
+			<em><span class="text-danger">【首页快捷入口模块】最好不要超过4个，不然将无法在移动端页面中显示！！</span></em>
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="moduleguid"
+			action="getEnterDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			collapseGroupOnLoad="false" showColumnsMenu="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div name="modulename" field="modulename" width="100%">模块名称</div>
+				<div field="mobilemoduletypename" name="mobilemoduletypename"
+					width="200">模块类别</div>
+				<div name="ordernumber" field="ordernumber" width="80"
+					vtype="required;int;range:0,999999999">
+					排序<input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="50"
+						vtype="required;int;range:0,99999999" />
+				</div>
+				<div type="actioncolumn" name="optColumn">
+					操作 <span type="action" icon="modicon-22" onclick="auth">权限</span> <span
+						type="action" icon="icon-edit" onclick="openEdit"
+						renderer="onEditRenderer">修改</span><span type="action"
+						icon="icon-remove" onclick="deleteMobileModule">删除</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('mobilemodulelistaction');
+
+		var appGuid = Util.getUrlParams('rowguid');
+
+		// 表格的搜索
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			} else {
+				epoint.refresh([ 'datagrid' ]);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		var grid = mini.get("datagrid");
+
+		// 弹出修改窗口
+		function openEdit(row) {
+			epoint.openDialog('模块修改',
+					"framemanager/mobile/module/mobilemodule?moduleGuid=" + row.moduleguid
+							+ "&appGuid=" + appGuid, function(e) {
+						if (e != "close") {
+							mini.showTips({
+								content : e,
+								state : 'success',
+								x : 'center',
+								y : 'center'
+							});
+							searchData();
+						}
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出新增窗口
+		function addModule(isenter) {
+			epoint.openDialog('新增记录',
+					"framemanager/mobile/module/mobilemodule?isenter="
+							+ isenter + "&appGuid=" + appGuid, function(e) {
+						if (e != "close") {
+							mini.showTips({
+								content : e,
+								state : 'success',
+								x : 'center',
+								y : 'center'
+							});
+							searchData();
+						}
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出授权窗口
+		function auth(row) {
+			epoint.openDialog('权限',
+					"frame/pages/basic/gateway/app/appinfomanage/appmodulerightsetting?guid="
+							+ row.moduleguid + "&appGuid=" + appGuid, searchData, {
+						'width' : 800,
+						'height' : 550
+					});
+		}
+
+		function deleteMobileModule(row) {
+			epoint
+					.execute("deleteMobileModule", '', [ row.moduleguid ],
+							searchData);
+		}
+
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', '1', callback);
+		}
+	</script>
+</body>
+</html>

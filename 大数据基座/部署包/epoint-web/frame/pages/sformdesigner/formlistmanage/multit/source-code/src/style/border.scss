@@ -1,0 +1,86 @@
+// 边框规则控制的全局样式
+.col {
+  &:after {
+    content: '';
+    position: absolute;
+    display: block;
+    z-index: 1;
+    background: transparent;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+  }
+
+  // 内嵌单元格的时候 自身全部无边框
+  &.hasSub:after {
+    border-top-width: 0 !important;
+    border-right-width: 0 !important;
+    border-bottom-width: 0 !important;
+    border-left-width: 0 !important;
+  }
+
+  // 普通单元格 非 第一 最后 强制去掉左边
+  &.mid:after {
+    border-left-width: 0 !important;
+  }
+  // 嵌套在内部的第一个强制去掉左边
+  @at-root {
+    .col.mid > .row > &.first:after,
+    .col.mid > .dropArea > .row > &.first:after,
+    .col.last > .row > &.first:after,
+    .col.last > .dropArea > .row > &.first:after {
+      border-left-width: 0 !important;
+    }
+    
+  }
+  // 最后一个去掉左边 必须是真实的最后一个不能是即是第一又是最后
+  &.mid ~ &.last:after,
+  &.first ~ &.last:after {
+    border-left-width: 0 !important;
+  }
+
+  @at-root {
+    // 非第一行的 内嵌列的 top 强制去掉
+    .row.mid > .col:after {
+      border-top-width: 0 !important;
+    }
+    // 嵌套在内部的行中的 top 也需要去掉
+    .row.mid {
+      > .col > .row > .col:after,
+      > .col > .dropArea > .row > .col:after {
+        border-top-width: 0 !important;
+      }
+    }
+  }
+}
+
+// .col:after {
+//   border: 2px solid red;
+// }
+
+.border-debug {
+  .col:after {
+    top: 5px;
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+    content: attr(class);
+    text-align: center;
+    vertical-align: middle;
+    font-size: 12px;
+  }
+  [level='0'] .col:after {
+    font-size: 24px;
+  }
+  [level='1'] .col:after {
+    font-size: 20px;
+  }
+  [level='2'] .col:after {
+    font-size: 16px;
+  }
+  [level='3'] .col:after {
+    font-size: 14px;
+  }
+}

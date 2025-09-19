@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标任务执行日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar" id="toolbar">
+		<div id="operate" class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd()">手动添加指标结果</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="false"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="batchGuid" name="batchGuid" width="75"
+					headerAlign="center" align="center">批次号</div>
+				<div field="operateDate" name="operateDate" width="75"
+					headerAlign="center" align="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">结果生成时间</div>
+				<div field="resultType" headerAlign="center" align="center">结果生成类型</div>
+				<div width="50" align="center" headerAlign="center"
+					renderer="onDetailRenderer">查看</div>
+				<div visible="false" field="normGuid"></div>
+				<div visible="false" field="jobStatus"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var normGuid = Util.getUrlParams("guid");
+		var totalCount;
+		epoint.initPage('cockpitnormjobloglistaction', '', function(data) {
+			totalCount = mini.get('datagrid').getTotalCount();
+			if (totalCount > 0) {
+				$('#toolbar').addClass('hidden');
+			}
+		});
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			e.row._id = e.rowIndex;
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openResult", "batchGuid,_id");
+		};
+
+		// 弹出结果窗口
+		function openResult(e) {
+			epoint.openDialog('指标结果',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormresultlist?guid="
+							+ normGuid + "&batchGuid=" + e.batchGuid + '&id='
+							+ e._id , function(data) {
+						epoint.refresh('datagrid');
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function openAdd(e) {
+			epoint.openDialog('新增指标结果',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormaddresultlist?guid="
+							+ normGuid, function(data) {
+						epoint.refresh('datagrid');
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+</body>
+</html>

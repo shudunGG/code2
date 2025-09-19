@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>代码生成</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mr10" onclick="productCode">生成代码</a>
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+
+			<div class="mini-checkbox" style="width: 20px" bind="isDirect">
+			</div>
+			是否升序
+		</div>
+
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>生成添加、修改、明细、列表等页面代码，代码文件默认会存放到</p>
+		<p>
+			<em>c:\\epointmis\\generatedFile文件夹中</em>
+		</p>
+		<p>包如果要指定生成文件到固定位置,请设置生成文件路径。</p>
+		<p>添加,明细,修改页面默认显示为2列;如果有特殊的布局要求,请进入布局页设置。</p>
+		<p>
+			绝对路径(如<em>E:\\Generate\\</em>)代表生成到E盘的Generate文件夹下
+		</p>
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="程序项目" starred="true">
+						<input id="fieldtype" autoLoad="false" action="getSysProjectModel"
+							showNullItem="false" textField="text" valueField="id"
+							bind="sysProjectPath" onValueChanged="changeProject"
+							class="mini-combobox" required="true"
+							requiredErrorText="程序项目不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择需要生成的代码" starred="true">
+						<input id="select1" class="mini-treeselect" multiSelect="true"
+							action="getTemplateTree" textField="text" valueField="id"
+							parentField="pid" checkRecursive="true" bind="selectTemplate"
+							showFolderCheckBox="false" expandOnLoad="true" showClose="true"
+							oncloseclick="onCloseClick" popupWidth="200" />
+					</div>
+				</div>
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="生成代码路径">
+						<input class="mini-textbox" bind="absolutePath" enabled="false"></input>
+						<span class="text-danger mb5">(*注意：该路径为框架项目的部署路径)</span> <input
+							id="plus" class="mini-textbox mr10" style="width: 100px"
+							bind="relativepath" enabled="false"></input> <input
+							id="projectname" class="mini-textbox mr10" style="width: 200px"
+							bind="projectname" enabled="false"></input> <input id="tablename"
+							class="mini-textbox" style="width: 300px" bind="tablename"
+							enabled="false"></input> <span class="text-danger">(*注意：该路径为默认的文件子路径模式：(pages+程序项目路径+表名)；文件会自动生成到该路径下)</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="自定义路径">
+						<input class="mini-checkbox" bind="isDiyUrl" id="isDiyUrl"
+							trueValue="true" falseValue="false"
+							onvaluechanged="onValueChanged" style="width: 5%"></input> <input
+							class="mini-textbox" bind="diyUrl" id="diyUrl" style="width: 85%"></input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="页面的列数(2|4|6)">
+						<input class="mini-textbox" bind="columnNumber" style="width: 50%"></input>
+
+					</div>
+				</div>
+			</div>
+
+			<div id="tableid" bind="tableID" class="mini-hidden"></div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		var diyUrl = mini.get("diyUrl");
+		var fieldtype = mini.get("fieldtype");
+		var isDiyUrl = mini.get("isDiyUrl");
+		epoint.initPage("tablecodeproductaction", null, function() {
+			diyUrl.disable();
+		});
+		function onValueChanged(e) {
+			var checked = this.getChecked();
+			if (checked == true) {
+				diyUrl.enable();
+				fieldtype.disable();
+			} else {
+				fieldtype.enable();
+				diyUrl.disable();
+			}
+		}
+		function productCode() {
+			if (epoint.validate()) {
+				if (isDiyUrl.getChecked() && diyUrl.getValue() == "") {
+					epoint.alert("请填写自定义生成代码的路径", '', null, 'info');
+					return;
+				}
+				epoint.execute('productFace', '', 'true', msgCallBack)
+			}
+		}
+		// 回掉提醒
+		function msgCallBack(data) {
+			if (data.uncheck) {
+				epoint.alert(data.uncheck, '', null, 'error');
+				return;
+			}
+			if (data.makesure) {
+				epoint.confirm(data.makesure, "确认是否继续", function() {
+					epoint.execute('productFace', '', 'false', msgCallBack);
+				}, null);
+			}
+			if (data.strScript) {
+				Util.safeEval(data.strScript);
+			}
+		}
+
+		function changeProject() {
+			epoint.execute("changeProject", '', callback);
+		}
+
+		function callback(data) {
+			mini.get("projectname").setValue(data.msg);
+		}
+	</script>
+</body>
+
+</html>

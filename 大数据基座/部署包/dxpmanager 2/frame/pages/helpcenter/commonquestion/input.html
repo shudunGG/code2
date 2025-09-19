@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>帮助中心</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            "./css/common.css",
+            "./css/input.css"
+        ]);
+    </script>
+
+</head>
+
+<body>
+    <div class="header">
+        <div class="content-wrap">
+            <div class="l logo-wrap clearfix">
+                <img src="./images/top/help-logo.png" alt="" class="logo">
+            </div>
+            <!--div class="r header-nav">
+                <ul class="nav-list clearfix">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./handbook">使用手册</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./tool">常用工具</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./show">常见问题</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./notice">维护公告</a>
+                    </li>
+                </ul>
+            </div-->
+        </div>
+    </div>
+    <div class="scroller-wrap">
+        <div class="main">
+            <div class="content-wrap">
+                <!-- 我的反馈 -->
+                <div class="feedback-block my-feedback" id="my-feedback">
+                    <div class="block-header">我的反馈
+                        <span class="new-feedback">新增反馈</span>
+                    </div>
+                    <div class="block-content">
+                        <div class="my-feedback-list">
+                        </div>
+                        <div class="mini-pagination" pagesize="7" id="my-feedback-pagination"></div>
+                    </div>
+                </div>
+
+                <!-- 反馈详情 -->
+                <div class="feedback-block feedback-detail hidden" id="feedback-detail">
+                    <div class="block-header">
+                        <div class="header-info"></div>
+                        <span class="go-back">返回</span>
+                    </div>
+                    <div class="block-content">
+                        <div class="detail-wrap"></div>
+                        <span class="view-btn"></span>
+                        <div class="flow-header">反馈跟踪
+                            <span class="add-feedback-flow" id="add-feedback-flow">添加反馈</span>
+                        </div>
+                        <div class="feedback-flow-list">
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新增反馈 -->
+                <div class="feedback-block add-feedback hidden" id="add-feedback">
+                    <div class="block-header">新增反馈
+                        <span class="go-back">返回</span>
+                    </div>
+                    <div class="block-content">
+                        <div class="add-feedback-form fui-form">
+                            <div role="form">
+                                <div role="row">
+                                    <div role="control" label="反馈类型" starred="true">
+                                        <input class="mini-combobox" required="true" emptyText="请选择" />
+                                    </div>
+                                    <div role="control"></div>
+                                </div>
+                                <div role="row">
+                                    <div role="control" label="所属功能" starred="true">
+                                        <input class="mini-combobox" required="true" emptyText="请选择" />
+                                    </div>
+                                    <div role="control"></div>
+                                </div>
+                                <div role="row">
+                                    <div role="control" label="标题" starred="true">
+                                        <input class="mini-textbox" required="true" emptyText="请输入标题" />
+                                    </div>
+                                </div>
+                                <div role="row" style="min-height:300px;">
+                                    <div role="control" label="描述" starred="true">
+                                        <input class="mini-webeditor" required="true" emptyText="请输入提示内容" />
+                                    </div>
+                                </div>
+                                <div role="row">
+                                    <div role="control" label="" starred="false">
+                                        <div class="add-feedback-tips">
+                                            <span class="add-feedback-tips-icon"></span> 请将问题准确、清楚描述。</div>
+                                    </div>
+                                </div>
+                                <div role="row">
+                                    <div role="control" label="" starred="false">
+                                        <span class="mini-button add-feedback-submit">提交</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- div class="footer">
+            <p>服务热线：0518-58188000</p>
+        </div-->
+
+    </div>
+    <div class="mini-window" style="width:800px;height:400px;display: none;" id="add-feedback-window" title="添加反馈">
+        <div style="padding-top: 10px;position: relative;">
+            <input class="mini-webeditor" style="width:796px;height:180px;" id="feedback-floweditor" required="true" emptyText="请输入反馈内容"
+            />
+        </div>
+        <div class="feedback-flow-bottom">
+            <span class="mini-button mini-btn-primary" onclick="submitAddFeedback">确认反馈</span>
+            <span class="mini-button mini-btn-info" onclick="closeAddFeedback">取消</span>
+        </div>
+    </div>
+    <script>
+        // 本地模拟暂时强制修改为 ueditor
+        window.EpFrameSysParams = {};
+        window.EpFrameSysParams['editorModel'] = 'ueditor';
+    </script>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        // 获取我的反馈列表地址
+        var getMyFeedbackUrl = 'rest/feedbackdatademoaction/getMyFeedbackList?isCommondto=true';
+        // 类型背景色和状态文本色
+        var genderFeedbackItemInfos = function (data) {
+            var type = data.type,
+                state = data.state;
+            var typeColor = {
+                'question': '#fd965d',
+                'advice': '#46c0ff',
+                'consult': '#b165ff'
+            };
+            var typeText = {
+                'question': '问题',
+                'advice': '建议',
+                'consult': '咨询'
+            }
+            var stateColor = {
+                0: '#38ad48',
+                1: '#4692f2',
+                2: '#bbbbbb'
+            };
+            var stateText = {
+                0: '处理中',
+                1: '已答复',
+                2: '已解决'
+            };
+            return {
+                typeBg: typeColor[type] || '#fd965d',
+                typeText: typeText[type] || '问题',
+                stateColor: stateColor[state] || '#38ad48',
+                stateText: stateText[state] || '处理中'
+            };
+        };
+        // 获取反馈详情的请求
+        var getFeedbackDetailUrl = 'rest/feedbackdatademoaction/getFeedbackDetailInfo?isCommondto=true';
+        // 获取用户信息是否完整的请求地址
+        var getCheckUserInfoUrl = 'rest/feedbackdatademoaction/checkUserInfo?isCommondto=true';
+        // 补充用户信息的跳转地址
+        var fillUserInfoUrl = 'frame/pages/basic/personalset/myinfomodify';
+        
+        // 获取系统参数反馈问题流程guid的请求地址
+        var systemParamGetUrl = 'rest/feedbackdatademoaction/getProcessGuidFromSystemParam?isCommondto=true';
+    </script>
+    <script src="./js/input.js"></script>
+    <script>
+        var addFeedbackWin = mini.get('add-feedback-window');
+        var addFeedbackEditor = mini.get('feedback-floweditor');
+        // 添加反馈点击
+        $('#add-feedback-flow').on('click', function () {
+            //获取当前反馈guid
+            var detailGuid = $feedbakcDetail.attr('detailGuid');
+            epoint.openDialog('添加反馈',
+					'frame/pages/helpcenter/infofeedback/infofeedback?cFeedbackQuestionGuid=' + detailGuid + '&flag=1', 
+					function (){
+            	getFeedbackDetail(detailGuid);
+            }, {
+						width : 800,
+						height : 600,
+					});
+            //addFeedbackWin.show();
+        });
+        // 提交反馈
+        function submitAddFeedback() {
+            // 请求保存 成功后添加到页面并关闭
+            var t = addFeedbackEditor.getValue();
+            var date = new Date();
+            addAnFeddbackFlow({
+                action: '新增反馈',
+                content: t,
+                date: date.getFullYear() + '/' + date.getMonth() + '/' + date.getDate() + ' ' + date.getHours() +
+                    ':' + date.getMinutes()
+            });
+            addFeedbackWin.hide();
+        }
+
+        function closeAddFeedback() {
+            addFeedbackWin.hide();
+        }
+    </script>
+</body>
+
+</html>

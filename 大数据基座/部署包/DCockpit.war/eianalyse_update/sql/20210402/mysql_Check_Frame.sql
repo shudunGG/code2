@@ -1,0 +1,1 @@
+SELECT count(*) FROM information_schema.COLUMNS WHERE table_schema = DATABASE () AND table_name = 'cockpit_mobile_card' and column_name='cardareasummary'

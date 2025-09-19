@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>通用二维码下载</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+body {
+	background: #FFFFFF;
+	background-color: #ffffff;
+}
+
+.content-panel {
+	text-align: center;
+}
+
+.generate-btn {
+	margin-top: 20px;
+}
+
+.qrcode-img {
+	height: 256px;
+	width: 256px;
+}
+
+.qr-content {
+	text-align: center;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="qr-content">
+			<div id="qrcode"></div>
+			<!-- <img alt="" src="sweepcode.jpg" class="qrcode-img"> -->
+		</div>
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<label>二维码地址</label> <input id="qrurl" class="mini-outputtext" "/>
+			</div>
+		</div>
+
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="../../../frame/pages/login/js/jquery.qrcode.min.js"></script>
+	<script type="text/javascript">
+		epoint.initPage(
+						'qrcodedownloadaction',
+						'',
+						function(e) {
+							mini.get('qrurl').setValue(Util.getRightUrl(e.qrurl));
+							var isIE = false;
+							var browser = navigator.appName;
+							var b_version = navigator.appVersion;
+							var version = b_version.split(";");
+							var trim_Version = version[1].replace(/[ ]/g, "");
+							if ((browser == "Microsoft Internet Explorer")
+									&& (trim_Version == "MSIE6.0"
+											|| trim_Version == "MSIE7.0" || trim_Version == "MSIE8.0")) {
+								isIE = true;
+							}
+							var renderType = "canvas";
+							if (isIE) {
+								var renderType = "table";
+							}
+							$('#qrcode').qrcode({
+								width : 250,//设置宽高 
+								height : 250,
+								render : renderType,
+								//这个地址是后台的扫码确认接口地址，结合实际代码修改
+								text : Util.getRightUrl(e.qrurl)
+							});
+						});
+	</script>
+</body>
+</html>

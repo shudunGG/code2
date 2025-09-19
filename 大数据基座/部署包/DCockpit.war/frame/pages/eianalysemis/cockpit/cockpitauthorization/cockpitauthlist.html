@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>专题管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.fui-left{
+	width: 400px;
+}
+.fui-left.closed{
+	margin-left: -400px;
+}
+.fui-right{
+	margin-left: 401px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left" id="fui-left">
+		<div class="fui-left-hd">
+			<h4 class="fui-left-title">驾驶舱内容</h4>
+			<!-- <a role="helper" style="margin-right: -5px" class="fui-toolbar-helper r" title="驾驶舱内容"></a> -->
+		</div>
+		<div role="body">
+			<div class="mini-filtertree" id="tree" action="cockpitauthorizationaction.getTreeModel" filterMode="server" resultAsTree="false"></div>
+		</div>
+	</div>
+	<div class="fui-right">
+
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增授权</a>
+				<a class="mini-button" iconCls="icon-edit" onclick="openEdit">编辑授权</a>
+				<a class="mini-button" iconCls="icon-trash" onclick="deleteUser">取消授权</a>
+			</div>
+			<div style="float: right;margin-right: 20px;margin-top: 8px;">
+				<a style="color: #337ab7;" id="userurl" >人员视角</a>
+				<a class="mini-button" style="height: 44px;margin-left: 10px;cursor:default;" onclick="stopPropagation">内容视角</a>
+			</div>
+		</div>
+
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form" style="padding: 0px 16px;">
+				<div id="cform" role="form">
+					<div class="form-row" style="padding: 0px 0px;">
+						<label class="form-label" id="contentLabel" style="width: auto;">【驾驶舱】的授权用户列表</label>
+						<input class="mini-hidden" id="cockpitguid" bind="dataBean.cockpitguid"/>
+						<input id="columnguid" class="mini-hidden" bind="dataBean.columnguid" />
+						<input id="projectcateguid" class="mini-hidden" bind="dataBean.projectcateguid" />
+						<input id="projectguid" class="mini-hidden" bind="dataBean.rowguid" />
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content" style="padding: 0px 16px;">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="40" headerAlign="center" align="center">序</div>
+					<div field="username" headerAlign="center" align="center" width="120">用户名称</div>
+					<div field="ouname" headerAlign="center" align="center" width="120">所在部门</div>
+					<div name="operate" type="actioncolumn" headerAlign="center" align="center">
+						<span type="action" icon="icon-trash" onclick="deleteContent">取消授权</span>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+	</div>
+
+	
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		
+		var cockpitguid;
+		var cockpitType = "cockpit";
+		//树js对象
+		var tree = mini.get("tree");
+		epoint.initPage('cockpitauthlistaction', '@all', function (data){
+			mini.get("cockpitguid").setValue(data.cockpitguid);
+			document.getElementById("userurl").href="./cockpitauthuserlist?cockpitguid=" + data.cockpitguid;
+			$(".cockpit").each(function(i, e){
+				e.title = "驾驶舱";
+			});
+			$(".modicon-75").each(function(i, e){
+				e.title = "驾驶舱";
+			});
+			$(".cate").each(function(i, e){
+				e.title = "专题分类";
+			});
+			$(".modicon-138").each(function(i, e){
+				e.title = "专题分类";
+			});
+			$(".project").each(function(i, e){
+				e.title = "专题";
+			});
+			$(".modicon-22").each(function(i, e){
+				e.title = "专题";
+			});
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var guid = mini.get("cockpitguid").getValue();
+			epoint.openDialog("新增授权", './cockpitauthorization?cockpitguid=' + guid, searchData, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack(data) {
+			if(data.msg){
+				epoint.alert(data.msg);
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+		};
+
+		// 弹出修改窗口
+		function openEdit() {
+			var node = tree.getSelectedNode();
+			if(!node){
+				var type = "cockpit";
+				var id = mini.get("cockpitguid").getValue();
+			}
+			else{
+				var type = node.type;
+				var id = node.id
+			}
+			epoint.openDialog("编辑授权", './cockpitauthedituser?id=' + id + '&type=' + type, searchData, {
+				'width' : 1000,
+				'height' : 800
+			});
+		}
+
+		// 删除数据
+		function deleteUser() {
+
+			epoint.confirm('确认要取消该内容的所有授权用户吗？', '', function() {
+				epoint.execute('deleteUser', 'fui-form', null, function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+						searchData();
+					}
+				});
+			});
+		}
+
+		
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			var type = e.node.type;
+			cockpitType = e.node.type;
+			var typename = "驾驶舱";
+			if(type == "cockpit"){
+				typename = "驾驶舱";
+			}else if(type == "cate"){
+				typename = "专题分类";
+			}else if(type == "project"){
+				typename = "专题";
+			}
+			document.getElementById("contentLabel").innerHTML = typename+"【" + e.node.text + "】的授权用户列表";
+			mini.get("columnguid").setValue("");
+			mini.get("projectcateguid").setValue("");
+			mini.get("cockpitguid").setValue("");
+			mini.get("projectguid").setValue("");
+			console.log(type);
+			if(type == 'column'){
+				mini.get("columnguid").setValue(id);
+			}
+			else if(type == 'cate'){
+				mini.get("projectcateguid").setValue(id);
+			}
+			else if(type == 'cockpit'){
+				mini.get("cockpitguid").setValue(id);
+			}
+			else if(type == 'project'){
+				mini.get("projectguid").setValue(id);
+			}
+			epoint.refresh([ 'datagrid', 'fui-form']);
+		});
+
+		// 删除数据
+		function deleteContent(row) {
+			epoint.confirm("确认要取消该用户在该分类下的所有授权吗？", '', function() {
+				epoint.execute('deleteContent', '', [ row.userguid,cockpitType ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+						searchData();
+					}
+				});
+			});
+		}
+		
+		function stopPropagation(e){
+			e.stopPropagation();
+		}
+
+	</script>
+</body>
+</html>

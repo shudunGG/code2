@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>新增授权</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="body">
+					<div role="row">
+						<div role="control" label="认证名称" starred="true">
+							<input id="principal" bind="principal" class="mini-textbox" 
+								required="true" requiredErrorText="认证名称不能为空" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="认证文件" starred="true">
+							<div id="uploader" class="mini-webuploader" pickerText="导入"
+                                 action="getFileUploadModel" limitType="keytab" fileNumLimit="1" dataImport="true"
+                                 auto="true"></div>
+						</div>
+						<div role="control" label="授权方式" starred="true">
+							<input id="authorization" bind="authorization" class="mini-combobox" required="true" 
+								data="[{text:'写权限',id:'W'},{text:'读权限',id:'R'}]"
+								requiredErrorText="授权方式不能为空"
+								onvaluechanged="onValueChanged" />
+						</div>
+					</div>
+					<div role="row" id="groupnameRow">
+						<div role="control" label="消费组名称" starred="true">
+							<select id="groupname-0" style="width: 470px;height:29px;border-radius:4px;border:#d6d6d6 1px solid;padding-left:10px"></select>
+							<!-- <input id="groupname-0" bind="groupname" class="mini-textbox" required="true"
+								requiredErrorText="消费组名称不能为空"  style="width: 480px;"/> -->
+							<a class="mini-button" iconCls="icon-addcircle" onclick="add()" style="margin-left:20px; width: 28px;height:28px;"></a>
+ 					</div>
+					</div>
+				</div>
+			</div>
+			<div class="btn-group" style="margin: 30px auto; width: 30%;">
+				<a class="mini-button mr10 mini-btn-primary" iconCls="icon-addcircle" onclick="save()">确定</a>
+				<a class="mini-button mr10 mini-btn-danger" iconCls="icon-minuscircle" onclick="close()">关闭</a>
+			</div>
+		</div>
+
+	<script id="template" type="x-tmpl-mustache">
+			<select id="groupname-{{index}}" style="margin-left:126px;margin-top:12px;width: 470px;height:29px;border-radius:4px;border:#d6d6d6 1px solid;padding-left:10px"></select>
+			
+			<button id="groupnameButton-{{index}}" type="button" onclick="deleteGroup(this.id)" style="margin-left:20px;margin-top:13px; width: 28px;height:28px;background:#fff;border-radius:4px;border:#d6d6d6 1px solid">㊀</button> 
+    </script>
+    
+    <!-- <br id="groupnameBr-{{index}}"> <input id="groupname-{{index}}" class="textbox" required="true"
+						requiredErrorText="消费组名称不能为空" style="margin-left:126px;margin-top:12px;width: 470px;height:29px;border-radius:4px;border:#d6d6d6 1px solid;padding-left:10px"/> -->
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			epoint.initPage('dxpkafkatopicrightaddaction', '', function(data){
+				$('#groupnameRow').hide();
+				if(data.groups){
+					menudata =JSON.parse( data.groups );
+					initmenu("#groupname-0",menudata);
+				}
+			});
+			var menudata = [];
+			var index=1;
+			var template = $("#template").html();
+			function add() {
+				var r = Mustache.render(template,{
+					index:function(){
+						return index            
+					}
+				}) 
+				$('#groupnameRow').append(r);
+				initmenu('#groupname-'+index,menudata);
+				index++;
+			}
+			
+			function deleteGroup(id) {
+				var button_id = id.replace('groupnameButton-','');
+				var groupname = 'groupname-'+button_id;
+				var groupnameBr = 'groupnameBr-'+button_id;
+				var groupnameButton = 'groupnameButton-'+button_id;
+
+				$('#'+groupname).remove();
+				$('#'+groupnameBr).remove();
+				$('#'+groupnameButton).remove();
+
+			}
+			
+			var onValueChanged = function() {
+				var authorization = mini.get('authorization').getValue();
+				if(authorization == 'W'){
+					$('#groupnameRow').hide();
+				}else{
+					$('#groupnameRow').show();
+				}
+			}
+			
+			function save() {
+ 				if (epoint.validate()) {
+ 					var groupnameStr=$('#groupname-0').val();
+
+					if(index>1){
+						console.log("index"+index);
+
+						for(var i=1;i<index;i++){
+	 						var groupname = 'groupname-'+i; 
+	 						if($('#'+groupname).val()){
+	 							groupnameStr += ';'+$('#'+groupname).val();
+	 						}
+	 						
+	 					} 	
+					}
+					epoint.execute('add', '@all', [groupnameStr], function(data) {
+						if (data.success == 'success') {
+							epoint.alert(data.msg, '提示', function() {
+								epoint.closeDialog();
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				} 
+			}
+
+			function close() {
+				epoint.closeDialog();
+			}
+			
+			var initmenu = function(dropdown,menudata) {
+		        var dropdown = $(dropdown);
+		        function createNode(data) {
+		        	for(j = 0,len=data.length; j < len; j++) {
+		                html +='<option value="'+data[j]["id"]+'">'+data[j]["name"]+'</option>';
+		        	}
+		            return html;
+		        }
+		        var html = createNode(menudata);
+		        dropdown.append(html);
+		    }
+
+		</script>
+</body>
+</html>

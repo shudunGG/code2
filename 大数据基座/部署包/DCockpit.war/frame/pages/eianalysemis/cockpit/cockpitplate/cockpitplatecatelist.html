@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>版块分类列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="分类管理"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getCateTreeModel" style="width: 300px; padding: 5px;"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增分类</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle" onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}"> 删除选定 </a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="分类名称">
+							<input class="mini-textbox" bind="dataBean.CateName" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="catecode" bind="dataBean.Catecode" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="width: 100%; height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="CateName" headerAlign="center" width="100">分类名称</div>
+					<div field="CateCode" headerAlign="center" width="100">分类编码</div>
+					<div field="statusText" headerAlign="center" align="center" width="100">分类状态</div>
+					<div field="OrderNum" headerAlign="center" align="center" width="100">排序号</div>
+
+					<!-- 操作列 -->
+					<div type="actioncolumn" headerAlign="center" align="center">
+						<span type="action" icon="icon-edit" onclick="editItems">修改</span>
+						<span type="action" icon="icon-doc" onclick="cateAuthorize">版块分类授权</span>
+						<span type="action" icon="icon-gear" onclick="openCateCard">关联卡片</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 版块标识
+		var plateguid = Util.getUrlParams("plateguid");
+		// 初始化页面
+		epoint.initPage('cockpitplatecatelistaction', null, function(data) {
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('catecode').setValue(id == 'root' ? "" : id);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var catecode = mini.get("catecode").getValue();
+			epoint.openDialog('新增分类', "frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecateadd?plateguid=" + plateguid + "&catecode=" + catecode, columnCallBack, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function columnCallBack() {
+			epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+		}
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+		};
+
+		// 弹出修改窗口
+		function editItems(e) {
+			epoint.openDialog("修改分类", 'frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecateadd?guid=' + e.rowguid, columnCallBack, {
+				'width' : 1000,
+				'height' : 450
+			});
+		}
+		
+		// 版块分类授权
+		function cateAuthorize(e) {
+			epoint.openDialog("分类授权", 'frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecateauthorize?guid=' + e.rowguid, callBack, {
+				'width' : 1000,
+				'height' : 800
+			});
+		}
+		
+		// 关联卡片
+		function openCateCard(e) {
+			epoint.openDialog("关联卡片", 'frame/pages/eianalysemis/cockpit/cockpitplate/cockpitplatecatecardlist?guid=' + plateguid +'&categuid=' + e.rowguid, callBack, {
+				'width' : 1000,
+				'height' : 800
+			});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', columnCallBack);
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>筛选条件设置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-addcircle"
+				onclick="saveCondition">保存修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row" id="mulitiRow">
+					<div role="control" label="复合表达式">
+						<input class="mini-textarea" bind="sformListVersion.combination" />
+					</div>
+				</div>
+				<div role="row" id="DivExplain">
+					<div role="control">
+						<span class="text-danger">说明：复合表达式的内容是由：[序号]、AND、OR、英文()构成，例：[1]
+							AND ([2] OR [3])。</span>
+					</div>
+				</div>
+				<div role="row" id="ComplexConditionList">
+					<div role="control" label="">
+						<!-- toolbar区域 -->
+						<div class="fui-toolbar">
+							<div class="btn-group mr10">
+								<a class="mini-button" iconCls="icon-addcircle"
+									onclick="openAdd();" id="btnAddRecord"> 新增条件 </a>
+								<!-- <a class="mini-button" iconCls="icon-addcircle"
+									onclick="saveEdit();" id="btnEditRecord"> 保存修改 </a>	 -->
+								<a id="btnDel" class="mini-button mini-btn-danger"
+									iconCls="icon-minuscircle"
+									onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+									删除选中 </a>
+							</div>
+						</div>
+						<div id="datagrid" class="mini-datagrid" idField="rowguid"
+							action="getResultListModel" sortOrder="desc" showPager="true"
+							style="height: 300px;" allowResize="true" multiSelect="true"
+							allowCellEdit="true" allowCellSelect="true"
+							editNextOnEnterKey="true" editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="20"></div>
+								<div field="conditionno" width="30" headerAlign="center"
+									align="center">条件编号</div>
+								<div field="querytypetext" headerAlign="center" Align="left">筛选类型</div>
+								<div field="description" headerAlign="center" Align="left">描述</div>
+								<div field="ordernum" width="50" headerAlign="center"
+									align="center">排序号</div>
+								<div width="20" align="center" headerAlign="center"
+									renderer="onEditRenderer">修改</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="listGuid" bind="listGuid" />
+	<input class="mini-hidden" id="versionGuid" bind="versionGuid" />
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		var isSub = "";
+		epoint.initPage('screeningconditionconfiglistaction', '',
+				function(data) {
+					if (data.isSub == "1") {
+						isSub = data.isSub;
+					}
+				});
+
+		//保存
+		function saveCondition() {
+			epoint.execute('saveCondition', 'fui-content', function(data) {
+				if (data && data.message) {
+					epoint.alert(data.message, '', null, 'info');
+				}
+			});
+		}
+
+		// 新增单一条件
+		function openAdd() {
+			epoint.openDialog('新增条件',
+					"frame/pages/listdesigner/config/screeningconditionconfigadd?listGuid="
+							+ mini.get("listGuid").getValue() + "&versionGuid="
+							+ mini.get("versionGuid").getValue()+"&isSub="+isSub, searchData, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		// 绘制单一条件行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"editCondition", "rowguid");
+		};
+
+		//修改单一条件
+		function editCondition(rowGuid) {
+			epoint.openDialog('修改单一表达式',
+					"frame/pages/listdesigner/config/screeningconditionconfigadd?listGuid="
+							+ mini.get("listGuid").getValue() + "&versionGuid="
+							+ mini.get("versionGuid").getValue() + "&rowGuid="
+							+ rowGuid+"&isSub="+isSub, searchData, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ], '', true);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.alert(msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-content' ], '', true);
+				}, 'info');
+			}
+		}
+
+		// 删除单一表达式
+		function deleteSelect() {
+			epoint.execute("delTCondition", '', msgCallBack);
+		}
+
+		//保存
+		function saveEdit() {
+			epoint.execute('saveEdit', 'datagrid', function(data) {
+				if (data && data.message)
+					epoint.alert(data.message, '', null, 'info');
+			});
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

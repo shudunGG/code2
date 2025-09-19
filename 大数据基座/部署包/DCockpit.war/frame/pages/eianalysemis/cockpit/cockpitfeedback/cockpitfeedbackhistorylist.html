@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>问题反馈列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="userName" headerAlign="center" align="center" width="50">反馈人</div>
+				<div field="feedbackDescribe" headerAlign="center" align="center" width="120">反馈描述</div>
+				<div field="feedBackTime" headerAlign="center" align="center" width="70" allowSort="true"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" dateFormat="yyyy-MM-dd HH:mm:ss">反馈时间</div>
+				<div align="center" headerAlign="center" renderer="onSeeRenderer" width="30">截图</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitfeedbackhistorylistaction');
+		
+		// 绘制查看按钮
+		var onSeeRenderer = function(e) {
+			if (e.row.hasImg == "0") {
+				return "-";				
+			} else {
+				return '<span type="action" style=\"color:blue\" onclick="openFeedbackImg(\''
+				+ e.row.rowguid + '\')">查看</span>';
+			}
+		};
+
+		// 打开回复页面
+		function openFeedbackImg(guid) {
+			epoint.openDialog('截图',
+					"../../cockpit/cockpitfeedback/cockpitfeedbackhistoryImg?guid="
+							+ guid, null, {
+						'width' : 600,
+						'height' : 430
+					});
+		}
+
+	</script>
+</body>
+</html>

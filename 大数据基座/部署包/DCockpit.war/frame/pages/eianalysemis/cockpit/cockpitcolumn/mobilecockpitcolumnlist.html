@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>主题管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../css/cockpitcolumnlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="wrap">
+		<div class="inner">
+
+			<div class="fui-left" id="fui-left" style="z-index: 11;">
+				<div role="head" title="部门列表"></div>
+				<div role="body">
+					<div class="mini-tree" id="tree" action="getOuTreeModel"
+						style="height: 100%"></div>
+				</div>
+			</div>
+			<div class="fui-right">
+				<div class="cockpit title">
+					<div class="cockpit text" id="cockpit-title"></div>
+					<div class="cockpit btn-group">
+						<a class="mini-button mini-btn-primary" id="authBtn"
+							onclick="authorize" iconCls="icon-gear">使用授权</a> <a
+							class="mini-button" id="editCockpitBtn" onclick="editCockpit"
+							iconCls="icon-edit">编辑驾驶舱</a>
+					</div>
+
+
+				</div>
+				<div class="fui-toolbar">
+					<div class="btn-group mr10">
+						<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增专题分类</a>
+						<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+							onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+							删除选定 </a>
+					</div>
+				</div>
+
+				<!-- 条件区域 -->
+				<div class="fui-condition">
+					<div class="fui-form" id="fui-form">
+						<div id="cform" role="form">
+							<div role="row">
+								<div role="control" label="专题分类名称">
+									<input class="mini-textbox" bind="dataBean.projectcatename" />
+								</div>
+								<div role="control" label="是否启用">
+									<input id="search_Status" class="mini-combobox" valueField="id"
+										textField="text"
+										data="[{id:'1',text:'启用'},{id:'0',text:'停用'}]"
+										bind="dataBean.status" showClose="true"
+										oncloseclick="onCloseClick" />
+								</div>
+							</div>
+							<input id="cockpitguid" class="mini-hidden"
+								bind="dataBean.cockpitguid" />
+						</div>
+					</div>
+					<a role="searcher" callback="searchData"></a>
+				</div>
+
+				<!-- 内容区域 -->
+				<div id="fuiContent" class="fui-content">
+					<div id="datagrid" class="mini-pagertree" idField="rowguid"
+						parentField="pcateguid" action="getDataGridData" sortOrder="desc"
+						multiSelect="true" showPager="true" style="height: 100%;"
+						treeColumn="catename" showTreeIcon="true" expandOnLoad="false">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="projectcatename" name="catename" width="120"
+								renderer="oncatenameRenderer">专题分类</div>
+							<div field="apicode" align="center" headerAlign="center"
+								width="100">ApiCode</div>
+							<div field="status" align="center" headerAlign="center"
+								width="80">状态</div>
+							<div field="ordernum" align="center" headerAlign="center"
+								width="80">排序号</div>
+							<div field="pcateguid" width="0" headerAlign="center"></div>
+							<div type="actioncolumn" headerAlign="center" align="center"
+								renderer="onActionRenderer" width="200"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mark" id="mark">
+			<div class="pic"></div>
+			<div class="cockpit inittext">请先初始化驾驶舱，然后建立您需要的驾驶舱主题</div>
+			<a class="mini-button mini-btn-primary"
+				style="margin: 0px auto; display: block; width: 120px;"
+				iconCls="icon-addcircle" onclick="openInit" id="initBtn">初始化驾驶舱
+			</a>
+
+			<div id="editDiv" class="mini-window" title="初始化驾驶舱"
+				style="width: 960px; height: 400px;" showMaxButton="false"
+				showCollapseButton="false" onbuttonclick="cancelInit"
+				showShadow="true" showToolbar="true" showFooter="false"
+				showModal="false" allowResize="true" allowDrag="true">
+				<div class="fui-toolbar">
+					<div class="btn-group mr10">
+						<a class="mini-button" iconCls="icon-save" onclick="init()">保存并关闭</a>
+						<a class="mini-button" iconCls="icon-minuscircle"
+							onclick="cancelInit">取消</a>
+					</div>
+				</div>
+				<div class="fui-form" id="edit-form">
+					<div role="form">
+						<div role="row">
+							<div role="control" label="驾驶舱名称" starred="true">
+								<input id="editName" class="mini-textbox" required="required"
+									vtype="maxLength:50;" requiredErrorText="驾驶舱名称不能为空">
+							</div>
+							<div role="control" label="背景水印" starred="true">
+								<div id="watermark" bind="dataBean.watermark"
+									action="getWatermarktypeList" class="mini-radiobuttonlist"
+									textField="text" valueField="id"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="所属部门">
+								<input id="createou" class="mini-treeselect" required="required"
+									action="selectouaction.getLazyTreeModal"
+									showFolderCheckBox="true" showRadioButton="true"
+									showTreeIcon="true" textField="text" idField="id"
+									expandOnLoad="true" />
+							</div>
+							<div role="control" label="创建人">
+								<input id="createusername" class="mini-outputtext">
+							</div>
+						</div>
+						<input class="mini-hidden" id="isEdit" />
+
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var cockpitguid;
+		var isadmin;
+		var createouguid;
+		epoint.initPage('mobilecockpitcolumnlistaction', '@all',
+				function(data) {
+					createouguid = data.createouguid;
+					mini.get('createou').disable();
+					isadmin = data.isadmin;
+					// console.log(data);
+					if (data.postback) {
+						return;
+					}
+					if (!isadmin) {
+						$('#fui-left').addClass('closed');
+						$('#fui-left').addClass('hidden');
+					}
+					if (data.createouguid && data.createouname) {
+						mini.get('createou').setValue(data.createouguid);
+						mini.get('createou').setText(data.createouname);
+					}
+					loadCockpit(data);
+				});
+
+		function onColumnRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var guid = mini.get("cockpitguid").getValue();
+			epoint.openDialog('新增专题分类',
+					"../cockpitprojectcate/cockpitprojectcateadd?cockpitguid="
+							+ guid + "&type=2", searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 弹出明细窗口
+		function openDetail(guid) {
+			epoint.openDialog('详细信息',
+					"../cockpitprojectcate/cockpitprojectcatedetail?guid="
+							+ guid, searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function callBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg);
+			}
+			epoint.initPage('cockpitcolumnlistaction', '@none', function(data) {
+				loadCockpit(data);
+			});
+		}
+
+		function searchData(data) {
+			if (data.msg) {
+				epoint.alert(data.msg);
+			}
+			$(".mark").hide();
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 弹出修改窗口
+		function openEdit(guid) {
+			var cockpitguid = mini.get("cockpitguid").getValue();
+			epoint.openDialog("绑定专题",
+					'../cockpitprojectcate/cockpitprojectcateadd?guid=' + guid
+							+ '&cockpitguid=' + cockpitguid + "&type=2",
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', searchData);
+		}
+		function deleteSel() {
+			epoint.confirm('确认要删除吗?', '', deleteSelect);
+		}
+
+		function openInit(e) {
+			if(!createouguid){
+				epoint.alertAndClose("未存在独立部门，无法创建驾驶舱！");
+				return;
+			}
+			mini.get('isEdit').setValue(false);
+			epoint.openDiv('editDiv', 'none');
+			/* 			document.getElementById('mark').style.background = 'rgba(0, 0, 0, 0.2)';
+			 document.getElementById('mark').style.zIndex = '12'; */
+		}
+
+		function init(e) {
+			epoint.closeDiv('editDiv');
+			document.getElementById('mark').style.background = 'rgba(255, 255, 255, 1)';
+			document.getElementById('mark').style.zIndex = '10';
+			$(".mark").hide();
+			if (mini.get('isEdit').getValue()) {
+				epoint.execute("editCockpit", "@all", [ cockpitguid,
+						mini.get("editName").getValue(),
+						mini.get("watermark").getValue(),
+						mini.get("createou").getValue() ], function(data) {
+					epoint.alert("初始化成功", '', function() {
+						cancelInit();
+						loadCockpit(data);
+					});
+				});
+			} else {
+				epoint.execute("init", "", [ mini.get("editName").getValue(),
+						mini.get("watermark").getValue(),
+						mini.get("createou").getValue() ], function(data) {
+					epoint.alert("初始化成功", '', function() {
+						cancelInit();
+						loadCockpit(data);
+					});
+				});
+			}
+		}
+
+		function cancelInit(sender, name) {
+			epoint.closeDiv('editDiv');
+			document.getElementById('mark').style.background = 'rgba(255, 255, 255, 1)';
+			document.getElementById('mark').style.zIndex = '10';
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			if (!isadmin) {
+				return;
+			}
+			if (e.node.id == "f9root") {
+				return;
+			}
+			epoint.execute("selectNode", '@none', e.node.id, function(data) {
+				loadCockpit(data);
+				mini.get('createou').setValue(e.node.id);
+				mini.get('createou').setText(e.node.text);
+				//searchData();
+			});
+		});
+
+		function loadCockpit(data) {
+			if (data.cockpitname) {
+				//有驾驶舱
+				$(".mark").hide();
+				document.getElementById('cockpit-title').innerHTML = data.cockpitname;
+				cockpitguid = data.cockpitguid;
+				//搜索条件
+				mini.get("cockpitguid").setValue(cockpitguid);
+				epoint.refresh([ 'datagrid', 'fui-form' ]);
+			} else {
+				//无驾驶舱
+				$(".mark").show();
+				//初始化内容
+
+				mini.get('createusername').setValue(data.createusername);
+				mini.get('watermark').setValue('1');
+				mini.get('editName').setValue('');
+				document.getElementById('cockpit-title').innerHTML = '未初始化';
+			}
+		}
+
+		function authorize() {
+			var guid = mini.get("cockpitguid").getValue();
+			epoint.openDialog("授权列表",
+					'../cockpitmobileauthorization/cockpitmobileauthlist?cockpitguid='
+							+ guid, searchData, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		function editCockpit() {
+			epoint.execute("getCockpitInfo", '@none', cockpitguid, function(
+					data) {
+				mini.get('createou').disable();
+				mini.get('createou').setText(data.createouname);
+				mini.get('editName').setValue(data.cockpitname);
+				mini.get('createusername').setValue(data.createusername);
+				mini.get('watermark').setValue(data.watermark);
+			})
+			mini.get("isEdit").setValue(true);
+			epoint.openDiv('editDiv', 'none');
+			document.getElementById('mark').style.background = 'rgba(0, 0, 0, 0.2)';
+			document.getElementById('mark').style.zIndex = '12';
+		}
+
+		var onSubit = function(e) {
+			var status = e.row.status;
+			//草稿                      //审核不通过
+			if (status == 10 || status == 30 || status == 20) {
+				return epoint
+						.renderCell(e, "action-icon icon-edit", "openEdit")
+						+ "&nbsp;&nbsp;"
+						+ epoint.renderCell(e, "action-icon icon-trash",
+								"deleteConfirm")
+						+ "&nbsp;&nbsp;"
+						+ epoint.renderCell(e, "action-icon icon-gear",
+								"openProject");
+			}
+			//启用
+			else if (status == 40) {
+				return epoint.renderCell(e, "action-icon icon-pause", "pause")
+			}
+			//停用
+			else if (status == 50) {
+				return epoint.renderCell(e, "action-icon icon-start", "start")
+						+ "&nbsp;&nbsp;"
+						+ epoint.renderCell(e, "action-icon icon-edit",
+								"openEdit")
+						+ "&nbsp;&nbsp;"
+						+ epoint.renderCell(e, "action-icon icon-gear",
+								"openProject")
+						+ "&nbsp;&nbsp;"
+						+ epoint.renderCell(e, "action-icon icon-trash",
+								"deleteConfirm");
+			}
+		}
+		//单条删除
+		function deleteConfirm(id) {
+			epoint.confirm('确认要删除吗？', '', function() {
+				epoint.execute('delete', '', [ id ], function(data) {
+					console.log(data.msg);
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			});
+		}
+
+		//停用
+		function pause(id) {
+			epoint.confirm('确认要停用吗？', '', function() {
+				epoint.execute('pause', '', [ id ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			});
+		}
+
+		//启用
+		function start(id) {
+			epoint.execute('start', '', [ id ], function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', searchData());
+				}
+			});
+		}
+
+		function openProject(guid) {
+			epoint.openDialog("配置专题", './cockpitprojectconf?columnguid=' + guid
+					+ "&type=2", searchData, {
+				'width' : 1000,
+				'height' : 600
+			});
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function changeStatus() {
+			if (mini.get('datagrid').getSelecteds() == 0) {
+				epoint.alert('请选择需要启用的主题!');
+			} else {
+				epoint.execute("changeStatus", '', function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			}
+		}
+
+		function stopChange() {
+			epoint.execute("stopChange", '', function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', searchData());
+				}
+			});
+		}
+
+		function oncatenameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		function changestatus(rowguid, e) {
+			if (epoint.validate()) {
+				epoint.execute('changestatus', '', [ rowguid, e ], searchData);
+			}
+		}
+
+		function onActionRenderer(e) {
+			var title = "";
+			if (e.row.status == '启用') {
+				title += '<span type="action" style=\"color:blue\" onclick="changestatus(\''
+						+ e.row.rowguid + '\',0)">停用</span>' + '&nbsp&nbsp';
+			} else if (e.row.status = "停用") {
+				title += '<span type="action" style=\"color:blue\" onclick="changestatus(\''
+						+ e.row.rowguid + '\',1)">启用</span>' + '&nbsp&nbsp';
+				title += '<span type="action" style=\"color:blue\" onclick="openEdit(\''
+						+ e.row.rowguid + '\')">绑定专题</span>' + '&nbsp&nbsp';
+				title += '<span type="action" style=\"color:red\" onclick="deleteSel()">删除</span>'
+						+ '&nbsp&nbsp';
+			}
+			return title;
+		}
+	</script>
+</body>
+</html>

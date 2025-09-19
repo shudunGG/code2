@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据源管理子页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="testConnection"
+				onclick="testConnection()">测试</a> <a
+				class="mini-button mini-btn-primary" iconCls="icon-addcircle"
+				id="add" onclick="saveAndClose()">确定添加</a><a
+				class="mini-button mini-btn-danger" id="addCancel"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">取消添加</a><a
+				class="mini-button mini-btn-primary" iconCls="icon-addcircle"
+				id="edit" onclick="saveAndClose()">保存修改</a> <a
+				class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+				id="editCancel" onclick="epoint.closeDialog">取消修改</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<!-- 加2个input防止密码浏览器自动填入 -->
+				<input type="text" name="username" class="hidden-accessible" /><input
+					type="password" class="hidden-accessible" /> <input
+					id="keytabName" class="mini-hidden" bind="keytabName" />
+				<div role="row">
+					<div role="control" label="数据源名称" starred="true">
+						<input class="mini-textbox" bind="dataSource.dsName"
+							required="true" requiredErrorText="数据源名称不能为空"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="数据源类型" starred="true">
+						<input name="dsType" bind="dataSource.dsType" popupHeight="150"
+							id="dsType" allowInput="false" action="getDsTypes"
+							value="SQL Server" onvaluechanged="onValueChanged"
+							required="true" requiredErrorText="数据源类型不能为空" autoLoad="false"
+							class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row" id="loginRow">
+					<div role="control" label="登录帐户" starred="true">
+						<input id="loginUser" class="mini-textbox"
+							bind="dataSource.loginUser" required="true"
+							requiredErrorText="登录帐户不能为空" />
+					</div>
+					<div role="control" label="登录密码" starred="true">
+						<input id="loginPwd" class="mini-password"
+							bind="dataSource.loginPwd" required="true"
+							requiredErrorText="登录密码不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门" starred="true">
+						<input id="id_ouguid" class="mini-treeselect" textField="text"
+							valueField="id" bind="dataSourceExtendInfo.ouguid"
+							action="frameoulistaction.getTreeModel"
+							oncloseclick="onCloseClick" showClose="true" required="true"
+							shownullitem="true" requiredErrorText="所属部门不能为空"
+							allowinput="true" />
+					</div>
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataSource.OrderNumber"
+							vtype="int;range:0,99999;" emptyText="请填写排序号..." />
+					</div>
+				</div>
+				<div role="row" id="conntype">
+					<div role="control" label="配置类型" starred="true">
+						<div id="conntype" class="mini-radiobuttonlist"
+							bind="dataSource.conntype" requiredErrorText="配置类型必须选择"
+							data="[{text:'服务器数据库名称配置',id:'0'},{text:'连接字符串配置',id:'1'}]"
+							value="0" textField="text" valueField="id"
+							onvaluechanged="onConnectTypeChanged"></div>
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="是否加密" starred="true">
+						<div id="isencry" class="mini-radiobuttonlist" bind="dataSource.isencry"
+							requiredErrorText="是否加密必须选择" required="true"
+							data="[{text:'是',id:'1'},{text:'否',id:'0'}]" value="0"
+							textField="text" valueField="id"></div>
+					</div>
+					
+				</div> -->
+				<div role="row" id="serverdbname">
+					<div role="control" label="服务器名称或地址" starred="true">
+						<input id="serverName" class="mini-textbox"
+							bind="dataSource.serverName" required="true"
+							requiredErrorText="服务器名称或地址不能为空" />
+					</div>
+				</div>
+				<div role="row" id="dbname">
+					<div role="control" label="数据库名称" starred="true">
+						<input id="dbname" class="mini-textbox" bind="dataSource.dbname"
+							required="true" requiredErrorText="数据库名称不能为空" />
+					</div>
+				</div>
+				<div role="row" id="schemaRow" style="display: none;">
+					<div role="control" label="模式名称" starred="true">
+						<input class="mini-textbox" bind="dataSourceExtendInfo.schemaname"
+							required="true" requiredErrorText="模式名称不能为空" />
+					</div>
+				</div>
+				<div role="row" id="encodeRow" style="display: none;">
+					<div role="control" label="服务器编码" starred="true">
+						<input class="mini-combobox" bind="dataSourceExtendInfo.encode"
+							required="true" action="getEncodeList"
+							requiredErrorText="服务器编码不能为空!" />
+					</div>
+				</div>
+				<div role="row" id="zookeeperRow" style="display: none;">
+					<div role="control" label="ZookeeperHostname" starred="true">
+						<input class="mini-textbox"
+							bind="dataSourceExtendInfo.zookeeperhostname" required="true"
+							requiredErrorText="ZookeeperHostname不能为空" />
+					</div>
+					<div role="control" label="ZookeeperPath" starred="true">
+						<input class="mini-textbox"
+							bind="dataSourceExtendInfo.zookeeperpath" required="true"
+							requiredErrorText="ZookeeperPath不能为空" />
+					</div>
+				</div>
+				<div role="row" id="kafkaHelpRow">
+					<div role="control" style="color: red">
+						kafka：需先向大数据管理平台申请kafka超级管理员账号：kafkaclient@epoint，获取认证文件kafkaclient.keytab和krb5.conf并上传。</div>
+				</div>
+				<div role="row" id="kafkaRow">
+					<div role="control" label="Kafka超级管理员" starred="false">
+						<input class="mini-textbox" bind="dataSourceExtendInfo.principal"
+							required="false" requiredErrorText="账号名称不能为空" />
+					</div>
+					<div role="control" label="认证文件">
+						<div id="uploader" class="mini-webuploader" pickerText="上传"
+							action="getFileUploadModel" limitType="keytab,conf"
+							fileNumLimit="2" dataImport="true" auto=true
+							onuploadaccept="onUploadAccept"></div>
+					</div>
+				</div>
+				<div role="row" id="debeziumApiUrlRow">
+					<div role="control" label="debeziumApiUrl">
+						<input class="mini-textbox"
+							bind="dataSourceExtendInfo.debeziumApiUrl" />
+					</div>
+				</div>
+				<div role="row" id="connectionstr">
+					<div role="control" label="数据源连接字符串" starred="true">
+						<input id="connectionString" class="mini-textbox"
+							bind="dataSource.connectionString" required="true"
+							requiredErrorText="数据源连接字符串不能为空" />
+					</div>
+				</div>
+				<div role="row" id="relateHive" style="display: none;">
+					<div role="control" id="relateHive" label="关联数据源"
+						starred="true">
+						<input id="relateHiveDs" class="mini-combobox" bind="hiveDsid" required="true"
+							action="getHiveDsList" requiredErrorText="关联hive数据源不能为空!" />
+					</div>
+				</div>
+				<!--		</div>
+				<div role="row" id="relateHdfs" style="display: none;">
+					<div role="control" id="relateHdfs" label="关联hdfs数据源" starred="true">
+						<input id="relateHdfsDs" class="mini-combobox"
+							bind="hdfsDsid" required="true"
+							action="getHdfsDsList" requiredErrorText="关联hdfs数据源不能为空!" />
+					</div>
+				</div> -->
+				<div role="row" id="dsdesc">
+					<div role="control" label="数据源描述">
+						<input class="mini-textbox" bind="dataSource.dsDesc"
+							vtype="maxLength:100" />
+					</div>
+				</div>
+
+				<div role="row" id="apirequest">
+					<div role="control" label="请求类型">
+						<input id="requestType" bind="requestType"
+							class="mini-radiobuttonlist" action="getRequestTypeList"
+							required="true" requiredErrorText="请求类型/方法不能为空"
+							onvaluechanged="setmethod3" />
+					</div>
+					<div role="control" label="服务源类型" starred="true" id="apitype">
+						<input id="apiurltype" bind="apiurltype"
+							class="mini-radiobuttonlist"
+							data="[{value:'0',text:'RestAPI'},{value:'1',text:'WebService'}]"
+							textField="text" valueField="value" required="true"
+							onvaluechanged="setmethod" />
+					</div>
+
+				</div>
+				<div role="row" id="apicontype">
+					<div role="control" label="Content-Type">
+						<input id="contentType" bind="contentType"
+							class="mini-radiobuttonlist"
+							data="[{value:'0',text:'application/x-www-form-urlencoded'},{value:'1',text:'application/json'}]"
+							textField="text" valueField="value" required="true" />
+					</div>
+				</div>
+				<div role="row" id="apiurl">
+					<div role="control" label="接口源地址" id="apiUrlDiv" starred="true">
+						<input bind="apiUrl" id="apiurl" style="margin-right: 10px"
+							class="mini-textbox" onvalidation="urlCheck" required="true"
+							requiredErrorText="接口源地址不能为空" onvaluechanged="change()" /> <a
+							class="mini-button" id="parseWsUrl" onclick="parseWsUrl()"
+							style="width: 83px;">查询</a>
+					</div>
+				</div>
+				<div role="row" id="wsdlFileUploadRow">
+					<div role="control" label="方法名" id="methodrow" starred="true">
+						<input class="mini-combobox" showNullItem="true" required="true"
+							onvaluechanged="methodChanged" bind="method" showClose="true"
+							oncloseclick="onCloseClick" emptyText="请选择..."
+							nullItemText="请选择..." id="method" textField="text"
+							allowInput="true" valueField="value"
+							requiredErrorText="WebService方法名不能为空" />
+					</div>
+					<div role="control"></div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<script src="../../../fui/js/jsboot.js"></script>
+	<script>
+		// sm2加密引入js文件
+		SrcBoot.output([ '../../../../frame/fui/js/libs/sm2security.js' ]);
+	</script>
+
+	<!-- 配置变量 -->
+	<script>
+		var sm2PubKey = '';
+		// 初始化页面
+		epoint.initPage('dxpdatasourceaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			if (data.add) {
+				//隐藏修改按钮
+				mini.get('edit').setVisible(false);
+				mini.get('editCancel').setVisible(false);
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				if (data.dstype != 'API') {
+					$('#apirequest').hide();
+					$('#apicontype').hide();
+					$('#apiurl').hide();
+					$('#wsdlFileUploadRow').css('display', 'none');
+				}else{
+					$('#loginRow').hide();
+					$('#conntype').hide();
+					$('#serverdbname').hide();
+					$('#dbname').hide();
+					$('#connectionstr').hide();
+					$('#dsdesc').hide();
+				}
+				if (!data.isadmin) {
+					mini.get('id_ouguid').disable();
+				}
+				if (data.ouName) {
+					mini.get('id_ouguid').setText(data.ouName);
+				}
+			} else {
+				if (data.ouname) {
+					mini.get('id_ouguid').setText(data.ouname);
+				}
+				//隐藏新增按钮
+				mini.get('add').setVisible(false);
+				mini.get('addCancel').setVisible(false);
+				onValueChanged();
+				if (mini.get('id_ouguid').getValue() != '') {
+					if (!data.isadmin) {
+						mini.get('id_ouguid').disable();
+					}
+				}
+			}
+			if (data.conntype && data.dstype != 'API') {
+				if (data.conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+			}
+			if (data.sm2PubKey) {
+				sm2PubKey = data.sm2PubKey;
+			}
+			if (data.dstype == 'API') {
+				var apiurltype = mini.get('apiurltype').getValue();
+				if (apiurltype == '0') {
+					Util.form.hideField('#methodrow');
+					var requestType = mini.get('requestType').getValue();
+					if (requestType == '1') {
+						$('#contype').css('display', 'none');
+					} else {
+						$('#contype').css('display', 'block');
+					}
+					$('#parseWsUrl').css('display', 'none');
+					$('#wsdlFileUploadRow').css('display', 'none');
+				} else {
+					Util.form.showField('#methodrow');
+					$('#contype').css('display', 'none');
+					$('#parseWsUrl').css('display', 'block');
+					$('#wsdlFileUploadRow').css('display', 'block');
+					mini.get('method').enable();
+				}
+			}
+		}
+
+		// 数据源配置类型改变行为
+		function onConnectTypeChanged(e) {
+			if (e.value == '1') {//连接字符串配置
+				$('#serverdbname').hide();
+				$('#connectionstr').show();
+			} else {//服务器数据库名称配置
+				$('#connectionstr').hide();
+				$('#serverdbname').show();
+			}
+		}
+
+		// 保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var oldUser = mini.get("loginUser").value;
+				var oldPwd = mini.get("loginPwd").value;
+				var oldServer = mini.get("serverName").value;
+				var olddbname = mini.get("dbname").value;
+				var oldconnstr = mini.get("connectionString").value;
+				mini.get("loginUser").setValue(encrypt(oldUser));
+				mini.get("loginPwd").setValue(encrypt(oldPwd));
+				mini.get("serverName").setValue(encrypt(oldServer));
+				mini.get("dbname").setValue(encrypt(olddbname));
+				mini.get("connectionString").setValue(encrypt(oldconnstr));
+				var pwd = mini.get("loginPwd").value;
+				if (mini.get('add').getVisible()) {
+					epoint.execute('add', 'fui-form', pwd, closeCallback);
+				} else if (mini.get('edit').getVisible()) {
+					epoint.execute('save', 'fui-form', pwd, closeCallback);
+				}
+				mini.get("loginUser").setValue(oldUser);
+				mini.get("loginPwd").setValue(oldPwd);
+				mini.get("serverName").setValue(oldServer);
+				mini.get("dbname").setValue(olddbname);
+				mini.get("connectionString").setValue(oldconnstr);
+			}
+		}
+
+		// 客户端加密类型
+		function encrypt(str) {
+			if (str) {
+				str = Util.encryptSM2(str, sm2PubKey);
+			}
+			return str;
+		}
+
+		function testConnection() {
+			if (epoint.validate()) {
+				var oldUser = mini.get("loginUser").value;
+				var oldPwd = mini.get("loginPwd").value;
+				var oldServer = mini.get("serverName").value;
+				var olddbname = mini.get("dbname").value;
+				var oldconnstr = mini.get("connectionString").value;
+				mini.get("loginUser").setValue(encrypt(oldUser));
+				mini.get("loginPwd").setValue(encrypt(oldPwd));
+				mini.get("serverName").setValue(encrypt(oldServer));
+				mini.get("dbname").setValue(encrypt(olddbname));
+				mini.get("connectionString").setValue(encrypt(oldconnstr));
+				var pwd = mini.get("loginPwd").value;
+				epoint.execute('testConnection', 'fui-form', pwd,
+						function(data) {
+							if (data.connected === 'success') {
+								epoint.alert("连接成功", "测试结果", null, "success");
+							} else {
+								epoint.alert(data.msg, "测试结果", null, "deny");
+							}
+						});
+				mini.get("loginUser").setValue(oldUser);
+				mini.get("loginPwd").setValue(oldPwd);
+				mini.get("serverName").setValue(oldServer);
+				mini.get("dbname").setValue(olddbname);
+				mini.get("connectionString").setValue(oldconnstr);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				Util.safeEval(data.msg);
+			}
+		}
+
+		function onCloseClick() {
+			mini.get("id_ouguid").setText("");
+			mini.get("id_ouguid").setValue("");
+		}
+
+		function onValueChanged() {
+			var dsType = mini.get('dsType').getValue();
+			var conntype = mini.get('conntype').getValue();
+			//Util.form.showField('#node');
+			//mini.get('belongNode').setVisible(true);
+			if (dsType == 'dm' || dsType == 'postgresql') {
+				$('#schemaRow').show();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').show();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').hide();
+			} else if (dsType == 'HDFS' || dsType == 'HadoopCluster') {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').show();
+				$('#dbname').hide();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').hide();
+			} else if (dsType == 'SFTP') {
+				$('#schemaRow').hide();
+				$('#encodeRow').show();
+				$('#zookeeperRow').hide();
+				$('#dbname').hide();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').hide();
+			} else if (dsType == 'mongodb') {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').hide();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').hide();
+			} else if (dsType == 'kafka') {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').hide();
+				$('#loginRow').hide();
+				$('#kafkaHelpRow').show();
+				$('#kafkaRow').show();
+				$('#debeziumApiUrlRow').show();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').hide();
+				//mini.get('belongNode').setVisible(false);
+				//Util.form.hideField('#node');
+			} else if (dsType == 'presto') {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').show();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').show();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+			} else if (dsType == 'hive2') {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').show();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').show();
+			} else if (dsType == 'API') {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').hide();
+				$('#loginRow').hide();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#serverdbname').hide();
+				$('#dsdesc').hide();
+				$('#apirequest').show();
+				$('#apicontype').show();
+				$('#apiurl').show();
+				$('#wsdlFileUploadRow').show();
+				$('#conntype').hide();
+				$('#connectionstr').hide();
+				var apiurltype = mini.get('apiurltype').getValue();
+				if (apiurltype == '0') {
+					Util.form.hideField('#methodrow');
+					var requestType = mini.get('requestType').getValue();
+					if (requestType == '1') {
+						$('#contype').css('display', 'none');
+					} else {
+						$('#contype').css('display', 'block');
+					}
+					$('#parseWsUrl').css('display', 'none');
+					$('#wsdlFileUploadRow').css('display', 'none');
+				} else {
+					Util.form.showField('#methodrow');
+					$('#contype').css('display', 'none');
+					$('#parseWsUrl').css('display', 'block');
+					$('#wsdlFileUploadRow').css('display', 'block');
+					mini.get('method').enable();
+				}
+			} else {
+				$('#schemaRow').hide();
+				$('#encodeRow').hide();
+				$('#zookeeperRow').hide();
+				$('#dbname').show();
+				$('#loginRow').show();
+				$('#kafkaHelpRow').hide();
+				$('#kafkaRow').hide();
+				$('#debeziumApiUrlRow').hide();
+				$('#relateHive').hide();
+				$('#apirequest').hide();
+				$('#apicontype').hide();
+				$('#apiurl').hide();
+				$('#wsdlFileUploadRow').hide();
+				$('#conntype').show();
+				if (conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+				//$('#relateHdfs').hide();
+			}
+		}
+
+		function onUploadAccept(e) {
+			var file = e.object.file;
+			if (mini.get('keytabName').getValue() != "") {
+				mini.get('keytabName').setValue(
+						mini.get('keytabName').getValue() + ";"
+								+ e.ret.attachFileName);
+			} else {
+				mini.get('keytabName').setValue(e.ret.attachFileName);
+			}
+
+		}
+
+		// 文件加入列表时，向文件列表中添加记录
+		function onFilesQueued(event) {
+			var files = event.files, html = [], item = '';
+			// 向文件列表中添加记录
+			for (var i = 0, len = files.length; i < len; i++) {
+				item = '<div id="' + files[i].id + '" class="mini-uploader-item">'
+						+ '<span class="mini-uploader-info">'
+						+ files[i].name
+						+ '</span>'
+						+ '<a href="#" onclick="deletet(this)" class="mini-uploader-remove" fileId="'
+						+ files[i].id + '">删除</a></div>';
+				html.push(item);
+			}
+			if (event.sender.id == "uploader1") {
+				jQuery(transList).append(html.join(''));
+			} else {
+				jQuery(jobList).append(html.join(''));
+			}
+		}
+
+		/* 		function onNodeChanged(){
+		 var dsType = mini.get('dsType').getValue();
+		 if(dsType == 'presto') {
+		 mini.get('relateHiveDs').setValue('');
+		 epoint.refresh(['belongNode','relateHiveDs']);
+		 }else if(dsType == 'hive2'){
+		 mini.get('relateHdfsDs').setValue('');
+		 epoint.refresh(['belongNode','relateHdfsDs']);
+		 }
+		
+		 } */
+		//设置方法
+		function setmethod(e) {
+			if (e.value == '0') {
+				Util.form.hideField('#methodrow');
+				var requestType = mini.get('requestType').getValue();
+				if (requestType == '1') {
+					$('#apicontype').css('display', 'none');
+				} else {
+					$('#apicontype').css('display', 'block');
+				}
+				$('#parseWsUrl').css('display', 'none');
+				$('#wsdlFileUploadRow').css('display', 'none');
+			} else {
+				Util.form.showField('#methodrow');
+				$('#apicontype').css('display', 'none');
+				$('#parseWsUrl').css('display', 'block');
+				$('#wsdlFileUploadRow').css('display', 'block');
+				mini.get('method').enable();
+			}
+		}
+		function setmethod3(e) {
+			if (e.value == '1') {
+				$('#apicontype').css('display', 'none');
+			} else {
+				var apiurltype = mini.get('apiurltype').getValue();
+				if (apiurltype == '0') {
+					$('#apicontype').css('display', 'block');
+				}
+			}
+		}
+
+		function change() {
+			var apiurl = mini.get('apiurl').getValue();
+			if (apiurl != "") {
+				var _apiurltype = mini.get("apiurltype").getValue();
+				if (_apiurltype == '1') {
+					methodUrl = "cockpitapiinfoaddaction.action?cmd=getWebServiceMethodList&wsdlUrl="
+							+ apiurl;
+					mini.get('method').setUrl(methodUrl);
+				}
+			}
+		}
+		function parseWsUrl() {
+			mini.get('method').setUrl(methodUrl);
+		}
+		function urlCheck(e) {
+			var patt = /(^\s+)|(\s+$)|\s+/g;
+			var strRegex = "^([hH][tT]{2}[pP]://|[hH][tT]{2}[pP][sS]://)[^\s]+";
+			var re = new RegExp(strRegex);
+			if (e.isValid) {
+				if (patt.test(e.value)) {
+					e.errorText = "接口源地址不能有空格";
+					e.isValid = false;
+				} else if (!re.test(e.value)) {
+					e.errorText = "接口源地址格式错误";
+					e.isValid = false;
+				}
+			}
+		}
+	</script>
+
+</body>
+
+</html>

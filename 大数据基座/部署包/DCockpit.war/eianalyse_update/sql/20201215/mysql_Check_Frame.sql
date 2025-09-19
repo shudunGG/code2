@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	portrait_manage_api_response_params where rowguid='e63b8055-fde7-494a-a4ab-93e0fdb5d967'

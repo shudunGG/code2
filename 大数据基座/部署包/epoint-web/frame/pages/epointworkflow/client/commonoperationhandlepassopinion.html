@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+	    SrcBoot.output([ 'frame/pages/epointworkflow/css/handlepage.css']);
+    </script>
+    <style type="text/css">	
+    	.process-handle{
+			max-height: 551px;
+			overflow-y: auto;
+    	}
+    	
+    	.process-handle-left{
+    		width: 260px;
+    		margin-right: 10px;
+    		height: 100%;
+    		float:left;
+    		
+    	}
+    	
+    	.opinion-panel{
+    		width: 100%;
+    	}
+    	
+    	.opinion-container {
+    		width: 260px;
+    		height: 100%;
+    	}
+    	
+    	.opinion-txt {
+    		width: 260px;
+    		float: none;
+			position: static;
+			height: 188px;
+    	}
+    	
+    	.add-myopinion {
+    		position: static;
+    	}
+    	
+    	.opinion-tmpl{
+    		width: 260px;
+    		float: none;
+    		position: static;
+			height: 305px;
+			border-left: none;
+    	}
+    	
+    	.opiniontmpl-tab-bd {
+    		height: 248px;
+    	}
+    	
+    	.opiniontmpl-tab-hd>span {
+    		padding: 0px 5px 0px 0px;
+    	}
+    	
+    	.opinion-tmpl>.split {
+    		display: none;
+    	}
+    	
+    	.process-handle-right {
+			position: absolute;
+			left: 280px;
+			right: 10px;
+    		height: 100%;
+    	}
+    	
+    	.status-bar{
+    		margin-top: 0px;
+    	}
+    	
+    	.step-panel{
+    		width: 100%;
+    		height: 104px;
+    	}
+    	
+    	.step-container {
+			border: 1px solid #e7e7e7;
+			position: static;
+			top: 43px;
+			bottom: 0;
+			overflow-y: hidden;
+			overflow-x: hidden;
+			margin-right: 10px;
+			width: 100%;
+			height: 70px;
+    	}
+    	
+    	.step-list{
+    		padding: 5px;
+    	}
+    	
+    	.step-list>.step-item {
+			margin: 2px;
+		}
+    	
+    	.step-item>.step-name>span {
+			margin-right: 10px;
+		}
+		
+    	ul > li.step-item{
+    		float: left;
+    	}
+    	
+    	.member-panel{
+			width: 100%;
+			height: 431px;
+			padding-top: 15px;
+    		box-sizing: border-box;
+    	}
+    	
+    	.member-container{
+    		position: relative;
+    		width: 100%;
+			bottom: 0;
+			top: 0;
+			height: 374px;
+    	}
+    	
+    </style>
+    <script>
+      SrcBoot.outputCustomSkin('frame/pages/epointworkflow/css/');
+    </script>
+</head>
+<body>
+    <div class="page-loading"></div>
+    <div class="process-container">
+        <div class="process-handle">
+        	 <div class="process-handle-left">
+        	 	<div class="opinion-panel">
+        	 		<h2 class="fui-block-hd">
+						签署意见
+					</h2>
+					<div class="opinion-container" id="opinion">
+						<div class="opinion-txt">
+							<div class="opiniontextdiv">
+				                 <textarea class="mini-textarea" style="height: 150px; width: 100%;" maxLength="500" id="opinioncontent"></textarea>
+			                </div>
+							<div class="add-myopinion" id="addmyopiniondiv">
+								<p class="add-myopinion-row fui-color-hover"><i class="action-icon icon-addcircle "></i>添加到我的意见模版</p>
+							</div>
+						</div>
+						<div class="opinion-tmpl" id="opinion-tmpl">
+							<div class="mini-tabs" height="100%" id="opinionTmplTab">
+								<div title="公共意见模版" >
+									<div id="commonopinionlist" class="mini-listbox" showCheckBox="true" multiSelect="true" textField="opiniontext" valueField="opinionguid"></div>
+								</div>
+								<div title="我的意见模版" >
+									<div id="useropinionlist" class="mini-listbox" showCheckBox="true" multiSelect="true" textField="opiniontext" valueField="opinionguid"></div>
+								</div>
+							</div>
+							<span class="split" id="tmplsplit"></span>
+						</div>
+						
+					</div>
+        	 	</div>
+        	 </div>
+        	 <div class="process-handle-right">
+        	 	<div class="step-panel" id="step-panel">
+        	 		<h2 class="fui-block-hd">步骤选择</h2>
+                	<div class="step-container" id="steplist" style="overflow-y:auto; overflow-x:hidden;"></div>
+        	 	</div>
+        	 	<div class="member-panel">
+        	 		<h2 class="fui-block-hd">人员选择</h2>
+               		<div class="member-container">
+                   	 	<div class="step-tab" id="steptab">
+                        	<div class="step-tab-hd" style="overflow:hidden"></div>
+                        	<div class="step-tab-bd"></div>
+                    	</div>
+                	</div>
+        	 	</div>
+        	 </div>
+        </div>
+        <div class="status-bar">
+            <span>当前步骤：<b id="curr_step">拟稿</b>当前操作：<b id="curr_op">送下一步</b></span>
+           <div class="btn-bar" id="btnbar">
+				<a class="mini-button mini-btn-primary btnsubmit" id="btnsubmit">确认提交</a><a
+					class="mini-button btncancel" id="btncancel">取消</a>
+			</div>
+        </div>
+    </div>
+    
+    <script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../../../framemanager/sform/formlistmanage/js/jquery.nicescroll.min.js"></script>
+	
+    <!-- 配置变量 -->
+    <script>
+    window.isexecutebtnsubmit = false;
+    Util.loadPageModule({
+		templ: 'frame/pages/epointworkflow/client/handlepage.templ',
+		js: '../js/handlepass.js'
+	});
+    
+    $(function() {
+
+		var $opinion = $("#opinion"), $tmplsplit = $("#tmplsplit");
+		
+		var $opinioncontent = $("#opinioncontent");
+
+		$tmplsplit.on("click", function() {
+			$opinion.toggleClass("shrink");
+		});
+		
+		
+		$(".process-handle").niceScroll({
+			cursoropacitymax : 1,
+			autohidemode : true
+		});
+		
+		
+	});
+    
+    
+    </script>
+</body>
+</html>

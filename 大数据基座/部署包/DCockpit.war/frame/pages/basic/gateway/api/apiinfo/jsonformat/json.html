@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<!-- 请修改相对路径 -->
+<script src="../../../../../../../frame/fui/js/cssboot.js"></script>
+<style>
+* {
+	margin: 0;
+	padding: 0;
+}
+
+ul, li {
+	list-style: none;
+}
+
+i {
+	font-style: normal;
+}
+
+ul {
+	/* padding-left: 20px; */
+	
+}
+
+li {
+	line-height: 28px;
+}
+
+p {
+	position: relative;
+}
+
+p:hover {
+	background-color: #fffed5;
+}
+
+.json-contain {
+	width: 80%;
+	margin: 0 auto;
+	box-sizing: border-box;
+	padding-top: 30px;
+}
+
+.expandable {
+	position: relative;
+}
+
+.expand {
+	width: 13px;
+	height: 13px;
+	border: 1px solid #5b9cb9;
+	color: #5b9cb9;
+	position: absolute;
+	left: 5px;
+	top: 7px;
+	text-align: center;
+	line-height: 11px;
+	display: inline-block;
+	background-color: #fff;
+	user-select: none;
+}
+
+.expand:hover {
+	cursor: pointer;
+	box-shadow: 0 0 6px 2px rgba(91, 156, 185, .3);
+}
+
+.check-btn {
+	position: absolute;
+	right: 0;
+	top: 5px;
+	z-index: 10;
+	width: 18px;
+	height: 18px;
+	display: inline-block;
+	background-image:
+		url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAIAAACQKrqGAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQyIDc5LjE2MDkyNCwgMjAxNy8wNy8xMy0wMTowNjozOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjVDM0M5RERGNzg2MzExRThCNjc1RjhBRTBEQkUyRUZEIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjVDM0M5REUwNzg2MzExRThCNjc1RjhBRTBEQkUyRUZEIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NUMzQzlEREQ3ODYzMTFFOEI2NzVGOEFFMERCRTJFRkQiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NUMzQzlEREU3ODYzMTFFOEI2NzVGOEFFMERCRTJFRkQiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7NugRAAAAAK0lEQVR42mI8c+YMA3GABYiNjY0Jqjt79iwTA9FgVOlQUsoCiV9ilAIEGABF3Afre0E90AAAAABJRU5ErkJggg==');
+	background-repeat: no-repeat;
+	background-position: center;
+	cursor: pointer;
+}
+
+.pick-item {
+	padding-right: 20px;
+}
+
+.pick-item.active {
+	background-color: #dfedfa;
+}
+
+.active .check-btn {
+	background-image:
+		url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAIAAACQKrqGAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQyIDc5LjE2MDkyNCwgMjAxNy8wNy8xMy0wMTowNjozOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTggKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjUzQUY5NjBCNzg2MzExRThCMDE5REIyRDdBMzRGQTAwIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjUzQUY5NjBDNzg2MzExRThCMDE5REIyRDdBMzRGQTAwIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NTNBRjk2MDk3ODYzMTFFOEIwMTlEQjJEN0EzNEZBMDAiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NTNBRjk2MEE3ODYzMTFFOEIwMTlEQjJEN0EzNEZBMDAiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7HY9Z1AAAAxElEQVR42mI8c+YMA3GABYiNjY0Jqjt79iwTA9EAn9LX3353nniG4gCs4N33P6k77klwsxJQ+p+Bof7I46eff7ExMWJ3wO9//z/8/ANkLLv25sSzL3xszBmG4lhMvfDqa/vxZ2pCHCVmUnMvvgKqm+qmqCHMiUXpm29/Pvz4s+v+hz///n//828aqjoUB7go8C/2VZHnY9/z4GOOsYShODe+wBLjYp3ipuiqwB+pKYI9ttBUt9nLkRwFWEwFxi8xSgECDAAezUVKS8Eb5AAAAABJRU5ErkJggg==');
+}
+</style>
+</head>
+
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-edit" onclick="saveAndClose">保存并关闭</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div id="json-contain" class="json-contain"></div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../../rest/resource/jsboot"></script>
+	<script>
+		/**
+		 * 说明： 
+		 * 参数 jsonData 为json数据，调用此页面之前先判断是否为json格式数据
+		 * 参数 textData 为已选择的数据
+		 * 参数 callback 为选择后的回调
+		 */
+		var config = {};
+
+		var resultStr = '';
+
+		function setData(configData) {
+			config = configData;
+			resultStr = config.textData
+			renderDom(config.jsonData);
+			renderData(config.textData);
+		}
+
+		function getData() {
+			return resultStr
+		}
+
+		(function(win, $) {
+			// JSON数据
+			var data = config.jsonData;
+
+			var textData = config.textData;
+
+			var stepWidth = 30, // 缩进值
+			specialWord = '_c_json_c_'; // 特殊字符串
+
+			/**
+			 * data 数据
+			 * tag 层级
+			 * key 属性
+			 * preKey id拼接前缀
+			 */
+			function show(data, tag, key, preKey) {
+				if (typeof data == 'string')
+					return data.toString() + "</p>";
+				if (typeof data == 'number')
+					return data.toString() + "</p>";
+				if (typeof data == 'boolean')
+					return data.toString() + "</p>";
+
+				if (key == undefined || preKey == undefined) {
+					key = '';
+					preKey = '';
+				}
+
+				// 缩进
+				if (tag == undefined)
+					tag = 1
+				else
+					tag++
+
+				var left = (5 + (tag - 2) * stepWidth) + 'px', pleft = stepWidth
+						* tag + 'px', bleft = stepWidth * (tag - 1) + 'px';
+
+				// 数组，对象 添加括号
+				var bracketPre = "", bracketNext = "";
+
+				if (Object.prototype.toString.call(data) === '[object Array]') {
+					bracketPre = "[";
+					bracketNext = "]";
+				} else if (Object.prototype.toString.call(data) === '[object Object]') {
+					bracketPre = "{";
+					bracketNext = "}";
+				}
+
+				// 递归拼接
+				var open = bracketPre
+						+ "<i class='expand' style='left: " + left + "'>-</i><ul class='expandable'>", close = "</ul>"
+						+ "<p style='padding-left:" + bleft + "'>"
+						+ bracketNext + "</p>";
+
+				var k, str = "";
+				var temp = '';
+				if (preKey) {
+					temp = preKey;
+				}
+				for (k in data) {
+					if (data.hasOwnProperty(k)) {
+
+						// 数组的特殊处理，为了防止key为数字影响判断
+						var idkey = k;
+						//data instanceof Array 
+						if (Object.prototype.toString.call(data) === '[object Array]') {
+							idkey = specialWord + k;
+						}
+						// 数组的特殊处理，为了防止key为数字影响判断 end 
+
+						if (key == '') {
+							preKey = idkey;
+						} else {
+							preKey = temp + '-' + idkey;
+						}
+
+						// console.log("prevK=" + preKey, "key=" + key, 'k=' + k);
+
+						str += "<li data-step=" + tag + ">"
+								+ "<p class='pick-item' id='" + preKey + "' style='padding-left:" + pleft + "'>"
+								+ "<i class='check-btn'></i>" + k + ": "
+								+ show(data[k], tag, idkey, preKey) + "</li>";
+					}
+				}
+				return open + str + close;
+			}
+
+			// 某个标签
+
+			win.renderDom = function(data) {
+				document.getElementById('json-contain').innerHTML = show(data); //data.show();
+			}
+
+			var originResultArr = []; //原始数组
+
+			$('#json-contain')
+					.on('click', '.expand', function(e) {
+						e.stopPropagation();
+
+						var $this = $(this);
+
+						$this.parent().next().slideToggle(100);
+
+						if ($this.text() == '-') {
+							$this.text('+');
+						} else {
+							$this.text('-');
+						}
+					})
+					.on(
+							'click',
+							'.pick-item',
+							function() {
+								var $this = $(this), id = this.id, index = originResultArr
+										.indexOf(id);
+
+								$this.toggleClass('active');
+
+								if (index < 0) {
+									originResultArr.push(id);
+								} else {
+									originResultArr.splice(index, 1);
+								}
+								// console.log(originResultArr);
+								var result = arrayToData(originResultArr);
+								// console.log(result);
+								// if(config.callback && typeof config.callback == 'function' ) {
+								//   config.callback(result);
+								// }
+
+								resultStr = result;
+							});
+
+			// 数组转数据
+			var arrayToData = function(arr) {
+				var newArr = [];
+				if (arr.length) {
+					$(arr).each(function(index, item) {
+						var _arr = item.split('-'), new_arr = [];
+
+						$(_arr).each(function(i, el) {
+							if (el.indexOf(specialWord) == 0) {
+								el = '*';
+							}
+							new_arr.push(el);
+						})
+						newArr.push(new_arr.join('.'))
+					})
+					return newArr.join(',');
+				} else {
+					return '';
+				}
+			}
+
+			// 数据转数组
+			var dataToArray = function(data) {
+				var _arr = data.split(','), new_arr = [];
+
+				$(_arr).each(function(index, item) {
+					var _tempArr = item.split('.'), new_tempArr = [];
+
+					$(_tempArr).each(function(i, el) {
+						if (el == '*') {
+							el = specialWord + '0';
+						}
+						new_tempArr.push(el);
+					});
+					new_arr.push(new_tempArr.join('-'))
+				});
+				// console.log(new_arr);
+				return new_arr;
+			}
+
+			// 有初始值则渲染
+			var renderData = function(initData) {
+				if (initData) {
+					var data = dataToArray(initData);
+					originResultArr = data;
+
+					$(data).each(function(index, item) {
+						$('#' + item).addClass('active');
+					})
+				}
+
+			}
+			win.renderData = renderData;
+			// if(textData) {
+
+			// }
+			// renderData(textData);
+
+		})(window, jQuery)
+
+		//Polyfill
+		if (!Array.prototype.indexOf) {
+			Array.prototype.indexOf = function(searchElement, fromIndex) {
+				var k;
+				if (this == null) {
+					throw new TypeError('"this" is null or not defined');
+				}
+
+				var O = Object(this);
+				var len = O.length >>> 0;
+				if (len === 0) {
+					return -1;
+				}
+				var n = +fromIndex || 0;
+
+				if (Math.abs(n) === Infinity) {
+					n = 0;
+				}
+
+				if (n >= len) {
+					return -1;
+				}
+
+				k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+				while (k < len) {
+					if (k in O && O[k] === searchElement) {
+						return k;
+					}
+					k++;
+				}
+				return -1;
+			};
+		}
+
+		function saveAndClose() {
+			window.CloseOwnerWindow();
+		}
+	</script>
+</body>
+
+</html>

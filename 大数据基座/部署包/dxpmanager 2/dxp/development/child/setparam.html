@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>test</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+    <!-- 必须有，加载时的loading效果 -->
+    <div class="page-loading"></div>
+    <div class="fui-toolbar">
+		<div class="btn-group mr10">
+            <a class="mini-button" id="addClose" iconCls="icon-save" onclick="saveAndClose">保存并关闭</a> 
+		</div>
+	</div>
+
+    <!-- 内容区域 -->
+    <div class="fui-content">
+        <!-- 表单区域 -->
+        <div id="fui-form" class="fui-form">
+            <div role="form">
+                <!-- 2列 -->
+                <div role="row">
+                    <div role="control" label="参数名称" starred="true">
+                        <input id="configname" bind="frameConfig.configname" class="mini-textbox" required="true" requiredErrorText="参数名不能为空"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="分类">
+                        <input id="cateGoryGuid" class="mini-combobox" bind="frameConfig.cateGoryGuid" valueField="cateGoryGuid" emptyText="" action="getCategoryList"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="参数值" starred="true">
+                        <input id="configValue" bind="frameConfig.configvalue" class="mini-textbox" required="true" requiredErrorText="参数值不能为空"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="描述">
+                        <input id="description" bind="frameConfig.description" class="mini-textbox" />
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="排序号">
+                        <input id="orderNumber" bind="frameConfig.ordernumber" class="mini-textbox" value="0" />
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <!-- jsboot.js会自动把框架页面所需的所有js都加载进来 -->
+    <script src="../../../fui/js/jsboot.js"></script>
+    <script type="text/javascript">
+    //初始化请求
+    epoint.initPage('frameconfigaction', '', initCallBack);
+
+    var isEdit = Util.getUrlParams('sysGuid');
+
+    console.log(isEdit);
+
+    // 初始化操作的回调
+    function initCallBack(data) {
+        console.log(data);
+    }
+
+    // 保存并关闭操作的回调
+    function saveAndClose(callback) {
+        
+        if (epoint.validate()) {
+			epoint.execute('frameconfigaction.saveConfig', 'fui-form',
+                function(data) {
+                // 保存的回调
+                
+                if(data.success) {
+                    // 成功的回调
+                    // todo
+                    var name = mini.get('configValue').getValue();
+                    window.parent.designUtil.setParam.onSuccess({
+                        name: name
+                    });
+                    epoint.closeDialog();
+                } else {
+                    // 失败给出提示
+                }
+
+                // 下面5行用于演示。。
+                var name = mini.get('configValue').getValue();
+                window.parent.designUtil.setParam.onSuccess({
+                    name: name
+                });
+                epoint.closeDialog();
+            });
+		}
+        
+    }
+    </script>
+</body>
+</html>

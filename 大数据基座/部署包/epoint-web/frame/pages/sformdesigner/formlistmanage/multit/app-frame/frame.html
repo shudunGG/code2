@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="../../../../../fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="../layout/layout.css">
+<title>多表合一</title>
+<style>
+.container {
+	width: 100%;
+	height: 100%;
+}
+</style>
+</head>
+
+<body>
+	<div class="container">
+		<iframe id="main-iframe" width="100%" height="100%" frameborder="0"
+			class="main-iframe" scrolling="no"></iframe>
+	</div>
+	<script src="../../../../../fui/js/jsboot.js"></script>
+
+	<script>
+		var guid = Util.getUrlParams('tableGuid');
+		var relationguid = Util.getUrlParams('relationguid');
+		var designId = Util.getUrlParams('designId');
+		var isSub = Util.getUrlParams('isSub');
+		if ("add" != Util.getUrlParams('type')) {
+			$("#main-iframe").attr(
+					'src',
+					"../app-select/select.html?rowguid="
+							+ Util.getUrlParams('tableGuid') + "&isSub="
+							+ isSub + "&relationguid=" + relationguid+"&designId="+designId);
+		} else {
+			$("#main-iframe").attr(
+					'src',
+					"../app-select/select.html?isSub=" + isSub
+							+ "&categoryNum="
+							+ Util.getUrlParams('categoryNum'));
+		}
+		var pageList = [ {
+			url : "../app-select/select.html"
+		}, {
+			url : "../app-merge/merge.html"
+		} ], activeIndex = 0;
+		var $mainIframe = $('#main-iframe');
+		function goPrev(rowguid, isSub) {
+			activeIndex -= 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub);
+		}
+		function goNext(rowguid, isSub) {
+			activeIndex += 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub);
+		}
+
+		function goCustomPrev(rowguid, isSub, relationguid,designId) {
+			activeIndex -= 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub + "&relationguid="
+					+ relationguid+"&designId="+designId);
+		}
+		function goCustomNext(rowguid, isSub, relationguid,designId) {
+			activeIndex += 1;
+			$mainIframe.attr('src', pageList[activeIndex].url + "?rowguid="
+					+ rowguid + "&isSub=" + isSub + "&relationguid="
+					+ relationguid+"&designId="+designId);
+		}
+
+		//调用子页面方法
+		function onCloseForm() {
+			var type = Util.getUrlParams('type');
+			if (type != "edit") {
+				document.getElementById("main-iframe").contentWindow
+						.CloseForm();
+			}
+
+		}
+
+		function closeDialog() {
+			epoint.closeDialog("sucess");
+		}
+	</script>
+</body>
+
+</html>

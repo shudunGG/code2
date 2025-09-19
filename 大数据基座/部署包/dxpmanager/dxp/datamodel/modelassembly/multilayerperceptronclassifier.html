@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>神经网络</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<a role="helper"></a>
+	</div>
+	
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden" style="background-color: #3d4b64">
+		<!-- 内容 -->
+		<div class="fui-notice-inner text-left">
+			<p>
+				<em>训练比例：</em>训练数据占总样本的比例 范围在0~1,默认0.7
+			</p>
+			<p>
+				<em>迭代次数：</em>一般默认设置为100
+			</p>
+			<p>
+				<em>数据块大小：</em>用于在矩阵中堆叠输入数据的块大小以加速计算。 数据在分区内堆叠。 如果块大小大于分区中的剩余数据，则将其调整为该数据的大小。 建议大小介于10到1000之间。默认值：128
+			</p>
+			<p>
+				<em>隐藏层节点个数：</em>输入层(第一层)节点数固定为特征字段个数";"输出层(最后一层)节点数固定为目标字段值的种类"。  中间的隐藏层由用户设置，不同隐藏层用分号分开，例如“4;3”表示第一个隐藏层节点数为4，第二个隐藏层节点数为3。
+			</p>
+		</div>
+		<span class="notice-close-btn"></span>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox"
+							required="true" emptyText="请输入步骤名称" vtype="maxLength:20"
+							requiredErrorText="步骤名称不能为空"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="特征字段列" starred="true">
+						<div style="height: 250px; width: 100%;
+								border: 1px solid #ebebeb"">
+							<div id="cbl" name="cbl" class="mini-checkboxlist"
+								repeatItems="4" repeatLayout="table" textField="text"
+								valueField="id" style="height:100%;margin-left: 5px;
+								overflow:auto;" required="true" requiredErrorText="请选择特征字段列！"></div>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="标签字段" starred="true">
+						<div id="labelcolname" name="labelcolname" class="mini-combobox" 
+							allowInput="false" action="getPreFields"
+							required="true" requiredErrorText="标签字段不能为空"></div>
+					</div>
+					<div role="control" label="预测字段" starred="true">
+						<div id="predictcolname" name="predictcolname" class="mini-textbox" 
+							required="true" requiredErrorText="预测字段不能为空"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="训练比例(%)" starred="true">
+						<div id="trainingratio" name="trainingratio" class="mini-textbox" required="true" 
+							vtype="float;range:1,100" requiredErrorText="训练比例不能为空"></div>
+					</div>
+					<div role="control" label="迭代次数" starred="true">
+						<div id="maxiter" name="maxiter" class="mini-textbox" required="true" 
+							vtype="int;range:1,100" requiredErrorText="迭代次数不能为空"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据块大小" starred="true">
+						<div id="blocksize" name="blocksize" class="mini-textbox" required="true" 
+						vtype="int;range:10,1000" requiredErrorText="数据块大小不能为空"></div>
+					</div>
+					<div role="control" label="隐藏层节点个数" starred="true">
+						<div id="arrayint" name=arrayint class="mini-textbox" required="true"
+							requiredErrorText="隐藏层节点个数不能为空" inputStyle="text-align:right;"	></div>
+					</div>
+				</div>
+				<input id="json" name="json" class="mini-hidden">
+
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var cbl = mini.get("cbl");
+		var json;
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modelmultilayerperceptronclassifieraction?stepId=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			if (e.json) {
+				json = e.json;
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {
+			epoint.execute("getPreFields", null, null, function(ret) {
+				cbl.setData(ret);
+			});
+			if (json) {
+				var tabObj = JSON.parse(json);
+
+				var scheckcolumn = "";
+				
+				if (scheckcolumn) {
+					scheckcolumn = scheckcolumn.substring(0, scheckcolumn
+							.lastIndexOf(","));
+				}
+				cbl.setValue(scheckcolumn);
+				mini.parse();
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+			var selectValue = mini.get("cbl").getValue();
+			var selectText = mini.get("cbl").getText();
+			var selectarray = selectValue.split(",");
+			var objsonarray = [];
+			for (var h = 0; h < selectarray.length; h++) {
+				var sobj = {};
+				var id = selectarray[h];
+				sobj.columnid = id;
+				sobj.columnname = selectText.split(",")[h];
+				objsonarray.push(sobj);
+			}
+			mini.get('json').setValue(JSON.stringify(objsonarray));
+			if (epoint.validate('@all', true)) {
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+	</script>
+</body>
+</html>

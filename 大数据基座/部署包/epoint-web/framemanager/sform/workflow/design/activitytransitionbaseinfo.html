@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>变迁线基本信息</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="save" onclick="save">保存修改</a>
+
+		<div class="some-wrap r mr20">
+			<span class="text-special mr5" id="showcontent"></span>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="变迁名称">
+						<input class="mini-textbox"
+							bind="workflowTransition.transitionName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="变迁显示名称">
+						<input class="mini-textbox"
+							bind="workflowTransition.transitionDispName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动工作项类型标记">
+						<input class="mini-textbox"
+							bind="workflowTransition.workItemModeName" /><span
+							class="explainMsg">待办事宜中会显示这个类型标记，如“阅读”、“办理”</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否生成待办事宜">
+						<input class="mini-checkbox" bind="isSendToMessageCenter"
+							trueValue="true" falseValue="false" text="修改"></input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="显示独立操作按钮">
+						<input class="mini-checkbox" bind="isShowOperationBtn"
+							trueValue="true" falseValue="false"></input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="优先级">
+						<input class="mini-combobox" bind="workflowTransition.priority"
+							allowInput="true"
+							data="[{text:'最高',id:'100'},{text:'较高',id:'80'},{text:'中等',id:'60'},{text:'较低',id:'40'},{text:'最低',id:'20'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="处理人初始数据来源">
+						<input class="mini-combobox"
+							bind="workflowTransition.targetActivityTransactorSource"
+							allowInput="true"
+							data="[{text:'使用目标活动的处理人设置',id:'10'},{text:'使用变迁定义的处理人设置',id:'20'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="处理人数量限制">
+						<input class="mini-textbox"
+							bind="workflowTransition.transactorAllowMaxCount" vtype="int"
+							inputStyle="text-align:left;" /><span class="explainMsg">说明：为空则不控制。</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="允许修改处理人">
+						<div class="mini-radiobuttonlist" repeatItems="3"
+							bind="workflowTransition.isTargetTransactorEditable"
+							textField="text" valueField="id" value="false"
+							data="[{id:'10',text:'允许修改'},{id:'15',text:'可以删除设定的处理者但不可添加新的处理者'},{id:'20',text:'不允许修改'}]"></div>
+						<span class="explainMsg">说明：如果设置成“否”，那么变迁出发活动的“通过”操作的通用处理页面将隐藏人员选择树。</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="processVersionGuid" bind="processVersionGuid"/>
+	<input class="mini-hidden" id="content" bind="showcontent"/>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+        // 初始化页面
+        epoint.initPage ('activitytransitionbaseinfoaction', null, initCallBack);
+        
+        var processVersionGuid;
+        
+        //初始化回调事件
+        function initCallBack (data)
+        {
+	        document.getElementById ("showcontent").innerHTML = mini.get("content").getValue();
+	        processVersionGuid = mini.get("processVersionGuid").getValue();
+        }
+
+        //保存
+        function save ()
+        {
+	        epoint.execute ('save', 'fui-form', function (data)
+	        {
+		        epoint.alert (data.message, '', null, 'info');
+	        });
+        }
+
+        //]]>
+	</script>
+</body>
+</html>

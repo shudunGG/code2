@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>节点服务新增</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+
+<div class="fui-content">
+    <div id="fui-form" class="fui-form">
+        <div role="row">
+            <div role="control" label="应用名称" starred="true">
+                <input id="serverName" class="mini-textbox" bind="dataBean.serverName"
+                       required="true" requiredErrorText="应用名称不能为空!"/>
+            </div>
+        </div>
+        <div role="row">
+            <div role="control" label="服务IP" starred="true">
+                <input id="serverIP" class="mini-textbox" bind="dataBean.serverIP"
+                       required="true" requiredErrorText="服务IP不能为空!" onvalidation="onIPValidation"/>
+            </div>
+        </div>
+        <div role="row">
+            <div role="control" label="服务端口" starred="true">
+                <input id="serverPort" class="mini-textbox" bind="dataBean.serverPort"
+                       required="true" requiredErrorText="服务端口不能为空!"/>
+            </div>
+        </div>
+        <div role="row">
+            <div role="control" label="启用SSL">
+                <input id="uesSSL" class="mini-checkbox" bind="dataBean.useSSL"/>
+            </div>
+        </div>
+    </div>
+    <div class="btn-group" style="margin: 0 auto; width: 25%;">
+        <a class="mini-button mr10" id="save" onclick="save()">确认</a>
+        <a class="mini-button mr10" onclick="epoint.closeDialog()">取消</a>
+    </div>
+</div>
+
+<script src="../../rest/resource/jsboot"></script>
+<script>
+    epoint.initPage('serviceinfoaddaction');
+
+    function save() {
+        if (epoint.validate()) {
+            epoint.execute('save', 'fui-form', function (data) {
+                if (data.result == 'success') {
+                    epoint.alertAndClose("保存成功", "提示信息", null, "success");
+                } else if (data.result == 'repeated') {
+                    epoint.alert("服务重复", "提示信息", null, "deny");
+                } else if (data.result == 'disconnect') {
+                    epoint.alert("服务不通", "提示信息", null, "deny");
+                } else if (data.result) {
+                    epoint.alert(data.result, "提示信息", null, "deny");
+                } else {
+                    epoint.alert("保存失败", "提示信息", null, "deny");
+                }
+            });
+        }
+    }
+
+    function onIPValidation(e) {
+        let pattern = new RegExp("((25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))\\.){3}(25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))");
+        if (pattern.test(e.value)) {
+            e.isValid = true;
+        } else {
+            e.isValid = false;
+            e.errorText = '请输入正确的IP地址';
+        }
+    }
+</script>
+</body>
+</html>

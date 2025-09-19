@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增卡片模板</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose" onclick="saveAndClose">保存并关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="模板名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.ChartName" required="required" requiredErrorText="模板名称不能为空" vtype="maxLength:50;" emptyText="请填写模板名称..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模板类型" starred="true">
+						<input class="mini-combobox" action="getChartTypeModel" bind="dataBean.ChartType" id="chartType" textField="text" valueField="id" emptyText="请选择模板类型..." required="required" onvaluechanged="changeType" />
+					</div>
+				</div>
+				<div role="row" id="customizedfile">
+					<div role="control" label="模板附件" starred="true">
+						<div id="uploader" class="mini-webuploader" pickerText="导入文件" action="getFileUploadModel" limitType="jpg,jpeg,gif,bmp,png" fileNumLimit="1" auto="true"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模板代码" starred="true" >
+						<input class="mini-textarea" bind="dataBean.ChartCode" emptyText="请填写模板代码..." required="required" requiredErrorText="模板代码不能为空" style="height:200px;"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模板描述">
+						<input class="mini-textarea" bind="dataBean.Remark" emptyText="请填写模板描述..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.OrderNum" vtype="int;range:0,99999;" emptyText="请填写排序号..." />
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="模板示例">
+						<input class="mini-textbox" bind="dataBean.ChartIcon" emptyText="请填写模板示例..." />
+					</div>
+				</div> -->
+				<!-- <div role="row">
+					<div role="control" label="模板预览地址">
+						<input class="mini-textarea" bind="dataBean.ChartPreviewUrl" emptyText="请填写模板预览地址..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="单值指标数">
+						<input class="mini-textbox" bind="dataBean.SingleNormCount"  vtype="int;range:0,99999;" emptyText="请填写单值指标数..."   />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="多值指标数">
+						<input class="mini-textbox" bind="dataBean.SeveralNormCount" vtype="int;range:0,99999;" emptyText="请填写多值指标数..." />
+					</div>
+				</div> -->
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitcardtemplateaddaction', null, function(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+			
+			if(data.dataBean.charttype){
+				if(data.dataBean.charttype == '5'){
+					mini.get('uploader').setEnabled(true);
+				}
+				else {
+					mini.get('uploader').setEnabled(false);
+				}
+			}
+			else {
+				mini.get('uploader').setEnabled(false);
+			}
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+		
+		function changeType(e){
+			if (e.value == 5) {
+				mini.get('uploader').setEnabled(true);
+			}
+			else {
+				mini.get('uploader').setEnabled(false);
+			}
+		}
+	</script>
+</body>
+</html>

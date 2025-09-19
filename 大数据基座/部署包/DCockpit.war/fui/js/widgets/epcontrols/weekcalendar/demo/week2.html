@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>二维周视图日历</title>
+    <script src="../../../../cssboot.js"></script>
+    <style>
+        body {
+            overflow: auto;
+        }
+        .ep-weekcalendar-category .content {
+            display: none !important;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <button onclick="calendar.setHideWeekends(true)">隐藏周末</button>
+    <button onclick="calendar.setHideWeekends(false)">显示周末</button>
+    <p>隐藏周末情况下，只支持从周一开始。</p>
+    <div id="week-calendar" style="width:95%;height:60vh"></div>
+    <div id="week-calendar1" style="width:80%;height:80vh"></div>
+    <script src="../../../../jsboot.js"></script>
+    <script>
+        SrcBoot.output([
+            'fui/js/widgets/epcontrols/epoint.control.js',
+            'fui/js/widgets/epcontrols/weekcalendar/weekcalendar.js',
+
+            // 模拟数据
+            '../../../../lib/mock-min.js',
+            './test.js'
+        ]);
+    </script>
+    <script>
+        var ajaxCache;
+
+        function getData(data) {
+            if (ajaxCache) {
+                // 终止上一次的请求
+                ajaxCache.abort();
+            }
+
+            ajaxCache = $.ajax({
+                url: './test.json',
+                type: 'POST',
+                dataType: 'json',
+                data: data
+            });
+            return ajaxCache;
+        }
+
+        function getData2(data) {
+            return $.ajax({
+                url: './test.json',
+                type: 'POST',
+                dataType: 'json',
+                data: data
+            });
+        }
+
+        var calendar = epctrl.init('WeekCalendar', {
+            el: '#week-calendar',
+            categoryTitle: '车辆',
+            dayStartFromSunday: false,
+            // 隐藏周末 // 隐藏周末以及需要切换状态时仅支持从周一开始
+            hideWeekends: true,
+
+            category: [{
+                id: 'cate-1',
+                name: '法拉利',
+                content: '苏E00000'
+            }, {
+                id: 'cate-2',
+                name: 'Lamborghini',
+                content: '苏E00001'
+            }, {
+                id: 'cate-3',
+                name: '捷豹',
+                content: '苏E00002'
+            }, {
+                id: 'cate-4',
+                name: '宾利',
+                content: '苏E00003'
+            }, {
+                id: 'cate-5',
+                name: 'SSC',
+                content: '苏E00004'
+            }],
+            events: {
+                // 绑定资源加载前事件
+                beforeSourceLoad: function (e) {
+                    // console.log(e);
+                    // 在css资源中额外输出 加宽边框的
+                    e.cssUrl.push('fui/js/widgets/epcontrols/weekcalendar/demo/border-2.css');
+                },
+                // 日期变化时触发
+                dateChanged: function (e) {
+                    var data = {
+                        start: e.startDate,
+                        end: e.endDate,
+                    };
+
+                    getData(data).done(function (data) {
+                        // console.log(JSON.stringify(data));
+                        $.each(data, function (i, item) {
+                            calendar.addWidget(item);
+                        });
+                    })
+
+                },
+                // 部件重叠时触发
+                widgetOccupied: function (e) {
+                    // 冲突时禁止继续添加
+                    console.error(e.widgetData.categoryId + '分类下id为' + e.widgetData.id + '的部件和现有部件有重叠，取消添加');
+                    e.cancel = true;
+                }
+            }
+        });
+        calendar.on('cellClick', function (e) {
+            alert(JSON.stringify({
+                '开始时间': e.startDate,
+                '结束时间': e.endDate,
+                '分类id': e.categoryId,
+                '行索引': e.rowIndex,
+                '列索引范围': e.columnIndexs
+            }, 0, 4));
+        });
+        calendar.on('widgetClick', function (e) {
+            console.log(e);
+        });
+
+        var calendar1 = epctrl.init('WeekCalendar', {
+            el: '#week-calendar1',
+            dayStartFromSunday: true,
+            categoryTitle: '车辆',
+            category: [{
+                id: 'cate-1',
+                name: '大众',
+                content: '苏A00000'
+            }, {
+                id: 'cate-2',
+                name: '雷诺',
+                content: '苏A00001'
+            }, {
+                id: 'cate-3',
+                name: '红旗',
+                content: '苏A00003'
+            }],
+            events: {
+                dateChanged: function (e) {
+                    var data = {
+                        start: e.startDate,
+                        end: e.endDate,
+                    };
+
+                    getData2(data).done(function (data) {
+                        // console.log(JSON.stringify(data));
+                        $.each(data, function (i, item) {
+                            calendar1.addWidget(item);
+                        });
+                    });
+                },
+                // 部件重叠时触发
+                widgetOccupied: function (e) {
+
+                    console.log('发生重叠');
+                    console.log('当前', e.currWidget);
+                    console.log('重叠', e.occupiedWidgets);
+
+                    // 重叠时高度20错开
+                    e.currWidget.style.top = e.occupiedWidgets.length * 40 + 'px';
+                    // 同时调整高度
+                    calendar1.setRowHeight((e.occupiedWidgets.length + 1) * 40, e.rowIndex);
+                },
+                // 部件添加到页面上时触发
+                widgetAdd: function (e) {
+                    e.widgetEl.style.height = '40px';
+                }
+
+            }
+        });
+    </script>
+</body>
+
+</html>

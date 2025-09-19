@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Users copy</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style>
+.mini-webuploader {
+	height: 17px;
+	vertical-align: text-top;
+}
+.mini-uploader-btns .webuploader-pick {
+	line-height: 17px;
+	background: transparent;
+	color: #d2322d;
+	font-weight: bold;
+	padding: 0 4px;
+}
+</style>
+</head>
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveAndClose">determine the copy</a>
+            <a class="mini-button" onclick="epoint.closeDialog">cancel the duplicate</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="user basic information" ></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<label class="form-label required" >user login name:</label>
+								<div class="form-control span2" starred="true">
+									<input bind="loginId" class="mini-textbox"
+										required="true" requiredErrorText="Login name cannot be empty"
+										vtype="maxLength:50" />
+								</div>
+								<label class="form-label required" >user name:</label>
+								<div id="userName" class="form-control span2"  starred="true">
+									<input id="displayName" bind="frameUser.displayName"
+										class="mini-textbox" required="true"
+										requiredErrorText="The name cannot be empty" vtype="maxLength:50" />
+								</div>
+							</div>
+							<div id="mzx" role="row">
+								<div role="control" label="name" starred="true">
+									<input bind="frameUser.firstname" class="mini-textbox"
+										required="true" requiredErrorText="The nameCan't be empty" vtype="maxLength:50" />
+								</div>
+								<div role="control" label="in the middleThe name">
+									<input bind="frameUser.middlename" class="mini-textbox"
+										vtype="maxLength:50" />
+								</div>
+								<div role="control" label="surname">
+									<input bind="frameUser.lastname" class="mini-textbox"
+										vtype="maxLength:50" />
+								</div>
+							</div>
+							<div id="shiqu" role="row">
+								<div role="control" label="time zone">
+									<input name="timezonelist" bind="frameUser.timezone"
+										action="getTimezoneList" allowInput="false" autoLoad="false"
+										class="mini-combobox" emptyText="Please select a..." />
+								</div>
+								<div role="control" label="preferred language">
+									<input name="prelangList" bind="frameUser.prelang"
+										value="zh_CN" action="getPrelangList" allowInput="false"
+										autoLoad="false" class="mini-combobox" emptyText="Please select a..." />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="department" starred="true">
+									<input id="selectedOUname" bind="belongOuName" allowInput="false"
+										class="mini-buttonedit" emptyText="" required="true" requiredErrorText="Please select adepartment"
+										onbuttonclick="selectOuOrUser('ou','selectedOUname','ouguid');"
+										selectOnFocus="true" />
+									<!-- Hide area -->
+									<input bind="frameUser.ouGuid" id="ouguid" class="mini-hidden" />
+								</div>
+								<div role="control" label="part-time">
+									<input id="otherOUname" bind="otherouname"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="selectOuOrUser('secondou','otherOUname','otherouguid');"
+										selectOnFocus="true" />
+									<!-- Hide area -->
+									<input bind="otherouguid" id="otherouguid" class="mini-hidden" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="immediate superior">
+									<input id="leaderUser" bind="leaderName"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="selectOuOrUser('leader','leaderUser','leaderGuid');"
+										selectOnFocus="true" showClose="true"
+										oncloseclick="clearLeader" />
+									<!-- Hide area -->
+									<input bind="frameUser.leaderGuid" id="leaderGuid"
+										class="mini-hidden" />
+								</div>
+								<div role="control" label="position">
+									<input id="titlejob" bind="frameUser.title"
+										class="mini-textbox" vtype="maxLength:50"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="office phone">
+									<input id="telephoneOffice" bind="frameUser.telephoneOffice"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="short number">
+									<input id="mobile1" bind="userExtendInfo.shortMobile"
+										class="mini-textbox" vtype="int" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="home phone">
+									<input id="telephoneHome" bind="frameUser.telephoneHome"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="mobile phone">
+									<input id="mobile" bind="frameUser.mobile" class="mini-textbox"
+										vtype="mobile" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="order no">
+									<input id="orderNumber" bind="frameUser.orderNumber"
+										class="mini-textbox" vtype="int;maxLength:8" />
+								</div>
+								<div role="control" label="CACertificate no.">
+									<input id="userkey" bind="userExtendInfo.usbkey"
+										class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="gender">
+									<div class="mini-radiobuttonlist" bind="frameUser.sex"
+										data="[{text:'male',id:'male'},{text:'female',id:'female'}]" value="male"
+										textField="text" valueField="id" ></div>
+								</div>
+								<div role="control" label="ad">
+									<input id="ad" bind="frameUser.adloginid" class="mini-textbox" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="user information" ></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="user's birthday">
+									<input class="mini-datepicker" format="yyyy-MM-dd"
+										bind="userExtendInfo.birthday" />
+								</div>
+								<div role="control" label="Id number">
+									<input id="identityCardNum"
+										bind="userExtendInfo.identityCardNum" class="mini-textbox"
+										vtype="idCard" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="QQnumber">
+									<input id="qq" bind="userExtendInfo.qqnumber"
+										class="mini-textbox" onvalidation="onQQValidation" />
+								</div>
+								<div role="control" label=""></div>
+							</div>
+							<div role="row">
+								<div role="control" label="E_Mail">
+									<input id="email" bind="frameUser.email" class="mini-textbox"
+										vtype="email" />
+								</div>
+								<div role="control" label="address">
+									<input id="postalAddress" bind="userExtendInfo.postalAddress"
+										class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="Zip code">
+									<input id="postalCode" bind="userExtendInfo.postalCode"
+										class="mini-textbox" vtype="postCode" />
+								</div>
+								<div role="control" label="fax">
+									<input id="fax" bind="frameUser.fax" class="mini-textbox"
+										onvalidation="onFaxValidation" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="NTX-IPAextension">
+									<input id="nTX_EXTNumber" bind="userExtendInfo.ntxExtnumber"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="NTX-IPApassword">
+									<input id="nTX_Password" bind="userExtendInfo.ntxPassword"
+										class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="note">
+									<input id="description" bind="frameUser.description"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="useIPaddress">
+									<input id="loginIP" bind="userExtendInfo.loginIp"
+										class="mini-textbox" onvalidation="onIPValidation" />
+								</div>
+							</div>
+							
+							<div role="row">
+								<div role="control" label="photo">
+									<div style="position: relative; float: left;">
+										<span id="photo1" class="text-minor">No personal photos, </span>
+										<div id="uploader" class="mini-webuploader"
+											action="frameusercreateaction.getFileUploadModel" 
+											fileNumLimit="1" fileSingleSizeLimit="5120"
+											limitType="jpeg,jpg,gif,png,bmp"
+											mimeTypes="image/*" showDefaultUI="false" auto="true" pickerText="Please upload" 
+											onfilesuccess="OnPhotoSuccess"></div>
+											<span class="text-minor" style="width:300px" id="photo3">(the best image size:120px<em>*</em>180px)</span>
+									</div>
+									
+									<div class="img-view" id="photo">
+										<img id="lblPicture" src="" width="120px" height="180px"
+											alt="Personal avatar images" /> <i class="action-icon icon-removecirclefilled" style="position: absolute;left: 120px;top: 12px;"
+											onclick="delPhoto();" ></i>
+									</div>
+								</div>
+							</div>
+							
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true" id="role-right">
+				<div role="head" title="The user role assignment" ></div>
+				<div role="body">
+					<div class="fui-form">
+						<div class="mini-repeat" id="repeat" templateId="roleTemplate"></div>
+						<input bind="selectedRoles" id="roleValues" class="mini-hidden" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<input id="controlIds" class="mini-hidden" />
+	</div>
+	
+	<script type="text/template" id="roleTemplate">
+		<div id="panel1" class="mini-panel" title="{{title}}" iconCls="icon-add"
+	 		showCollapseButton="false"  allowResize="false" showFooter="false" style="width:49%;float:left;margin-left:1%;margin-top:10px;" >
+	 		<div id="{{roleType}}" class="mini-checkboxlist" repeatLayout="table" repeatItems="3"
+				textField="text" valueField="value" >
+			</div>
+		</div>
+	</script>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+
+
+	<script>
+		//<![CDATA[  
+		//Initialization request 
+		epoint.initPage('frameusercreateaction','',initCallback);
+		
+		function initCallback(e) {
+			if (e) {
+				if(e.isEnableInter){
+					Util.form.hideField("#userName");
+					//Want to get rid of that control at the same time requiredvalidation
+					mini.get("displayName").setRequired(false);
+				}else{
+					$("#mzx").hide();
+					$("#shiqu").hide();
+				}
+				if(e.belongOuName){
+					mini.get('selectedOUname').setText(e.belongOuName);
+					mini.get('selectedOUname').setValue(e.belongOuName);
+				}
+				showPhoto(e.lblPicture);
+				// 是否隐藏角色授权
+				if (e.disableRoleRight) {
+				    $("#role-right").addClass("hidden");
+				}
+			}
+			//Initialize the role area
+			var repeat = mini.get('repeat');
+			var data = e.uirepeat;
+			repeat.setData(data);
+			//willcheckboxlist iddepositHide area
+			mini.get("controlIds").setValue(data["controlIds"]);
+		}
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+
+		var selectouuserType = "";
+		var selectouuserNameId = "";
+		var selectouuserGuidId = "";
+		//Choose department
+		function selectOu(labelId, guidId) {
+			selectouuserType = "single";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			epoint.openDialog("Choose department", 'framemanager/orga/orga/ou/selectou?type=1',
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		//Select more than one department
+		function selectManyOu(labelId, guidId, ouguids, showsub) {
+			selectouuserType = "multi";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguids) {
+				ouguids = mini.get(selectouuserGuidId).value;
+			}
+			epoint.openDialog("Choose department",
+					'framemanager/orga/orga/ou/selectouwithcheckbox?otherouguid='
+							+ ouguids + '&showsub=' + showsub,
+					dealSelectOuUserBackValue, {
+						'width' : 650,
+						'height' : 550
+					});
+		}
+		//Select a single user
+		function selectUser(labelId, guidId, ouguid) {
+			selectouuserType = "single";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguid) {
+				ouguid = "";
+			}
+			epoint.openDialog("Select personnel",
+					'framemanager/orga/orga/ou/selectouuser?ouguid=' + ouguid,
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+
+		//Independent units subordinate departments
+		function selectSubOuRefreshPanel(labelId, guidId){
+			selectouuserType = "single";
+            selectouuserNameId = labelId;
+            selectouuserGuidId = guidId;
+            epoint.openDialog("Choose department", 'framemanager/orga/orga/ou/selectou?isSub=1',
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+		//Choose a part-time independent units
+		function selectManySubOu(labelId, guidId, ouguids, showsub){
+			selectouuserType = "multi";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguids) {
+				ouguids = mini.get(selectouuserGuidId).value;
+			}
+			epoint.openDialog("Choose department",
+					'framemanager/orga/orga/ou/selectouwithcheckbox?isSub=1&otherouguid='
+							+ ouguids + '&showsub=' + showsub,
+					dealSelectOuUserBackValue, {
+						'width' : 600,
+						'height' : 550
+					});
+		}
+		
+		//Independent unit selection immediate superior
+		function selectSubUser(labelId, guidId, ouguid){
+			selectouuserType = "single";
+            selectouuserNameId = labelId;
+            selectouuserGuidId = guidId;
+            if (!ouguid) {
+                ouguid = "";
+            }
+            epoint.openDialog("Select personnel",
+					'framemanager/orga/orga/ou/selectouuser?isSub=1&ouguid=' + ouguid,
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+
+		function dealSelectOuUserBackValue(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s;
+				//If the radio only1Attribute to a node, the node;segmentation
+				if (selectouuserType == "single") {
+					s = rtnValue.split(";");
+				}
+				//Multiple nodes to multi-select:segmentation
+				else {
+					s = rtnValue.split(":");
+					if (s.length == 1) {
+						s = rtnValue.split("_SPLIT_");
+						var name1 = s[1];
+						var guid1 = s[0];
+						s[0] = name1;
+						s[1] = guid1;
+					}
+				}
+				if (s[1] != 'f9root') {
+					mini.get(selectouuserNameId).setText(s[0]);
+					mini.get(selectouuserNameId).setValue(s[0]);
+					mini.get(selectouuserGuidId).setValue(s[1]);
+					//mini.get(selectouuserGuidId).validate();
+				} else {//Pop-up prompts
+					epoint.alert("The root node allows you to select", '', null, 'warning');
+				}
+				epoint.clear('titlejob');
+				epoint.refresh(['ouguid','titlejob']);
+			}
+		}
+
+		function selectOuOrUser(select, label, value) {
+			//If it is a independent department management
+			if (isSub && isSub == "1") {
+				//Open the subordinate departments
+				if (select == "ou") {
+					selectSubOuRefreshPanel(label, value);
+				}
+				//Open thePart-time department
+				else if (select == "secondou") {
+					selectManySubOu(label, value, "", "1");
+				}
+				//Open theSuperior leadership
+				else if (select == "leader") {
+					selectSubUser(label, value);
+				}
+			}
+			//Background management
+			else {
+				if (select == "ou") {
+					selectOu(label, value);
+				} else if (select == "secondou") {
+					selectManyOu(label, value, "", "1");
+				} else if (select == "leader") {
+					selectUser(label, value);
+				}
+			}
+		}
+
+		//Empty the leaders
+		function clearLeader(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			mini.get("leaderGuid").setValue("");
+		}
+
+		//isQQ
+		function isQQ(v) {
+			var re = new RegExp(/[1-9][0-9]{4,}/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//QQvalidation
+		function onQQValidation(e) {
+			if (e.isValid) {
+				if (e.value && isQQ(e.value) == false) {
+					e.errorText = "Please enter the correctQQnumber";
+					e.isValid = false;
+				}
+			}
+		}
+		//isFax
+		function isFax(v) {
+			var re = new RegExp(/^((\d{3,4}-)?\d{7,8})$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//faxvalidation
+		function onFaxValidation(e) {
+			if (e.isValid) {
+				if (e.value && isFax(e.value) == false) {
+					e.errorText = "Please enter the correctthefaxNo.";
+					e.isValid = false;
+				}
+			}
+		}
+
+		//isIP
+		function isIP(v) {
+			var re = new RegExp(
+					/^((25[0-5]|2[0-4]\d|[01]?\d\d?)($|(?!\.$)\.)){4}$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//Ipvalidation
+		function onIPValidation(e) {
+			if (e.isValid) {
+				if (e.value && isIP(e.value) == false) {
+					e.errorText = "Please enter the correcttheIPaddress";
+					e.isValid = false;
+				}
+			}
+		}
+		
+		//Avatar uploaded successfully
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+		}
+		
+		//controlphotoShow hidden
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr('src',url);
+				
+				 mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#photo").show();
+			} else {
+				$("#photo").hide();
+				$("#lblPicture").attr('src','');
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+			}
+		}
+		
+		//Delete character signThe nameThe picture
+		function delPhoto() {
+			epoint.execute("btnDelPic_Click", "",
+					function delPhotoCallback(data) {
+						if (data.msg) {
+							mini.get("uploader").clearFile();
+							showPhoto();
+						}
+					});
+		}
+		
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+
+		// closingthecallback
+		function closeCallback(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("successful") != -1) {
+				if(data.success){
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', null, 'error');
+				}
+			}
+		}
+
+		//save and new
+		function saveAndClose() {
+			if (epoint.validate()) {
+				saveUserRole();
+				epoint.execute('addFrameUser', '', closeCallback);
+			}
+		}
+		
+		//willCharacter values assigned to theHide area
+		function saveUserRole(){
+			var checkbox=mini.get("controlIds").getValue().split(',');
+			var selected='';
+			$.each(checkbox,function(n,value) {   
+				var cValue=mini.get(value).getValue();
+				if(cValue){
+					selected+=cValue+",";
+				}
+			});
+			//willallcheckboxlist theThe selected valuedepositHide area
+			mini.get("roleValues").setValue(selected.substring(0,selected.length-1));
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

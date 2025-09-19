@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片主题列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAddRelate">新增关联</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="cancelRelate">取消关联</a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<!-- <div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="主题名称">
+						<input class="mini-textbox" bind="dataBean.PlateName" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div> -->
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="normname" headerAlign="center" width="100" align="center">指标名称</div>
+				<div field="normtype" headerAlign="center" width="100" align="center" data-options="{code:'jsc指标类型'}">指标类型</div>
+				<div field="ordernum" headerAlign="center" width="100" align="center">排序号</div>
+
+				<!-- 操作列 -->
+				<div type="actioncolumn" headerAlign="center" align="center">
+					<span type="action" icon="icon-edit" onclick="editItems">修改排序号</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 指标领域
+		var normDomain = Util.getUrlParams("normDomain");
+		
+		// 卡片guid
+		var cardguid = Util.getUrlParams("cardguid");
+		
+		// 初始化页面
+		epoint.initPage('cockpitcardnormlistaction', null, function(data) {
+			//console.log("领域:"+normDomain);
+			//console.log("卡片guid:"+cardguid);
+		});
+
+		// 弹出新增窗口
+		function openAddRelate() {
+			epoint.openDialog('指标关联',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormrelatelist?normDomain=" + normDomain+"&cardguid="+cardguid, 
+					searchData, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems");
+		};
+
+		// 弹出修改窗口
+		function editItems(e) {
+			epoint.openDialog("修改排序号",
+					'frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardnormadd?guid='
+							+ e.rowguid, callBack, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+		
+		function cancelRelate() {
+			epoint.execute("cancelRelate", '', searchData);
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'frame_attachconfig' and column_name = 'databasetype' and data_type='nvarchar' and character_maximum_length=50

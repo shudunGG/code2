@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增系统菜单</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<ul id="tree" class="mini-tree" action="getTreeModel"
+			style="width: 100%; padding: 5px; height: 100%;" showCheckBox="true"
+			checkRecursive="false" showTreeIcon="true" textField="text"
+			idField="id" autoCheckParent="false" checkOnTextClick="false"
+			expandOnNodeClick="true">
+		</ul>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="saveAndClose">确定选择</a> 
+		<a class="mini-button" onclick="epoint.closeDialog">取消选择</a>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var sysMenuType = 0;
+		//初始化请求
+		epoint.initPage('sysmenuaddaction', '', initCallBack);
+		function initCallBack(e) {
+			sysMenuType = e.sysMenuType;
+		}
+
+		function saveAndClose() {
+			var checkedNodes = tree.getCheckedNodes();
+			var length = checkedNodes.length;
+			if (length > 0) {
+				var idList = "";
+				for (var i = 0; i < length; i++) {
+					var node = checkedNodes[i];
+					idList += node.id;
+					idList += ";";
+				}
+				epoint.execute('saveSysMenu?idList=' + idList, null,
+						saveCallback);
+			} else {
+				epoint.showTips('您还没有选择任何记录！', {state : 'warning'});
+			}
+
+		}
+
+		//回调
+		function saveCallback(data) {
+			if (data.success) {
+				epoint.closeDialog("添加成功");
+			} else {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		if (tree) {
+			tree.on("beforenodeselect", function beforenodeselect(e) {
+				//禁止选中 ckr=false节点
+				if (e.node.ckr == false)
+					e.cancel = true;
+			});
+
+		}
+	</script>
+
+
+</body>
+</html>

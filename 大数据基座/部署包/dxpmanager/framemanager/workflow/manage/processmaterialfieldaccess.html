@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程活动材料配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input
+			bind="processVersionGuid"
+			id="processVersionGuid" class="mini-hidden" />
+
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="materialGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true"
+			action="processmaterialfieldaccessaction.getDefaultModel"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="misbdmc" width="200" headerAlign="center" align="center">mis表单名称</div>
+				<div field="misTableSetGuid" width="200" headerAlign="center"
+					align="center">tableGuid</div>
+				<div field="materialName" width="200" headerAlign="center"
+					align="center">材料名称</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">权限</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('processmaterialfieldaccessaction');
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//回调
+		function callback(args) {
+			if (args && args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+				searchData();
+			}
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ], '', true);
+		}
+
+		// 绘制行权限配置按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "editAccess",
+					"materialGuid,misTableSetGuid");
+		};
+
+		// 弹出配置权限窗口
+		function editAccess(config) {
+			//解码json字符串为对象
+			config = epoint.decodeJson(config);
+			var materialGuid = config.materialGuid;
+			var misTableSetGuid = config.misTableSetGuid;
+
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var url = 'framemanager/workflow/manage/processmaterialfieldaccessedit?misTableSetGuid='
+					+ misTableSetGuid
+					+ '&materialGuid='
+					+ materialGuid
+					+ '&processVersionGuid=' + processVersionGuid;
+			epoint.openDialog("修改权限", url, callback, {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

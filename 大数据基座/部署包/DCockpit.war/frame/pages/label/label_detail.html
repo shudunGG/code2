@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>标签详情</title>
+    <script src="../../js/boot/boot.min.js"></script>
+    <script>
+        ResBoot.output([
+            './css/label_detail.css',
+            './css/viewportrait.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div id="header" class="header">
+        <div class="container">
+            <p class="header-title">标签门户</p>
+        </div>
+    </div>
+
+    <div class="main" id="app">
+        <div class="main-header fix">
+            <div class="main-header-container clearfix">
+                <a class="goback l" href="./label_list.html">标签列表页</a>
+                <div class="tools clearfix r">
+                    <input class="search-input l" type="text" placeholder="请输入标签名称" />
+                    <a class="search-btn l" href="javascript:;">搜索</a>
+                </div>
+            </div>
+        </div>
+        <div class="main-body">
+            <div class="main-body-container">
+                <div class="banner">
+                    <div class="label-msg">
+                        <span class="labelname l"
+                            title="这里是标签名称">标签加载中</span>
+                    </div>
+                </div>
+                <div class="content clearfix">
+                    <div class="content-left l">
+                        <div class="fix-top">
+                            <div class="nav-container">
+                                <ul class="nav-list" id="nav">
+                                    <li class="nav-item current">
+                                        <a class="nav-item-href" href="#basic">基本信息</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-item-href" href="#advanced">高级设置</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-item-href" href="#rules">规则配置</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-item-href" href="#dataview">数据预览</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="content-right r" id="sectionwrap">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <!-- 模板 -->
+    <script id="banner-tmpl" type="mustache-tmpl">
+        <div class="label-msg">
+            <span class="labelname l" title="{{tag_name}}">
+                {{tag_name}}
+            </span>
+            <span class="labelupdatetime r">标签更新时间: {{update_time}}</span>
+        </div>
+        <div class="label-msg">
+            <span class="labeldept l">创建部门 :<span class="label-text"
+                    title="{{dep}}">{{dep}}</span></span>
+            <span class="labelvisittime clearfix r">
+                <i class="eye l"></i>浏览次数:<span class="label-text">{{visitcount}}</span> 次
+            </span>
+        </div>
+    </script>
+
+    <script id="content-tmpl" type="mustache-tmpl">
+        <div class="box" id="basic">
+            <h3 class="box-title">基本信息</h3>
+            <table class="basic">
+                <colgroup>
+                    <col width="150px" />
+                    <col width="405px" />
+                    <col width="150px" />
+                    <col width="405px" />
+                </colgroup>
+                <thead>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="box-td label-td">标签名称</td>
+                        <td class="box-td value-td">{{tag_name}}</td>
+                        <td class="box-td label-td">标签编码</td>
+                        <td class="box-td value-td">{{tag_alias}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">所属主体</td>
+                        <td class="box-td value-td">{{entity_name}}</td>
+                        <td class="box-td label-td">标签分类</td>
+                        <td class="box-td value-td">{{cate}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">标签类型</td>
+                        <td class="box-td value-td" colspan="3">{{type}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">标签值类型</td>
+                        <td class="box-td value-td" colspan="3">{{tag_value_type}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">备注</td>
+                        <td class="box-td value-td" colspan="3">
+                            {{remark}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box" id="advanced">
+            <h3 class="box-title">高级设置</h3>
+            <table class="advanced">
+                <colgroup>
+                    <col width="150px" />
+                    <col width="405px" />
+                    <col width="150px" />
+                    <col width="405px" />
+                </colgroup>
+                <thead>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="box-td label-td">抽取方式</td>
+                        <td class="box-td value-td" colspan="3">{{is_clear}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">是否支持条件检索</td>
+                        <td class="box-td value-td" colspan="3">{{conditionsearch}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">是否支持全文检索</td>
+                        <td class="box-td value-td">{{fullsearch}}</td>
+                        <td class="box-td label-td">全文检索类型</td>
+                        <td class="box-td value-td">{{fullsearchvalue}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">脱敏方法</td>
+                        <td class="box-td value-td">{{desensitizationrule}}</td>
+                        <td class="box-td label-td">参数</td>
+                        <td class="box-td value-td">{{densensitizationparam}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">自增长字段</td>
+                        <td class="box-td value-td" colspan="3">{{auto_increment}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box" id="rules">
+            <h3 class="box-title">规则配置</h3>
+            <table class="rules">
+                <colgroup>
+                    <col width="150px" />
+                    <col width="405px" />
+                    <col width="150px" />
+                    <col width="405px" />
+                </colgroup>
+                <thead>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="box-td label-td">创建类型</td>
+                        <td class="box-td value-td" colspan="3">{{tag_type}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">数据源</td>
+                        <td class="box-td value-td">{{source}}</td>
+                        <td class="box-td label-td">数据表</td>
+                        <td class="box-td value-td">{{tagstable}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">字段</td>
+                        <td class="box-td value-td" colspan="3">{{tagsfield}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">标签规则</td>
+                        <td class="box-td value-td" colspan="3">{{^rule_desc}}该标签无条件规则{{/rule_desc}}
+                            <div class="rule-container" id="basicRole"
+                                style="display: none">
+                                <ul id="rule-container">
+                                </ul>
+							</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box" id="dataview">
+            <h3 class="box-title">数据预览</h3>
+            <div class="dataview">
+                <h3 class="dataview-title">{{^values}}当前标签无数据{{/values}}</h3>
+                <ul class="dataview-items">
+                    {{#values}}
+                    <li class="dataview-item">{{value}}</li>
+                    {{/values}}
+                </ul>
+            </div>
+        </div>
+    </script>
+
+    <!-- 逻辑单元 -->
+	<script type="x-tmpl-mustache" id="logic-item-tpl">
+        <li class="rule-li logic-li" data-name="{{name}}" data-id="{{id}}">
+            <div class="rule-item select logic-item clearfix" data-name="{{name}}" data-id="{{id}}">
+                <span class="l color-text">{{name}}</span>
+            </div>
+            <ul class="operate-ul">{{{operateHtml}}}</ul>
+        </li>
+    </script>
+
+	<!-- 运算单元 -->
+	<script type="x-tmpl-mustache" id="operate-item-tpl">
+        <li class="rule-li operate-li operate-{{guid}}" data-name="{{name}}" data-id="{{id}}">
+            <div id="operate-{{id}}" class="rule-item select operate-item clearfix" data-name="{{name}}" data-id="{{id}}">
+                <span class="l color-lightgrey">{{name}}</span>
+                <span class="l operate-value color-lightgrey">
+                    {{operate}}
+                </span>
+                <span class="l l color-lightgrey full-input">
+                    {{value}}
+                </span>
+            </div>
+        </li>
+    </script>
+    <!-- 配置放于最前 -->
+    <script>
+        Config.ajaxUrls = {
+            // loaddata: Config.realUrl + 'Home/loaddata'
+        }
+    </script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+        ResBoot.output([
+            './js/viewportrait.js',
+            './js/libs/jquery.nav.js',
+            './js/libs/scrollfix.min.js',
+            './js/label_detail.js'
+        ]);
+    </script>
+
+</body>
+
+</html>

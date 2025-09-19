@@ -1,0 +1,112 @@
+<!-- 
+        作者：guotq
+        创建时间: 2017/07/04
+        版本: [1.0, 2017/07/04 ]
+        版权: 江苏国泰新点软件有限公司
+        描述： h5下的文件上传示例
+-->
+<!DOCTYPE html >
+<html lang="zh-CN">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+        <meta name="format-detection" content="telephone=no, address=no, email=no">
+        <title>文件上传-h5</title>
+        <script>
+            document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+    </head>
+
+    <body>
+        <div class="mui-content">
+            <input type="file" id="testInput" />
+            <button type="button" id="btn-uploader">上传</button>
+            <button type="button" id="btn-test">测试代理选择</button>
+            <div id="tips">
+
+            </div>
+        </div>
+        <script>
+            document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            "use strict";
+
+            initPage();
+
+            function initPage() {
+                Zepto('.mui-content').on('tap', '#btn-uploader', function(e) {
+                    var oFile = document.getElementById('testInput').files[0];
+                    if (!oFile) {
+                        console.error("选择文件不能为空");
+                        return;
+                    }
+
+                    var files = [{
+                        name: 'fileImage',
+                        file: oFile
+                    }];
+
+                    console.log(oFile);
+
+                    upload(files);
+                });
+                Zepto('.mui-content').on('tap', '#btn-test', function(e) {
+                    ejs.ui.actionSheet({
+                        items: ['远野贵树', '篠原明里', '澄田花苗', '立花泷', '宫水三叶'],
+                        cancelable: 1,
+                        success: function(result) {
+                            if (result.which !== -1) {
+                                console.log('点击');
+                                document.getElementById('testInput').click();
+                            }
+                        },
+                        error: function(err) {}
+                    });
+                });
+            }
+
+            function setTips(tips, status) {
+                console.log(status + ':' + JSON.stringify(tips));
+                document.getElementById('tips').innerHTML = JSON.stringify(tips);
+            }
+
+            function upload(files) {
+                // 模拟数据
+                var data = {
+                    "token": "",
+                    "params": {
+                        "FromUserGuid": "959e605a-de51-4610-ae80-ee4b1519d6dc",
+                        "FromUserName": "",
+                        "ToUserGuid": "959e605a-de51-4610-ae80-ee4b1519d6dc",
+                        "ToUserName": "",
+                        "Subject": "111",
+                        "Content": "222"
+                    }
+                };
+                Util.upload({
+                    isAutoProxy: false,
+                    url: 'http://115.29.151.25:8012/webUploaderServer/testUpload.php',
+                    data: {
+                        RDATA: JSON.stringify(data)
+                    },
+                    files: files,
+                    beforeSend: function() {
+                        setTips('准备上传', 'before');
+                    },
+                    success: function(response, status, xhr) {
+                        setTips(response || xhr, 'success');
+                    },
+                    error: function(xhr, status, statusText) {
+                        setTips(xhr, status);
+                    },
+                    uploading: function(percent, speed, status) {
+                        console.log("上传中:" + percent + ',speed:' + speed + ',msg:' + status);
+                    }
+                });
+            }
+        </script>
+    </body>
+
+</html>

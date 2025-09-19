@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>信息发布</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="row">
+				<div role="control" label="标题" starred="true">
+					<input id="cMessageTitle" class="mini-textbox"
+						bind="commMessageRelease.cMessageTitle" required="true"
+						requiredErrorText="标题不能为空!" vtype="maxLength:500"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="所属类别" starred="true">
+					<input id="typeTree" class="mini-treeselect" bind="categoryNum"
+						action="getTreeData" multiSelect="false" required="true"
+						requiredErrorText="所属类别不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNumber" class="mini-textbox"
+						bind="commMessageRelease.orderNum" vtype="int;range:0,99999999"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="问题内容" starred="true">
+					<textarea bind="commMessageRelease.cMessageContent"
+						id="cMessageContent" class="mini-webeditor" required="true" readOnly="false"></textarea>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">发布信息</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="../../epointworkflow/js/tableproperty.js"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('commmessagereleaseaddaction');
+
+		function save() {
+			var value = mini.get("cMessageContent").getValue();
+        	if (value != null  && value !=""){
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+        	}else{
+        		epoint.showTips('问题内容不能为空！',  {state : 'warning'});
+        	}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+			    epoint.closeDialog(data.msg);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

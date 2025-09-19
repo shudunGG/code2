@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>门户编辑</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot
+			.output([
+					'framemanager/ui/portalNew/mCustomScrollbar/jquery.mCustomScrollbar.min.css',
+					'framemanager/ui/portalNew/portaldesign/css/index.css',
+					'framemanager/ui/portalNew/portaldesign/css/ruler.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="top">
+		<span class="title" id="title"></span>
+		<div class="r">
+			<a class="mini-button verticle-middle" onclick="save()">保存</a>
+		</div>
+	</div>
+	<div class="main relative" id="main">
+		<!-- 左侧面板 -->
+		<div class="sidebar-panel" id="sidebar-panel">
+			<ul class="types">
+				<li class="type icon-page" data-ref="page" title="页面"></li>
+				<li class="type icon-element" data-ref="element" title="元件"></li>
+				<!-- <li class="type icon-template" data-ref="template" title="模板"></li> -->
+			</ul>
+			<div class="panel-back"></div>
+			<ul class="types-detail">
+				<!-- 页面的详情 -->
+				<li class="type-detai  page-detail">
+					<div class="page-box">
+						<h3 class="detail-title">页面</h3>
+						<div class="clearfix lh-mid">
+							<div class="l">宽度：</div>
+							<div class="r">
+								<div id="widthType" bind="template.widthType" name="level"
+									data="[{text:'按比例',id:'1'},{text:'按固值',id:'2'}]"
+									textField="text" valueField="id" value="1"
+									class="lh-mid mini-radiobuttonlist" style="width: 100%"
+									onvaluechanged="widthChange"></div>
+							</div>
+						</div>
+						<div class="clearfix lh-mid">
+							<div class="l">数值：</div>
+							<div class="r page-number percent" id="page-number">
+								<input id="pageWidth" bind="template.pageWidth" visible="false"
+									width="80" class="mini-textbox" style="margin-top: -5px;"
+									emptyText="" vtype="int" onvaluechanged="widthValueChange" />
+								<input id="pagePercent" visible="true"
+									bind="template.pagePercent" width="80" class="mini-textbox"
+									style="margin-top: -5px;" emptyText="" vtype="int"
+									onvaluechanged="widthPercentChange" />
+							</div>
+						</div>
+						<h3 class="detail-title">辅助设计</h3>
+						<div class="clearfix lh-mid">
+							<div class="l">栅格线：</div>
+							<div class="r">
+								<div id="eleGrid" name="" bind="template.eleGrid"
+									class="mini-checkbox switch" checked="true" readOnly="false"
+									onvaluechanged="gridChange"></div>
+							</div>
+						</div>
+						<div class="clearfix lh-mid">
+							<div class="l">标尺：</div>
+							<div class="r">
+								<div id="eleRuler" name="product" bind="template.eleRuler"
+									class="mini-checkbox switch" checked="false" readOnly="false"
+									onvaluechanged="ruleChange"></div>
+							</div>
+						</div>
+						<h3 class="detail-title">
+							门户操控 <i class="title-tip" title="前台用户的门户配置能力">?</i>
+						</h3>
+						<div class="clearfix lh-mid">
+							<div class="l">元件拖动：</div>
+							<div class="r">
+								<div id="eleMove" name="product" bind="template.eleMove"
+									class="mini-checkbox switch" checked="true" readOnly="false"
+									onvaluechanged="eleMoveChange"></div>
+							</div>
+						</div>
+						<div class="clearfix lh-mid">
+							<div class="l">元件显隐：</div>
+							<div class="r">
+								<div id="eleShow" name="product" bind="template.eleShow"
+									class="mini-checkbox switch" checked="true" readOnly="false"
+									onvaluechanged="eleShowChange"></div>
+							</div>
+						</div>
+						<div class="clearfix lh-mid">
+							<div class="l">元件缩放：</div>
+							<div class="r">
+								<div id="eleScale" name="product" bind="template.eleScale"
+									class="mini-checkbox switch" checked="true" readOnly="false"
+									onvaluechanged="eleScaleChange"></div>
+							</div>
+						</div>
+
+					</div>
+
+				</li>
+				<!-- 元件的详情 -->
+				<li class="type-detail hidden h-full element-detail">
+					<div class="element-box h-full relative">
+						<ul class="element-tabs clearfix">
+							<li class="element-tab active text-center w-half l"
+								data-ref="template">元件</li>
+							<li class="element-tab text-center w-half l" data-ref="lib">仓库
+								<span class="lib-num"></span>
+							</li>
+						</ul>
+
+						<ul class="mt-10">
+							<!-- 元件 -->
+							<li class="template-panel"><input
+								class="detail-search relative" id="ele-search" type="text"
+								placeholder="搜索元件">
+
+								<div class="element-detail-container"
+									id="element-list-container"></div></li>
+							<!-- 仓库 -->
+							<li class="hidden lib-panel"><input
+								class="detail-search relative" id="lib-search" type="text"
+								placeholder="搜索模板">
+
+								<div class="mt-10 element-detail-container"
+									id="lib-list-container">
+									<ul>
+
+									</ul>
+								</div></li>
+						</ul>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<!-- 右侧内容 -->
+		<!-- 817 和 1592宽度会重绘 -->
+		<div class="container-panel" id="container-panel">
+			<div class="painting-area" id="painting-area">
+				<div class="grid-container gridster row-line ui-droppable"
+					id="grid-container">
+					<ul>
+
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 存为模板 -->
+	<div id="htmlContent" class="diy-html" style="display: none;">
+		<input id="portal-name" class="portal-name" placeholder="请输入模板名称" />
+	</div>
+
+	<!-- 模板重命名 -->
+	<div id="tempRename" class="diy-html" style="display: none;">
+		<input id="temp-name" class="portal-name" placeholder="" />
+	</div>
+
+	<!-- 仓库更多-->
+	<ul id="lib-more-menu" class="more-menu">
+		<li class="menu-item" data-ref="edit">编辑</li>
+		<!-- <li class="menu-item" data-ref="create">创建副本</li> -->
+		<li class="menu-item text-red" data-ref="delete">删除</li>
+	</ul>
+
+	<!-- 模板更多 -->
+	<ul id="temp-more-menu" class="more-menu">
+		<li class="menu-item" data-ref="rename">重命名</li>
+		<li class="menu-item" data-ref="edit">编辑</li>
+		<li class="menu-item text-blue public-item" data-ref="public">公开模板</li>
+		<!-- <li class="menu-item text-blue" data-ref="cancel">取消公开</li> -->
+		<li class="menu-item text-red" data-ref="delete">删除</li>
+	</ul>
+
+	<!-- 元件（模板） -->
+	<!-- data-colspan="{{sizex}}" 
+                        data-rowspan="{{sizey}}"  -->
+	<script type="x-tmpl-mustache" id="element-item-tpl">
+		<ul>
+			{{#list}}
+			<li class="template-lists">
+				<div class="template-title" data-id="{{id}}">{{name}}</div>
+				<ul class="clearfix element-list">
+					{{#items}}
+					<li class="l el-item drag-item w-full" 
+						title="{{name}}"
+						data-sizex="{{sizex}}" 
+						data-sizey="{{sizey}}" 
+						data-id="{{id}}" 
+						data-count-url="{{countUrl}}" 
+						data-component-type="{{componenttype}}" 
+						data-name="{{name}}" >
+						{{#isfonticon}}<i class="element-icon modicon-{{icon}} l"></i>{{/isfonticon}}
+						{{^isfonticon}}<i class="element-icon l" style="background: url({{titleIcon}}) no-repeat center; background-size: 100% 100%;"></i>{{/isfonticon}}
+						<div class="element-content text-ellipsis l">{{{name}}}</div>
+					</li>
+					{{/items}}
+				</ul>
+			</li>
+			{{/list}}
+		</ul>
+	</script>
+
+	<!-- 元件（搜索模板） -->
+	<script type="x-tmpl-mustache" id="element-item-search-tpl">
+		<ul>
+			{{#list}}
+			{{#has}}<li class="template-lists">
+				<div class="template-title" data-id="{{id}}">{{name}}</div>
+				<ul class="clearfix element-list">
+					{{#items}}{{#result}}
+					<li class="l el-item drag-item w-full" 
+						title="{{name}}"
+						data-sizex="{{sizex}}" 
+						data-sizey="{{sizey}}" 
+						data-id="{{id}}" 
+						data-count-url="{{countUrl}}" 
+						data-component-type="{{componenttype}}" 
+						data-name="{{name}}" >
+						<!--<i class="element-icon {{icon}} l"></i>-->
+						{{#isfonticon}}<i class="element-icon modicon-{{icon}} l"></i>{{/isfonticon}}
+						{{^isfonticon}}<i class="element-icon l" style="background: url({{titleIcon}}) no-repeat center; background-size: 100% 100%;"></i>{{/isfonticon}}
+						<div class="element-content text-ellipsis l">{{{result}}}</div>
+					</li>
+					{{/result}}{{/items}}
+				</ul>
+			</li>{{/has}}
+			{{/list}}
+		</ul>
+	</script>
+
+	<!-- 元件（仓库） -->
+	<script type="x-tmpl-mustache" id="lib-item-tpl">
+			<ul>
+				{{#list}}
+				<li id="lib-item-{{id}}" class="lib-item drag-item{{#visible}} active{{/visible}}" data-id="{{id}}" data-title="{{title}}" data-other="{{other}}" data-url="{{url}}" data-count-url="{{countUrl}}" 
+                        data-component-type="{{componenttype}}" data-sizex="{{sizex}}" data-sizey="{{sizey}}">
+					<i class="icon-eye" title="切换元件可见性"></i>
+					<div class="lib-content text-ellipsis" title="{{title}}">
+						{{title}}
+					</div>
+					<div class="lib-more action-icon icon-omit"></div>
+				</li>
+				{{/list}}
+			</ul>
+		</script>
+	<!-- 元件（搜索仓库） -->
+	<script type="x-tmpl-mustache" id="lib-item-search-tpl">
+			<ul>
+				{{#list}} {{#result}}
+				<li id="lib-item-{{id}}" class="lib-item drag-item{{#visible}} active{{/visible}}" data-public-id="{{publicId}}" data-id="{{id}}" data-title="{{title}}" data-other="{{other}}" data-url="{{url}}" data-count-url="{{countUrl}}" 
+                        data-component-type="{{componenttype}}" data-sizex="{{sizex}}" data-sizey="{{sizey}}">
+					<i class="icon-eye" title="切换元件可见性"></i>
+					<div class="lib-content text-ellipsis" title="{{title}}">
+						{{{result}}}
+					</div>
+					<div class="lib-more action-icon icon-omit"></div>
+				</li>{{/result}} {{/list}}
+			</ul>
+		</script>
+
+	<!-- 模板 -->
+	<script type="x-tmpl-mustache" id="temp-item-tpl">
+			{{#list}}
+			<li class="template-lists" data-id="{{id}}" data-name="{{name}}">
+				<div class="template-title">{{name}}</div>
+				<ul class="template-list clearfix" id="temlate-list-{{id}}">
+					{{#items}}
+					<li class="l template-item-box{{#publicId}} public{{/publicId}}" id="template-item-{{id}}" data-public-id="{{publicId}}" data-id="{{id}}" data-name="{{name}}">
+						<div class="template-item">
+							<div class="temp-item-img">{{#public}}<img src="./css/images/icon_public.png" alt="">{{/public}}{{^public}}<img src="./css/images/icon_my.png" alt="">{{/public}}
+							</div>
+							<p class="temp-item-text">{{name}}</p>
+							<div class="temp-status">公开</div>
+						</div>
+
+						{{^public}}
+						<div class="temp-more action-icon icon-omit"></div>{{/public}}
+					</li>
+					{{/items}}
+				</ul>
+			</li>
+			{{/list}}
+		</script>
+
+	<!-- 模板（搜索） -->
+	<script type="x-tmpl-mustache" id="temp-item-search-tpl">
+			{{#list}} {{#has}}
+			<li class="template-lists" data-id="{{id}}" data-name="{{name}}">
+				<div class="template-title">{{name}}</div>
+				<ul class="template-list clearfix" id="temlate-list-search-{{id}}">
+					{{#items}} {{#result}}
+					<li class="l template-item-box{{#public}} public{{/public}}" id="template-item-search-{{id}}" data-public-id="{{publicId}}" data-id="{{id}}" data-name="{{name}}">
+						<div class="template-item">
+							<div class="temp-item-img"><img src="{{img}}" alt="">
+							</div>
+							<p class="temp-item-text">{{{result}}}</p>
+							<div class="temp-status">公开</div>
+						</div>
+
+						<!-- {{^public}}<div class="temp-more action-icon icon-omit"></div>{{/public}} -->
+					</li>{{/result}} {{/items}}
+				</ul>
+			</li>{{/has}} {{/list}}
+		</script>
+
+	<script type="x-tmpl-mustache" id="element-content-tpl">
+			<ul class="element-body-list">
+				{{#itemList}}
+				<li class="todo-item">
+					<a href="javascript:;" class="todo-item-link" title="{{title}}" data-url="{{url}}" data-id="{{id}}">{{{content}}}</a>
+					<span class="todo-item-date">{{date}}</span>
+				</li>
+				{{/itemList}}
+			</ul>
+		</script>
+
+	<!-- data-rowspan="{{rowspan}}" 
+            data-colspan="{{colspan}}"  -->
+	<script type="x-tmpl-mustache" id="cache-element-tpl">
+
+			<li class="widget cache-elem-item element-item" id="cache-element-{{id}}" data-name="{{title}}" data-row="{{row}}" data-col="{{col}}" data-sizex="{{sizex}}" data-sizey="{{sizey}}">
+
+			</li>
+		</script>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var domain = "rest/templatedesignaction/", portalGuid = Util
+				.getUrlParams('tempGuid'), // 门户ID
+		portalConfig = {
+			createElementUrl : domain + 'createElement?isCommondto=true',
+			getElementDataUrl : domain + 'getElementData?isCommondto=true', // 获取元件中的列表和数量
+			getAllComponentUrl : domain + 'getAllComponent?isCommondto=true', // 元件-模板获取地址
+			setEleVisible : domain + 'setElementVisible?isCommondto=true', // 设置元件仓库模板是否可见
+			delEleLib : domain + 'deleteLibComponent?isCommondto=true', // 删除元件仓库模板
+			saveTemplate : domain + 'saveTemplate?isCommondto=true' // 存为模板
+		};
+	</script>
+
+	<script>
+		SrcBoot.output([ './js/jquery.gridster.min.js', './js/jquery.ruler.js',
+				'./js/common.js', './js/edit.js' ]);
+	</script>
+
+	<script>
+		epoint.initPage('templatedesignaction', '@all', function(data) {
+			// 初始化左侧宽度方式
+			widthType(mini.get('widthType').value);
+
+			// 初始化内容
+			var tableData = data.tableData || [];
+			gridster.remove_all_widgets();
+			commonUtil.loadTemp({
+				templ : './tpl/element.tpl',
+				callback : function() {
+					if (tableData.length) {
+						// 行列排序
+						tableData.sort(
+					  	 	function(a, b) {
+							if(typeof a.col == "string") {
+								a.col = +a.col
+							}
+							if(typeof b.col == "string") {
+								b.col = +b.col
+							}
+							if(typeof a.row == "string") {
+								a.row = +a.row
+							}
+							if(typeof b.row == "string") {
+								b.row = +b.row
+							}
+							if (a.col === b.col) {
+								return a.row - b.row;
+							}
+							return a.col > b.col ? 1 : -1;
+					   });
+						$.each(tableData, function(index, item) {
+							ElementManage.addElementItem(item, true);
+						});
+					}
+				}
+			});
+
+		});
+	</script>
+
+</body>
+
+</html>

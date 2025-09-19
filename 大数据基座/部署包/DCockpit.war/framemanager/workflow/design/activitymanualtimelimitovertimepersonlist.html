@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>超时提醒人员设置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="OpenAddWindow();"
+				id="btnAddRecord"> 新增处理人 </a> 
+			<a id="btnDel" class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+				onclick="if(mini.get('reFreshData').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选中 </a>
+		</div>
+	</div>
+	
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div id="reFreshData" class="mini-datagrid" idField="participatorGuid"
+			action="getDefaultModel" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="80"></div>
+				<div type="indexcolumn" width="80" headerAlign="center">序</div>
+				<div field="participatorName" headerAlign="center"  width="180">处理人员类型</div>
+				<div field="clrymc" headerAlign="center"  width="100%">处理人员名称</div>
+				<div field="modeType" width="150" align="center" headerAlign="center"
+					renderer="changeBtn">包含关系</div>
+				
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="activityGuid" bind="activityGuid" />
+	
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activitymanualtimelimitovertimepersonlistaction');
+		
+		// 弹出新增窗口
+		function OpenAddWindow() {
+			var activityGuid = mini.get("activityGuid").getValue();
+			epoint.openTopDialog('新增',
+					"framemanager/workflow/design/workflowselectuser?activityGuid="+activityGuid+"&belongTo=overtimenotify", searchData, {
+						'width' : 800,
+						'height' : 560
+					});
+		}
+		
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("btnDelete_Click", '', callback);
+		}
+		
+		function changeBtn(e) {
+			if (e.row.modeType == 10) {
+				return epoint.renderCell(e, "action-icon icon-addcircle","contain","participatorGuid");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-removecircle","remove","participatorGuid");
+			}
+
+		}
+		
+		function contain(participatorguid) {
+			epoint.execute("DataGrid1_ItemCommand",'',[participatorguid,'包含'], callback);
+		}
+		
+		function remove(participatorguid) {
+			epoint.execute("DataGrid1_ItemCommand",'',[participatorguid,'排除'], callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'reFreshData', 'fui-content' ],'',true);
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

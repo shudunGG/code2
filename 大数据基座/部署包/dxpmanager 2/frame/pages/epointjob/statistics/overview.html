@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="./overview.css">
+    <title>统计概览</title>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row clearfix">
+            <div class="row-block">
+                <div class="block-hd">
+                    <span class="block-hd-text">
+                        重点关注
+                    </span>
+                </div>
+                <div class="block-bd">
+                    <ul id="focus-list" class="focus-list clearfix">
+                        <li class="focus-item wait">
+                            <i class="focus-item-icon"></i>
+                            <p class="focus-item-num">0</p>
+                            <p class="focus-item-text">执行中任务数</p>
+                        </li>
+                        <li class="focus-item fail">
+                            <i class="focus-item-icon"></i>
+                            <p class="focus-item-num">0</p>
+                            <p class="focus-item-text">24小时内失败任务数</p>
+                        </li>
+                        <li class="focus-item slow">
+                            <i class="focus-item-icon"></i>
+                            <p class="focus-item-num">0</p>
+                            <p class="focus-item-text">慢任务数量</p>
+                        </li>
+                        <li class="focus-item stop">
+                            <i class="focus-item-icon"></i>
+                            <p class="focus-item-num">0</p>
+                            <p class="focus-item-text">在线执行器数量</p>
+                        </li>
+                        <li class="focus-item overdue">
+                            <i class="focus-item-icon"></i>
+                            <p class="focus-item-num">0</p>
+                            <p class="focus-item-text">常规任务数量</p>
+                        </li>
+                        <li class="focus-item isolated">
+                            <i class="focus-item-icon"></i>
+                            <p class="focus-item-num">0</p>
+                            <p class="focus-item-text">DAG流程数量</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="row-block span2">
+                <div class="block-hd">
+                    <span class="block-hd-text">
+                        运行状态分布
+                    </span>
+                </div>
+                <div class="block-bd">
+                    <div class="charts-container" id="run-status"></div>
+                </div>
+            </div>
+            <div class="row-block span2">
+                <div class="block-hd">
+                    <span class="block-hd-text">
+                        每日任务完成情况
+                    </span>
+                </div>
+                <div class="block-bd">
+                    <div class="charts-container" id="task-completion"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="row-block">
+                <div class="block-hd">
+                    <span class="block-hd-text">
+                        任务数量统计
+                    </span>
+                    <div class="block-hd-condition">
+                        <div class="fui-form">
+                            <div role="row">
+                                <div role="control" label="执行器组">
+                                    <input class="mini-combobox" id="groupNameList" onvaluechanged="refreshTaskCountByGroup"
+                                    	showNullItem="true" emptyText="请选择..." nullItemText="暂不选择"/>
+                                </div>
+                                <div role="control" label="执行器">
+                                    <input class="mini-combobox" id="addressList" onvaluechanged="refreshTaskCountByExecutor"
+                                    	showNullItem="true" emptyText="请选择..." nullItemText="暂不选择"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="block-bd">
+                    <div class="charts-container" id="task-count"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="executorDiv">
+            <div class="row-block span2">
+                <div class="block-hd">
+                    <span class="block-hd-text">
+                        执行器 cpu 使用率
+                    </span>
+                    <div class="block-hd-condition">
+                        <div class="fui-form">
+                            <div role="row">
+                                <div role="control" label="表单字段2">
+                                    <input class="mini-combobox"  data="[{id: '0', text: '0'},{id: '1', text: '1'}]" onvaluechanged="refreshCpuUsage"/>
+                                </div>
+                                <div role="control" label="表单字段3">
+                                    <input class="mini-combobox" data="[{id: '0', text: '0'},{id: '1', text: '1'}]" onvaluechanged="refreshCpuUsage"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="block-bd">
+                    <div class="charts-container" id="cpu-usage"></div>
+                </div>
+            </div>
+            <div class="row-block span2">
+                <div class="block-hd">
+                    <span class="block-hd-text">
+                        执行器内存使用率
+                    </span>
+                    <div class="block-hd-condition">
+                        <div class="fui-form">
+                            <div role="row">
+                                <div role="control" label="表单字段2">
+                                    <input class="mini-combobox"  data="[{id: '0', text: '0'},{id: '1', text: '1'}]" onvaluechanged="refreshMemoryUsage"/>
+                                </div>
+                                <div role="control" label="表单字段3">
+                                    <input class="mini-combobox" data="[{id: '0', text: '0'},{id: '1', text: '1'}]" onvaluechanged="refreshMemoryUsage"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="block-bd">
+                    <div class="charts-container" id="memory-usage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script src="./libs/echarts.min.js"></script>
+
+    <!-- 数据模拟 -->
+    <script src="../../../fui/js/libs/mock-min.js"></script>
+
+    <script>
+    	$("#executorDiv").hide();
+    
+        // 初始化请求接口地址，数据格式请参考模拟数据
+        var initDataUrl = '/rest/statistic/init';
+
+        function refreshTaskCountByGroup() {
+        	var groupName = mini.get("groupNameList").getValue();
+        	refreshTaskCount(groupName, null);
+        	//mini.get("addressList").select(0);
+        }
+        
+        function refreshTaskCountByExecutor() {
+        	var groupName = mini.get("groupNameList").getValue();
+        	var address = mini.get("addressList").getValue();
+        	refreshTaskCount(groupName, address);
+        }
+        
+        function refreshTaskCount(groupName, address) {
+            var params = {'groupName' : groupName, 'address' : address}; // 要提交的参数，需自己拼接
+            Util.ajax({
+                url: '/rest/statistic/getLineChartData',
+                data: params
+            }).done(function(data){
+            	if (data.addressList) {
+            		 var addressListData = [];
+            		 addressListData.push({"text":"所有","id":"all"});
+                   	$.each(data.addressList, function(k,v){
+                   		addressListData.push({"text":v,"id":v});
+                   	});
+            		mini.get("addressList").setData(addressListData);
+            	}
+            	if(!mini.get("groupNameList").getValue() || mini.get("groupNameList").getValue() == 'all'){
+            		mini.get("addressList").setData([]);
+            	}
+                refreshLineChartData('taskCount', data.taskCount);
+            });
+        }
+        function  refreshMemoryUsage() {
+            var params = {}; // 要提交的参数，需自己拼接
+            Util.ajax({
+                url: 'getLineChartData',
+                data: params
+            }).done(function(data){
+                refreshLineChartData('memoryUsage', data);
+            });
+        }
+        function  refreshCpuUsage() {
+            var params = {}; // 要提交的参数，需自己拼接
+            Util.ajax({
+                url: 'getLineChartData',
+                data: params
+            }).done(function(data){
+                refreshLineChartData('cpuUsage', data);
+            });
+        }
+    </script>
+
+    <script src="./overview.js"></script>
+
+</body>
+
+</html>

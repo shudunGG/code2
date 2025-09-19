@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>报表</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="报表名称" starred="true">
+						<input class="mini-textbox" bind="reportInfo.reportname"
+							required="true" requiredErrorText="活动名称不能为空!"
+							vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据源">
+						<input bind="reportInfo.dsID" action="getDsItems"
+							allowInput="false" autoLoad="true" class="mini-combobox"
+							showNullItem="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="报表类别">
+						<input class="mini-output" bind="reportInfo.categoryname" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="上传报表" starred="true">
+						<div id="uploader" class="mini-webuploader"
+							action="reportinfoaction.getFileUploadModel" fileNumLimit="1"
+							fileSingleSizeLimit="5120" limitType="mrt"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="reportInfo.ordernumber"
+							vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addbtn" onclick="add" style="display: none;">保存并关闭</a>
+		<a class="mini-button" state="primary" id="savebtn" onclick="save" style="display: none;">保存修改</a> 
+		<a class="mini-button" id="closebtn" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//初始化页面
+        epoint.initPage ("reportinfoaction", null, initCallback);
+        
+        function initCallback (data)
+        {
+	        if (data.type == 'add')
+	        {
+		        document.getElementById ("addbtn").style.display = '';
+	        }
+	        else if (data.type == 'edit')
+	        {
+		        document.getElementById ("savebtn").style.display = '';
+	        }
+        }
+
+        //添加报表
+        function add ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("add", "fui-form", function (data)
+		        {
+			        if (data.flag != null && (data.flag == "1"))
+			        {
+			        	epoint.alertAndClose (data.message, '', null, null, 'info');
+			        }
+			        else
+			        {
+			        	epoint.alert (data.message, '', null, 'info');
+			        }
+		        });
+	        }
+        }
+
+        //保存报表
+        function save ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("save", "fui-form", function (data)
+		        {
+		        	if (data.flag != null && (data.flag == "1"))
+			        {
+			        	epoint.alertAndClose (data.message, '', null, null, 'info');
+			        }
+			        else
+			        {
+			        	epoint.alert (data.message, '', null, 'info');
+			        }
+		        });
+	        }
+        }
+	</script>
+</body>
+</html>

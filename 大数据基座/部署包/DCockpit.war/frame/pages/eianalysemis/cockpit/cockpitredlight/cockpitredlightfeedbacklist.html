@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>红灯反馈信息列表</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <!-- 请修改相对路径 -->
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+
+<!-- 内容区域 -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <div class="mini-button" id="feedback" onclick="feedback">新增反馈</div>
+            <div class="mini-button" id="deleteSelect" onclick="deleteSelect">删除所选</div>
+        </div>
+    </div>
+    <div id="fuiContent" class="fui-content">
+        <div id="datagrid" name="datagrid" class="mini-datagrid"
+             idField="rowguid" multiSelect="true"
+             style="height: 100%" allowResize="false"
+             showPager="true" action="getDataGridData" allowCellSelect="true"
+             allowCellEdit="true" editNextOnEnterKey="true">
+            <div property="columns">
+                <div type="checkcolumn" width="30"></div>
+                <div type="indexcolumn" width="40" headerAlign="center">序号</div>
+                <div field="feedbackUser" width="80" headerAlign="center">反馈人</div>
+                <div field="content" width="150" headerAlign="center"
+                     align="center">反馈内容
+                </div>
+                <div field="fileName" width="100" headerAlign="center"
+                     align="center" renderer="onNameRenderer">附件
+                </div>
+                <div field="feedbackTime" width="100" headerAlign="center"
+                     align="center" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+                     dateFormat="yyyy-MM-dd HH:mm:ss">反馈时间
+                </div>
+                <div name="operate" type="actioncolumn" headerAlign="center"
+                     align="center">
+                    <span type="action" icon="icon-edit" onclick="openEdit">编辑</span>
+                    <span type="action" icon="icon-trash" onclick="deleteFeedback">删除</span>
+                </div>
+                <div visible="false" field="attachGuid"></div>
+            </div>
+        </div>
+    </div>
+
+<!-- 请修改相对路径 -->
+<script src="../../../../../rest/resource/jsboot"></script>
+<script>
+    var grid = mini.get('datagrid');
+    var redLightGuid = Util.getUrlParams('redLightGuid');
+    // 初始化页面
+    epoint.initPage('cockpitredlightfeedbacklistaction', null, function (
+        data) {
+    });
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid']);
+    }
+
+    function onCloseClick(e) {
+        var obj = e.sender;
+        obj.setText("");
+        obj.setValue("");
+    }
+
+    function onNameRenderer(e) {
+        return '<a href="javascript:downloadFile(\'' + e.record.attachGuid
+            + '\')" style="color:blue;text-decoration:underline;">'
+            + e.value + '</a>';
+    }
+
+    function openEdit(e) {
+        epoint.openDialog('修改反馈信息', "./cockpitredlightfeedbackadd?guid=" + e.rowguid + "&redLightGuid=" + redLightGuid, searchData, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    function downloadFile(guid) {
+        window
+            .open(Util.getRootPath()
+                + 'rest/attachAction/getContent?isCommondto=true&attachGuid='
+                + guid);
+    }
+
+    function feedback() {
+        epoint
+            .openDialog('新增反馈',
+                "./cockpitredlightfeedbackadd?redLightGuid="
+                + redLightGuid, searchData, {
+                    'width': 600,
+                    'height': 400
+                });
+    }
+
+    function deleteSelect() {
+        if (mini.get('datagrid').getSelecteds().length === 0) {
+            epoint.alert('请选择要删除的记录!', '', null, 'warning');
+        } else {
+            epoint.confirm('确认要删除吗?', '', function (data) {
+                epoint.execute("deleteFeedbackList", '', callback);
+            });
+        }
+    }
+
+    function deleteFeedback(e) {
+        epoint.confirm('确认要删除吗?', '', function (data) {
+            epoint.execute("deleteFeedback", '', e.rowguid, callback);
+        });
+    }
+
+    function callback(data) {
+        if (data.msg) {
+            epoint.alert(data.msg, '', searchData, 'info');
+        }
+    }
+</script>
+</body>
+</html>

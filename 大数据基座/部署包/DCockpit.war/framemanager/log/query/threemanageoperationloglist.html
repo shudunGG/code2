@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>框架三员管理日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="人员">
+						<input bind="operateuserdisplayname" id="operateUserDisplayName"
+							class="mini-textbox" />
+					</div>
+					<div role="control" label="系统分类">
+						<input bind="subsystemtype" id="subSystemType"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="IP">
+						<input bind="fromIp" id="fromIp" class="mini-textbox" emptyText="" />
+					</div>
+					<div role="control" label="内容">
+						<input bind="content" id="content" class="mini-textbox"
+							emptyText="" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="日志记录时间">
+						<input name="dateFrom" id="beginDate" bind="beginDate"
+							class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" format="yyyy-MM-dd HH:mm:ss"
+							data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}" showTime="true"
+							showClearButton="true" /> <span
+							style="width: 12%; text-align: center">至</span> <input
+							name="endDate" id="endDate" class="mini-datepicker"
+							onValuechanged="validateDate(this)" style="width: 44%;"
+							format="yyyy-MM-dd HH:mm:ss" bind="endDate"
+							data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}" showTime="true"
+							showClearButton="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="50">序号</div>
+				<div field="operator_type" width="150" headerAlign="center">操作类型</div>
+				<div field="subsystem_type" width="150" headerAlign="center">系统分类</div>
+				<div field="content" width="150" headerAlign="center">内容</div>
+				<div field="userdisplayname" width="150" headerAlign="center">操作人员</div>
+				<div field="fromip" width="150" headerAlign="center">访问IP</div>
+				<div field="recorddate"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}" width="150"
+					headerAlign="center">操作时间</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('threemanageoperationloglistaction');
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('');
+		}
+
+		//　日期控件的验证
+		var start = mini.get("beginDate");
+		var end = mini.get("endDate");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'beginDate') {
+						epoint.alert("开始时间不能比结束时间晚!", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("结束时间不能比开始时间早!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+	</script>
+</body>
+</html>

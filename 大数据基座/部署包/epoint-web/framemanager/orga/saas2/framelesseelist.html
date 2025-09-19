@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>租户管理</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style>
+	.fui-toolbar {
+		height: 0.36rem;
+	}
+</style>
+
+</head>
+
+<body>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+	<div class="btn-group mr10">
+		<a class="mini-button" onclick="openAdd();" id="btnAddRecord" state="primary"> 新增租户 </a>
+		<a id="btnDel" class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+		   onclick="deleteSelect"> 注销选定租户  </a>
+	</div>
+</div>
+
+<!-- 条件区域 -->
+<div class="fui-condition">
+	<div class="fui-form" id="fui-form">
+		<div id="cform" role="form">
+			<div role="row">
+				<div role="control" label="租户名称">
+					<input id="search_Lesseename" class="mini-textbox"  emptyText=""
+						   bind="dataBean.lesseename" onkeyenter="searchData();"
+					/>
+				</div>
+				<div role="control" label="租户标示名称">
+					<input id="search_Lesseesysname" class="mini-textbox"
+						   bind="dataBean.lesseesysname"
+						   onkeyenter="searchData();" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<a role="searcher" callback="searchData"></a>
+</div>
+
+<!-- 内容区域 -->
+<div id="fuiContent" class="fui-content">
+	<div id="datagrid" class="mini-datagrid" idField="rowguid"
+		 action="getDataGridData" sortOrder="desc" showPager="true"
+		 style="height: 100%;" allowResize="true" multiSelect="true"
+		 allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+		 editNextRowCell="true">
+		<div property="columns">
+			<div type="checkcolumn" width="50"></div>
+			<div type="indexcolumn" width="50" align="left">
+				序
+			</div>
+			<div field="lesseename"  width="200" >
+				租户名称
+			</div>
+			<div field="lesseesysname"  width="100%">
+				租户标示名称
+			</div>
+			<div field="username"  width="200" >
+				管理员账号
+			</div>
+			<div field="ordernumber"  width="100">
+				排序值
+			</div>
+			<div field="status" width="60" renderer="changeImage">
+				状态
+			</div>
+			<div type="actioncolumn">
+				操作
+				<span type="action" icon="icon-edit" onclick="openEdit">修改</span>
+				<span type="action" icon="icon-refresh" onclick="rePassword">初始化密码</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('framelesseelistaction2', null, initData);
+		
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录', "framemanager/orga/saas2/framelesseeadd", function(param){
+				if(param && param !="close"){
+					epoint.showTips(param, {state : 'success'});
+				}
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}, {
+				'width' : 800,
+				'height' : 450
+			});
+		}
+		
+		// 渲染启用状态按钮
+		function changeImage(e) {
+			if (e.row.status == 10) {
+				return '<i class="action-icon icon-start success" onclick="changeStatus(\''
+						+ e.row.rowguid + '\');"></i>';
+			} else {
+				return '<i class="action-icon icon-pause error" onclick="changeStatus(\''
+						+ e.row.rowguid + '\');"></i>';
+			}
+		}
+		
+		// 启用状态切换
+		function changeStatus(e) {
+			epoint.confirm("确认切换状态?", '', function() {
+				epoint.execute('changeImage', '@none', [ e ], callback);
+			});
+		}
+		
+
+		// 弹出修改窗口
+		function openEdit(e) {
+			var id = e.rowguid;
+			epoint.openDialog('修改记录', "framemanager/orga/saas2/framelesseeedit?guid=" + id, function(param){
+				if(param && param !="close"){
+					epoint.showTips(param, {state : 'success'});
+				}
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}, {
+				'width' : 800,
+				'height' : 400
+			});
+		}
+		
+		//初始化密码
+		function rePassword(row) {
+			epoint.confirm("是否继续初始化密码操作?", '', function() {
+					epoint.execute('rePassword', 'fui-form', '[' + row.rowguid
+							+ ']', callback);
+			});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			if(mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.showTips('请选择要注销的租户!', {state : 'warning'});
+			} 
+			else {
+				epoint.confirm("注销租户会删除租户数据库及对应的附件信息！是否继续？", '', function() {
+					epoint.execute("deleteSelect", '', callback);
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form']);
+		} 
+
+	    // 初始化页面数据
+	    function initData(res){
+	    }
+	</script>
+</body>
+
+</html>

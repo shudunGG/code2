@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>相关数据</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="add" onclick="addContext">新增数据</a>
+		<a class="mini-button" state="primary" id="save"
+			onclick="updateContext">确定修改</a> <a class="mini-button" id="close"
+			onclick="epoint.closeDialog">取消修改</a>
+
+
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>相关数据名称不要使用中文</p>
+		<p>
+			数据来源方式如果选择的是直接赋值,那么数据值直接填写即可;数据来源方式如果选择的是方法获取,那么数据值配置有2种方式{1:直接填写方法名字(调用的是UserSession里面的方法);2:类全路径;方法名字(外部自己写的类和方法。不允许传递参数)}
+		</p>
+		<p>数据来源方式如果选择的是表单字段,那么首先你得配置一个表单类型的材料，然后这里才能有选择项，最终关联到表单里面的某个字段</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="相关数据名称" starred="true">
+						<input class="mini-textbox" required="true"
+							requiredErrorText="相关数据名称不能为空!" bind="workflowContext.fieldName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="说明">
+						<input class="mini-textbox" bind="workflowContext.note" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据类型">
+						<input class="mini-combobox" bind="workflowContext.fieldType"
+							data="[{text:'字符型',id:'10'},{text:'整型',id:'20'},{text:'数字类型',id:'30'},{text:'时间类型',id:'40'},{text:'布尔类型',id:'50'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据来源方式">
+						<input id="valueSource" class="mini-combobox"
+							bind="workflowContext.valueSource"
+							data="[{text:'直接赋值',id:'10'},{text:'方法获取',id:'20'},{text:'表单字段',id:'30'}]" />
+					</div>
+				</div>
+				<div role="row" id="fieldValueRow1">
+					<div role="control" label="数据值">
+						<input class="mini-textbox" bind="workflowContext.fieldValue" />
+					</div>
+				</div>
+				<div role="row" id="fieldValueRow2">
+					<div role="control" label="数据值">
+						<input class="mini-textbox" bind="workflowContext.serverCode" />
+					</div>
+				</div>
+				<div role="row" id="fromMaterialGuidRow">
+					<div role="control" label="材料">
+						<input id="material" class="mini-combobox"
+							bind="workflowContext.fromMaterialGuid"
+							action="getMaterialSelect" onvaluechanged="materialChange" />
+					</div>
+				</div>
+				<div role="row" id="fromMisTableIdRow">
+					<div role="control" label="表单">
+						<input id="table" class="mini-combobox"
+							bind="workflowContext.fromMisTableId" action="getTableSetSelect"
+							onvaluechanged="tableChange" />
+					</div>
+				</div>
+				<div role="row" id="fromFieldIdRow">
+					<div role="control" label="字段">
+						<input id="page" class="mini-combobox"
+							bind="workflowContext.fromFieldId" action="getStructSelect" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('contextfieldaction', null, initCallBack);
+
+		//初始化回调事件
+		function initCallBack(data) {
+			inputShow(data.valueSource);
+			if (data.type == "add") {
+				mini.get("add").setVisible(true);
+				mini.get("save").setVisible(false);
+				mini.get("close").setVisible(false);
+			} else if (data.type == "edit") {
+				mini.get("add").setVisible(false);
+				mini.get("save").setVisible(true);
+				mini.get("close").setVisible(true);
+			}
+			mini.get("table").setValue(mini.get("table").getValue());
+			mini.get("page").setValue(mini.get("page").getValue());
+		}
+
+		mini.get("valueSource").on("valuechanged", function(e) {
+			inputShow(e.value);
+		});
+
+		function inputShow(value) {
+			if (value == "10") {
+				show("", "none", "none", "none", "none");
+			} else if (value == "20") {
+				show("none", "", "none", "none", "none");
+			} else if (value == "30") {
+				show("none", "none", "", "", "");
+			}
+		}
+
+		function show(fieldValueRow1Show, fieldValueRow2Show,
+				fromMaterialGuidRowShow, fromMisTableIdRowShow,
+				fromFieldIdRowShow) {
+			document.getElementById("fieldValueRow1").style.display = fieldValueRow1Show;
+			document.getElementById("fieldValueRow2").style.display = fieldValueRow2Show;
+			document.getElementById("fromMaterialGuidRow").style.display = fromMaterialGuidRowShow;
+			document.getElementById("fromMisTableIdRow").style.display = fromMisTableIdRowShow;
+			document.getElementById("fromFieldIdRow").style.display = fromFieldIdRowShow;
+		}
+
+		//新增
+		function addContext() {
+			if (epoint.validate()) {
+				epoint.execute("addContext", "fui-form", function(data) {
+					console.dir(data);
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.closeDialog(data.message);
+					} else {
+						epoint.showTips(data.message,  {state : 'warning'});
+					}
+				});
+			}
+		}
+
+		//修改
+		function updateContext() {
+			if (epoint.validate()) {
+				epoint.execute("updateContext", "fui-form", function(data) {
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.closeDialog(data.message);
+					} else {
+						epoint.showTips(data.message,  {state : 'warning'});
+					}
+				});
+			}
+		}
+
+		function materialChange() {
+			var material = mini.get("material").getValue();
+			if (material) {
+				epoint.execute("materialValueChange", 'fui-form', [ material ],
+						mcallback);
+			}
+		}
+
+		function mcallback(data) {
+			//epoint.refresh('table');
+			if (data) {
+				mini.get("table").setData(data.tableSetSelect);
+				mini.get("table").select(0);
+				mini.get("page").setData(data.structSelect);
+				mini.get("page").select(0);
+			}
+		}
+
+		function tableChange() {
+			var table = mini.get("table").getValue();
+			if (table) {
+				epoint.execute("formValueChange", 'fui-form', [ table ],
+						tcallback);
+			}
+		}
+
+		function tcallback(data) {
+			if (data) {
+				mini.get("page").setData(data);
+			}
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

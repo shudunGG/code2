@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>表单版本信息</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新建版本 </a> <a class="mini-button" iconCls="icon-save" onclick="save()"
+				id="btnSave">修改排序</a> <a id="btnDel"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选中 </a><a class="mini-button" iconCls="icon-download"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要导出的记录！', '', null, 'warning');} else {exportList();}">导出XML</a>
+			<div id="dataImport" class="mini-webuploader" pickerText="导入XML"
+				action="epointsformversionlistaction.getDataImportModel"
+				showDefaultUI="false" fileSingleSizeLimit="5120"
+				limitType="text,xml" dataImport="true" onuploadfinished="searchData"
+				auto="true" onuploadaccept="UploadSuccess"></div>
+		</div>
+	</div>
+
+	<div id="fui-form">
+		<input bind="tableGuid" id="tableGuid" class="mini-hidden" />
+	</div>
+	<form id="download_form" method="post" enctype="multipart/form-data"></form>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" ondrawcell="onCheckRender" allowCellValid="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50" name="check"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序号</div>
+				<div field="version" width="150" headerAlign="center" align="center">版本号</div>
+				<div field="tempname" width="auto" headerAlign="center" align="left">关联模版名称</div>
+				<div field="sucoretype" width="80" headerAlign="center"
+					align="center">数据类型</div>
+				<div field="orderNum" width="150" headerAlign="center" align="right"
+					vtype="int;range:0,99999999">
+					排序号 <input property="editor" class="mini-textbox" minWidth="80"
+						vtype="int;range:0,99999999" inputStyle="text-align:right" />
+				</div>
+
+				<div width="50" headerAlign="center" align="center"
+					renderer="changeImage" name="btnstatus">状态</div>
+
+				<div headerAlign="center" align="center" width="80"
+					renderer="method" name="btnmethod">事件管理</div>
+				<div width="80" align="center" headerAlign="center"
+					renderer="onDesignerRenderer" name="btndesigner">设计</div>
+				<div width="80" align="center" headerAlign="center"
+					renderer="onsearchRenderer">预览</div>
+				<div width="80" align="center" headerAlign="center"
+					renderer="onCopyRenderer" name="btncopy">复制</div>
+				<div field="listurl" visible="false"></div>
+				<div field="status" visible="false"></div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get("datagrid");
+		var isLesseeMode = false;
+		var isAdmin = false;
+		var isOuAdmin = false;
+		var isSub = "";
+		// 初始化页面
+		epoint
+				.initPage(
+						'epointsformversionlistaction',
+						'',
+						function(data) {
+							mini.get("tableGuid").setValue(data.tableGuid);
+							if (data.isLesseeMode) {
+								isLesseeMode = data.isLesseeMode;
+							}
+							if (data.isAdmin) {
+								isAdmin = data.isAdmin;
+							}
+							if (data.isOuAdmin) {
+								isOuAdmin = data.isOuAdmin;
+							}
+							if (data.isSub == "1") {
+								isSub = data.isSub;
+								//没有开启租户模式或者开启租户模式并且不是租户的时候，禁止操作已经按钮
+								if (!isLesseeMode
+										|| (isLesseeMode && !isOuAdmin)) {
+									document.getElementById("btnAddRecord").style.display = "none";
+									document.getElementById("btnDel").style.display = "none";
+									document.getElementById("dataImport").style.display = "none";
+									document.getElementById("btnSave").style.display = "none";
+									grid.hideColumn("btnstatus");
+									grid.hideColumn("btnmethod");
+									grid.hideColumn("btndesigner");
+									grid.hideColumn("btncopy");
+									grid.hideColumn("check");
+								}
+							}
+						});
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.execute('inertFormVersion', '', mini.get("tableGuid")
+					.getValue(), addCallBack);
+		}
+
+		// 回调提醒
+		function addCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alert(msg, '', function() {
+						epoint.refresh('datagrid', '', true);
+					}, 'info');
+				} else if (data.flag != null && (data.flag == "2")) {
+					epoint.openDialog('新建版本',
+							"frame/pages/sformdesigner/formlistmanage/epointsformversionadd?tableGuid="
+									+ mini.get("tableGuid").getValue()
+									+ "&isSub=" + isSub, searchData, {
+								'width' : 1000,
+								'height' : 450
+							});
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function changeImage(e) {
+			if ((e.row.isOperators != "0" && isLesseeMode
+					&& (!isAdmin || isSub == "1") && isOuAdmin)
+					|| (e.row.isOperators == "0" && isLesseeMode && isAdmin && (!isOuAdmin || isSub == ""))) {
+
+				return "";
+			}
+			if (e.row.status == "1") {
+				return epoint.renderCell(e, "action-icon icon-start",
+						"changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause",
+						"changeStatus");
+			}
+		}
+
+		function changeStatus(e) {
+			epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+		}
+
+		/// 绘制预览生成按钮
+		var onsearchRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openShowList");
+
+		};
+
+		function openShowList(id) {
+			epoint.openDialog('预览地址',
+					"frame/pages/sformdesigner/formlistmanage/epointsformpreviewlist?guid="
+							+ id + "&isSub=" + isSub, searchData, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+		// 绘制设计配置按钮
+		var onDesignerRenderer = function(e) {
+			if ((e.row.isOperators != "0" && isLesseeMode
+					&& (!isAdmin || isSub == "1") && isOuAdmin)
+					|| (e.row.isOperators == "0" && isLesseeMode && isAdmin && (!isOuAdmin || isSub == ""))) {
+				return "";
+			}
+			return epoint
+					.renderCell(e, "action-icon icon-gear", "opendesigner");
+		};
+
+		// 打开设计页面
+		function opendesigner(id) {
+			window.open(Util.getRootPath()
+					+ "frame/pages/sformdesigner/designer?tableGuid="
+					+ mini.get("tableGuid").getValue() + "&designId=" + id
+					+ "&isSub=" + isSub);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				if (data.msg == "0") {
+					epoint.alert("租户只能操作自己的数据!", '', searchData);
+				} else if (data.msg == "1") {
+					epoint.alert("不能操作租户的数据!", '', searchData);
+				} else if (data.msg == "2") {
+					epoint.alert("不是租户不能操作部门管理下数据!", '', searchData);
+				} else {
+					epoint.alert(data.msg, '', searchData);
+				}
+
+			}
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (msg == "0") {
+					epoint.alert("租户只能操作自己的数据!", '', searchData);
+				} else if (msg == "1") {
+					epoint.alert("不能操作租户的数据!", '', searchData);
+				} else if (msg == "2") {
+					epoint.alert("不是租户不能操作删除数据!", '', searchData);
+				} else {
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alert(msg, '', function() {
+							epoint.refresh('datagrid', '', true);
+						}, 'info');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function method(e) {
+			if ((e.row.isOperators != "0" && isLesseeMode
+					&& (!isAdmin || isSub == "1") && isOuAdmin)
+					|| (e.row.isOperators == "0" && isLesseeMode && isAdmin && (!isOuAdmin || isSub == ""))) {
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon icon-paper",
+					"JumpToMethod");
+		}
+
+		function JumpToMethod(id) {
+			epoint.openDialog('配置表单事件',
+					"frame/pages/sformdesigner/formlistmanage/event/formeventlist?tableGuid="
+							+ mini.get("tableGuid").getValue()
+							+ "&versionGuid=" + id + "&belongTo=10" + "&isSub="
+							+ isSub, '');
+		}
+		/// 绘制预览生成按钮
+		var onCopyRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-copy",
+					"copySelected", "rowguid");
+
+		};
+		// 复制数据
+		function copySelected(rowguid) {
+			epoint.execute("copySelected", '', rowguid, callback);
+		}
+
+		// 保存
+		function save() {
+
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('save', '', msgCallBack);
+
+		}
+
+		function exportList() {
+			var grid = mini.get('datagrid');
+			var selects = grid.getSelecteds();
+			var exportGuid = "";
+			for (var i = 0; i < selects.length; i++) {
+				exportGuid += selects[i]['rowguid'];
+				if (i < (selects.length - 1)) {
+					exportGuid += "_Epoint_";
+				}
+			}
+			var form = document.getElementById('download_form');
+			form.action = "../../../../"
+					+ epoint
+							.dealRestfulUrl("epointsformversionlistaction/exportList?isCommondto=true&exportguid="
+									+ exportGuid);
+			form.submit();
+		}
+
+		function UploadSuccess(args) {
+			if (args.ret.extraDatas.msg) {
+				epoint.alert(args.ret.extraDatas.msg, '', null, 'warning');
+				mini.get("dataImport").clearFile();
+				searchData();
+			} else {
+				epoint.alert('导入成功', '', searchData, 'success');
+				searchData();
+				mini.get("dataImport").clearFile();
+
+			}
+		}
+
+		function onCheckRender(e) {
+			//此功能只是隐藏掉选择框，但是还是可以被选到的，注意！！！！，要配合beforeselect使用
+
+			if ((e.row.isOperators != "0" && isLesseeMode
+					&& (!isAdmin || isSub == "1") && isOuAdmin)
+					|| (e.row.isOperators == "0" && isLesseeMode && isAdmin && (!isOuAdmin || isSub == ""))) {
+				if (e.cellCls === "mini-checkcolumn") {
+					e.cellHtml = "";
+				}
+
+			}
+
+		}
+
+		grid
+				.on(
+						"beforeselect",
+						function(e) {
+							if ((e.record.isOperators != "0" && isLesseeMode
+									&& (!isAdmin || isSub == "1") && isOuAdmin)
+									|| (e.record.isOperators == "0"
+											&& isLesseeMode && isAdmin && (!isOuAdmin || isSub == ""))) {
+								e.cancel = true;
+							}
+
+						})
+	</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!-- 
+        作者：guotq
+        创建时间: 2017/06/05
+        版本: [1.0, 2017/06/05 ]
+        版权: 江苏国泰新点软件有限公司
+        描述：  支持Promise的详情示例
+        主要是Ajax支持 Promise的使用
+-->
+<!DOCTYPE html >
+<html lang="zh-CN">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+        <meta name="format-detection" content="telephone=no, address=no, email=no">
+        <title>详情</title>
+        <script>
+            document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <style>
+            body,
+            .mui-content {
+                background-color: #FFFFFF;
+            }
+            .news-head {
+                position: relative;
+                padding-bottom: 10px;
+            }
+            
+            .news-head:after {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                height: 1px;
+                content: '';
+                background-color: #c8c7cc;
+                -webkit-transform: scaleY(.5);
+                transform: scaleY(.5);
+            }
+            
+            .news-title {
+                font-size: 19px;
+                color: #333;
+                line-height: 24px;
+                padding: 5px 30px 0 30px;
+                text-align: center;
+            }
+            
+            .news-titleinfo {
+                font-size: 12px;
+                padding-left: 15px;
+                color: #333;
+                margin-bottom: 0;
+            }
+            
+            .news-titleinfo span {
+                color: #9a9a9a;
+            }
+            
+            .news-body {
+                padding: 10px;
+                overflow: hidden;
+            }
+            
+            .news-body img {
+                max-width: 100%;
+                margin-top: 30px;
+            }
+            
+            .news-detail {
+                font-size: 15px;
+                color: #333;
+                line-height: 26px;
+                margin-bottom: 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="mui-content">
+
+        </div>
+
+        <!-- 详情需要用到的模板，其中detail是富文本，需要映射后手动添加 -->
+        <script type="text/x-tpl" id="detail">
+            <div class="news">
+                <div class="news-head">
+                    <h2 class="news-title">{{title}}</h2>
+                    <p class="news-titleinfo"><span>信息来源：</span>{{author}}</p>
+                    <p class="news-titleinfo"><span>发布时间：</span>{{date}}</p>
+                </div>
+                <div class="news-body">
+                    <div class="news-detail"></div>
+                </div>
+            </div>
+        </script>
+        <script>
+            document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            "use strict";
+
+            Util.loadJs([
+                'js/utils/util.html.js'
+            ], function() {
+                initPage();
+            });
+
+            function initPage() {
+                // 请求两次只是为了测试效果，其实没有必要
+                Promise.all([ajaxDetail(), ajaxDetail()]).then(function() {
+                    console.log("都成功了");
+                }).catch(function(error) {
+                    console.log("有请求失败了");
+                }).finally(function() {
+                    console.log("finally");
+                });
+
+            }
+
+            function ajaxDetail() {
+                return Util.ajax({
+                    url: '//115.29.151.25:8012/request.php?action=testV7Detail',
+                    data: JSON.stringify({
+                        token: 'RXBvaW50X1dlYlNlcml2Y2VfKiojIzA2MDE=',
+                        params: {
+                            guid: '12345'
+                        }
+                    }),
+                    dataPath: 'custom',
+                    error: null
+                }).then(function(result) {
+                    result.data && setDetail(result.data);
+                }).catch(function(error) {
+                    console.error("error");
+                    console.error(error);
+                });
+
+            }
+
+            function setDetail(data) {
+                Util.html.setDetail({
+                    container: '.mui-content',
+                    template: '#detail',
+                    data: data,
+                    richTxtSelector: '.news-detail',
+                    richTxt: data.content
+                });
+            }
+            
+        </script>
+    </body>
+
+</html>

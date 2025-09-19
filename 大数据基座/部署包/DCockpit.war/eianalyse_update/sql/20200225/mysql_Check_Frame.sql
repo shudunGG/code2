@@ -1,0 +1,1 @@
+select count(*) from code_items WHERE itemid='222791' AND itemtext='图库类';

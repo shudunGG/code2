@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>新增分组</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style>
+#tree {
+	height: 180px;
+	overflow: auto;
+	border-radius: 4px;
+	border: 1px solid #d6d6d6 !important;
+}
+
+.mini-grid-rows-content {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	height:174px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" iconCls="icon-addcircle"
+				onclick="save()">新增</a> <a class="mini-button mini-btn-danger"
+				iconCls="icon-minuscircle" onclick="deleteSel">删除</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div role="form">
+			<div id="form" class="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="分组名称" starred="true">
+							<input class="mini-textbox" id="groupName" required="true"
+								bind="dataBean.groupName" vtype="maxLength:50"
+								requiredErrorText="分组名称不能为空" /> <input class="mini-hidden"
+								id="parentGuid" bind="dataBean.parentGuid" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="上级分组" class="tree">
+							<ul id="tree" class="mini-tree" action="getTreeModel"
+								showRadioButton="true" showFolderCheckBox="true"
+								showTreeIcon="true" textField="text" idField="id">
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpflowgroupaction');
+
+		var tree = mini.get('tree');
+
+		tree.on('beforenodeselect', function(e) {
+			mini.get('parentGuid').setValue(e.node.id);
+		});
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'form', function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.refresh('tree');
+						//mini.get('parentGuid').setValue('');
+						epoint.alert(data.msg, '', function() {
+							epoint.clear('groupName');
+						}, 'success');
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			}
+		}
+
+		function deleteSel() {
+			var sel = mini.get('parentGuid').getValue();
+			if (sel) {
+				epoint.confirm('确认要删除吗', '删除确认', function() {
+					epoint.execute('deleteSel', 'form', function(data) {
+						if (data.msg.indexOf('成功') != -1) {
+							epoint.refresh('tree');
+							mini.get('parentGuid').setValue('');
+						}
+						epoint.alert(data.msg);
+					});
+				});
+			} else {
+				epoint.alert('请选择要删除分组！');
+			}
+		}
+
+		function close() {
+			epoint.closeDialog();
+		}
+	</script>
+</body>
+</html>

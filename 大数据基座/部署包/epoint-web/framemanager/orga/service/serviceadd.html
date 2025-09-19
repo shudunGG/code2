@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>服务新增</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew"> 保存并新增 </a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose"> 保存并关闭 </a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+				服务Tag:用于多个模块配置成一个url，但是页面参数不一样的情况;格式: parm:value;parm:value ...,<br />如果不设置
+				tag代表此权限配置为通用配置<br /> 例：模块 A地址: frameuseradd?display=1, 模块B地址:
+				frameuseradd?isSub=1&amp;display=1,<br /> 服务权限配置记录的tag 分别 为
+				：display:1, isSub:1;display:1,<br /> 如果
+				参数并不影响权限，那么可以不设置tag，使其成为通用配置，上面的A 配置的时候 可以不设置tag
+		</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form"style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="所属功能" starred="true">
+						<input class="mini-treeselect" bind="frameService.servicetypeguid"
+							id="servicetypeguid" action="lazyTreeModal" multiSelect="false"
+							required="required" requiredErrorText="所属功能必选!"
+							onvaluechanged="valueChange" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="服务名字" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="frameService.servicename" vtype="maxLength:50"
+							requiredErrorText="请输入服务名字" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="服务Tag">
+						<input class="mini-textbox" bind="frameService.servicetag"
+							vtype="maxLength:100" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联地址">
+						<input class="mini-textbox" bind="frameService.relationurl"
+							vtype="maxLength:200" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" vtype="int;range:0,99999999" value="0"
+							bind="frameService.ordernumber" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textarea" bind="frameService.description"
+							vtype="maxLength:200" />
+					</div>
+				</div>
+				<input class="mini-hidden" id="lastTypeName" bind="lastTypeName" />
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("serviceaction", "", function(e) {
+			mini.get("lastTypeName").setValue(
+					mini.get('servicetypeguid').getText());
+		});
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				
+				if (data.success) {
+					epoint.showTips(data.msg, {state : 'success'});
+					// 清空表单
+					epoint.clear('fui-form');
+					if (data.lastType) {
+						mini.get('servicetypeguid').setValue(data.lastType);
+					}
+					if (data.lastTypeName) {
+						mini.get('servicetypeguid').setText(data.lastTypeName);
+					}
+				}else{
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		//保存并新建
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg, {state : 'danger'});
+				}
+			}
+		}
+
+		//保存并新建
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		function valueChange() {
+			mini.get("lastTypeName").setValue(
+					mini.get('servicetypeguid').getText());
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

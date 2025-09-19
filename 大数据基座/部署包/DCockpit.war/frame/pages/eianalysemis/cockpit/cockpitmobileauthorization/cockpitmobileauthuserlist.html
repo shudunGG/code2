@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>专题管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增授权</a>
+			
+		</div>
+		<div style="float: right;margin-right: 40px;">
+			<a >人员视角</a>
+			&nbsp;/&nbsp;
+			<a style="color: blue;text-decoration: underline;" id="contenturl">内容视角</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData2" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center" align="center">序</div>
+				<div field="username" headerAlign="center" align="center" width="120">用户名称</div>
+				<div field="ouname" headerAlign="center" align="center" width="120">所在部门</div>
+				<div field="cardnames" headerAlign="center" align="center" width="400">授权卡片</div>
+				<div name="operate" type="actioncolumn" headerAlign="center" align="center">
+					<span type="action" icon="icon-trash" onclick="cancelAuth">取消授权</span>
+					<span type="action" icon="icon-edit" onclick="openEdit">编辑授权</span>
+				</div>
+			</div>
+			
+		</div>
+	</div>
+		
+
+	
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var cockpitguid =  Util.getUrlParams('cockpitguid');
+		epoint.initPage('cockpitmobileauthlistaction', '@all', function (data){
+			document.getElementById("contenturl").href="./cockpitmobileauthlist?cockpitguid=" + data.cockpitguid;
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openTopDialog("新增授权", './cockpitmobileauthorization?cockpitguid=' + cockpitguid, searchData, {
+				'width' : 1200,
+				'height' : 800
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid']);
+		}
+
+
+		// 删除数据
+		function cancelAuth(e) {
+			epoint.confirm('确认要删除吗？', '', function() {
+				epoint.execute("cancelAuth", '',  [e.userguid],  function(data) {
+					console.log(data.msg);
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData);
+					}
+				});
+			});
+		}
+
+		function openEdit(e){
+			epoint.openDialog("授权专题", './cockpitmobileautheditcard?userguid=' + e.userguid + '&cockpitguid=' + cockpitguid, searchData, {
+				'width' : 400,
+				'height' : 600
+			});
+		}
+
+	</script>
+</body>
+</html>

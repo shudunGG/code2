@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="../../../js/cssboot.js"></script>
+    <style>
+        .output {
+            position: relative;
+            top: 30%;
+            margin-left: auto;
+            margin-right: auto;
+            width: 600px;
+            line-height: .4rem;
+            font-size: .14rem;
+            background: #000;
+            color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .test {
+            width: 50px;
+            height: 50px;
+            background: #000;
+            transition: background .2s ease-out;
+        }
+
+        .test:hover {
+            background: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="getData()">获取数据</button>
+    <button onclick="syncGet()">同步请求</button>
+    <div class="test"></div>
+    <div class="output"></div>
+    <script src="../../../js/jsboot.js"></script>
+    <script>
+        function syncGet() {
+            return $.ajax({
+                url: 'http://localhost/test/40seconds.php',
+                async: false
+            }).then(function (data) {
+                $output.append('<pre>' + JSON.stringify(data, 0, 4) + '</pre>');
+            });
+        }
+        var $output = $('.output');
+        var tokenAjax;
+        var _ajax = function (opt) {
+            console.log('业务ajax');
+            return $.ajax(opt);
+        };
+        var need1 = true,
+            need2 = true,
+            need3 = true;
+        var ajax = function (opt) {
+            if (!tokenAjax) {
+
+                if (need1) {
+                    tokenAjax = $.ajax({
+                        url: './token.json'
+                    }).then(function (data) {
+                        $output.append('<pre>' + JSON.stringify(data, 0, 4) + '</pre>');
+
+                        if (need2) {
+                            return $.ajax({
+                                url: './token1.json'
+                            }).then(function (data) {
+                                $output.append('<pre>' + JSON.stringify(data, 0, 4) + '</pre>');
+
+                                if (need3) {
+                                    return $.ajax({
+                                        url: './token2.json'
+                                    }).then(function (data) {
+                                        $output.append('<pre>' + JSON.stringify(data, 0, 4) +
+                                            '</pre>');
+                                    });
+                                }
+                            });
+                        }
+                    })
+                } else {
+                    var dtd = $.Deferred();
+                    dtd.resolve();
+                    tokenAjax = dtd.promise();
+                }
+            }
+            return tokenAjax.then(function () {
+                console.log(opt);
+                return _ajax(opt);
+            });
+        }
+
+        function getData() {
+            ajax({
+                url: './data.json'
+            }).then(function (data) {
+                console.log(data);
+                $output.append('<pre>' + JSON.stringify(data, 0, 4) + '</pre>');
+            });
+        }
+        getData();
+        // tokenAjax = $.when($.ajax({
+        //     url: './token.json'
+        // }),$.ajax({
+        //     url: './token1.json'
+        // }),$.ajax({
+        //     url: './token2.json'
+        // })).then(function (data) {
+        //     console.log(arguments);
+        //     $output.append('<pre>' + JSON.stringify(arguments[0][0], 0, 4) + '</pre>');
+        //     $output.append('<pre>' + JSON.stringify(arguments[1][0], 0, 4) + '</pre>');
+        //     $output.append('<pre>' + JSON.stringify(arguments[2][0], 0, 4) + '</pre>');
+        // });
+    </script>
+</body>
+
+</html>

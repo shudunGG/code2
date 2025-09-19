@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Edit property</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save"
+				onclick="saveModify">save And Close</a> <a class="mini-button"
+				iconCls="icon-removecircle" onclick="epoint.closeDialog();">cancel edit</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="property name" starred="true">
+					<input class="mini-textbox" bind="dataBean.propertyname"
+						required="true" requiredErrorText="Property name cannot be empty!" />
+				</div>
+				<div role="control" label="property english name" starred="true">
+					<input class="mini-textbox" bind="dataBean.propertyenglishname"
+						required="true" requiredErrorText="Property english name cannot be empty!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="data type">
+					<input class="mini-checkboxlist" action="getDataType"
+						repeatItems="5" repeatLayout="table" textField="text"
+						valueField="id" bind="dataBean.allowfieldtype" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Control display type" style="width: 27%">
+					<input autoLoad="false" id="displayID" action="getDisplayType"
+						textField="text" valueField="id" showNullItem="true"
+						emptyText="Select the control display type..." nullItemText="Select the control display type..."
+						bind="dataBean.displaytype" class="mini-combobox" onvaluechanged="changType"/>
+				</div>
+				<!-- 
+				<div role="control" label="Data source code" style="width: 27%;display:none">
+					<input autoLoad="false" id="codesource" action="getCodesource"
+						textField="text" valueField="id" showNullItem="true"
+						emptyText="Please select" nullItemText="Please select" allowInput="true"
+						onvalidation="onComboValidation" bind="dataBean.datasourcename"
+						class="mini-combobox" />
+				</div>
+				<div class="btn-group mr10" style="width: 10%;display:none">
+					<a class="mini-button" id="codeItem" onclick="addCodeItem();">code item</a>
+				</div>
+				 -->
+			</div>
+			<div role="row">
+				<div role="control" label="Sort number">
+					<input class="mini-textbox" bind="dataBean.ordernum" vType="int"
+						value="0" />
+				</div>
+				<div role="control" label="start using">
+					<input class="mini-checkbox" bind="dataBean.initiatemode" />
+				</div>
+			</div>
+			<div role="row" id="itemValue" style="display: none">
+				<div role="control" label="子项值">
+					<input class="mini-textbox" id="addItem" width="200px" /> 
+					<a class="mini-button" id="addRecord" width="100px" onclick="addRecord" iconCls="icon-addcircle">新增子项</a> 
+					<a class="mini-button" id="delRecord" width="100px" onclick="delRecord" iconCls="icon-minuscircle">删除子项</a>
+				</div>
+			</div>
+			<div role="row" id="itemValues" style="display: none">
+				<div role="control">
+					<select id="items" multiple="multiple" style="width: 100%; height: 100%">
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <script type="text/javascript">var miniLocal='en_US.js';</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// Init page
+		epoint.initPage('controlpropertyeditaction','',initCallBack);
+		
+		function initCallBack(data){
+			if(data.displayType == "textbox"){
+				document.getElementById("itemValue").style.display = "none";
+				document.getElementById("itemValues").style.display = "none";
+			}else if(data.displayType == "combobox"){
+				document.getElementById("itemValue").style.display = "block";
+				document.getElementById("itemValues").style.display = "block";
+				if(data.dataSource && data.dataSource.indexOf(";")>0){
+					var selObj = $("#items");
+					var items = data.dataSource.split(";");
+					for(var m=0; items!=null && items.length>0 && m<items.length ;m++){
+						selObj.append("<option value='"+items[m]+"'>" + items[m] + "</option>");
+					}
+					itemsString = data.dataSource;
+				}
+			}
+		}
+
+		function saveModify() {
+			var items="";
+			var selOpt = $("#items option");
+			for(var n=0; selOpt!=null && selOpt.length>0 && n<selOpt.length; n++){
+				items += selOpt[n].innerHTML+";";
+			}
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', [items], closeCallback);
+			}
+		}
+
+		// close callback
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") > -1) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+		
+		//change controltype，control items appear
+		function changType() {
+			var displayName = mini.get("displayID").getValue();
+			if(displayName == "combobox"){
+				document.getElementById("itemValue").style.display = "block";
+				document.getElementById("itemValues").style.display = "block";
+			}else if(displayName == "textbox"){
+				document.getElementById("itemValue").style.display = "none";
+				document.getElementById("itemValues").style.display = "none";
+			}
+		}
+		
+		var itemsString = "";
+		
+		function addRecord() {
+			var addItem = mini.get("addItem").getValue();
+			if(addItem){
+ 				var m=0;
+ 				if(itemsString != null && itemsString != ""){
+ 					for(var n=0;itemsString.split(";").length>0 && n<itemsString.split(";").length; n++){
+ 	 					if(itemsString.split(";")[n] == addItem){
+ 	 						return;
+ 	 					}else{
+ 	 						m++;
+ 	 					}
+ 	 				}
+ 	 				if(m == itemsString.split(";").length){
+ 	 					var selObj = $("#items");
+ 	 	 				selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+ 	 	 				itemsString += addItem +";";
+ 	 				}else{
+	 					return;
+ 	 				}
+ 				}else{
+ 					var selObj = $("#items");
+	 	 			selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+	 	 			itemsString += addItem +";";
+ 				}
+ 			}
+			mini.get("addItem").setValue("");
+		}
+
+		function delRecord() {
+			var selOpt = $("#items option:selected");
+			selOpt.remove();
+			mini.get("addItem").setValue("");
+			
+			//删除子项后重置下拉值
+ 			var opts =  $("#items option");
+ 			var delAfterStr = "";
+ 			for(var n=0; opts!=null && opts.length>0 && n<opts.length; n++){
+ 				delAfterStr += opts[n].innerHTML+";";
+ 			}
+ 			itemsString = delAfterStr;
+		}
+		
+     /*
+		function onComboValidation(e) {
+			if (e.value) {
+				var items = this.findItems(e.value);
+				if (!items || items.length == 0) {
+					e.isValid = false;
+					e.errorText = "输入值不在下拉数据中";
+				}
+			}
+		}
+
+		function addCodeItem() {
+			epoint.openDialog("代码项", "framemanager/sform/formlistmanage/codemainlist",
+					addCallBack, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		function addCallBack(data) {
+			if (data) {
+				epoint.refresh('codesource');
+			}
+		}*/
+	</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>设置数据表权限</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<script src="../../../../../frame/fui/js/cssboot.js"></script>
+		
+		<style>
+			.search-btn .mini-buttonedit-icon {
+				background-position: -109px -154px;
+				background-image: url(../../../../../image/home/icon-13x13.png);
+				background-repeat: no-repeat;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- 必须有，加载时的loading效果 -->
+		<div class="page-loading"></div>
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addClose" onclick="saveAndClose">保存设置</a>
+				<a class="mini-button" id="btnClose" onclick="epoint.closeDialog">取消设置</a>
+			</div>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div class="fui-accordions" id="fui-accordions">
+				<div role="accordion" opened="true">
+					<div role="head" title="授权角色" /></div>
+					<div role="body">
+						<div class="fui-form">
+							<div class="mini-checkbox" bind="openAll" style="margin-left:2%;margin-top:10px;">
+								公开
+							</div>
+							<input id="condition" class="mini-buttonedit search-btn r" bind="roleSearchCondition" style="width:200px;margin-right:2%;" onbuttonclick="updateRepeat" onkeypress="searchData()">
+							</input>
+
+							<div class="mini-repeat clearfix" id="repeat" templateId="roleTemplate" ></div>
+							<input id="controlIds" class="mini-hidden" />
+							<input bind="selectedRoles" id="roleValues" class="mini-hidden" />
+						</div>
+					</div>
+				</div>
+				<div role="accordion" opened="true">
+					<div role="head" title="授权用戶" /></div>
+					<div role="body">
+						<div class="fui-form">
+							<div id="tabstreeselect1" class="mini-tabstreeselect"
+							selectedPanelTitle="已选择记录" style="width:99%;height:400px"
+							action="userTreeModal" loadWhenChecked="true" filterMode="server"
+							showBorder="true">
+								<div tabText="授权用戶" tabKey="user"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="accordion" opened="true">
+					<div role="head" title="授权部门" /></div>
+					<div role="body">
+						<div class="fui-form">
+							<div id="tabstreeselect2" class="mini-tabstreeselect"
+							selectedPanelTitle="已选择记录" style="width:99%;height:400px"
+							action="ouTreeModal" loadWhenChecked="true" filterMode="server"
+							showBorder="true">
+								<div tabText="授权部门" tabKey="ou"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/template" id="roleTemplate">
+			<div id="panel1" class="mini-panel" title="{{title}}" showCollapseButton="false"  allowResize="false" showFooter="false" style="width:49%;float:left;margin-left:1%;margin-top:10px;">
+			<div id="{{roleType}}" class="mini-checkboxlist" repeatLayout="table" repeatItems="3" textField="text" valueField="value"></div>
+			</div>
+		</script>
+
+		<script src="../../../../../rest/resource/jsboot"></script>
+
+		<script>
+			//<![CDATA[
+			//初始化请求
+			epoint.initPage('appmanagerightsetaction', '', initCallback);
+
+			var repeat = mini.get('repeat');
+			
+			function initCallback(e) {
+				//初始化角色区域
+				var data = e.uirepeat;
+				repeat.setData(data);
+				//将checkboxlist id存入隐藏域
+				mini.get("controlIds").setValue(data["controlIds"]);
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				}
+			}
+
+			//保存并关闭
+			function saveAndClose() {
+				if (epoint.validate()) {
+					saveUserRole();
+					epoint.execute('save', '', closeCallback);
+				}
+			}
+			
+			function updateRepeat() {
+				epoint.execute("searchRoles", "condition", function(e) {
+					//初始化角色区域
+					var data = e.uirepeat;
+					repeat.setData(data);
+					//将checkboxlist id存入隐藏域
+					mini.get("controlIds").setValue(data["controlIds"]);
+				});
+			}
+
+			//将角色值赋到隐藏域
+			function saveUserRole() {
+				var checkbox = mini.get("controlIds").getValue().split(',');
+				var selected = '';
+				$.each(checkbox, function(n, value) {
+					var cValue = mini.get(value).getValue();
+					if (cValue) {
+						selected += cValue + ",";
+					}
+				});
+				//将所有checkboxlist 的选中值存入隐藏域
+				mini.get("roleValues").setValue(selected.substring(0, selected.length - 1));
+			}
+			
+			function searchData(){
+				if(event.keyCode==13){
+					updateRepeat();
+				}
+			} 
+ 
+
+			//]]>
+		</script>
+
+	</body>
+</html>

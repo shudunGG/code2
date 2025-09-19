@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>代码项管理</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="addCodeMain()">新增代码</a>
+			<a class="mini-button" iconCls="icon-save" onclick="saveCodeMain()">保存代码</a>
+			<a class="mini-button mini-btn-danger" iconCls="icon-minuscircle" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的记录！', '', null, 'warning');} else {epoint.confirm('删除主代码项会同步删除子代码项,确定要删除吗？','',deleteSelected);}">删除代码项</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">说明信息</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<font style="color: blue;">按钮“生成脚本A”生成的脚本会判断是否</font>
+			<font style="color: red;">存在CodeID</font>
+			<font style="color: blue;">，存在则不添加；不存在则添加，添加后的CodeID和源数据库中CodeID</font>
+		    <font style="color: red;">一致</font>
+		</p>
+		<p>
+			<font style="color: blue;">按钮“生成脚本B”生成的脚本会判断是否</font>
+			<font style="color: red;">存在CodeName</font>
+			<font style="color: blue;">，存在则修改代码项；不存在则添加，添加后的CodeID和源数据库中CodeID可能</font>
+		    <font style="color: red;">不一致</font>
+		</p>
+	</div>
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="代码名称" starred="true">
+						<input bind="codeMain.codeName" class="mini-textbox" required="true" 
+						    requiredErrorText="代码名称不能为空" vtype="maxLength:50" />
+					</div>
+					<div role="control" label="代码说明">
+						<input bind="codeMain.description" vtype="maxLength:50" class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="codeID" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			action="getTableModal" showPager="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">序</div>
+				<div field="codeName" headerAlign="center" width="220">代码名称</div>
+				<div field="description" headerAlign="center">
+					代码说明<input property="editor" class="mini-textbox" style="width: 100%" />
+				</div>
+				<div width="80" align="center" headerAlign="center" renderer="onEditRenderer">子项管理</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("formcodemainlistaction");
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 在表格数据加载完之后打开表格编辑状态
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		// 新增代码项
+		function addCodeMain() {
+			if (epoint.validate()) {
+				epoint.execute('addCodeMain', '', msgCallBack);
+			}
+		}
+
+		// 保存
+		function saveCodeMain() {
+			var grid = mini.get("datagrid");
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveCodeMain', 'datagrid', msgCallBack);
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteAllSelected', 'datagrid', msgCallBack);
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(msg, '', searchData(), 'info');
+			}
+		}
+
+		// 表格，树的搜索
+		function searchData() {
+			epoint.refresh(['datagrid'],'',true);
+		}
+		
+		// 绘制行编辑按钮
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit","codeID");
+		}
+		
+		function openEdit(codeID) {
+            epoint.openDialog("代码修改","framemanager/sform/formlistmanage/codeitemslist?codeID=" + codeID,
+            		addCallBack,{
+				      'width':1200,
+		              'height':550
+		            });
+        }
+		
+        //新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

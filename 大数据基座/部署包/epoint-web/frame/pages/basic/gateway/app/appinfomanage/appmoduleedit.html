@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>子应用修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="save" onclick="saveModify">保存并关闭</a> <a
+			class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+
+			<div id="fui-form" class="fui-form">
+				<div role="form">
+					<div role="accordion" opened="true">
+						<div role="head" title="应用基本信息"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="父级应用">
+									<input id="parentmodulecode" class="mini-treeselect"
+										multiSelect="false" showRadioButton="true" showClose="true"
+										bind="parentmodulecode" allowSelect="true" oncloseclick="onDefaultCloseClick"
+										action="getTreeData" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用名称" starred="true">
+									<input id="modulename" class="mini-textbox"
+										bind="dataBean.modulename" required="true" maxLength="50" vtype="maxLength:50;" 
+										requiredErrorText="应用名称不能为空" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用详细名称">
+									<input id="modulemenuname" class="mini-textbox" maxLength="50" vtype="maxLength:50;" 
+										bind="dataBean.modulemenuname" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用地址">
+									<input id="moduleurl" class="mini-textbox" maxLength="500" vtype="maxLength:500;" 
+										bind="dataBean.moduleurl" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="默认所属桌面">
+									<input id="belongdeskguid" class="mini-treeselect"
+										multiSelect="false" showRadioButton="true" showClose="true" oncloseclick="onDefaultDeskCloseClick"
+										bind="dataBean.belongdeskguid" allowSelect="false"
+										action="getDeskTreeData" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="角标地址">
+									<input id="messagecounturl" class="mini-textbox" maxLength="500" vtype="maxLength:500;" 
+										bind="dataBean.messagecounturl" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="排序号">
+									<input id="ordernumber" bind="dataBean.ordernumber"
+										class="mini-textbox" vtype="int;range:0,99999999" allowSort="true" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="页面打开宽度">
+									<input id="widthratio" class="mini-spinner" vtype="float"
+										minValue="0" maxValue="1" increment="0.05"
+										allowLimitValue="true" changeOnMousewheel="true"
+										allowSort="true" bind="dataBean.widthratio" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="页面打开高度">
+									<input id="heightratio" class="mini-spinner" vtype="float"
+										minValue="0" maxValue="1" increment="0.05"
+										allowLimitValue="true" changeOnMousewheel="true"
+										allowSort="true" bind="dataBean.heightratio" />
+								</div>
+							</div>
+							<!-- <div role="row">
+								<div role="control" label="同步到应用系统">
+									<input id="needsync" bind="dataBean.needsync"
+										class="mini-checkbox" trueValue="1" falseValue="0" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="显示到门户应用仓库">
+									<input id="showinportal" bind="dataBean.showinportal"
+										class="mini-checkbox" trueValue="1" falseValue="0" />
+								</div>
+							</div> -->
+							<div role="row">
+								<div role="control" label="弹出">
+									<input id="isblank" bind="dataBean.isblank"
+										class="mini-checkbox" trueValue="1" falseValue="0" width="20px"/>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="禁用">
+									<input id="isdisable" bind="dataBean.isdisable"
+										class="mini-checkbox" trueValue="1" falseValue="0" width="20px"/>
+								</div>
+							</div>
+							<div role="row" id="icon1">
+								<div role="control" label="应用图标">
+									<input id="icon" bind="dataBean.icon" allowInput="false"
+										emptyText="" class="mini-buttonedit" showClose="true"
+										onbuttonclick="openicon()" selectOnFocus="true"
+										oncloseclick="onCloseClick" />
+								</div>
+							</div>
+
+							<div role="row" id="icon2">
+								<div role="control" label="自定义应用图标">
+									<div style="position: relative; float: left;">
+										<span id="photo1" class="text-minor">暂无应用图标， </span>
+										<div id="uploader" class="mini-webuploader"
+											action="appmoduleeditaction.getFileUploadModel"
+											fileSingleSizeLimit="1024" limitType="png"
+											mimeTypes="image/*" showDefaultUI="false" auto="true"
+											pickerText="请上传" onfilesuccess="OnPhotoSuccess"></div>
+										<span class="text-minor" style="width: 300px" id="photo3">（最佳图片尺寸：50px<em>*</em>50px; 1M以内）
+										</span>
+									</div>
+									<div class="img-view" id="photo">
+										<img id="lblPicture" src="" width="100px" height="100px"
+											alt="应用图标" /> <i class="action-icon icon-removecirclefilled"
+											style="position: absolute; left: 110px; top: 20px;"
+											onclick="delPhoto();"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- <div role="accordion" opened="true">
+						<div role="head" title="METRO风格属性"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="图标宽度">
+									<input id="metrocolspan" class="mini-textbox" vtype="float"
+										allowSort="true" bind="dataBean.metrocolspan" />
+								</div>
+								<div role="control" label="图标高度">
+									<input id="metrorowspan" class="mini-textbox" vtype="float"
+										allowSort="true" bind="dataBean.metrorowspan" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="图标背景色">
+									<input id="cp1" class="mini-colorpicker" allowInput="true"
+										format="rgb" bind="dataBean.metrobgcolor" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row">
+								<div role="control" label="图标显示url">
+									<input id="metroinnerurl" class="mini-textbox"
+										bind="dataBean.metroinnerurl" />
+								</div>
+								<div role="control" label="应用打开方式">
+									<input id="metroisblank" class="mini-combobox"
+										bind="dataBean.metroisblank" action="selectMetroIsBlankModel" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="DIV高度">
+									<input id="metroappwindowheight"
+										bind="dataBean.metroappwindowheight" class="mini-textbox"
+										vtype="float" />
+								</div>
+								<div role="control" label="DIV宽度">
+									<input id="metroappwindowwidth"
+										bind="dataBean.metroappwindowwidth" class="mini-textbox"
+										vtype="float" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="默认显示桌面">
+									<input id="metropageindex" class="mini-combobox"
+										bind="dataBean.metropageindex"
+										action="selectMetroPageIndexModel" />
+								</div>
+								<div role="control" label="显示位置">
+									<input id="metroshowindex" bind="dataBean.metroshowindex"
+										class="mini-textbox" vtype="float" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true">
+						<div role="head" title="IOS风格属性"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="应用打开方式">
+									<input id="iosisblank" class="mini-combobox"
+										bind="dataBean.iosisblank" action="selectMetroIsBlankModel" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row">
+								<div role="control" label="DIV高度">
+									<input id="iosappwindowheight"
+										bind="dataBean.iosappwindowheight" class="mini-textbox"
+										vtype="float" />
+								</div>
+								<div role="control" label="DIV宽度">
+									<input id="iosappwindowwidth" bind="dataBean.iosappwindowwidth"
+										class="mini-textbox" vtype="float" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="默认显示桌面">
+									<input id="iospageindex" class="mini-combobox"
+										bind="dataBean.iospageindex"
+										action="selectMetroPageIndexModel" />
+								</div>
+								<div role="control" label="显示位置">
+									<input id="iosshowindex" bind="dataBean.iosshowindex"
+										class="mini-textbox" vtype="float" />
+								</div>
+							</div>
+						</div>
+					</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appmoduleeditaction', "", initCallback);
+		function initCallback(e) {
+			if (e) {
+				if (e.icon) {
+					mini.get("icon").setText(e.icon);
+				}
+				showPhoto(e.lblPicture);
+				showIcon();
+				
+				if(e.parentmodulecodename){
+					mini.get("parentmodulecode").setText(e.parentmodulecodename);
+				}
+			}
+		}
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+		}
+
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr('src', url);
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#photo").show();
+				$("#icon1").hide();
+			} else {
+				$("#lblPicture").attr('src', '');
+				$("#photo").hide();
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+				$("#icon1").show();
+			}
+		}
+
+		//删除个性签名图片
+		function delPhoto() {
+			epoint.execute("btnDelPic_Click", "", function delPhotoCallback(
+					data) {
+				if (data.msg) {
+					epoint.alert(data.msg, null, null, 'info');
+					mini.get("uploader").clearFile();
+					showPhoto();
+				}
+			});
+		}
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+		var tree = mini.get('belongdeskguid');
+		// 点击左侧树刷新右侧表格
+		tree.on("beforenodeselect", function(e) {
+			if (e.node.noclick == true) {
+				e.cancel = true;
+			}
+		});
+		function openicon() {
+			epoint.openDialog(
+							'选择图标',
+							"frame/pages/basic/gateway/app/appinfomanage/selectappmoduleicon",
+							openiconOperJS, {
+								'width' : 1000,
+								'height' : 420
+							});
+		}
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				mini.get("icon").setText(rtnValue);
+				mini.get("icon").setValue(rtnValue);
+			}
+			showIcon();
+		}
+		function onCloseClick() {
+			mini.get("icon").setText("");
+			mini.get("icon").setValue("");
+			showIcon();
+		}
+		
+		function onDefaultDeskCloseClick() {
+			mini.get("belongdeskguid").setText("");
+			mini.get("belongdeskguid").setValue("");
+		}
+		
+		function showIcon() {
+			var icon1 = mini.get("icon").getText();
+			if ($.trim(icon1) != "") {
+				$("#icon1").show();
+				$("#icon2").hide();
+			}else{
+				$("#icon1").show();
+				$("#icon2").show();
+			}
+		}
+		
+		function onDefaultCloseClick() {
+			mini.get("parentmodulecode").setText("");
+			mini.get("parentmodulecode").setValue("");
+		}
+	</script>
+</body>
+</html>

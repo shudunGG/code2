@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>转移分类</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="transfer" onclick="transfer()">确定转移</a><a
+				class="mini-button" id="transferCancel" onclick="epoint.closeDialog();">取消</a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid"
+			action="frameconfigcategoryselectaction.getTreeData" resultAsTree="false"></ul>
+
+			<!-- 添加隐藏域，用于树与表格的联动 -->
+			<input bind="cateGoryNum" id="categoryNum" class="mini-hidden" />
+		</div>
+		<script src="../../../rest/resource/jsboot"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			// 初始化页面
+			epoint.initPage('frameconfigcategoryselectaction');
+
+			//树js对象
+			var tree = mini.get("tree");
+
+			// 点击左侧树刷新右侧表格
+			tree.on("nodeselect", function(e) {
+				var id = e.node.id;
+				// 将左侧树点击的节点id放到隐藏域中
+				// 在表格发二次请求时，会自动带上条件区域中的内容
+				mini.get('categoryNum').setValue(id);
+			});
+
+			function transfer() {
+				epoint.execute("transfer", "", msgCallBack);
+			}
+
+			// 回掉提醒
+			function msgCallBack(data) {
+				if(data){
+					if(data.success){
+						epoint.closeDialog(data.success);
+					}else{
+						epoint.alert(data.msg);
+					}
+				}
+			}
+		</script>
+	</body>
+
+</html>

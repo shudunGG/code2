@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>数据库日志监控（ES）</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body style="overflow: auto;">
+
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save" onclick="save">保存并关闭</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepName" name="stepName" class="mini-textbox"
+					required="true" emptyText="请输入步骤名称" vtype="maxLength:20" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="ES连接地址">
+				<input class="mini-textbox" id="sourceOrg" name=esRestIpConfig>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="用户名">
+				<input class="mini-textbox" id="destOrg" name="username">
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="密码">
+				<input class="mini-textbox" id="catalog" name="password">
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="数据源guid">
+				<input class="mini-textbox" id="tableName" name="dsguid">
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="索引名称">
+				<input class="mini-textbox" id="batchNum" name="indexName">
+			</div>
+		</div>
+		<input id="oldStepName" bind="oldStepName" name="oldStepName" class="mini-hidden">
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var grid = mini.get("datagrid");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+
+		var flag = mini.get("flag");
+		var oldStepName = mini.get("oldStepName");
+		
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			console.log(nodeData);
+			epoint.initPage('epointcdctoesaction?nodeInfoKey=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+		
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			
+			var nodeName = nodeData.stepName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				var nodeForm = getForm();
+				epoint.execute('save', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+	</script>
+</body>
+
+</html>

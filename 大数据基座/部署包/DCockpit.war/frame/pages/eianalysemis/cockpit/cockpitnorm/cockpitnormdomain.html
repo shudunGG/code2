@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标分类管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="指标分类"></div>
+
+		<div role="body" id="fui-left">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getNormDomainTreeModel"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button mini-btn-primary" onclick="add()">新增指标分类</a> <a
+					class="mini-button mini-btn-danger"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择想要删除的指标分类！');} else {epoint.confirm('是否确定删除？','',deleteItems);}">删除所选</a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-condition" opened="false"
+			 primaryControl="">
+			<div class="fui-form" id="fui-form">
+				<!-- 添加隐藏域，用于树与表格的联动 -->
+				<input bind="treeNum" id="treeNum" class="mini-hidden" /> <input bind="ouguid" id="ouguid" class="mini-hidden" />
+			</div>
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="normdomainNum" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDataGridData" showPager="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" headerAlign="center" width="50">序</div>
+					<div field="normdomainName" width="140" headerAlign="center"
+						align="center">指标分类名称</div>
+					<div field="apicode" width="100" headerAlign="center"
+						align="center">ApiCode</div>
+					<!-- <div field="isopen" width="80" headerAlign="center" align="center">是否启用
+					</div> -->
+					<div type="actioncolumn" headerAlign="center" align="center"
+						renderer="onActionRenderer">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+	var isadmin;
+		// 初始化页面
+		epoint.initPage('cockpitnormdomainaction','',function(data){
+			isadmin = data.isadmin;
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			//console.log(e)
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			//mini.get('categoryNum').setValue(id == 'f9root' ? "" : id);
+			if (e.node.type == 'ou') {
+				mini.get('ouguid').setValue(id);
+				mini.get('treeNum').setValue('');
+			}
+			if (e.node.type == 'cate') {
+				mini.get('treeNum').setValue(id);
+				mini.get('ouguid').setValue('');
+			}
+			//刷新表格
+			searchData();
+		});
+
+		// 新增
+		function add() {
+			var normNum = mini.get("treeNum").getValue();
+			var ouguid = mini.get("ouguid").getValue();
+			if (!normNum.length) { //判断是否选中类别
+				normNum = "f9root";
+			}
+ 			if (ouguid == '' && normNum == 'f9root') {
+				epoint.alert('请选择部门或分类');
+				return;
+			}
+			epoint.openDialog('新增指标分类',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormdomainadd?normNum="
+							+ normNum + "&ouguid=" + ouguid, searchData2, {
+						'width' : 800,
+						'height' : 300
+					});
+		}
+		// 弹出修改窗口
+		function openEdit(e) {
+			epoint.openDialog('修改指标分类',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormdomainedit?normNum="
+							+ e, searchData, {
+						'width' : 800,
+						'height' : 350
+					});
+		}
+		// 删除选中行
+		function deleteItems() {
+			epoint.execute('deleteSelect', '', msgcallBack);
+		}
+
+		function deleteSel() {
+			if (mini.get('datagrid').getSelecteds() == 0) {
+				epoint.alert('请选择想要删除的指标分类！');
+			} else {
+				epoint.confirm('是否确定删除？', '', deleteItems);
+			}
+		}
+
+		// 回掉提醒
+		function msgcallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData2);
+			}
+		}
+
+		// 刷新
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function searchData2() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'fui-left' ], '');
+		}
+
+		function onActionRenderer(e) {
+			var title = "";
+			//			if (e.row.isopen == '停用') {
+			title += '<span type="action" style=\"color:blue\" onclick="openEdit(\''
+					+ e.row.normdomainNum + '\')">编辑</span>' + '&nbsp&nbsp';
+			title += '<span type="action" style=\"color:red\" onclick="deleteSel()">删除</span>'
+					+ '&nbsp&nbsp';
+			/* 				title += '<span type="action" style=\"color:blue\" onclick="changestatus(\''
+			 + e.row.normdomainNum
+			 + '\',1)">启用</span>'
+			 + '&nbsp&nbsp';
+			 } else {
+			 title += '<span type="action" style=\"color:blue\" onclick="changestatus(\''
+			 + e.row.normdomainNum
+			 + '\',0)">停用</span>'
+			 + '&nbsp&nbsp';
+			 } */
+			return title;
+		}
+
+		function changestatus(rowguid, e) {
+			if (epoint.validate()) {
+				epoint.execute('changestatus', '', [ rowguid, e ], searchData);
+			}
+		}
+	</script>
+</body>
+
+</html>

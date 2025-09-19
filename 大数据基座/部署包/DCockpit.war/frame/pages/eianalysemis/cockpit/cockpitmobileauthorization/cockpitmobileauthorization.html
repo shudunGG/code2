@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>配置授权</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    </script>
+    <style type="text/css">
+    </style>
+</head>
+
+<body>
+<div class="page-loading"></div>
+<!-- 页面内容区域 -->
+<div class="fui-content">
+    <div class="fui-form" id="fui-form">
+        <div role="row">
+            <div class="form-control " label=""
+                 style="border: 1px solid #ebebeb; height: 580px; width: 30%; overflow: auto;">
+                <div class="mini-tree" id="tree" action="cardTreeModel"
+                     showCheckBox="true" autoCheckParent="true" checkRecursive="true"></div>
+            </div>
+            <div class="form-control span4" label="用户设置">
+                <div id="tabstreeselect" class="mini-tabstreeselect"
+                     selectedPanelTitle="已选择记录" style="width: 99%; height: 580px"
+                     action="getTreeModel2" loadWhenChecked="true" filterMode="server"
+                     showBorder="true">
+                    <div tabText="授权用戶" tabKey="user"></div>
+                </div>
+            </div>
+            <div style="width: 100%; text-align: center;">
+                <a class="mini-button mini-btn-primary"
+                   style="margin: 5px auto; width: 120px;" iconCls="icon-addcircle"
+                   onclick="saveAndClose" id="initBtn">保存授权</a> <a
+                    class="mini-button" style="margin: 5px auto; width: 120px;"
+                    onclick="epoint.closeDialog">取消</a>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+<script src="../../../../../rest/resource/jsboot"></script>
+<script>
+    epoint.initPage('cockpitmobileauthorizationaction', '@all', function (
+        data) {
+    });
+
+    //树js对象
+    var tree = mini.get("tree");
+    var tree2 = mini.get("tabstreeselect");
+    tree.on("nodeselect", function (e) {
+    });
+
+    function saveAndClose() {
+        var nodeList = tree.getList();
+        var userList = tree2.getValue();
+        var categuids = '';
+        var guids = '';
+        for (var i = 0; i < nodeList.length; i++) {
+            if (nodeList[i].type == 'projectcate' && nodeList[i].checked) {
+                categuids += ',' + nodeList[i].id;
+            }
+            if (nodeList[i].type == 'card' && nodeList[i].checked) {
+                guids += ',' + nodeList[i].id;
+            }
+        }
+        if (categuids == '' && guids == '') {
+            epoint.alert("请至少选择一个【专题或专题分类】！");
+            return;
+        } else if (userList == "") {
+            epoint.alert("请至少选择一个用户！");
+            return;
+        }
+        epoint.execute("save", 'tabstreeselect', [guids.substring(1),
+            categuids.substring(1)], function (data) {
+            epoint.alertAndClose("授权成功");
+        });
+
+    }
+</script>
+</body>
+
+</html>

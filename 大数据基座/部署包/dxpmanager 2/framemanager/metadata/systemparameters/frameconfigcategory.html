@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>系统参数类别</title>
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<!-- 必须有，加载时的loading效果 -->
+		<div class="page-loading"></div>
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" onclick="addConfigCateGory" > 新增分类 </a>
+				<a class="mini-button" id="addClose" onclick="save" > 保存修改 </a>
+				<a class="mini-button" onclick="epoint.closeDialog" > 取消修改 </a>
+			</div>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="categoryguid" multiSelect="true"
+			style="width: 100%; height: 100%;"
+			allowCellValid="true" action="getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" showPager="false"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" headerAlign="center" width="50">
+						序
+					</div>
+					<div field="categoryname" width="100%" headerAlign="center" vtype="required;maxLength:50">
+						分类名称
+						<input property="editor" class="mini-textbox" maxLength="50" style="width:100%" />
+					</div>
+					<div field="categorydes" width="300" headerAlign="center" vtype="maxLength:50">
+						备注
+						<input property="editor" class="mini-textbox" maxLength="50" style="width:100%" />
+					</div>
+					<div field="ordernumber" width="80" headerAlign="center" align="right" vtype="int;range:0,99999999">
+						排序号
+						<input property="editor" class="mini-textbox" maxLength="8" inputStyle="text-align:right" style="width:100%"/>
+					</div>
+					<div width="80" align="center" headerAlign="center"
+					renderer="onDeleteRenderer">
+						删除
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//初始化请求
+			epoint.initPage('frameconfigcategoryaction');
+			
+			// 表格对象
+			var grid = mini.get("datagrid");
+
+			function onDeleteRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-remove", "deleteCage");
+			}
+
+			// 新增分类
+			function addConfigCateGory() {
+				epoint.openDialog('新增系统参数类别', 'framemanager/metadata/systemparameters/frameconfigcategoryadd', searchData, {
+					'width' : 1000,
+					'height' : 350
+				});
+			}
+
+			// 保存修改
+			function save() {
+				grid.validate();
+	            if (grid.isValid() == false) {
+	                //alert("请校验输入单元格内容");
+	                var error = grid.getCellErrors()[0];
+	                grid.beginEditCell(error.record, error.column);
+	                return;
+	            }
+				epoint.execute('save', 'datagrid', msgCallBack);
+			}
+
+			//删除选中
+			function deleteCage(categoryguid) {
+				epoint.confirm('此操作会删除该分类下所有系统参数，确认删除？', '', function() {
+					epoint.execute('deleteCage', 'datagrid', [categoryguid], searchData);
+				});
+			}
+
+			// 回掉提醒
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', searchData(), 'success');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+				searchData();
+			}
+
+			// 表格的搜索
+			function searchData() {
+				epoint.refresh(['datagrid'],'',true);
+			}
+		</script>
+	</body>
+
+</html>

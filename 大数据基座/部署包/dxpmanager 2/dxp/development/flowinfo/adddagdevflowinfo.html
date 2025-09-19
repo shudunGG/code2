@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作业导入</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+<div class="fui-content">
+    <div class="fui-form" id="fui-form1">
+        <div role="form">
+            <div id="form" class="fui-form">
+                <div role="form">
+                    <div role="row">
+                        <div role="control" label="流程名称" starred="true">
+                            <input  bind="flowName" class="mini-textbox" vtype="maxLength:100"
+                                   required="true" requiredErrorText="流程名称不能为空"/>
+                        </div>
+                    </div>
+                  <!--   <div role="row">
+                        <div role="control" label="节点域" starred="true">
+                            <input id="nodeGuid" bind="nodeGuid" class="mini-combobox"
+                                   required="true" requiredErrorText="节点域不能为空"
+                                   action="dxpdatadeveloplistaction.getNodeGuidList"/>
+                        </div>
+                    </div> -->
+                   <div role="row">
+									<div role="control" label="调度方式">
+										<input id="scheduler"
+											data="[{text:'时间间隔',id:'1'},{text:'定时',id:'2'},{text:'自定义',id:'3'},{text:'无',id:'0'}]"
+											class="mini-radiobuttonlist" textField="text" valueField="id" value="0"/>
+										<input id="schedulerType" class="mini-hidden" value="0"
+											bind="dxpscheduler.schedulerType" />
+									</div>
+								</div>
+								<div role="row" id="row1">
+									<div role="control" starred="true" label="间隔单位"
+										>
+										<input id="schedulerunit" required="true"
+											data="[{text:'秒',id:'sec'},{text:'分',id:'min'}]"
+											class="mini-combobox" value="sec" textField="text"
+											valueField="id" />
+									</div>
+									<div role="control" starred="true" label="时间间隔" id="interval">
+										<input id="intervalSeconds" class="mini-textbox" vtype="int;range:1,86400"
+											required="true" bind="dxpscheduler.intervalSeconds"
+											style="width: 280px" vtype="int" requiredErrorText="时间间隔不能为空" /> <input vtype="int;range:1,1440"
+											id="intervalMinutes" class="mini-textbox" required="true"
+											bind="dxpscheduler.intervalMinutes" style="width: 280px"
+											vtype="int" requiredErrorText="时间间隔不能为空"/> <span id='unit'
+											style="width: 5px; padding-left: 5px">分</span>
+									</div>
+								</div>
+								<div role="row" id="row2">
+									<div role="control" starred="true" label="定时类型"
+										>
+										<input id="timingtype" required="true" requiredErrorText="定时类型不能为空"
+											data="[{text:'每天',id:'day'},{text:'每周',id:'week'},{text:'每月',id:'month'}]"
+											class="mini-combobox" textField="text" valueField="id" />
+									</div>
+									<div role="control" starred="true" label="时间" id="time">
+										<input id="weekDay" bind="dxpscheduler.weekDay" requiredErrorText="时间不能为空"
+											style="width: 90px;" class="mini-combobox" textField="text"
+											valueField="id" required="true" visible="false"
+											action="getWeekDayCombobox" minValue="0" /><span id="week"
+											style="width: 2px; margin: 5px"></span><input required="true"
+											id="dayOfMonth" visible="false"
+											bind="dxpscheduler.dayOfMonth" class="mini-spinner"
+											minValue="1" style="width: 80px;" maxValue="31" /><span
+											id="day" style="width: 20px; padding-left: 5px">日</span> <input
+											id="hour" bind="dxpscheduler.hour" style="width: 75px;"
+											class="mini-spinner" minValue="0" maxValue="23"
+											required="true" visible="false" /><span
+											style="width: 20px; padding-left: 5px">时</span><input
+											required="true" id="minutes" bind="dxpscheduler.minutes"
+											class="mini-spinner" style="width: 75px;" visible="false"
+											minValue="0" maxValue="59" /><span
+											style="width: 5px; padding-left: 5px">分</span>
+									</div>
+								</div>
+								<div role="row" id="row3">
+									<div role="control" starred="true" label="cron表达式">
+										<input id="cron" class="mini-textbox" bind="dxpscheduler.cron"
+											required="true" requiredErrorText="cron表达式不能为空" />
+									</div>
+									<div role="control"></div>
+								</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-group" style="margin: 0 auto; width: 25%;">
+        <a class="mini-button mr10" onclick="save()">确定</a>
+        <a class="mini-button" onclick="close()">关闭</a>
+    </div>
+</div>
+
+<script src="../../../rest/resource/jsboot"></script>
+<script>
+    var flowguid;
+    var advancedsetting=mini.get('advancedsetting');
+    epoint.initPage('dxpdagdevelopflowaddaction', '', function (data) {
+        flowguid = data.flowGuid;
+        var schedulerValue = mini.get('scheduler').getValue();
+        if ("0" == schedulerValue) {
+			Util.form.hideField('#time');
+			$('#row1').hide();
+			$('#row2').hide();
+			$('#row3').hide();
+		}
+    });
+
+    function save() {
+        if (epoint.validate()) {
+            epoint.execute('save', '@all', function (data) {
+                if (data.result == 'success') {
+                    epoint.alert('新建成功！', '提示', function () {
+                        epoint.closeDialog(flowguid);
+                    }, 'success');
+                } else {
+                    epoint.alert(data.result);
+                }
+            });
+        }
+    }
+
+    function close() {
+        epoint.closeDialog(flowguid);
+    }
+	var scheduler=mini.get('scheduler'),
+	schedulerType=mini.get('schedulerType'),
+	schedulerunit=mini.get('schedulerunit'),
+	intervalSeconds=mini.get('intervalSeconds'),
+	intervalMinutes=mini.get('intervalMinutes'),
+	timingtype=mini.get('timingtype'),
+	weekDay=mini.get('weekDay'),
+	dayOfMonth=mini.get('dayOfMonth'),
+	hour=mini.get('hour'),
+	minutes=mini.get('minutes');
+  
+    // 调度方式变更
+    scheduler.on('valuechanged',function(e){
+    	if(e.value=='1'){
+    		// 时间间隔
+    		$('#row1').show();
+    		$('#row2').hide();
+    		$('#row3').hide();
+    		var schedulerunitValue=schedulerunit.getValue();
+    		if(schedulerunitValue=='sec'){
+    			// 秒
+    			intervalSeconds.setVisible(true);
+    			intervalMinutes.setVisible(false);
+    			$('#unit').html('秒');
+    		}else{
+    			// 分
+    			schedulerunit.setValue('min');
+    			intervalSeconds.setVisible(false);
+    			intervalMinutes.setVisible(true);
+    			$('#unit').html('分');
+    		}
+    		schedulerType.setValue(1);
+    	}else if(e.value=='2'){
+    		// 定时
+    		$('#row1').hide();
+    		$('#row2').show();
+    		$('#row3').hide();
+    	}else if(e.value=='3'){
+    		// 自定义
+    		$('#row1').hide();
+    		$('#row2').hide();
+    		$('#row3').show();
+    		schedulerType.setValue(5);
+    	}else if(e.value=='0'){
+    		$('#row1').hide();
+    		$('#row2').hide();
+    		$('#row3').hide();
+    		schedulerType.setValue(0);
+    	}
+    });
+    // 间隔单位变更
+    schedulerunit.on('valuechanged',function(e){
+    	if(e.value=='sec'){
+			// 秒
+			intervalSeconds.setVisible(true);
+			intervalMinutes.setVisible(false);
+			$('#unit').html('秒');
+		}else{
+			// 分
+			intervalSeconds.setVisible(false);
+			intervalMinutes.setVisible(true);
+			$('#unit').html('分');
+		}
+    });
+    // 定时类型变更
+    timingtype.on('valuechanged',function(e){
+    	Util.form.showField('#time');
+    	if(e.value=='day'){
+    		// 每天
+    		weekDay.setVisible(false);
+    		dayOfMonth.setVisible(false);
+    		hour.setVisible(true);
+    		minutes.setVisible(true);
+    		$('#day').hide();
+    		$('#week').hide();
+    		schedulerType.setValue(2);
+    	}else if(e.value=='week'){
+    		// 每周
+    		weekDay.setVisible(true);
+    		dayOfMonth.setVisible(false);
+    		hour.setVisible(true);
+    		minutes.setVisible(true);
+    		$('#day').hide();
+    		$('#week').show();
+    		schedulerType.setValue(3);
+    	}else if(e.value=='month'){
+    		// 每月
+    		weekDay.setVisible(false);
+    		dayOfMonth.setVisible(true);
+    		hour.setVisible(true);
+    		minutes.setVisible(true);
+    		$('#day').show();
+    		$('#week').hide();
+    		schedulerType.setValue(4);
+    	}
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>用户详细通信</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot
+			.output([ 'frame/pages/basic/communication/addresslist/contactdetails.css' ]);
+</script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="mini-grid-cell-inner  mini-grid-cell-nowrap " id="detailContent">
+			<div class="detail-contact">
+				<div class="profile">
+					<img id="clengGuid">
+					<p id="displayname" class="user-name text-ellipsis"></p>
+				</div>
+				<div class="mid-col-info">
+					<div class="clearfix">
+						<div class="user-info-key">所在部门：</div>
+						<div id="ouname" class="user-info-val text-special text-ellipsis"></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">NTX分机号：</div>
+						<div id="ntxnumber"  class="user-info-val text-special text-ellipsis" title=""></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">地址：</div>
+						<div id="address" class="user-info-val text-special text-ellipsis" title=""></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">车牌：</div>
+						<div id="car" class="user-info-val text-special text-ellipsis" title=""></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">家庭电话：</div>
+						<div id="homenumber" class="user-info-val text-special text-ellipsis" title=""></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">QQ号码：</div>
+						<div id="qq" class="user-info-val text-special text-ellipsis"
+							title=""></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">邮编：</div>
+						<div id="postalcode" class="user-info-val text-special text-ellipsis" title=""></div>
+					</div>
+				</div>
+				<div class="right-col-info">
+					<div class="clearfix">
+						<div class="user-info-key">职务：</div>
+						<div id="zhiwu" class="user-info-val text-special text-ellipsis"></div>
+					</div>
+					<div class="clearfix">
+						<div class="user-info-key">Email：</div>
+						<div id="email" class="user-info-val text-special"></div>
+					</div>
+					<div id="sendEmailLabel" class="clearfix">
+						<div class="user-info-key">发送邮件：</div>
+						<div id="sendEmail" class="user-info-val text-special"></div>
+					</div>
+					<div id="sendMsgLabel" class="clearfix">
+						<div  class="user-info-key">发送消息：</div>
+						<div id="sendMsg" class="user-info-val text-special"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="toolbar">
+		<a class="mini-button" id="btnClose" onclick="epoint.closeDialog" state="primary">关闭</a>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		epoint.initPage('innercondetailaction','',initCallback);
+		
+		var sendMailAddress;
+		var openType;
+		
+		function initCallback(data) {
+			if(data.item!=null){
+				$("#detailContent").attr("title",data.item.showtitle);
+				$("#clengGuid").attr("src","readpictureaction.action?cmd=getMyPicture&cliengGuid="+data.item.userguid);
+				$("#displayname").attr("title",data.item.displayname);
+				$("#displayname").text(data.item.displayname);
+				$("#ouname").attr("title",data.item.ouname);
+				$("#ouname").text(data.item.ouname);
+				$("#ntxnumber").attr("title",data.item.ntx_extnumber);
+				$("#ntxnumber").text(data.item.ntx_extnumber);
+				$("#address").attr("title",data.item.postaladdress);
+				$("#address").text(data.item.postaladdress);
+				$("#car").attr("title",data.item.carnum);
+				$("#car").text(data.item.carnum);
+				sendMailAddress=data.item.sendmailaddress;
+				openType=data.item.opentype;
+				if(sendMailAddress){
+					sendMailAddress=data.item.sendmailaddress + "&ToUserGuid=";
+					$("#sendEmail").html("<a class=\"action-icon icon-mail\" href=\"javascript:sendMail('"
+							+ data.item.userguid + "')\"></a>");
+				}else{
+					$("#sendEmailLabel").hide();
+				}
+				$("#zhiwu").attr("title",data.item.title);
+				$("#zhiwu").text(data.item.title);
+				
+				$("#homenumber").attr("title",data.item.telephonehome);
+				$("#homenumber").text(data.item.telephonehome);
+				
+				$("#qq").attr("title",data.item.qqnumber);
+				$("#qq").text(data.item.qqnumber);
+				
+				$("#postalcode").attr("title",data.item.postalcode);
+				$("#postalcode").text(data.item.postalcode);
+				
+				$("#email").attr("title",data.item.email);
+				$("#email").text(data.item.email);
+				
+				if (Util.getFrameSysParam('ui_exun_enable') === 1) {
+					$("#sendMsg").html("<a class=\"action-icon icon-chat\" title=\"发送消息\" href=\"javascript:chat('"
+							+ data.item.userguid + "')\"></a>");
+				}else{
+					$("#sendMsgLabel").hide();
+				}
+				
+			}
+		}
+		
+		//发送邮件 
+		// 注：发送邮件功能在oa框架才会启动
+		function sendMail(e) {
+			if (sendMailAddress) {
+				if (openType == "div") {
+					epoint.openDialog("发送邮件", sendMailAddress + e);
+				} else if (openType == "tab") {
+					top.TabsNav.addTab({
+						'url' : sendMailAddress + e,
+						'name' : "发送邮件",
+						'id' : Math.round(Math.random() * 1000),
+						'maxIcon' : true,
+						'closeIcon' : true
+					});
+				}
+
+			}
+		}
+		
+		
+
+		function chat(e) {
+			top.OpenEMsg(e);
+		}
+		//]]>
+	</script>
+</body>
+</html>

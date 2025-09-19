@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet" href="css/nginxmonitor.css">
+<title>终端统计</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div id="tabs1" class="mini-tabs" activeIndex="0"
+			onactivechanged="valuechanged" style="width: 100%; height: 100%;"
+			plain="false">
+			<div name="forwardtabs" title="基于api">
+				<div class="request-content" id="ipRequest">
+					<div class="search-bar">
+						<ul class="timerange">
+							<li value="onehour">一小时</li>
+							<li value="twohour">两小时</li>
+							<li value="threehour">三小时</li>
+							<li value="fourhour">四小时</li>
+							<li class="active2" value="oneday">天</li>
+							<li value="weekhour">周</li>
+							<li value="monthhour">月</li>
+							<li value="customhour">自定义</li>
+						</ul>
+						<div class="custome-time" style="display: none" id="ipcustome">
+							<input id="start" class="mini-datepicker" bind="start"
+								format="yyyy-MM-dd" data-options="{'format':'yyyy/MM/dd'}"
+								onValuechanged="validateDate(this)" /> <span>To</span> <input
+								id="finish" class="mini-datepicker" format="yyyy-MM-dd"
+								bind="finish" data-options="{'format':'yyyy/MM/dd'}"
+								onValuechanged="validateDate(this)" /> <a onclick="clickok()"
+								class="mini-button">确定</a>
+						</div>
+					</div>
+					<div class="chart-block">
+						<div id="forwardmain" style="width: 100%; height: 100%;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<!-- 请引入 ECharts.js文件 -->
+	<script src="js/echarts.common.min.js"></script>
+	<script src="js/echarts.min.js"></script>
+	<script>
+		// 初始化页面
+		window.onload = function() {
+			// 			console.log($('.search-bar').height());
+			$('.chart-block').height(
+					$(window).height() - $('.mini-tabs-scrollCt').height()
+							- $('.search-bar').height() - 55);
+			// 初始化页面
+			epoint.initPage('forwardtimeaction', null, function(data) {
+				forwardInitChart();
+				getForwardChartInfo();
+			});
+
+		};
+
+		function valuechanged(e) {
+			var name = e.name;
+			if ("forwardtabs" == name) {
+				forwardInitChart();
+				getForwardChartInfo();
+			}
+		}
+
+		var myChart2;
+		var forwardInitChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart2 = echarts.init(document.getElementById('forwardmain'));
+
+		}
+
+		// 获取图表中的数据
+		var getForwardChartInfo = function getForwardChartInfo() {
+			epoint.execute("forwardtimeaction.getBarData", null, null,
+					function(data) {
+						forwarrendermorechart(data);
+					});
+		}
+
+		var forwarrendermorechart = function(data) {
+			var name = data.name;
+			var time = data.time;
+			var forwardtime = data.forwardtime;
+			var series = [];
+			for (var i = 0; i < name.length; i++) {
+				series.push({
+					name : name[i],
+					type : 'bar',
+					data : forwardtime[i],
+				});
+			}
+			// 指定图表的配置项和数据
+			option = {
+				title : {
+					text : '延时时间统计图',
+
+				},
+				legend : {
+					type : 'scroll',
+					left : '15%',
+					right : '15%',
+					data : name
+				},
+				tooltip : {
+					trigger : 'axis'
+				},
+				dataZoom : [ {
+					type : 'slider',
+					show : true,
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+					zoomLock : true
+				}, {
+					type : 'inside',
+					xAxisIndex : [ 0 ],
+					start : 0,
+					endValue : 5,
+				} ],
+				toolbox : {
+					show : true,
+					feature : {
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'line', 'bar' ]
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+				calculable : true,
+				xAxis : [ {
+					type : 'category',
+					data : time,
+					axisTick : {
+						alignWithLabel : false
+					}
+				} ],
+				yAxis : [ {
+					type : 'value',
+					name : '毫秒(ms)'
+				} ],
+				series : series
+			};
+
+			// 使用刚指定的配置项和数据显示图表。
+			myChart2.setOption(option);
+		}
+
+		//搜索时间
+		$('.timerange li').click(function() {
+			$('.active2', $(this).parent()).removeClass('active2');
+			$(this).addClass('active2');
+			var text = $(this).attr('value');
+			console.log(text);
+			if ("customhour" == text) {
+				$('.custome-time').show();
+			} else {
+				$('.custome-time').hide();
+				mini.get("start").setValue(null);
+				mini.get("finish").setValue(null);
+			}
+			epoint.execute('modifyTimeRange', '', text, function() {
+				epoint.refresh('@all');
+			});
+
+		});
+
+		//验证自定义时间
+		var start = mini.get("start");
+		var end = mini.get("finish");
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'start') {
+						epoint.alert("开始时间不能大于结束时间!");
+						start.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间");
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		//自定义选择时间
+		function clickok() {
+			epoint.refresh([ 'ipcustome', 'ipvisitmain' ]);
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>附件数据库</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<!-- local标签用于国际化 -->
+			<a class="mini-button" iconCls="icon-addcircle" onclick="add">
+				新建连接 </a> <a class="mini-button" iconCls="icon-save" onclick="saveAll">
+				保存修改 </a> <a class="mini-button mini-btn-danger"
+				iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择需要删除的连接！', '', null, 'warning');} else {epoint.confirm('确定要删除吗?','',deleteSelected);}">删除连接</a>
+		</div>
+
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<div>
+			<div style="margin: 0px auto; text-align: left; width: 750px">
+				<p>
+					<em>ORACLE示例</em>：server=test_192.168.0.123;User
+					ID=DBMail_Attach2007;Password=11111;
+				</p>
+				<p>
+					<em>SQL示例：</em>Database=DBMail_Attach2007;Server=192.168.0.123;User
+					ID=sa;Password=11111;
+				</p>
+				<p>
+					<em>MSQL示例：</em>Database=DBMail_Attach2007;Server=192.168.0.123;User
+					ID=root;Password=11111;
+				</p>
+				<p>
+					<em>阿里云OSS规则：</em> 1:
+					ossEndpoint;accessId;accessKeySecret;bucketName 2:
+					ossEndpoint;accessId;accessKeySecret;bucketName;configName1:configValue1;configName2:configValue2;...
+					前4个参数必填,以;间隔，后面的是conf参数配置,每组以;间隔 组内用英文:作为参数对，根据需要进行设置
+				</p>
+				<p>
+					<em>MongoDB示例：</em>Database=DBMail_Attach2007;Server=192.168.0.123;User
+					ID=admin;Password=11111;
+				</p>
+				<p>
+					<em>MongoDB</em>的集群配置只需要在Server里面用,分割配置多个服务器ip即可，端口不配置默认为27017
+				</p>
+				<p>
+					<em>MongoDB</em>用户名和密码可以不配置,如果数据库需要验证的话,可以配置,多个数据库集群配置时,如果用户名密码不一致,那么要用,分割配置，否则只需要配置一个即可
+				</p>
+				<p>
+					<em>集群配置：</em>server=jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST
+					=(ADDRESS = (PROTOCOL = TCP)(HOST = 10.0.6.10)(PORT =
+					1521)))(CONNECT_DATA =(SERVER=DEDICATED)(SERVICE_NAME =
+					orcl)));User ID=DBMail_Attach2007;Password=11111;
+				</p>
+				<p>属性名称大小写无关,User ID可以写成uid,空格不能少，Password可以写成pwd</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="sysguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowCellValid="true"
+			showPager="false" action="getDataGridData" allowResize="true"
+			allowCellEdit="true" editNextOnEnterKey="true" allowCellSelect="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="attach_ConnectionStringName" width="140"
+					headerAlign="center" align="left">
+					连接名称 <input property="editor" class="mini-textbox" required="true"
+						style="width: 100%;" />
+				</div>
+				<div field="attach_ConnectionString" headerAlign="center"
+					width="100%">
+					连接字符串 <input property="editor" class="mini-textbox" required="true"
+						style="width: 100%" />
+				</div>
+				<div type="checkboxcolumn" field="isEncry" width="75" align="center"
+					headerAlign="center" trueValue="1" falseValue="0">加密</div>
+				<div field="orderNum" width="80" headerAlign="center" align="right"
+					vtype="int;range:0,99999999">
+					排序号 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" style="width: 100%" />
+				</div>
+				<div type="comboboxcolumn" field="databaseType" width="80"
+					headerAlign="center">
+					存储类型 <input property="editor" class="mini-combobox"
+						style="width: 100%" data="dsTypes" textField="text"
+						valueField="value" required="true" />
+				</div>
+				<div type="checkboxcolumn" field="isNowUse" width="75"
+					align="center" headerAlign="center" trueValue="1" falseValue="0">
+					启用</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		// sm2加密引入js文件
+		SrcBoot.output([ '../../frame/fui/js/libs/sm2security.js' ]);
+	</script>
+
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('frameattachconfiglistaction', '', initCallBack);
+
+		var dsTypes;
+		function initCallBack(e) {
+			if (e.dstypes) {
+				dsTypes = e.dstypes;
+			}
+		}
+
+		var grid = mini.get("datagrid");
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		function add() {
+			var newRow = {
+				name : "newattachconfig"
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditRow(newRow);
+		}
+
+		function saveAll() {
+			if (epoint.validate([ 'datagrid' ])) {
+				var data = grid.getChanges();
+				for (var i = 0; i < data.length; i++) {
+					var config = data[i];
+					config.attach_ConnectionString = encrypt(config.attach_ConnectionString);
+				}
+				var json = mini.encode(data);
+				epoint.execute('saveAll', '', json, callback);
+			}
+		}
+
+		// 客户端加密类型
+		function encrypt(str) {
+			str = Util.encryptSM2(str);
+			return str;
+		}
+
+		function deleteSelected() {
+			epoint.execute('deleteSelected', '', function(data) {
+				epoint.refresh([ 'datagrid' ], '', true);
+				if (data.msg) {
+					epoint.alert(data.msg);
+				}
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		//回调
+		function callback(args) {
+			if (args.success) {
+				epoint.alert(args.msg, '', searchData, 'info');
+			} else if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+				epoint.refresh([ 'datagrid' ], '', true);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

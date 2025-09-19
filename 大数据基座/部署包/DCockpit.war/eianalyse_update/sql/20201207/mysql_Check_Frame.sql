@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	dxp_subassembly_group

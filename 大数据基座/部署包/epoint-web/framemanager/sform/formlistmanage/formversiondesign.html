@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>表单设计版本</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+	    <a class="mini-button" state="primary"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要复制的记录！', {state : 'warning'});} else {copyVersion();}">版本复制</a>
+		<a class="mini-button" state="danger"  id="delForm"
+			onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.showTips('请选择想要删除的记录！', {state : 'warning'});} else {del();}">删除选中</a>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="version" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" headerAlign="left" width="20" align="left">序</div>
+				<div field="version" headerAlign="left" align="left" width="50">版本号</div>
+				<div width="60" headerAlign="left" align="left"
+					renderer="changeImage">状态</div>
+				<div width="30" headerAlign="left" align="left"
+					renderer="showDesign">设计</div>
+				<div width="30" headerAlign="left" align="left"
+					renderer="showPreview">预览</div>
+                <div field="enabled" visible="false"></div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="tableId" name="tableId" bind="tableId" />
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("formversiondesignaction");
+
+		//设计
+		function showDesign(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"showDesignDialog");
+		}
+
+		function showDesignDialog(version) {
+			var tableId = mini.get("tableId").getValue();
+			window.open("formdesign?tableId=" + tableId + "&versionId=" + version);		
+		}
+		// 删除
+		function del() {
+			epoint.execute('del', 'datagrid', msgCallBack);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ],'',true);
+		}
+
+		//状态图标
+		function changeImage(e) {
+			if (e.row.enabled == 10) {
+				return epoint.renderCell(e, "action-icon icon-start success",
+						"changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause error",
+						"changeStatus");
+			}
+		}
+		function changeStatus(e) {
+			epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+		}
+		//预览
+    	function showPreview(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "showPreviewDialog");
+		}
+		
+    	function showPreviewDialog(version){
+    		epoint.execute('getPreviewUrl', '', [version], showUrl);
+    	}
+    	
+    	function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl, addCallBack);
+			} else {
+				epoint.closeDialog("当前表单没有预览页面");
+			}
+		}
+    	
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (msg.indexOf("成功") == -1) {
+					epoint.showTips(msg,  {state : 'warning'});
+				} else {
+					epoint.showTips(msg,  {state : 'success'});
+					searchData();
+				}
+			}
+		}
+		
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		
+		//版本复制
+		function copyVersion() {
+			epoint.execute('copyVersion', 'datagrid', msgCallBack);
+		}
+		//]]>
+	</script>
+</body>
+</html>

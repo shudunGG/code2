@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>栏目新增</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="栏目名称" starred="true">
+					<input id="categoryname" class="mini-textbox"
+						bind="dataBean.categoryname" required="true"
+						requiredErrorText="栏目名称不能为空!" maxlength="50" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="是否启用">
+					<div class="mini-radiobuttonlist" action="getStatusList"
+						id="status" bind="dataBean.status"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号" starred="true">
+					<input id="ordernum" class="mini-textbox" bind="dataBean.ordernum"
+						required="true" requiredErrorText="排序号不能为空!" vtype="int;range:0,99999" />
+				</div>
+			</div>
+			<!-- <div role="row">
+				<div role="control" label="父栏目" starred="true">
+					<input id="category" class="mini-treeselect" textField="text"
+						idField="id" action="getOuCateTreeModel" maxlength="50"
+						bind="dataBean.parentguid" />
+				</div>
+			</div> -->
+			<div role="row">
+				<div role="control" label="描述">
+					<input id="remark" class="mini-textarea" bind="dataBean.remark"
+						maxlength="200" style="height: 100px;" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		var categoryguid = "";
+		var guid = Util.getUrlParams('guid');
+		// 初始化页面
+		epoint.initPage('webinfocategoryaddaction', null, function(data) {
+			/* if ((Util.getUrlParams().categoryguid != "")
+					&& (Util.getUrlParams().categoryguid != "null")) {
+				mini.get("chooseparent").setValue(
+						Util.getUrlParams().categoryguid);
+				mini.get("chooseparent").setText(data.categoryname);
+			} */
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		/* 		function beforenodeselect(e) {
+		 //禁止选中根节点
+		 if (e.node._level == 0) {
+		 e.cancel = true;
+
+		 e.sender.popup.hide();
+
+		 mini.get("chooseparent").setValue("");
+		 }
+		 } */
+
+		//]]>
+	</script>
+</body>
+</html>

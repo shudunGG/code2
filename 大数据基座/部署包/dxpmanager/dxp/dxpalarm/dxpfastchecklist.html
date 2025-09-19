@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>作业监测列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style>
+.showCellTooltip{
+	line-height: inherit;
+}
+
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar fui-condition">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="refresh"
+				onclick="searchData">重新检测</a>
+		</div>
+		
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="name"
+			action="getModel" sortOrder="desc" showPager="false"
+			style="height: 100%;" allowResize="false" multiSelect="false"
+			allowCellEdit="false" allowCellSelect="false"
+			editNextOnEnterKey="false" editNextRowCell="false">
+			<div property="columns">
+				<div type="indexcolumn" width="5" headerAlign="center">序</div>
+				<div field="name" headerAlign="center" width="35" renderer="onTitleRenderer">检测项</div>
+				<div field="result" headerAlign="center" align="center" width="10"
+					renderer="onStatusRenderer">检测结果</div>
+				<div field="errMsg" headerAlign="center" width="40" visible="false">异常说明</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpfastchecklistaction');
+
+		function searchData(){
+			mini.get('datagrid').reload();
+		}
+		
+		var onStatusRenderer = function(e) {
+			if (e.value == '异常') {
+				return '<span style="color:red">' + e.value + '</span>';
+			} else {
+				return e.value;
+			}
+		}
+		
+		var onTitleRenderer = function(e) {
+			if (e.row.result == '异常') {
+				return '<span>'+e.value+'</span> <a  class="showCellTooltip  action-icon icon-doc r" data-placement="bottomleft"><span class="hidden">'+e.row.errMsg+'</span></a>' ;
+			} else {
+				return '<span>'+e.value+'</span>';
+			}
+		}
+		
+		var tip = new mini.ToolTip();
+		tip.setWidth('500px');
+	    tip.set({
+	    	defaultTheme:'light',
+	        target: document,
+	        selector: '.showCellTooltip',
+	        onbeforeopen: function (e) {            
+	            e.cancel = false;
+	        },
+	        onopen: function (e) {
+	            var el = e.element;
+	            var msg= el.innerHTML;
+	            msg=$(msg).html();
+	            console.log(msg);
+	            if (msg!='') {
+	              	msg='<div><font color="black">'+msg+'</font></div>'
+	                tip.setContent(msg);
+	            }
+	        }
+	    });
+
+		
+	</script>
+</body>
+</html>

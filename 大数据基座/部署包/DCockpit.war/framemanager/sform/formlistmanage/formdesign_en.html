@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Form design</title>
+<meta http-equiv="X-UA-Compatible" content="IE=10" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/icons.css"></link>
+<link rel="stylesheet" href="css/designer.css"></link>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="top-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" data-role="save" onclick="save();">save</a> 
+			<a class="mini-button" data-role="save-new" onclick="saveNew();">save as</a>
+			<a class="mini-button" data-role="search" onclick="preview();">preview</a>
+			<a class="mini-button" data-role="search" onclick="printPreview();">printpreview</a>
+			<a class="mini-button" data-role="save-new" onclick="jsEdit();">jsEditor</a>
+			<a class="mini-button" data-role="save-new" onclick="cssEdit();">cssEditor</a>
+			<a class="mini-button" data-role="close" onclick="closeBefore();">close</a>
+			<!-- a class="mini-button" data-role="close" onclick="openFormDesign();">form config</a-->
+		</div>
+		<div style="float: right;">
+			<div id="designTitle"
+				style="font-size: 20px; line-height: 30px; font-weight: bold; text-align: center;"
+				bind="formdesignaction.designTitle" class="mini-output"></div>
+		</div>
+	</div>
+
+	<div class="main-container"  id="abc">
+		<div class="fui-left">
+			<div class="widget-container" id="widget-container">
+				<!-- control list -->
+				<div class="widget-group">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>form control</b>
+					</h3>
+					<div class="widget-group-content">
+						<!-- control list -->
+						<ul class="widget-group-items-list control-list">
+						</ul>
+					</div>
+				</div>
+				<!-- extensible control list -->
+				<div class="widget-group hidden" id="extrapanel">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>natural person</b>
+					</h3>
+					<div class="widget-group-content">
+						<!-- extensible control list -->
+						<ul class="widget-group-items-list extendcontrol-list">
+						</ul>
+					</div>
+				</div>
+				<!-- Unusable extends control list -->
+				<div class="widget-group hidden" id="extrapanel2">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>corporation</b>
+					</h3>
+					<div class="widget-group-content">
+						<ul class="widget-group-items-list extendcontrol-list2">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-right">
+			<div class="diagram-container">
+				<div id="flow-editor-wrapper">
+					<input class="mini-textarea" bind="epointFormVersion.content"
+						style="width: 100px; henght: 200px" id="editor1" name="editor1"
+						cols="80" rows="10" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="content" name="content" bind="epointFormVersion.content" />
+	<input class="mini-hidden" id="isadd" name="isadd" bind="isadd" />
+	<input class="mini-hidden" id="tableId" name="tableId" bind="tableId" />
+	<input class="mini-hidden" id="versionId" name="versionId" bind="versionId" />
+	<input class="mini-hidden" id="extraCtrlMeta" name="extraCtrlMeta" />
+	<input class="mini-hidden" id="basicData" name="basicData" />
+	<input class="mini-hidden" id="structData" name="structData" />
+	<input class="mini-hidden" id="jsContent" name="jsContent" bind="jsContent"/>
+	<input class="mini-hidden" id="cssContent" name="cssContent" bind="cssContent"/>
+	<input class="mini-hidden" id="ctrlEnCreateType" name="ctrlEnCreateType" bind="ctrlEnCreateType"/>
+	
+	<div class="hidden">
+		<a class="mini-button" iconCls="icon-save" id="saveBtn" onclick="add();">save</a> 
+		<a class="mini-button" iconCls="icon-save" id="saveNewBtn" onclick="saveNewClick();">save as</a>
+		<a class="mini-button" iconCls="icon-save" id="previewBtn" onclick="previewClick();">preview</a>
+		<a class="mini-button" iconCls="icon-save" id="printPreviewBtn" onclick="printPreviewClick();">print preview</a>
+	</div>
+
+    <script type="text/javascript">var miniLocal='en_US.js';</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="js/jquery.nicescroll.min.js"></script>
+	<script src="ckeditor/ckeditor.js"></script>
+	<script src="js/main.js"></script>
+
+	<!-- configuration variables  -->
+	<script>
+		//<![CDATA[
+		//Init page
+		epoint.initPage("formdesignaction", "", initCallBack);
+
+		function initCallBack(data) {
+			if (data != null) {
+				mini.get("extraCtrlMeta").setValue(data.extData);
+				mini.get("basicData").setValue(data.basicData);
+				mini.get("structData").setValue(data.structData);
+			}
+			pageInit();
+			if(data.numId){
+				controlId = data.numId;
+			}else{
+				controlId = 0;
+			}
+			console.log("controlId="+controlId);
+		}
+		
+		var controlId;
+		var tableId = Util.getUrlParams("tableId");
+		var versionId = Util.getUrlParams("versionId");
+
+		function loadTempl(callback) {
+			$.get('../pages/formlistmanage/component.tmpl', null,
+					function(html) {
+						$('body').append(html);
+
+						//加载main.js
+						if (callback) {
+							callback();
+						}
+					});
+		}
+
+		function pageInit() {
+			loadTempl(function() {
+				window.CtrlMeta = {
+					textbox : {
+						name : 'Single input box',
+						template : $.trim($('#textbox-templ').html()),
+						defaultAttrs : {
+							conceal : 0,
+							textAlign : 'Left'
+						}
+					},
+					textarea : {
+						name : 'Multi line input box',
+						template : $.trim($('#textarea-templ').html()),
+						defaultAttrs : {
+							conceal : 0,
+							textAlign : 'Left'
+						}
+					},
+					datetextbox : {
+						name : 'Date selection box',
+						template : $.trim($('#datetextbox-templ').html()),
+						defaultAttrs : {
+							inputDateType : 'Select'
+						}
+					},
+					dropdowntextbox : {
+						name : 'dropdowntextbox',
+						template : $.trim($('#dropdowntextbox-templ').html()),
+						defaultAttrs : {
+							conceal : 0,
+							enableSearch : false
+						}
+					},
+					radiobuttonlist : {
+						name : 'radiobuttonlist',
+						template : $.trim($('#radiobuttonlist-templ').html()),
+						defaultAttrs : {
+							repeatDirection : 'Horizontal'
+						}
+					},
+					checkboxlist : {
+						name : 'checkboxlist',
+						template : $.trim($('#checkboxlist-templ').html()),
+						defaultAttrs : {
+							repeatDirection : 'Horizontal'
+						}
+					},
+					fileupload : {
+						name : 'fileupload',
+						template : $.trim($('#fileupload-templ').html())
+					},
+					datagrid : {
+						name : 'datagrid',
+						template : $.trim($('#datagrid-templ').html())
+					},
+					datagridnew : {
+						name : 'datagridnew',
+						template : $.trim($('#datagridnew-templ').html())
+					},
+					macro : {
+						name : 'macro',
+						template : $.trim($('#macro-templ').html())
+					},
+					calculatecontrol : {
+						name : 'calculatecontrol',
+						template : $.trim($('#calculatecontrol-templ').html()),
+						defaultAttrs : {
+							ItemPrec : 4
+						}
+					}
+				};
+				window.ExtraCtrlMeta = mini.get("extraCtrlMeta").getValue();
+				window.BasicData = mini.get("basicData").getValue();
+				window.StructData = mini.get("structData").getValue();
+				window.CtrlEnCreateType = mini.get("ctrlEnCreateType").getValue();
+				Init();
+				
+				//ReplaceEditorHtml(mini.get("editor1").getValue(), "1");
+				var contentHTML = mini.get("editor1").getValue();
+				var style = $('<div></div>').html(contentHTML).find('#formdiv').text();
+				ReplaceEditorHtml(contentHTML, "1");
+				/* setTimeout(function(){
+					$(GetEditorDocument().$.body).addClass(style);
+				},2000); */
+				CKEDITOR.on('instanceReady', function (ev) {
+					$(GetEditorDocument().$.body).addClass(style);
+					CKEDITOR.config.bodyClass = style;
+					setInterval(initPageLine,1000);//fresh automatic(Execute once a second)
+				});
+			});
+		}
+
+		function openDialogAndRefreshPage(msg) {
+			epoint.alert(msg, '', function() {
+				location.href = location.href;
+			},'info');
+		}
+
+		function save() {
+			var isadd = mini.get("isadd").getValue();
+			if (isadd == "1") {
+				exec_cmd('new_version')
+			} else {
+				//content中移除线条div
+				removeFigure();
+				
+				saveVersion();
+			}
+		}
+
+		//save as new verion
+		function saveNew() {
+			//content中移除线条div
+			removeFigure();
+			
+			saveNewVersion();
+		}
+		function saveNewClick() {
+			if(!mini.get("content").getValue()){
+				epoint.alert("设计稿内容为空，请重新设计！", '', null, 'warning');
+				return;
+			}
+			epoint.execute('addNewVersion', '', [controlId], closeCallback);
+		}
+
+		function closeBefore() {
+			epoint.alert('Are you sure you want to leave form design online？If you have any changes, please save！', null, function(data) {
+				if (data == 'ok') {
+					epoint.closeDialog();
+				}
+			}, 'info');
+		}
+
+		function add() {
+			mini.get("jsContent").setValue(document.getElementById('jsContent').value);
+			mini.get("cssContent").setValue(document.getElementById('cssContent').value);
+			if (epoint.validate()) {
+				if(!mini.get("content").getValue()){
+					epoint.alert("设计稿内容为空，请重新设计！", '', null, 'warning');
+					return;
+				}
+				epoint.execute('add', '', [controlId], closeCallback);
+			}
+		}
+
+		// Operation callback
+		function closeCallback(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+		}
+		
+		// preview
+		function preview(data) {
+			//content中移除线条div
+			removeFigure();
+			
+			previewPage();
+		}
+		
+		function previewClick(data) {
+			epoint.execute('addBeforePreview', '', '', showUrl);//保存前预览preview页面
+		}
+		
+		// print preview
+		function printPreview(data) {
+			//content中移除线条div
+			removeFigure();
+			
+			printPreviewPage();
+		}
+		
+		function printPreviewClick(data) {
+			var flag = 'printpreview';
+			epoint.execute('addBeforePreview', '', [ flag ], showUrl);//保存前预览preview页面
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl);
+			} else {
+				epoint.alert("当前表单没有预览页面！", '', null, 'warning');
+			}
+		}
+		
+		function jsEdit(){
+			epoint.openDialog('Js编辑器',
+					'framemanager/sform/formlistmanage/formeditor/jseditor/jseditor', closeCallback,{
+						'width' : 1200,
+			            'heigh' : 700
+					});
+		}
+		
+		function cssEdit(){
+			mini.get("editor1").setValue(GetFlowEditorInstance().getData());
+			mini.get("content").setValue(GetFlowEditorInstance().getData());
+			epoint.openDialog('css编辑器',
+					'framemanager/sform/formlistmanage/formeditor/csseditor/csseditor', closeCallback,{
+						'width' : 1200,
+			            'heigh' : 700
+					});
+		}
+		
+		var pageLines = 0;
+		function initPageLine(){
+			var doc = GetEditorDocument().$;
+			var height = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+			var count = height/910>>0;
+			var add = count - pageLines;
+			pageLines = count;
+			if(add>=0) {
+				for(var i=0; i<add ;i++){
+					var div = document.createElement('div'); 
+					div.setAttribute('id','page-line-'+(pageLines-i))
+					div.style.borderBottom = '2px dotted red';
+					div.style.position = 'absolute';
+					div.style.top = 910 * (pageLines-i) + 'px';
+					div.style.left = 0;
+					div.style.right = 0;
+					doc.body.appendChild(div);
+				}
+			}else {
+				for(var i = 0 ;i<Math.abs(add);i++) {
+					doc.body.removeChild(doc.getElementById('page-line-'+(pageLines-i)));
+				}
+			}
+		}
+		
+		//操作前移除线条（保存预览操作生成模板前去除添加的线条div）
+		function removeFigure(){
+			var doc = GetEditorDocument().$;
+			var height = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+			var count = height/910>>0;
+			for(var i = 0 ;i<Math.abs(count);i++) {
+				doc.body.removeChild(doc.getElementById('page-line-'+(i+1)));
+				pageLines--;
+			}
+		}
+		
+		/*
+		function openFormDesign(){
+			epoint.openDialog('form config',
+					'framemanager/sform/formlistmanage/formlistmanage', closeBack,{
+						'width' : 1500,
+			            'heigh' : 800
+					});
+		}
+		
+		function closeBack(data){
+			//refresh design
+			location.reload(true);
+		}*/
+
+		//]]>
+	</script>
+</body>
+</html>

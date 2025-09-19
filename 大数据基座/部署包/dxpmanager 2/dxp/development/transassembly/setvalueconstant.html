@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>将字段值设置为常量</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary" onclick="saveModify">保存并关闭</a>
+			 <a id="deletetype" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+			<a class="mini-button mini-btn-primary" id="closebtn" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+<div class="fui-content">
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepName" name="stepName" class="mini-textbox" required="true" emptyText="请输入步骤名称" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="在常量中使用变量">
+				<input name="useVars" class="mini-checkbox">
+			</div>
+		</div>
+		<input id="tableData" name="tableData" class="mini-textbox hidden">
+	</div>
+	<div class="" style="padding-top: 1px">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" onclick="add"
+				style="margin-left: 20px">新增字段</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content" style="padding-top: 1px">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			action="getDataGridData"  multiSelect="true"
+			allowCellValid="true" allowCellEdit="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="55"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="fieldName" headerAlign="center" align="center" vtype="required">
+					字段<input property="editor" class="mini-combobox" data="fieldNameList"
+						emptyText="请输入名称..." textField="text" valueField="text" required="true"/>
+				</div>
+				<div field="replaceValue" headerAlign="center" align="center">
+					值替换<input property="editor" class="mini-textbox"/>
+				</div>
+				<div field="replaceMask" headerAlign="center"align="center">
+					转换掩码（对日期类型）<input property="editor" class="mini-combobox" allowInput="true" data="replaceMaskList" textField="text" valueField="text"/>
+				</div>
+				<div field="isEmptyString" headerAlign="center" align="center" type="checkboxcolumn"
+					truevalue="true" falsevalue="false" headerAlign="center">设置为空串</div>
+			</div>
+		</div>
+</div>
+		<script src="../../../frame/fui/js/jsboot.js"></script>
+		<script>
+			//获取表单数据
+			var form = new mini.Form("#form");
+			var grid = mini.get("datagrid");
+			var stepNameForm = mini.get('stepName');
+
+			var nodeData;
+			var nodeInfo;
+			var fieldNameList;
+			var replaceMaskList;
+			function getForm() {
+				var data = form.getData(true, false);
+				var s = mini.encode(data);
+				return s;
+			}
+
+			function pageLoad() {
+				//从父页面获取表单数据
+				var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+				epoint.initPage('setvalueconstantaction?nodeInfoKey=' + nodeInfo.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initCallBack);
+			}
+
+			function initCallBack(e) {
+				//填充表单数据
+				form.setData(nodeData);
+				var nodeName = nodeData.stepname;
+				if(!nodeName){
+					stepNameForm.setValue(nodeInfo.name);
+				}
+				if(e.fieldNameList){
+					fieldNameList = e.fieldNameList;
+				}
+				if(e.replaceMaskList){
+					replaceMaskList = e.replaceMaskList;
+				}
+			}
+
+			// 表格的搜索
+			function searchData() {
+				epoint.refresh([ 'datagrid' ], '', true);
+			}
+
+			//新增类别
+			function add() {
+				var newRow = {
+				//lx : "保留非全局角色"
+				};
+				grid.addRow(newRow, 0);
+				grid.beginEditRow(newRow);
+			}
+
+			//删除选中
+			function deleteSelected() {
+				grid.removeRows(grid.getSelecteds(), false);
+				setGridData();
+			}
+
+			function setGridData() {
+				var datas = grid.getData();
+				var array = [];
+				for (var i = 0; i < datas.length; i++) {
+					var row = datas[i];
+					array.push({
+						"fieldName" : row.fieldName,
+						"replaceValue" : row.replaceValue,
+						"replaceMask" : row.replaceMask,
+						"isEmptyString" : row.isEmptyString,
+					});
+				}
+				mini.get('tableData').setValue(JSON.stringify(array));
+			}
+
+			//保存修改
+			function saveModify() {
+				grid.validate();
+				if (grid.isValid() == false) {
+					var error = grid.getCellErrors()[0];
+					grid.beginEditCell(error.record, error.column);
+					return;
+				}
+				if (epoint.validate()) {
+					// 把表格的数据拿出来放到隐藏域中
+					setGridData();
+					var nodeForm = getForm();
+					epoint.execute('saveAll', '@none', [ nodeInfo, nodeForm ], function(
+							data) {
+						if (data.success == 'success') {
+							epoint.closeDialog(nodeForm);
+						} else {
+							epoint.alert(data.msg, '', null, 'warning');
+						}
+					});
+				}
+			}
+
+		</script>
+</body>
+
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>角色列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="角色类别">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" onclick="listType()"
+					tooltip="角色类别配置"></a>
+			</div>
+		</div>
+
+		<div role="body">
+			<ul id="tree" name="tree" class="mini-tree"
+				style="width: 100%; height: 100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"
+				action="getTreeModel" resultAsTree="false"></ul>
+		</div>
+
+	</div>
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a id="addrole" class="mini-button" state="primary" onclick="add">新增角色</a>
+			<a id="saverole" class="mini-button" onclick="saveModify">保存修改</a> <a
+				id="deleterole" class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="searchName" bind="searchName"
+					emptyText="请输入角色名称搜索" onenter="searchData" /> <input
+					class="mini-hidden" id="roletype" bind="frameRole.roleType"
+					onvalidation="onComboValidation" value="all"
+					action="getFrameRoleType" allowInput="true" autoLoad="true"
+					onvaluechanged="searchData" /> <input class="mini-combobox hidden"
+					id="roleTypes" action="getFrameRoleTypeExcludeNull" autoLoad="true" />
+				<input class="mini-hidden" id="roleTypeGuid" bind="roleTypeGuid" />
+				<a class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<!--<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="角色名称">
+							<input id="searchName" bind="searchName" class="mini-textbox" />
+						</div>
+						<div role="control">
+							<input bind="frameRole.roleType"
+								onvalidation="onComboValidation" id="roletype" value="all"
+								action="getFrameRoleType" allowInput="true" autoLoad="true"
+								class="mini-hidden" onvaluechanged="searchData" /> <input
+								id="roleTypes" action="getFrameRoleTypeExcludeNull"
+								autoLoad="true" class="mini-combobox hidden" /> <input
+								bind="roleTypeGuid" id="roleTypeGuid" class="mini-hidden" />
+						</div>
+					</div>
+				</div>
+
+			</div>-->
+		<!-- 搜索按钮 -->
+		<!--<a role="searcher" callback="searchData"></a>
+		</div>-->
+
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="roleGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" allowCellValid="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="roleName" name="roleName" renderer="onRoleNameRender"
+						vtype="required;maxLength:15" width="100">
+						角色名称<input property="editor" class="mini-textbox" maxLength="15"
+							width="100" />
+					</div>
+					<div field="orderNumber" width="200" allowSort="true"
+						vtype="int;range:0,99999999">
+						排序号<input property="editor" class="mini-textbox"
+							vtype="int;range:0,99999999" inputStyle="text-align:right"
+							style="width: 100%" />
+					</div>
+					<div field="lx" width="200" renderer="onLxRender" width="30">类型</div>
+					<div field="roleType" type="comboboxcolumn" autoShowPopup="true"
+						allowSort="true" width="200">
+						所属类别<input property="editor" class="mini-combobox"
+							onvalidation="onComboValidation" data="roleTypes"
+							allowInput="false" style="width: 99%" />
+					</div>
+					<div type="actioncolumn" name="optColumn">
+						操作 <span type="action" icon="icon-gear" onclick="openRoleUser"
+							renderer="onUserRoleRender">用户角色关系设置</span> <span type="action"
+							icon="icon-console" onclick="openRoleModule"
+							renderer="onSelectModuleRender">模块订阅</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		//初始化页面
+		epoint.initPage('framerolelistaction', '', initGrid);
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+		var enableThreeManage = false;
+
+		//soa需要隐藏列
+		var enableSOA = false;
+		function initGrid(e) {
+			if (e.enableSOA == true) {//要隐藏掉增删改操作
+				enableSOA = true;
+				mini.get('addrole').setVisible(false);
+				mini.get('deleterole').setVisible(false);
+				mini.get('saverole').setVisible(false);
+			}
+
+			if (e.enableThreeManage) {
+				enableThreeManage = true;
+			}
+		}
+
+		var roleTypes;
+
+		//在初始编辑的时候，如果是保留角色，不能修改名称
+		grid.on("cellbeginedit", function(e) {
+			if (e.field == "roleName") {
+				var row = e.record;
+				var editor = e.editor;
+				var enabled = row.isreserved == "1" ? false : true;
+				editor.setEnabled(enabled);
+			}
+		});
+
+		var combox = mini.get("roleTypes");
+
+		combox.on("load", function(e) {
+			roleTypes = e.sender.data;
+			//对combox列进行刷新，赋值
+			grid.getCellEditor(5, 0).setData(roleTypes);
+		});
+
+		// 表格的搜索
+		function searchData() {
+			//epoint.refresh([ 'datagrid', 'searchName' , 'fui-form','tree']);
+			epoint.refresh([ 'fui-form', 'searchName', 'datagrid' ]);
+		}
+
+		//修改监听
+		function onComboValidation(e) {
+			var items = this.findItems(e.value);
+			if (!items || items.length == 0) {
+				e.isValid = false;
+				e.errorText = "输入值不在下拉数据中";
+			}
+		}
+
+		//绘制角色名称列
+		function onRoleNameRender(e) {
+			var text = e.value;
+			if (e.record.isreserved == "1") {
+				text = "<span class=\"text-assist\">" + e.value + "</span>";
+			}
+			return text;
+		}
+
+		//绘制类型列
+		function onLxRender(e) {
+			var text = e.value;
+			if (text == "保留全局角色") {
+				text = "<span class=\"text-danger\">" + e.value + "</span>";
+			} else {
+				text = "<span class=\"text-primary\">" + e.value + "</span>";
+			}
+			return text;
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+				lx : "保留非全局角色"
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditCell(newRow, "roleName");
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") == -1) {
+				if (data.success) {
+					epoint.showTips(msg, {
+						state : 'success'
+					});
+				} else {
+					epoint.showTips(msg, {
+						state : 'warning'
+					});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			} else {
+				epoint.refresh([ 'datagrid', 'fui-form', 'searchName' ], '',
+						true);
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', [ 'datagrid', 'fui-form' ],
+					msgCallBack);
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', [ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		function openRoleUser(row) {
+			epoint.openDialog("用户角色关系设置",
+					'framemanager/orga/orga/role/roleuserset?roleGuid='
+							+ row.roleGuid, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+					}, {
+						'width' : 820,
+						'height' : 650
+					});
+		}
+		function openRoleModule(row) {
+			epoint
+					.openDialog(
+							"订阅模块",
+							'framemanager/orga/uiset/menu/module/subscribemodule/subscribemoduletree?roleGuid='
+									+ row.roleGuid, function(param) {
+								if (param && param != "close") {
+									epoint.showTips(param, {
+										state : 'success'
+									});
+								}
+							}, {
+								'width' : 1000,
+								'height' : 800
+							});
+		}
+
+		//绘制设置按钮
+		function onUserRoleRender(e) {
+			if (e.record.roleGuid) {
+				if (enableThreeManage && e.record.isreserved == 1) {
+					e.icon.visible = false;
+				}
+				if (enableSOA) {
+					e.icon.visible = false;
+				}
+			} else {
+				e.icon.visible = false;
+			}
+		}
+		//绘制设置按钮
+		function onSelectModuleRender(e) {
+			if (e.record.roleGuid) {
+				if (enableThreeManage && e.record.isreserved == 1) {
+					e.icon.visible = false;
+				}
+			} else {
+				e.icon.visible = false;
+			}
+		}
+		//树js对象
+		var tree = mini.get("tree");
+
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			//将左侧树点击的节点id放到隐藏域中
+			mini.get('roleTypeGuid').setValue(id);
+			//刷新表格
+			updateTable_tree();
+		});
+		function updateTable_tree() {
+			epoint.refresh([ "datagrid", "fui-form" ]);
+		}
+		//配置角色类别
+		function listType() {
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint.openDialog('配置角色类别',
+					'framemanager/orga/orga/role/frameroletypelist',
+					addCallBack, settings);
+		}
+
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form', 'tree' ], '', true);
+			}
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>处理规则</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">新增处理规则</a>
+		<a class="mini-button" id="btnClose" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="规则名称" starred="true">
+						<div bind="dataBean.ruleName" class="mini-textbox" required="true"
+							requiredErrorText="规则名称不能为空!"/></div>
+					</div>
+					<div role="control" label="处理类型">
+						<div class="mini-radiobuttonlist" bind="dataBean.handleType"
+							data="[{text:'黑名单',id:'0'},{text:'限频',id:'1'}, {text:'下线',id:'2'},{text:'限流',id:'3'}]" textField="text"
+							valueField="id" value='0'/></div>
+					</div>
+				</div>
+				<div role="row">
+				   <div role="control" label="规则ID" starred="true">
+						<div bind="dataBean.ruleID" class="mini-textbox" required="true"
+							requiredErrorText="规则ID不能为空!"/></div>
+					</div>
+					<div role="control" label="是否启用">
+						<div class="mini-radiobuttonlist" bind="dataBean.enabled"
+							data="[{text:'否',id:'0'},{text:'是',id:'1'}]" textField="text"
+							valueField="id" value='0'/></div>
+					</div>
+				</div>
+					
+				</div>
+				
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('handleruleaction','',function(data){
+			if (data && data.msg) {
+				if (data.msg == 'add') {
+					$("#toolbar2").hide();
+				}
+			}
+		});
+
+		
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', '@all', closeCallback);
+			}
+		}
+		
+		function closeCallback(data){
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, null, null, null, 'info');
+			}
+		}
+		}
+	
+	</script>
+</body>
+</html>

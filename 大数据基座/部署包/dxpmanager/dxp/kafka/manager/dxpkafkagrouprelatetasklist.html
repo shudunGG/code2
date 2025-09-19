@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>关联任务</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="principal"
+				multiSelect="true" action="getDataGridModel"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellEdit="true" showPager="true" allowCellSelect="true">
+				<div property="columns">
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="groupGuid" headerAlign="center" align="center" visible="false"></div>
+					<div field="flowguid" headerAlign="center" align="center" visible="false"></div>
+					<div field="topicname" headerAlign="center" align="center">topic名称</div>
+					<div field="taskname" headerAlign="center" align="center">任务名称</div>
+<!-- 					<div headerAlign="center" align="center" renderer="onOptRender">详情</div>
+ -->					
+				</div>
+			</div>
+		</div>	
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		epoint.initPage('dxpkafkagrouprelatetasklistaction','',function(data){
+		});
+		
+		var grid = mini.get("datagrid");
+		function onOptRender(e) {
+		console.log(e.row);
+			return '<a href="javascript:void(0);" onclick="subscribeManage('
+					+ "'" + e.row.flowguid + "'" + ');" >' + '查看' + '</a>';
+		}
+
+		// 查看
+		function subscribeManage(flowguid) {
+			epoint.openDialog("关联任务",
+					'dxp/dataintegration/msmqintegrationedit?rowguid='
+							+ flowguid, function() {
+						searchData();
+					}, {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+		
+	</script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+<title>文本框</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+<meta name="generator" content="www.leipi.org" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+    <![endif]-->
+<!--[if lte IE 7]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+    <![endif]-->
+<link rel="stylesheet" href="leipi.style.css">
+</head>
+
+<body>
+	<div class="content">
+		<table class="table table-bordered table-striped table-hover">
+			<input type="hidden" id="datafield"/
+			
+			<tr>
+				<th><span>控件名称</span><span class="label label-important">*</span></th>
+				<th><span>默认值</span></th>
+			</tr>
+			<tr>
+				<td><input type="text" id="orgname" placeholder="必填项"></td>
+				<td><input type="text" id="orgvalue" placeholder="无则不填"></td>
+			</tr>
+			<tr>
+				<th><span>数据类型</span></th>
+				<th><span>对齐方式</span></th>
+			</tr>
+			<tr>
+				<td><select id="orgtype">
+						<option value="text">普通文本</option>
+						<option value="email">邮箱地址</option>
+						<option value="int">整数</option>
+						<option value="float">小数</option>
+						<option value="idcard">身份证号码</option>
+				</select></td>
+				<td><select id="orgalign">
+						<option value="left">左对齐</option>
+						<option value="center">居中对齐</option>
+						<option value="right">右对齐</option>
+				</select></td>
+			</tr>
+			<tr>
+				<th><span>&nbsp;&nbsp;&nbsp;&nbsp;长&nbsp;&nbsp;X&nbsp;&nbsp;宽&nbsp;&nbsp;&nbsp;&&nbsp;&nbsp;&nbsp;字体大小</span>
+				</th>
+				<th><span>可见性</span></th>
+			</tr>
+			<tr>
+				<td><input id="orgwidth" type="text" value="150"
+					class="input-small span1" placeholder="auto" /> X <input
+					id="orgheight" type="text" value="" class="input-small span1"
+					placeholder="auto" /> & <input id="orgfontsize" type="text"
+					value="" class="input-small span1" placeholder="auto" /> px</td>
+				<td><label class="checkbox inline"><input id="orghide"
+						type="checkbox" /> 隐藏 </label></td>
+			</tr>
+			<tr>
+				<th><span>校验</span></th>
+				<th><span></span></th>
+			</tr>
+			<tr>
+				<td><label class="checkbox inline"><input
+						id="orgvalidate" type="checkbox" /> 必填 </label></td>
+				<td></td>
+			</tr>
+		</table>
+	</div>
+	<script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="../js/mustache.js"></script>
+	<script type="text/javascript">
+		var oNode = null, thePlugins = parent.thePlugins;
+		$G = function(id) {
+			return document.getElementById(id)
+		};
+
+		function iframeinit(df) {
+			$G('datafield').value = df;
+		}
+
+		function iframeedit(oNode) {
+			var gValue = '';
+			if (oNode.getAttribute('value')) {
+				gValue = oNode.getAttribute('value');
+			}
+			var gTitle = oNode.getAttribute('title'), gHidden = oNode
+					.getAttribute('orghide')
+					|| '', gFontSize = oNode.getAttribute('orgfontsize') || '', gAlign = oNode
+					.getAttribute('orgalign')
+					|| '', gWidth = oNode.getAttribute('orgwidth') || '', gHeight = oNode
+					.getAttribute('orgheight')
+					|| '', gValidate = oNode.getAttribute('orgvalidate') || '';
+			gValue = gValue == null ? '' : gValue.replace(/&quot;/g, "\"");
+			gTitle = gTitle == null ? '' : gTitle.replace(/&quot;/g, "\"");
+			$G('orgvalue').value = gValue;
+			$G('orgname').value = gTitle;
+			if (gHidden == '1') {
+				$G('orghide').checked = true;
+			}
+			$G('orgfontsize').value = gFontSize;
+			$G('orgwidth').value = gWidth;
+			$G('orgheight').value = gHeight;
+			$G('orgalign').value = gAlign;
+			$G('orgvalidate').value = gValidate;
+			$G('datafield').value = oNode.getAttribute('datafield');
+
+			$G('orgalign').value = "left";
+			if (oNode.getAttribute('textalign') != null) {
+				if (oNode.getAttribute('textalign') == "Right") {
+					$G('orgalign').value = "right";
+				} else if (oNode.getAttribute('textalign') == "Center") {
+					$G('orgalign').value = "center";
+				}
+			}
+			if (oNode.getAttribute('style') != null
+					&& oNode.getAttribute('style').indexOf('height') > -1) {
+				var style = oNode.getAttribute('style').split(';');
+				for (var i = 0; i < style.length; i++) {
+					if (style[i].indexOf('height') > -1) {
+						$G('orgheight').value = style[i].substring(style[i]
+								.indexOf(':') + 1, style[i].indexOf('px'));
+						break;
+					}
+				}
+			}
+
+			if (oNode.getAttribute('validate') == null
+					|| oNode.getAttribute('validate').indexOf('formatValidate') < 0) {
+				if (oNode.getAttribute('fieldtype') != null
+						&& oNode.getAttribute('fieldtype') == 'Numeric') {
+					$G('orgtype').value = 'float';
+				} else {
+					$G('orgtype').value = 'text';
+				}
+			} else {
+				if (oNode.getAttribute('validate').indexOf(
+						'formatValidate:cardId') > -1) {
+					$G('orgtype').value = 'idcard';
+				} else if (oNode.getAttribute('validate').indexOf(
+						'formatValidate:email') > -1) {
+					$G('orgtype').value = 'email';
+				}
+				if (oNode.getAttribute('validate')
+						.indexOf('requiredValidate:1') > -1) {
+					$G('orgvalidate').checked = true;
+				}
+			}
+		}
+
+		function iframeoncancel(oNode) {
+			if (UE.plugins[thePlugins].editdom) {
+				delete UE.plugins[thePlugins].editdom;
+			}
+		}
+
+// 		function ucfirst(str) {
+// 			var str = str.toLowerCase();
+// 			str = str.replace(/\b\w+\b/g, function(word) {
+// 				return word.substring(0, 1).toUpperCase() + word.substring(1);
+// 			});
+// 			return str;
+// 		}
+
+		function iframeonok(oNode) {
+			if ($G('orgname').value == '') {
+				alert('请输入控件名称');
+				return false;
+			}
+			var gValue = $G('orgvalue').value.replace(/\"/g, "&quot;"), gTitle = $G('orgname').value
+					.replace(/\"/g, "&quot;"), gFontSize = $G('orgfontsize').value, gAlign = $G('orgalign').value, gWidth = $G('orgwidth').value, gHeight = $G('orgheight').value, gType = $G('orgtype').value, gValidate = $G('orgvalidate').value;
+			// datafield修改后要验证ID是否重复
+			//             if(Util.isFieldUsed(field,gTitle,isEditing)) {
+			//             	parent.controlId +=1;
+			//                 Util.alert('字段已被使用');
+			//                 return false;
+			//             }
+			if (!oNode) {
+				try {
+					oNode.setAttribute('datafield', $G('datafield').value);
+					oNode.setAttribute('title', gTitle);
+					oNode.setAttribute('value', gValue);
+					oNode.setAttribute('datafieldcn', gTitle);
+					oNode.setAttribute('id', $G('datafield').value);
+					// 					oNode.setAttribute('name', 'leipiNewField');
+					oNode.setAttribute('controltype', thePlugins);
+					if ($G('orghide').checked) {
+						oNode.setAttribute('orghide', 1);
+						oNode.setAttribute('conceal', 1);
+					} else {
+						oNode.setAttribute('orghide', 0);
+						oNode.setAttribute('conceal', 0);
+					}
+					if (gFontSize != '') {
+						oNode.style.fontSize = gFontSize + 'px';
+						//style += 'font-size:' + gFontSize + 'px;';
+						oNode.setAttribute('orgfontsize', gFontSize);
+					}
+					if (gAlign != '') {
+						//style += 'text-align:' + gAlign + ';';
+						oNode.style.textAlign = gAlign;
+						oNode.setAttribute('orgalign', gAlign);
+						oNode.setAttribute('textalign', gAlign);
+					}
+					if (gWidth != '') {
+						oNode.style.width = gWidth + 'px';
+						//style += 'width:' + gWidth + 'px;';
+						oNode.setAttribute('orgwidth', gWidth);
+					}
+					if (gHeight != '') {
+						oNode.style.height = gHeight + 'px';
+						//style += 'height:' + gHeight + 'px;';
+						oNode.setAttribute('orgheight', gHeight);
+						oNode.setAttribute('height', gHeight);
+					}
+					if (gType != '') {
+						oNode.setAttribute('orgtype', gType);
+						if (gType == 'text') {
+							oNode.setAttribute('fieldtype', 'nvarchar');
+						} else if (gType == 'float') {
+							oNode.setAttribute('fieldtype', 'Numeric');
+						} else if (gType == 'email') {
+							if (gValidate != '' && gValidate == 'on') {
+								var validate = "formatValidate:email;requiredValidate:1";
+							} else {
+								var validate = "formatValidate:email;requiredValidate:0";
+							}
+							oNode.setAttribute('fieldtype', 'nvarchar');
+							oNode.setAttribute('validate', validate);
+						} else if (gType == 'idcard') {
+							if (gValidate != '' && gValidate == 'on') {
+								var validate = "formatValidate:cardId;requiredValidate:1";
+							} else {
+								var validate = "formatValidate:cardId;requiredValidate:0";
+							}
+							oNode.setAttribute('fieldtype', 'Numeric');
+							oNode.setAttribute('validate', validate);
+						}
+					}
+					if (gValidate != '') {
+						oNode.setAttribute('orgvalidate', gValidate);
+						if (gType == 'text' || gType == 'float') {
+							if (gValidate == 'on') {
+								oNode.setAttribute('validate',
+										"requiredValidate:1");
+							} else {
+								oNode.setAttribute('validate',
+										"requiredValidate:0");
+							}
+						}
+					}
+					// 					oNode.setAttribute('style',style );
+					// 					oNode.style.cssText=style;//ie7
+
+					// 					editor.execCommand('insertHtml', oNode.outerHTML);
+				} catch (e) {
+					throw e;
+					return false;
+				}
+			} else {
+				oNode.setAttribute('datafield', $G('datafield').value);
+				oNode.setAttribute('title', gTitle);
+				oNode.setAttribute('value', $G('orgvalue').value);
+				oNode.setAttribute('datafieldcn', gTitle);
+				oNode.setAttribute('id', $G('datafield').value);
+				if ($G('orghide').checked) {
+					oNode.setAttribute('orghide', 1);
+					oNode.setAttribute('conceal', 1);
+				} else {
+					oNode.setAttribute('orghide', 0);
+					oNode.setAttribute('conceal', 0);
+				}
+				if (gFontSize != '') {
+					oNode.style.fontSize = gFontSize + 'px';
+					oNode.setAttribute('orgfontsize', gFontSize);
+				} else {
+					oNode.style.fontSize = '';
+					oNode.setAttribute('orgfontsize', '');
+				}
+				if (gAlign != '') {
+					oNode.style.textAlign = gAlign;
+					oNode.setAttribute('orgalign', gAlign);
+					oNode.setAttribute('textalign', gAlign);
+				} else {
+					oNode.setAttribute('orgalign', '');
+					oNode.setAttribute('textalign', '');
+				}
+				if (gWidth != '') {
+					oNode.style.width = gWidth + 'px';
+					oNode.setAttribute('orgwidth', gWidth);
+				} else {
+					oNode.style.width = '';
+					oNode.setAttribute('orgwidth', '');
+				}
+				if (gHeight != '') {
+					oNode.style.height = gHeight + 'px';
+					oNode.setAttribute('orgheight', gHeight);
+					oNode.setAttribute('height', gHeight);
+				} else {
+					oNode.style.height = '';
+					oNode.setAttribute('orgheight', '');
+					oNode.setAttribute('height', '');
+				}
+				if (gType != '') {
+					oNode.setAttribute('orgtype', gType);
+					if (gType == 'text') {
+						oNode.setAttribute('fieldtype', 'nvarchar');
+					} else if (gType == 'float') {
+						oNode.setAttribute('fieldtype', 'Numeric');
+					} else if (gType == 'email') {
+						if (gValidate != '' && gValidate == 'on') {
+							var validate = "formatValidate:email;requiredValidate:1";
+						} else {
+							var validate = "formatValidate:email;requiredValidate:0";
+						}
+						oNode.setAttribute('fieldtype', 'nvarchar');
+						oNode.setAttribute('validate', validate);
+					} else if (gType == 'idcard') {
+						if (gValidate != '' && gValidate == 'on') {
+							var validate = "formatValidate:cardId;requiredValidate:1";
+						} else {
+							var validate = "formatValidate:cardId;requiredValidate:0";
+						}
+						oNode.setAttribute('fieldtype', 'Numeric');
+						oNode.setAttribute('validate', validate);
+					}
+				} else {
+					oNode.setAttribute('orgtype', '');
+					oNode.setAttribute('fieldtype', '');
+					if (gValidate != '' && gValidate == 'on') {
+						var validate = "requiredValidate:1";
+					} else {
+						var validate = "requiredValidate:0";
+					}
+					oNode.setAttribute('validate', validate);
+				}
+				if (gValidate != '') {
+					oNode.setAttribute('orgvalidate', gValidate);
+					if (gType == 'text' || gType == 'float') {
+						if (gValidate == 'on') {
+							oNode
+									.setAttribute('validate',
+											"requiredValidate:1");
+						} else {
+							oNode
+									.setAttribute('validate',
+											"requiredValidate:0");
+						}
+					}
+
+				} else {
+					oNode.setAttribute('orgvalidate', '');
+					if (gType == 'text' || gType == 'float') {
+						oNode.setAttribute('validate', "requiredValidate:0");
+					}
+				}
+				// 				delete UE.plugins[thePlugins].editdom;
+			}
+			return oNode;
+		};
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用订阅用户列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="选择部门"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%"
+				textField="text" idField="id" parentField="pid"
+				action="getTreeModel" filterMode="server" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="用户名">
+							<input class="mini-textbox" bind="userName" />
+						</div>
+						<div role="control" label="用户Id">
+							<input class="mini-textbox" bind="loginId" />
+						</div>
+					</div>
+				</div>
+				<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+					class="mini-hidden" /> <input bind="transferOuguid" id="ouguid"
+					class="mini-hidden" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="userguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="displayname">用户名</div>
+					<div field="loginid">登录名</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('subscribeduserlistaction');
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect",
+				function(e) {
+					if (e.node) {
+						var id = e.node.id;
+						//将左侧树点击的节点id放到隐藏域中
+						mini.get('leftTreeNodeGuid').setValue(
+								id == 'f9root' ? "" : id);
+					}
+					//刷新表格
+					searchData();
+				});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

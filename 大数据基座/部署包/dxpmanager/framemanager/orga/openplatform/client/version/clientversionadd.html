@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增客户端版本</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="btnAdd" onclick="addVersion">新增</a>
+           	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="系统类型" starred="true">
+					<div id="clientOsType" bind="clientVersion.clientOsType" class="mini-radiobuttonlist" repeatItems="1" repeatLayout="table" repeatDirection="vertical" 
+					textField="text" valueField="id" required="true"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="版本号" starred="true">
+					<input id="versionNumber" class="mini-textbox"
+						bind="clientVersion.clientVersion" required="true" requiredErrorText="版本号不能为空!" />
+					<div id="versionNumberAll"  class="mini-checkbox" readOnly="false" text="全部版本" onvaluechanged="onVersionNumberAllValueChanged"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="版本描述">
+					<input id="versionDesc" class="mini-textarea" bind="clientVersion.versionDesc"/>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="../../../../../rest/resource/jsboot"></script>
+	
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('clientversionaddaction', '', initCallBack);
+		
+		// 客户端全版本指定值
+		var versionNumberAllVal = '';
+		
+		// 初始化页面回调函数
+		function initCallBack(e){
+			
+			// 设置客户端全版本指定值
+			versionNumberAllVal = e.versionNumberAll;
+			
+			// 初始化客户端系统类型单选按钮
+			mini.get('clientOsType').set({data:e.clientOsTypeListJson});
+		}
+		
+		function onVersionNumberAllValueChanged(){
+			// 获取选中状态
+			var checked = this.getChecked();
+			
+			// 选中则填版本号为指定值，且设置版本号不可修改
+			// 非选中则清空版本号，且设置版本号可修改
+			if (checked) {
+				mini.get("versionNumber").setValue(versionNumberAllVal);
+				mini.get("versionNumber").disable();
+			} else {
+				mini.get("versionNumber").setValue('');
+				mini.get("versionNumber").enable();
+			}
+			
+		}
+
+		// 新增版本
+		function addVersion(){
+			if (epoint.validate()) {
+				epoint.execute('addVersion','', addVersionCallBack);
+			}
+		}
+		
+		// 新增版本回调
+		function addVersionCallBack(data){
+			var msg = data.msg;
+			if (msg) {
+				if(data.success === 'success'){
+					epoint.alertAndClose(msg, '', null, {backParam:data}, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

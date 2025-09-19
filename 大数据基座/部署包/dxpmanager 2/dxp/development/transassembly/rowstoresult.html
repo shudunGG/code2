@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>复制记录到结果</title>
+<script src="../../../frame/fui/js/cssboot.js" type="text/javascript"></script>
+<script type="text/javascript">
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+<body style="overflow: auto;">
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="addbtn" onclick="save">保存修改</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox"
+						required="true" emptyText="请输入步骤名称" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--     <div style="padding-top: 1px;padding-left:450px;color: #FF0000">
+      <div role="row">
+                   该step通过一个内部的工作结果行集转换行数据(在内存中)到下一个转换(或工作条目)。它可以获得结果的行所使用的步骤和一些工作条目允许处理的内部结果行集
+      </div>
+    </div> -->
+	<canvas id="Mycanvas"></canvas>
+	<script src="../../../frame/fui/js/jsboot.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('rowstoresultaction', '', initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save() {
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				var nodeForm = getForm();
+				epoint.execute('save', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+		
+		
+		//定义画布宽高和生成点的个数
+		var WIDTH = window.innerWidth, HEIGHT = window.innerHeight, POINT = 35;
+		
+		var canvas = document.getElementById('Mycanvas');
+		canvas.width = WIDTH,
+		canvas.height = HEIGHT;
+		var context = canvas.getContext('2d');
+		context.strokeStyle = 'rgba(0,0,0,0.02)',
+		context.strokeWidth = 1,
+		context.fillStyle = 'rgba(0,0,0,0.05)';
+		var circleArr = [];
+
+		//线条：开始xy坐标，结束xy坐标，线条透明度
+		function Line (x, y, _x, _y, o) {
+			this.beginX = x,
+			this.beginY = y,
+			this.closeX = _x,
+			this.closeY = _y,
+			this.o = o;
+		}
+		//点：圆心xy坐标，半径，每帧移动xy的距离
+		function Circle (x, y, r, moveX, moveY) {
+			this.x = x,
+			this.y = y,
+			this.r = r,
+			this.moveX = moveX,
+			this.moveY = moveY;
+		}
+		//生成max和min之间的随机数
+		function num (max, _min) {
+			var min = arguments[1] || 0;
+			return Math.floor(Math.random()*(max-min+1)+min);
+		}
+		// 绘制原点
+		function drawCricle (cxt, x, y, r, moveX, moveY) {
+			var circle = new Circle(x, y, r, moveX, moveY)
+			cxt.beginPath()
+			cxt.arc(circle.x, circle.y, circle.r, 0, 2*Math.PI)
+			cxt.closePath()
+			cxt.fill();
+			return circle;
+		}
+		//绘制线条
+		function drawLine (cxt, x, y, _x, _y, o) {
+			var line = new Line(x, y, _x, _y, o)
+			cxt.beginPath()
+			cxt.strokeStyle = 'rgba(0,0,0,'+ o +')'
+			cxt.moveTo(line.beginX, line.beginY)
+			cxt.lineTo(line.closeX, line.closeY)
+			cxt.closePath()
+			cxt.stroke();
+
+		}
+		//初始化生成原点
+		function init () {
+			circleArr = [];
+			for (var i = 0; i < POINT; i++) {
+				circleArr.push(drawCricle(context, num(WIDTH), num(HEIGHT), num(15, 2), num(10, -10)/40, num(10, -10)/40));
+			}
+			draw();
+		}
+
+		//每帧绘制
+		function draw () {
+			context.clearRect(0,0,canvas.width, canvas.height);
+			for (var i = 0; i < POINT; i++) {
+				drawCricle(context, circleArr[i].x, circleArr[i].y, circleArr[i].r);
+			}
+			for (var i = 0; i < POINT; i++) {
+				for (var j = 0; j < POINT; j++) {
+					if (i + j < POINT) {
+						var A = Math.abs(circleArr[i+j].x - circleArr[i].x),
+							B = Math.abs(circleArr[i+j].y - circleArr[i].y);
+						var lineLength = Math.sqrt(A*A + B*B);
+						var C = 1/lineLength*7-0.009;
+						var lineOpacity = C > 0.03 ? 0.03 : C;
+						if (lineOpacity > 0) {
+							drawLine(context, circleArr[i].x, circleArr[i].y, circleArr[i+j].x, circleArr[i+j].y, lineOpacity);
+						}
+					}
+				}
+			}
+		}
+
+		//调用执行
+		window.onload = function () {
+			init();
+			setInterval(function () {
+				for (var i = 0; i < POINT; i++) {
+					var cir = circleArr[i];
+					cir.x += cir.moveX;
+					cir.y += cir.moveY;
+					if (cir.x > WIDTH) cir.x = 0;
+					else if (cir.x < 0) cir.x = WIDTH;
+					if (cir.y > HEIGHT) cir.y = 0;
+					else if (cir.y < 0) cir.y = HEIGHT;
+					
+				}
+				draw();
+			}, 16);
+		}
+		
+	</script>
+</body>
+
+</html>

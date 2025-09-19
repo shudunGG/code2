@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>用户角色关系设置</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addNew" onclick="saveAndNew">保存并新增</a> 
+		<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a> 
+	</div>
+	<!-- 内容区域 -->
+<!-- 	<div class="fui-content"> -->
+		<div class="fui-condition" style="height: 150px; overflow: auto;">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form" style="width: 90%">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="角色列表"></div>
+						<div id="roleList" class="mini-radiobuttonlist" bind="roleGuid"
+							repeatItems="3" repeatLayout="table" action="getSelectRoleList"
+							textField="text" valueField="id" style="width: 650px"></div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-content">
+		<div id="tree" class="mini-tabstreeselect" action="getTreeModel"
+			loadWhenChecked="true" filterMode="server" selectedPanelTitle="已选择记录"
+			style="width: 100%">
+			<div tabText="供选择记录" tabKey="allUser" style="width: 120%"></div>
+
+		</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('subroleusersetaction');
+		
+		var rbl = mini.get("roleList");
+	    rbl.on("valuechanged", function (e) {
+	        epoint.execute('changeSelect', '', [ this.getValue() ],
+					selectCallback);
+	    });
+		
+	    function selectCallback(data){
+	    	mini.get('tree').clearAll();
+	    	epoint.refresh([ 'tree' ]);
+	    }
+	    
+	 	// 新增操作的回调
+		function newCallback(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") != -1) {
+				if(data.success){
+					// 刷新树
+					epoint.refresh([ 'tree' ]);
+					epoint.showTips(msg,  {state : 'success'});
+				}else{
+					epoint.showTips(msg,  {state : 'warning'});
+				}
+			}
+		}
+	    
+		function saveAndNew() {
+			epoint.execute('save?isSave=1',[ 'fui-form', 'tree' ],newCallback);
+	    }
+
+		function saveAndClose() {
+			epoint.execute('save?isSave=1', [ 'fui-form', 'tree' ], saveCallback);
+		}
+
+		// 关闭操作的回调
+		function saveCallback(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") != -1) {
+				if(data.success){
+				    epoint.closeDialog(msg);
+				} else {
+					epoint.showTips(msg,  {state : 'danger'});
+				}
+			}
+		}
+		
+		
+
+		//]]>
+	</script>
+</body>
+</html>

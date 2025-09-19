@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Modify the action button</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify"
+				iconCls="icon-save">Changes to save</a> <a class="mini-button"
+				onclick="epoint.closeDialog" iconCls="icon-removecircle">Cancel
+				the change</a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">In use process need to pay attention
+			to information</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<em>remark:</em>The content will act as a buttonTitle,That is the
+			cursor on the surface of text on a button
+		</p>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="The operation name" starred="true">
+					<input id="operateName" class="mini-textbox"
+						bind="workflowActivityOperation.operationName" required="true"
+						requiredErrorText="The operation nameCan't be empty!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Operation type" starred="true">
+					<input id="opType" bind="workflowActivityOperation.operationType"
+						readonly="true" disabled="true"
+						data="[{text:'Sign after receiving STH',id:'8'},
+							{text:'Turn to pigeonhole',id:'7'},
+							{text:'through',id:'10'},
+							{text:'reading',id:'18'},
+							{text:'Show for the changes of the action button',id:'15'},
+							{text:'transfer',id:'20'},
+							{text:'sendreading',id:'25'},
+							{text:'The fallback',id:'30'},
+							{text:'Back to the start',id:'2'},
+							{text:'Termination of a work item',id:'40'},
+							{text:'Terminate the process instance',id:'45'},
+							{text:'Take back',id:'50'},
+							{text:'save',id:'60'},
+							{text:'Special operation',id:'70'},
+							{text:'Custom (ForTo do the work item)',id:'0'},
+							{text:'Custom (ForHave to do the work item)',id:'1'},
+							{text:'Empty placeholder',id:'999'}]"
+						textField="text" valueField="id" class="mini-combobox"
+						required="true" requiredErrorText="Operation typeCan't be empty!" />
+				</div>
+			</div>
+			<div role="row" id="buildingJsActivity" rendered="showBuildingJs">
+				<div role="control" label="Button before the trigger">
+					<input class="mini-textbox"
+						bind="workflowActivityOperation.operationDispName" />
+				</div>
+				<div role="control" label="Button when triggered">
+					<input class="mini-textbox"
+						bind="workflowActivityOperation.operationPageUrl" />
+				</div>
+			</div>
+			<!-- The fallbackThe target range-->
+			<div role="row" id="trBackTargetActivity" style="display: none">
+				<div role="control" label="The fallbackThe target range">
+					<input id="chkBackTargetActivity" bind="backTargetActivity"
+						action="getBackTargetActivityList" textField="text"
+						valueField="id" class="mini-checkboxlist" style="width: 100%" />
+				</div>
+				<div role="control" label="The target activity dealing with people">
+					<div bind="rdoBackScope" class="mini-radiobuttonlist"
+						repeatItems="2" value="10" textField="text" valueField="id"
+						data="[{text:'Only submit one',id:'1'},
+							{text:'All processing',id:'2'}]">
+					</div>
+				</div>
+			</div>
+			<!-- sendreadingThe target range -->
+			<div role="row" id="trSendToSignTargetActivity" style="display: none">
+				<div role="control" label="sendreadingThe target range">
+					<input id="chkSendToSignTargetActivity"
+						bind="sendToSignTargetActivity"
+						action="getSendToSignTargetActivityList" textField="text"
+						valueField="id" class="mini-checkboxlist" style="width: 100%" />
+				</div>
+			</div>
+			<!-- Back to the startThe target range -->
+			<div role="row" id="trBackToStartTargetActivity"
+				style="display: none">
+				<div role="control" label="The target range">
+					<!-- 					<div bind="backToMain" checked="false" class="mini-checkbox">Child process whether to return to the main process</div> -->
+					<input id="chkBackToMain" bind="backToMain" class="mini-checkbox"
+						style="width: 2%" />Child process whether to return to the main
+					process
+				</div>
+			</div>
+			<div role="row" id="trMultiTransctorMode" style="display: none">
+				<div role="control" label=" Many people are handled">
+					<div id="multiTransactorMode"
+						bind="workflowActivityOperation.multiTransctorMode"
+						action="getHandleTypeList" class="mini-radiobuttonlist"
+						repeatItems="2" repeatLayout="table" repeatDirection="vertical"
+						textField="text" valueField="id"></div>
+				</div>
+			</div>
+			<div role="row" id="trCustomScript" style="display: none">
+				<div role="control" label="After clicking the buttonJsThe script">
+					<input id="jstext" bind="operationPageUrl" class="mini-buttonedit"
+						emptyText="" onbuttonclick="setParValue" selectOnFocus="true" />
+				</div>
+			</div>
+			<div role="row" id="trIs_ShowOperationPage" style="display: none">
+				<div role="control"
+					label="Whether the page display operation processing">
+					<div bind="workflowActivityOperation.is_ShowOperationPage"
+						checked="true" class="mini-checkbox">According to</div>
+				</div>
+			</div>
+			<div role="row" id="trOperationCommonPageUrl" style="display: none">
+				<div role="control" label="Action processing page">
+					<input id="urlPage" class="mini-buttonedit"
+						bind="workflowActivityOperation.operationCommonPageUrl"
+						emptyText="" onbuttonclick="setPage" selectOnFocus="true" />
+				</div>
+			</div>
+			<div role="row" id="trOperationMobilePageUrl" style="display: none">
+				<div role="control"
+					label="The mobile terminalAction processing page">
+					<input id="urlMobilePage" class="mini-textbox"
+						bind="workflowActivityOperation.mobileOperationCommonPageUrl" />
+				</div>
+			</div>
+			<div role="row" id="trIs_ShowOpinionTemplete">
+				<div role="control"
+					label="Whether or notAccording toViews on the template">
+					<div bind="workflowActivityOperation.is_ShowOpinionTemplete"
+						checked="true" class="mini-checkbox">According to</div>
+				</div>
+			</div>
+			<div role="row" id="trIs_ShowNextActivity" style="display: none">
+				<div role="control"
+					label="Whether or notAccording toThe subsequent events">
+					<div bind="workflowActivityOperation.is_ShowNextActivity"
+						checked="true" class="mini-checkbox">According to</div>
+				</div>
+			</div>
+			<div role="row" id="trIs_CheckMaterialSubmit" style="display: none">
+				<div role="control" label="Check the necessary material">
+					<div bind="isCheckMaterial" checked="true" class="mini-checkbox">check</div>
+				</div>
+			</div>
+			<div role="row" id="trDefaultOpion">
+				<div role="control" label="The default processing opinion">
+					<input class="mini-textarea"
+						bind="workflowActivityOperation.defaultOpinion" />
+				</div>
+			</div>
+			<div role="row" id="trOpionNeeded">
+				<div role="control" label="Must enter the opinion">
+					<div bind="workflowActivityOperation.isRequireOpinion"
+						class="mini-radiobuttonlist" repeatItems="2" value="10"
+						textField="text" valueField="id"
+						data="[{text:'is',id:'10'},
+							{text:'no',id:'20'}]"></div>
+				</div>
+			</div>
+			<div role="row" id="trMethodBeforeOperate" style="display: none">
+				<div role="control" label="The method called before operation">
+					<input id="mgbefore" class="mini-buttonedit" emptyText=""
+						onbuttonclick="selMethodBeforeOperate" selectOnFocus="true" />
+					<!-- Hide area -->
+					<input id="mgBeforeHide" class="mini-hidden"
+						bind="workflowActivityOperation.methodGuidBeforeOperate" />
+				</div>
+			</div>
+			<div role="row" id="trMethodAfterOperate" style="display: none">
+				<div role="control" label="The method called after operation">
+					<input id="mgAfter" class="mini-buttonedit" emptyText=""
+						onbuttonclick="selMethodAfterOperate" selectOnFocus="true"
+						style="width: 300px" />
+					<!-- Hide area -->
+					<input id="mgAfterHide" class="mini-hidden"
+						bind="workflowActivityOperation.methodGuidAfterOperate" />
+				</div>
+			</div>
+			<div role="row" style="display: none">
+				<div role="control"
+					label="Complete the step-father page redirection address">
+					<input class="mini-textbox" required="true"
+						bind="workflowActivityOperation.openerPageUrlAfterOperate" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="order no">
+					<input class="mini-textbox" required="true"
+						bind="workflowActivityOperation.orderNumber" vtype="int"
+						requiredErrorText="order nocodeCan't be empty!" />
+				</div>
+			</div>
+			<div role="row" id="trSpanWidth" style="display: none">
+				<div role="control" label="Blank width">
+					<input class="mini-textbox"
+						bind="workflowActivityOperation.spanWidth" style="width: 80px" />
+				</div>
+			</div>
+			<div role="row" id="trNode" height="60">
+				<div role="control" label="remark">
+					<input class="mini-textarea" bind="workflowActivityOperation.note" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="According tooccasion">
+					<div bind="chkIs_ShowWhenNormal" checked="true"
+						class="mini-checkbox">During normal conduction</div>
+					<div bind="chkIs_ShowWhenRollBack" checked="true"
+						class="mini-checkbox">Back when</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="Used to controlAccording toThe method of">
+					<input id="txtMethodName" class="mini-buttonedit" emptyText=""
+						bind="txtMethodName" onbuttonclick="selEventMethod"
+						selectOnFocus="true" />
+				</div>
+			</div>
+			<div role="row" style="display: none">
+				<div role="control">
+					<input id="hidMethodGuid" class="mini-textbox"
+						bind="workflowActivityOperation.controlVisiableMethodGuid" />
+				</div>
+			</div>
+			<div role="row" style="display: none" id="trShiftTransactor">
+				<div role="control" label="Shift Transactor Set">
+					<div class="btn-group mr10">
+						<a class="mini-button" id="shiftTransactor"
+							onclick="openShiftTransactor" iconCls="icon-gear">Set shift
+							transactor Set</a>
+					</div>
+				</div>
+			</div>
+			<div role="row" id="trIs_ShowOpinion" style="display: none">
+				<div role="control" label="收回是否保留办理意见">
+					<div bind="workflowActivityOperation.inputInfo"
+						checked="true" class="mini-checkbox">保留</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input bind="processVersionGuid" id="processVersionGuid"
+		class="mini-hidden" />
+	<input id="hidOperationGuid" class="mini-hidden"
+		bind="workflowActivityOperation.operationGuid" />
+
+	<script type="text/javascript">
+		var miniLocal = 'en_US.js';
+	</script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitymanualoperationeditaction', '', initCallBack);
+
+		//by list Page linked to trigger when the refs
+		function initCallBack(data) {
+			mini.get("jstext").setText(mini.get("jstext").getValue());
+			mini.get("urlPage").setText(mini.get("urlPage").getValue());
+			mini.get("mgbefore").setText(mini.get("mgbefore").getValue());
+			mini.get("mgAfter").setText(mini.get("mgAfter").getValue());
+			mini.get("txtMethodName").setText(
+					mini.get("txtMethodName").getValue());
+
+			var aa = mini.get("opType").getValue();
+			var b = "templateform:" + aa;
+			if (b.valueOf() == "templateform:10"
+					|| b.valueOf() == "templateform:15") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+					document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "block";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "block";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:2") {
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "block";
+				}
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+					document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:20"
+					|| b.valueOf() == "templateform:70") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+					document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "block";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:25") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "block";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "none";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:40") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "block";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:45") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "block";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:30") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "block";
+				}
+				if (document.getElementById("trMultiTransctorMode") != null) {
+					document.getElementById("trMultiTransctorMode").style.display = "block";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:35") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "none";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:50") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+					document.getElementById("trIs_ShowOpinionTemplete").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "block";
+				}
+			}
+			if (b.valueOf() == "templateform:0") {
+				if (document.getElementById("buildingJsActivity") != null) {
+					document.getElementById("buildingJsActivity").style.display = "none";
+				}
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "block";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "none";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "block";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "block";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:1") {
+				if (document.getElementById("buildingJsActivity") != null) {
+					document.getElementById("buildingJsActivity").style.display = "none";
+				}
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "block";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "none";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "none";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "none";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "none";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:999") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "none";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "none";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "none";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "none";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "none";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "none";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "block";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+			if (b.valueOf() == "templateform:8"
+					|| b.valueOf() == "templateform:18"
+					|| b.valueOf() == "templateform:60") {
+				if (document.getElementById("trBackTargetActivity") != null) {
+					document.getElementById("trBackTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSendToSignTargetActivity") != null) {
+					document.getElementById("trSendToSignTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trCustomScript") != null) {
+					document.getElementById("trCustomScript").style.display = "none";
+				}
+				if (document.getElementById("trShiftTransactor") != null) {
+					document.getElementById("trShiftTransactor").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOperationPage") != null) {
+					document.getElementById("trIs_ShowOperationPage").style.display = "block";
+				}
+				if (document.getElementById("trOperationCommonPageUrl") != null) {
+					document.getElementById("trOperationCommonPageUrl").style.display = "block";
+				}
+				if (document.getElementById("trOperationMobilePageUrl") != null) {
+					document.getElementById("trOperationMobilePageUrl").style.display = "block";
+				}
+				//if (document.getElementById("trIs_ShowOpinionTemplete") != null) {
+				//	document.getElementById("trIs_ShowOpinionTemplete").style.display = "none";
+				//}
+				if (document.getElementById("trIs_ShowNextActivity") != null) {
+					document.getElementById("trIs_ShowNextActivity").style.display = "none";
+				}
+				if (document.getElementById("trIs_CheckMaterialSubmit") != null) {
+					document.getElementById("trIs_CheckMaterialSubmit").style.display = "none";
+				}
+				if (document.getElementById("trMethodBeforeOperate") != null) {
+					document.getElementById("trMethodBeforeOperate").style.display = "block";
+				}
+				if (document.getElementById("trMethodAfterOperate") != null) {
+					document.getElementById("trMethodAfterOperate").style.display = "block";
+				}
+				if (document.getElementById("trBackToStartTargetActivity") != null) {
+					document.getElementById("trBackToStartTargetActivity").style.display = "none";
+				}
+				if (document.getElementById("trSpanWidth") != null) {
+					document.getElementById("trSpanWidth").style.display = "none";
+				}
+				if (document.getElementById("trIs_ShowOpinion") != null) {
+					document.getElementById("trIs_ShowOpinion").style.display = "none";
+				}
+			}
+		}
+
+		function saveModify() {
+			if ((mini.get("txtMethodName").getValue() == "")
+					|| (mini.get("txtMethodName").getValue() == null)) {
+				mini.get("hidMethodGuid").setValue("");
+			}
+			if (epoint.validate()) {
+				epoint.execute('editOperation', 'fui-form', closeCallback);
+			}
+		}
+		
+		function openShiftTransactor() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			var operationGuid = mini.get("hidOperationGuid").getValue();
+			epoint.openDialog("Set Transactor",
+					"framemanager/workflow/design/activitytransactor?operationGuid="
+							+ operationGuid + "&processVersionGuid="
+							+ processVersionGuid);
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function setParValue() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog("Selection method",
+					"framemanager/workflow/design/designhelper?mode=context&processVersionGuid="
+							+ processVersionGuid, setParValueOperJS, {
+						'width' : 680,
+						'height' : 900
+					});
+		}
+
+		function setParValueOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = data.split(";")[1];
+				mini.get("jstext").setValue(s);
+				mini.get("jstext").setText(s);
+			}
+		}
+
+		function setPage() {
+			var opeType = mini.get("opType").getValue();
+			var designHelperType;
+			if (opeType == "10" || opeType == "35") {
+				designHelperType = "commonHandle";
+			} else if (opeType == "20") {
+				designHelperType = "commonHandleShift";
+			} else if (opeType == "30") {
+				designHelperType = "commonHandleBack";
+			} else if (opeType == "25") {
+				designHelperType = "commonHandleSendToSign";
+			} else if (opeType == "40") {
+				designHelperType = "commonHandleTerminate";
+			} else if (opeType == "45") {
+				designHelperType = "commonHandleTerminatePVI";
+			} else {
+				epoint.alert("This kind ofOperation typeNot optional!", '', null, 'warning')
+			}
+			epoint.openDialog("Select the page",
+					"framemanager/workflow/design/designhelper?mode=activityPage&type="
+							+ designHelperType, setPageOperJS, {
+						'width' : 780,
+						'height' : 300
+					});
+		}
+
+		function setPageOperJS(data) {
+			if (data && data != 'close') {
+				mini.get("urlPage").setValue(data);
+				mini.get("urlPage").setText(data);
+			}
+		}
+
+		function selMethodBeforeOperate() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog("choose",
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid, selMethodBeforeOperateOperJS);
+		}
+
+		function selMethodBeforeOperateOperJS(data) {
+			if (data && data != 'close') {
+				var s = data.split(";");
+				mini.get("mgBeforeHide").setValue(s[1]);
+				mini.get("mgbefore").setValue(s[0]);
+				mini.get("mgbefore").setText(s[0]);
+			}
+		}
+
+		function selMethodAfterOperate() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog("choose",
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid, selMethodAfterOperateOperJS);
+		}
+
+		function selMethodAfterOperateOperJS(data) {
+			if (data && data != 'close') {
+				var s = data.split(";");
+				mini.get("mgAfterHide").setValue(s[1]);
+				mini.get("mgAfter").setValue(s[0]);
+				mini.get("mgAfter").setText(s[0]);
+			}
+		}
+
+		function selEventMethod() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog("choose",
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid + "&mainPVActivityGuid=",
+					selEventMethodOperJS);
+		}
+
+		function selEventMethodOperJS(data) {
+			if (data && data != 'close') {
+				var rtnArray = data.split(";");
+				mini.get("txtMethodName").setValue(rtnArray[0]);
+				mini.get("txtMethodName").setText(rtnArray[0]);
+				mini.get("hidMethodGuid").setValue(rtnArray[1]);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

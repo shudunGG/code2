@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>按钮配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域  ,{id:'Edit',text:'修改'}-->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="按钮名称" starred="true">
+					<input id="columnText" class="mini-textbox"
+						bind="dataBean.buttonname" required="true" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="按钮类型" starred="true">
+					<div class="mini-radiobuttonlist" id="buttonType"
+						bind="dataBean.buttontype"
+						onvaluechanged="selectTypeChange(this.value)"
+						data="[{id:'Add',text:'新增'},{id:'SaveAll',text:'保存'},{id:'Del',text:'删除'},{id:'Process',text:'发起流程'},{id:'Export',text:'导出Excel'},{id:'Close',text:'关闭'},{id:'Custom',text:'自定义'}]"
+						required="true" /></div>
+				</div>
+			</div>
+			<div role="row" id="deletePromptArea" style="display: none">
+				<div role="control" label="删除提示" starred="true">
+					<input id="deletePrompt" class="mini-textbox"
+						bind="dataBean.deleteprompt" required="true" />
+				</div>
+			</div>
+			<div role="row" id="linkArea" style="display: none">
+				<div role="control" label="链接地址" starred="true">
+					<input id="linkurl" bind="dataBean.linkurl" allowInput="true"
+						class="mini-buttonedit" emptyText=""
+						onbuttonclick="selectSform();" selectOnFocus="false"
+						required="true" />
+				</div>
+			</div>
+			<div role="row" id="processArea" style="display: none">
+				<div role="control" label="流程选择" starred="true">
+					<input class="mini-treeselect" allowInput="false"
+						id="processSelect" required="true" emptyText="流程不能为空"
+						style="width: 100%;" onvaluechanged="selMainProcess" action="selectprocessaction.getTreeModel"
+					    onbeforenodeselect="beforenodeselect"
+						bind="dataBean.processguid" required="true" />
+					<!-- <div id="copyprocess" class="mini-combobox" bind="copyProcess" action="getAllProcessList"
+							onvaluechanged="processChange();" textField="text"
+							valueField="id" enabled="true" ></div> -->
+					<input class="mini-hidden" id="processName"
+						bind="dataBean.processname" />
+				</div>
+			</div>
+			<div role="row" id="openTypeArea" style="display: none">
+				<div role="control" label="打开方式" starred="true">
+					<div id="openType" class="mini-radiobuttonlist"
+						bind="dataBean.opentype" required="true"
+						data="[{id:'0',text:'新网页打开'},{id:'1',text:'Dialog弹窗'},{id:'2',text:'全屏Dialog弹窗'}]"
+						textfield="text" valuefield="id"
+						onvaluechanged="openTypeChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="dialogTitleArea" style="display: none">
+				<div role="control" label="窗口标题" starred="true">
+					<input id="dialogTitle" class="mini-textbox"
+						bind="dataBean.dialogtitle" required="true" />
+				</div>
+			</div>
+			<div role="row" id="dialogTypeArea" style="display: none">
+				<div role="control" label="窗口尺寸" starred="true">
+					<input id="dialogType" class="mini-radiobuttonlist"
+						bind="dataBean.dialogtype" action="getDialogType" required="true"
+						onvaluechanged="dialogTypeChange(this.value)" />
+				</div>
+			</div>
+			<div role="row" id="dialogConfig" style="display: none">
+				<div role="control" label="弹窗宽度（px）" starred="true">
+					<input id="dialogWidth" class="mini-textbox"
+						bind="dataBean.dialogwidth" required="true"
+						vtype="int;range:100,3000" />
+				</div>
+				<div role="control" label="弹窗高度（px）" starred="true">
+					<input id="dialogHeigh" class="mini-textbox"
+						bind="dataBean.dialogheigh" required="true"
+						vtype="int;range:100,3000" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int;range:0,99999999" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存并关闭</a> 
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('buttonconfigaddaction', '', initCallback);
+
+		function initCallback(data) {
+			var type = mini.get("buttonType").getValue();
+			selectTypeChange(type);
+
+			var openType = mini.get("openType").getValue();
+			openTypeChange(openType);
+
+			var dialogType = mini.get("dialogType").getValue();
+			dialogTypeChange(dialogType);
+
+			mini.get('processSelect').setText(
+					mini.get("processName").getValue());
+
+			var name = mini.get('#linkurl').getValue();
+			mini.get("#linkurl").setText(name);
+		}
+
+		function selMainProcess(e) {
+			var obj = e.sender
+			mini.get('processSelect').setText(obj.text);
+			mini.get('processSelect').setValue(obj.value);
+			mini.get('processName').setValue(mini.get('processSelect').getText());
+		}
+		
+
+		function selectTypeChange(data) {
+			if (data == 'Add' || data == 'Custom') {
+				document.getElementById("linkArea").style.display = "block";
+				document.getElementById("processArea").style.display = "none";
+				document.getElementById("openTypeArea").style.display = "block";
+				if (mini.get("openType").getValue() == ""
+						|| mini.get("openType").getValue() == null) {
+					mini.get('openType').setValue("1");
+				}
+				document.getElementById("dialogTitleArea").style.display = "block";
+				if (mini.get('dialogTitle').getValue == ""
+						|| mini.get('dialogTitle').getValue == null) {
+					mini.get('dialogTitle').setValue(
+							mini.get('columnText').getValue());
+				}
+
+				document.getElementById("dialogTypeArea").style.display = "block";
+				document.getElementById("deletePromptArea").style.display = "none";
+				mini.get('deletePrompt').setValue("");
+			} else if (data == 'Process') {
+				document.getElementById("linkArea").style.display = "none";
+				document.getElementById("processArea").style.display = "block";
+				document.getElementById("openTypeArea").style.display = "none";
+				mini.get('openType').setValue("");
+				document.getElementById("dialogTitleArea").style.display = "none";
+				mini.get('dialogTitle').setValue("");
+				document.getElementById("deletePromptArea").style.display = "none";
+				mini.get('deletePrompt').setValue("");
+				document.getElementById("dialogTypeArea").style.display = "none";
+				document.getElementById("dialogConfig").style.display = "none";
+			} else if (data == "Del") {
+				document.getElementById("linkArea").style.display = "none";
+				document.getElementById("processArea").style.display = "none";
+				document.getElementById("openTypeArea").style.display = "none";
+				mini.get('openType').setValue("");
+				document.getElementById("dialogTitleArea").style.display = "none";
+				mini.get('dialogTitle').setValue("");
+				document.getElementById("deletePromptArea").style.display = "block";
+				mini.get('deletePrompt').setValue("确认删除已选中的记录？");
+				document.getElementById("dialogTypeArea").style.display = "none";
+				document.getElementById("dialogConfig").style.display = "none";
+			} else {
+				document.getElementById("linkArea").style.display = "none";
+				document.getElementById("processArea").style.display = "none";
+				document.getElementById("openTypeArea").style.display = "none";
+				mini.get('openType').setValue("");
+				document.getElementById("dialogTitleArea").style.display = "none";
+				mini.get('dialogTitle').setValue("");
+				document.getElementById("deletePromptArea").style.display = "none";
+				mini.get('deletePrompt').setValue("");
+				document.getElementById("dialogTypeArea").style.display = "none";
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		//打开方式变更
+		function openTypeChange(openType) {
+			if (openType == "1") {
+				document.getElementById("dialogTypeArea").style.display = "block";
+			} else {
+				document.getElementById("dialogTypeArea").style.display = "none";
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		//窗口尺寸变更
+		function dialogTypeChange(openType) {
+			if (openType == "3") {
+				document.getElementById("dialogConfig").style.display = "block";
+			} else {
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.success) {
+				if (data.msg) {
+				    epoint.closeDialog(data.msg);
+				}
+			} else {
+				if (data.msg) {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		function selectSform() {
+			epoint.openDialog("选择链接", 'frame/pages/sformdesigner/linkselect',
+					function(e) {
+						if (e != 'close') {
+							/* if (e.indexOf('?') > 0)
+								e = e.substr(0, e.indexOf('?')); */
+							mini.get('linkurl').setText(e);
+							mini.get('linkurl').setValue(e);
+							mini.get('linkurl').validate(e);
+						}
+					}, {
+						'width' : 300,
+						'height' : 550
+					});
+		}
+		
+		
+		function beforenodeselect(e){
+			if(!e.isLeaf || e.record.path == "parent"){
+				e.cancel = true;
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

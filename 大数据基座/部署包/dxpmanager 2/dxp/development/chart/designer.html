@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务调度平台设计器</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output(['./css/designer.css']);
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="top" id="top clearfix">
+            <div class="l"><span></span><span></span></div>
+            <div class="r top-right">
+                <div class="l toolbar-wrap clearfix">
+                    <span class="toolbar-item l active" data-type="pointer" title="选择"></span>
+                    <span class="toolbar-item l " data-type="link" title="路径"></span>
+                    <span class="toolbar-item l disabled" disabled data-type="trash" title="删除"></span>
+                    <!-- <span class="toolbar-item l " data-type="download" title="下载"></span> -->
+                    <span class="toolbar-item l " id="layout" data-type="layout" title="自动排列"></span>
+                    <span class="toolbar-item l " data-type="fullscreen" title="全屏"></span>
+                </div>
+                <span class="design-btn save-btn " id="diagram-add" style="margin-right:5px">添加任务</span>
+                <span class="design-btn save-btn r" id="diagram-save">保存</span>
+            </div>
+        </div>
+      <!--   <div class="left" id="left">
+            <span class="left-title">工具栏</span>
+            <ul class="node-list">
+            	<li class="node-item" data-name="java" data-type="java" draggable="true"><i class="node-item-icon"></i><span class="node-item-name">java</span></li>
+                <li class="node-item" data-name="python脚本" data-type="python" draggable="true"><i class="node-item-icon"></i><span class="node-item-name">python脚本</span></li>
+                <li class="node-item" data-name="groovy脚本" data-type="groovy" draggable="true"><i class="node-item-icon"></i><span class="node-item-name">groovy脚本</span></li>
+                <li class="node-item" data-name="shell脚本" data-type="shell" draggable="true"><i class="node-item-icon"></i><span class="node-item-name">shell脚本</span></li>
+            </ul>
+        </div> -->
+        <div class="main-wrap">
+            <div class="diagram" id="task-designer-diagram"></div>
+
+            <!-- <div class="diagram-tooltip show" id="diagram-tooltip"></div> -->
+            <ul id="node-context-menu" class="diagram-context-menu">
+                <li class="context-menu-item" data-action="run">运行</li>
+               <!--  <li class="context-menu-item" data-action="edit">编辑</li> -->
+               <!--  <li class="context-menu-item" data-action="copy">复制</li> -->
+                <li class="context-menu-item" data-action="showLog">日志</li>
+                <li class="context-menu-item" data-action="remove">删除</li>
+            </ul>
+            <ul id="link-context-menu" class="diagram-context-menu">
+                <!-- <li class="context-menu-item" data-action="edit">编辑</li> -->
+                <li class="context-menu-item" data-action="remove">删除</li>
+            </ul>
+        </div>
+    </div>
+    <div class="right-panel" id="right-panel">
+        <div class="panel-header">当前节点配置</div>
+        <div class="panel-body">
+            <iframe class="panel-ifr" id="config-iframe" src="" height="100%" width="100%" frameborder="0" scrolling="no"></iframe>
+        </div>
+        <div class="panel-footer">
+            <span class="design-btn cancel-btn">取消</span>
+            <span id="node-config-save" class="design-btn save-btn ">确认添加</span>
+        </div>
+    </div>
+    <!-- 配置时应只能操作配置页面 将其他区域遮起来 -->
+    <div class="config-cover"></div>
+
+    <!-- 提示信息模板 -->
+    <template class="hidden" id="tooltip-tpl">
+        <ul class="tip-list">
+            <li class="tip-item"><span class="label">名称</span><span class="content">{{taskName}}</span></li>
+            <li class="tip-item"><span class="label">状态</span><span class="content">{{status}}</span></li>
+            <li class="tip-item"><span class="label">类型</span><span class="content">{{type}}</span></li>
+            <li class="tip-item"><span class="label">host</span><span class="content">{{host}}</span></li>
+            <li class="tip-item"><span class="label">重试次数</span><span class="content">{{executorFailRetryCount}}</span></li>
+            <li class="tip-item"><span class="label">提交时间</span><span class="content">{{commitTime}}</span></li>
+            <li class="tip-item"><span class="label">开始时间</span><span class="content">{{startTime}}</span></li>
+            <li class="tip-item"><span class="label">结束时间</span><span class="content">{{endTime}}</span></li>
+        </ul>
+    </template>
+
+    <script src="../../../rest/resource/jsboot"></script>
+    <script>
+        // 配置信息
+        var addPageUrl = './taskEdit.html';
+        // 配置页面地址
+        var editPageUrl = './taskEdit.html';
+        // 路径编辑地址
+        var linkEditUrl = './linkEdit.html';
+
+        // 配置按钮点击
+        $('#node-config-save').on('click', function () {
+            // 子页面必须提供 configSave 方法
+            $('#config-iframe')[0].contentWindow.configSave();
+        });
+
+        var designerConfig = {
+            // 初始化加载 还原历史数据
+            init: function (data) {
+            	epoint.execute('epointjobdagdesigneraction.init', '', function(data){
+					if (data.status) {//成功
+						designerUtil.setData(JSON.parse(data.initJson));
+					}else{//失败
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+            },
+            // 节点配置点击取消
+            onConfigCancel: function () {
+                // 如果有特殊逻辑可以写在这里
+            },
+            // 节点配置点击确定按钮 供新增或编辑的子页面调用
+            // 参数为完整的节点新数据
+            onConfigConfirm: function (newNodeData) {
+                // 配置页面中提交保存信息后触发
+                // 根据条件判断是新增或者修改节点
+                designerUtil.createOrModifyNode(newNodeData);
+            },
+            // 顶部的保存
+            onSave: function (data) {
+                epoint.showLoading();
+                // 发请求保存数据
+                epoint.execute('epointjobdagdesigneraction.save', null, [data], function(data){
+					if (data.status) {//成功
+						// 保存成功时移除 遮罩
+	                    epoint.hideLoading();
+	                    epoint.showTips('保存成功', { state: 'success' }); 
+					}else{//失败
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+            },
+        	// 创建路径链接 已经做了相邻节点不重复 不双向的验证
+            onLinkAdd: function (data, done) {
+                // 发请求存数据 
+                // data.from 起点taskGuid data.to 终点taskGuid
+                // 回调中调用done方法 参数为生成的linkGuid 不传linkGuid 则取消连线
+                // 确认新增 则参数必须 且为服务端生成 linkGuid
+                epoint.execute('epointjobdagdesigneraction.addEdge', null, [data.from, data.to], function(data){
+					if (data.status) {//成功
+						 done(data.edgeGuid); 
+					}else{//失败
+						done();
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+                // 假设服务端不允许连接 则可以 done() 来取消当前的路径连接
+                // done();
+            },
+            /**
+             * 路径右键菜单 删除
+             * @param {string} linkGuid 路径id
+             * @param {string} from 起始节点id
+             * @param {string} to 终点节点id
+             */
+            onLinkRemove: function (linkGuid, form, to) {
+                epoint.confirm('确定删除此路径？', '系统提醒', function () {
+                    //发请求删除 成功回调中调用  designerUtil.removeLink(linkGuid) 即可
+                    epoint.execute('epointjobdagdesigneraction.deleteEdge', null, [linkGuid], function(data){
+						if (data.status) {//成功
+	                    	designerUtil.removeLink(linkGuid);
+						}else{//失败
+							epoint.alert(data.msg, '', null, 'info');
+						}
+					});
+                });
+            },
+
+            /**
+             * 路径配置确认执行方法 供路径编辑页面调用
+             * 由于不设计更改起点终点，则无需在设计器中反应，保存成功直接关闭dialog即可
+             */
+            onLinkEditConfirm: function () {
+               // designerUtil.hideConfigPanel();
+            },
+
+            /**
+             * 节点右键菜单 运行
+             * @param {string} nodeGuid 节点id
+             * @param {string} nodeType 节点类型
+             */
+            onNodeRun: function (nodeGuid, nodeType) {
+            	// TODO 流程外触发
+            	epoint.openDialog('流程外运行一次任务节点',
+						'frame/pages/epointjob/epointjobtrigger?guid='
+								+ nodeGuid + "&type=2", function(param) {
+							if (param != 'close') {
+								epoint.alert(param, null, null, 'info');
+							}
+						}, {
+							'width' : 400,
+							'height' : 200
+						});
+            },
+
+            /**
+             * 节点右键菜单 拷贝
+             * @param {string} nodeGuid 节点id
+             * @param {string} nodeType 节点类型
+             * @param {object} nodeData 节点完整的数据
+             */
+            onNodeCopy: function (nodeGuid, nodeType, nodeData) {
+            	debugger
+                console.log('节点拷贝:' + nodeGuid + ' ' + nodeType);
+
+                // TODO 提交数据复制 得到新id
+                epoint.execute('epointjobdagdesigneraction.copyTask', null, [nodeGuid], function(data){
+					if (data.status) {//成功
+						// 完成后执行如下代码
+		                var newNodeData = $.extend(true, nodeData, {
+		                    // 复制得到的 节点的id 
+		                    taskGuid: data.newDagTaskGuid,
+		                    taskName: data.newDagTaskName,
+		                    // 坐标 简单前端处理下 避免重叠 以当前节点向下向右偏移
+		                    loc: designerUtil.getCopyNodeLoc(nodeData.loc)
+		                });
+		                designerUtil.addNode(newNodeData);
+					}else{//失败
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+            },
+            /**
+             * 节点右键菜单 查看日志
+             * @param {string} nodeGuid 节点id
+             * @param {string} nodeType 节点类型
+             */
+             onNodeShowLog: function (nodeGuid, nodeType){
+            	// 查看当前任务节点日志
+     			//var url = 'frame/pages/epointjob/epointjobdagtaskloglist?dagTaskGuid=' + nodeGuid;
+     			var url = 'dxp/flowinfo/dxpschedulerloglist?guid=' + nodeGuid;
+    			epoint.openDialog("查看任务节点日志", url, "", {
+    				'width' : 1400,
+    				'height' : 1000
+    			});
+             },
+            /**
+             * 节点右键菜单 删除
+             * @param {string} nodeGuid 节点id
+             * @param {string} nodeType 节点类型
+             * @param {Array<linkData>} links 与此节点相关的路径的数组
+             */
+            onNodeRemove: function (nodeGuid, nodeType, links) {
+            	var rowguid=Util.getUrlParams('dagGuid');
+            	var $trash = $('.toolbar-item[data-type="trash"]');
+                epoint.confirm('确定删除此任务节点，此节点以及与此节点连相关的路径均被删除？', '系统提醒', function () {
+                    // 发请求删除 成功回调中调用  designerUtil.removeNode(nodeGuid) 即可
+					epoint.execute('dxpdagdeveloplistaction.deleteTask', null, [rowguid,nodeGuid], function(data){
+						if (data.status) {//成功
+	                   	  designerUtil.removeNode(nodeGuid);
+	                   	  $trash.attr('disabled', true).addClass('disabled');
+	                      selectionCache.type = '';
+	                      selectionCache.data = null;
+						}else{//失败
+							epoint.alert(data.msg, '', null, 'info');
+						}
+					});
+                });
+            },
+             
+             onAddNode: function(data){
+            	 var rowguid=Util.getUrlParams('dagGuid');
+            	 epoint.openDialog('添加任务节点',
+            			 'dxp/flowinfo/selectflowinfolist?flowtype=02&rowguid='+rowguid, function(param) {
+ 							location.reload();
+ 						});
+             }
+             
+             
+             
+        };
+
+    </script>
+    <script>
+        SrcBoot.output([
+            './js/go.js',
+            './js/designer.js'
+        ]);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>New in event handling</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew"
+				iconCls="icon-save">sure add</a> <a class="mini-button"
+				onclick="epoint.closeDialog" iconCls="icon-removecircle">Cancel the add</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="The name of the event" starred="true">
+						<input id="eventname" class="mini-textbox"
+							bind="workflowEvent.eventname" required="true"
+							requiredErrorText="The name of the eventCan't be empty!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Event source">
+						<div name="roEventSource" bind="roEventSource"
+							action="getAourceGuidList" textField="text" valueField="id"
+							class="mini-combobox" enabled="false" ></div>
+					</div>
+				</div>
+				<div id="divOperate" role="row">
+					<div role="control" label="operation">
+						<div id="opeType" bind="opeType"
+							action="getComboOperationTypeList" textField="text"
+							valueField="id" allowInput="false" class="mini-combobox" ></div>
+
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The event type" starred="true">
+						<div id="evType" bind="evType" action="getComboEventTypeList"
+							allowInput="false" autoLoad="false" class="mini-combobox"
+							value="0" required="true" requiredErrorText="The event typeCan't be empty!" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The solution" starred="true">
+						<input id="meName" class="mini-buttonedit" emptyText=""
+							onbuttonclick="selEventMethod" selectOnFocus="true"
+							required="true" requiredErrorText="The solutionCan't be empty!" />
+						<!-- Hide area -->
+						<input class="mini-hidden" id="meGuid"
+							bind="workflowEvent.eventMethodGuid" />
+
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Call way">
+						<input name="syncType" bind="syncType"
+							data="[{text:'synchronous',id:'0'},
+							{text:'asynchronous',id:'1'}]"
+							textField="text" valueField="id" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input id="orderNumber" class="mini-textbox"
+							bind="workflowEvent.orderNumber" vtype="int" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="processVersionGuid"
+		bind="processVersionGuid" />
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitymanualeventaddaction', '', initCallBack);
+		function initCallBack(data) {
+			if (data.isShow=="false")
+				document.getElementById("divOperate").style.display = "none";
+		}
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('btnSaveClick', 'fui-form', closeCallback);
+			}
+		}
+
+		// Shut downoperationThe callback
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function selEventMethod(e) {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint
+					.openDialog(
+							'chooseThe solution',
+							"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+									+ processVersionGuid, selEventMethodOperJS,
+							{
+								'width' : 480,
+								'height' : 500
+							});
+		}
+
+		function selEventMethodOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var name = rtnValue.split(';')[0];
+				var guid = rtnValue.split(';')[1];
+				mini.get("meName").setText(name);
+				mini.get("meName").setValue(name);
+				mini.get("meGuid").setValue(guid == 'undefined' ? '' : guid);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

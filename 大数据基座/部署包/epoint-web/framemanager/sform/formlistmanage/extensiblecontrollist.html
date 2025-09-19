@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>可扩展控件管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();"
+			id="btnAddRecord"> 新增 </a> <a id="btnDel" class="mini-button"
+			state="danger" iconCls="icon-minuscircle"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="控件名称">
+						<input id="search_Controlname" class="mini-textbox"
+							bind="extensiblecontrollistaction.searchString" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="controlguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="controlname" width="100%">控件名称</div>
+				<div field="controlenglishname" width="300">控件英文名</div>
+				<div field="allowfieldtype" width="300">控件支持类型</div>
+				<div field="ordernum" width="300">排序号</div>
+				<div width="60" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('extensiblecontrollistaction');
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"framemanager/sform/formlistmanage/extensiblecontroladd",
+					function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 900,
+						'height' : 550
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"framemanager/sform/formlistmanage/extensiblecontroledit?guid="
+							+ id, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 900,
+						'height' : 550
+					});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

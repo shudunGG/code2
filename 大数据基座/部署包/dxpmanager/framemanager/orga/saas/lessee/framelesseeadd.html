@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<title>租户管理添加</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew"
+				iconCls="icon-save">保存并新建</a><a class="mini-button" id="addClose"
+				onclick="saveAndClose" iconCls="icon-save">保存并关闭</a><a
+				class="mini-button" onclick="epoint.closeDialog"
+				iconCls="icon-removecircle">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+		<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="租户名称" starred="true">
+						<input id="lesseename" class="mini-textbox"
+							bind="dataBean.lesseename" required="true"
+							requiredErrorText="租户名称不能为空!" maxLength="100" vtype="maxLength:100"/>
+					</div>
+					</div>
+				<div role="row">
+					<div role="control" label="租户标示名称" starred="true">
+						<input id="lesseesysname" class="mini-textbox"
+							bind="dataBean.lesseesysname" required="true"
+							requiredErrorText="租户标示名称不能为空!"
+							onvalidation="onEnglishValidation" maxLength="100" vtype="maxLength:100"/>
+					</div>
+				</div>
+				<div role="row" id="ou">
+					<div role="control" label="关联部门" starred="true">
+						<input id="relationouguid" class="mini-treeselect"
+							action="getOuGuidModel" bind="dataBean.ouGuid" required="true"
+							style="width: 100%; padding: 5px;" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" text="cc"
+							textField="text" idField="id" expandOnLoad="true" onbeforenodeselect="beforenodeselect"/>	
+						
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联数据源">
+						<input id="datasourceguid" class="mini-combobox"
+							action="getDataResource" required="false" showClose="true"
+							showNullItem="false" bind="dataBean.dataSourceGuid" property="editor"
+							oncloseclick="onCloseClick" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input id="ordernumber" class="mini-textbox" value="0"
+							bind="dataBean.ordernumber" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('framelesseeaddaction', '', initData);
+		
+		function initData(e){
+			if(e.flg){
+				$('#ou').hide();
+				$('#addNew').hide();
+			}
+		}
+		
+		var onCloseClick = function(e) {
+			mini.get('datasourceguid').setValue('');
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alert(data.msg, '', null, 'success');
+					// 清空表单
+					epoint.clear('fui-form');
+					epoint.refresh([ 'fui-form' ], '', true);
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		function onEnglishValidation(e) {
+			if (e.isValid) {
+				if (isEnglish(e.value) == false) {
+					e.errorText = "租户标示名称必须为英文";
+					e.isValid = false;
+				}
+			}
+		}
+
+		/* 是否英文 */
+		function isEnglish(v) {
+			var re = new RegExp("^[a-zA-Z]+$");
+			if (re.test(v))
+				return true;
+			return false;
+		}
+		
+		var beforenodeselect = function(e){
+			if(!e.node.ckr) {
+				e.cancel = true;
+			}
+		}
+	</script>
+</body>
+</html>

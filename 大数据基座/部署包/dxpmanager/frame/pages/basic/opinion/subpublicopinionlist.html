@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>公共意见</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<!-- 等待提示框 -->
+		<div class="page-loading"></div>
+
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+			<a class="mini-button" onclick="newOpinion" iconCls="icon-addcircle">新增意见</a>
+			<a class="mini-button" onclick="saveOpinion" iconCls="icon-save">保存意见</a>
+				
+				<a class="mini-button mini-btn-danger" onclick="deleteOpinion" iconCls="icon-minuscircle">删除意见</a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="意见名称">
+							<input bind="subpublicopinionlistaction.txtOpinionText" width="50%"
+								class="mini-textbox" vtype="maxLength:50" />
+						</div>
+						<!-- <div role="control" label="排序号">
+							<input bind="publicopinionlistaction.txtOrderNumber"
+								class="mini-textbox" vtype="int" selectOnFocus="true" />
+						</div> -->
+					</div>
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="opinionGuid" multiSelect="true" 
+			style="width: 100%; height: 100%;" allowResize="true" allowCellValid="true" allowCellEdit="true"
+			showPager="true" action="subpublicopinionlistaction.getDataGridData" 
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">
+						序
+					</div>
+					<div field="opinionText" headerAlign="center" vtype="required;maxLength:50"  width="100%">
+						意见名称
+						<input property="editor" class="mini-textbox" style="width:100%" maxLength="50" />
+					</div>
+					<div field="orderNumber" headerAlign="center" width="80" align="right" vtype="int;range:0,99999999" >
+						排序号
+						<input property="editor" class="mini-textbox" vtype="int;range:0,99999999" inputStyle="text-align:right" style="width:100%"  maxLength="8"/>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../../rest/resource/jsboot"></script>
+
+		<script>
+			//<![CDATA[
+			//初始化页面
+			epoint.initPage("subpublicopinionlistaction");
+			
+			
+			// 表格对象
+			var grid = mini.get("datagrid");
+			// 在表格数据加载完之后打开表格编辑状态
+			//grid.on("load", function(e) {
+			//	var rows = e.sender.findRows();
+			//	for (var i = 0; i < rows.length; i++) {
+			//		grid.beginEditRow(rows[i]);
+			//	}
+			//});
+	
+			//新增意见
+			function newOpinion() {
+				var newRow = {
+						//name : "newattachconfig"
+					};
+					grid.addRow(newRow, 0);
+
+					grid.beginEditRow(newRow);
+			}
+
+			//保存回调事件
+			function saveCallback(data) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+
+			// 表格的搜索
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}
+
+			//保存意见
+			function saveOpinion() {
+				grid.validate();
+	            if (grid.isValid() == false) {
+	                //alert("请校验输入单元格内容");
+	                var error = grid.getCellErrors()[0];
+	                grid.beginEditCell(error.record, error.column);
+	                return;
+	            }
+	            epoint.execute("save", "datagrid", saveCallback);
+			}
+
+			//删除意见
+			function deleteOpinion() {
+				var datagrid = mini.get('datagrid');
+				var ids = datagrid.getSelectedIds();
+				if (ids.length > 0) {
+					epoint.confirm("确定删除选中记录？", "", function(action) {
+						epoint.execute("delete", "", [ids.join(',')], function(data) {
+							if (data.msg) {
+								epoint.alert(data.msg, null, null, 'info');
+								epoint.refresh(["datagrid"],'',true);
+							}
+						});
+					});
+				} else {
+					epoint.alert("请选择要删除的记录!", null, null, 'warning');
+				}
+			}
+
+			//]]>
+		</script>
+
+	</body>
+</html>

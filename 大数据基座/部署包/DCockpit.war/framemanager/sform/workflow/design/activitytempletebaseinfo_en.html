@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="editBtn" onclick="saveActivity"
+				iconCls="icon-save">Confirm to save </a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="Enable this template">
+						<div bind="enable" class="mini-checkbox">Only after the commissioning of new human activities will use template Settings。</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The name of the event">
+						<input id="acName" bind="workflowActivity.activityName" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Branch way">
+						<div id="splitType" bind="workflowActivity.splitType" class="mini-radiobuttonlist"
+							action="getTypeList" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Many people are handled">
+						<div id="multiTransactorMode"
+							bind="workflowActivity.multiTransactorMode"
+							action="getHandleTypeList" class="mini-radiobuttonlist"
+							repeatItems="3" repeatLayout="table" repeatDirection="vertical"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Whether people handle lock">
+						<div id="isLockWhenMulti" bind="isLockWhenMulti"
+							action="getYesNoList" class="mini-radiobuttonlist"
+							textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="SMS notificationcontent">
+						<input id="generateId" bind="workflowActivity.smsContent"
+							class="mini-textarea" style="width: 90%" /> <a
+							class="action-icon icon-mail" onclick="setSMS();"
+							style="width: 10%"></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitytempletebaseinfoaction');
+
+		// The callback for the save operation
+		function saveActivity() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', '', callback);
+			}
+		}
+		
+		// The callback for the close operation
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (!data.edit) {
+					parent.updateTab();
+				}
+				var textValue = mini.get('activityName').getValue();
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : parent.Util.getUrlParams('MaxID'),
+					NodeType : 'Manual',
+					Text : textValue
+				};
+				parent.setDialogValue(param);
+				//epoint.refresh();
+			}
+		}
+		
+		//Set the message
+		function setSMS() {
+			var sms = "You received a headline“[#=A work item name#]”Todo list, please timely to deal with。";
+			mini.get('generateId').setValue(sms);
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

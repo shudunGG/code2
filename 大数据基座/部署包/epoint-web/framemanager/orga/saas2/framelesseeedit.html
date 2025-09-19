@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<title>租户管理修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify" state="primary">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="租户名称" starred="true">
+					<input id="lesseename" class="mini-textbox"
+						   bind="dataBean.lesseename" required="true"
+						   requiredErrorText="租户名称不能为空!" maxLength="100" vtype="maxLength:100" width="90%"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="租户登录名" starred="true">
+					<input id="username" class="mini-textbox"
+						   bind="dataBean.username" required="true"
+						   requiredErrorText="租户登录名不能为空!" maxLength="100" vtype="maxLength:100" width="90%"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="租户管理员手机号" starred="true">
+					<input id="mobile" class="mini-textbox"
+						   bind="dataBean.mobile" required="true"
+						   requiredErrorText="租户管理员手机号不能为空" onvalidation="isMobileOffice" vtype="mobile"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序值">
+					<input id="ordernumber" class="mini-textbox"
+						   bind="dataBean.ordernumber" vtype="int;range:0,99999999" width="90%"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="租户登录地址">
+					<input class="mini-outputtext" bind="loginurl" id="loginurl" width="90%"/>
+				</div>
+			</div>
+			<div class="mini-hidden" id="sysLoginUrl" bind="sysLoginUrl"></div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('framelesseeeditaction2');
+		
+		var onCloseClick = function(e) {
+
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.success) {
+				epoint.closeDialog(data.msg);
+			} else {
+				epoint.showTips(data.msg, {state : 'danger'});
+			}
+		}
+
+		/* 是否英文+数字 */
+		function isEnglish(v) {
+			var re = new RegExp("^[a-zA-Z]+$");
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		function onEnglishValidation(e) {
+			if (e.isValid) {
+				if (isEnglish(e.value) == false) {
+					e.errorText = "租户标示名称必须为英文";
+					e.isValid = false;
+				}
+			}
+		}
+
+		function onLesseesysnameChange(e) {
+			var curValue = e.source.value;
+			var sysLoginUrl = mini.get('sysLoginUrl').getValue();
+			var loginurl = '';
+			if (sysLoginUrl.indexOf('?') > 0) {
+				loginurl = sysLoginUrl + "&tenantSysName=" + curValue;
+			} else {
+				loginurl = sysLoginUrl + "?tenantSysName=" + curValue;
+			}
+			mini.get('loginurl').setValue(loginurl);
+		}
+		//移动电话验证
+		function isMobileOffice(v) {
+			var re = new RegExp(/^1(3|4|5|6|7|8|9)\d{9}$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+	</script>
+</body>
+</html>

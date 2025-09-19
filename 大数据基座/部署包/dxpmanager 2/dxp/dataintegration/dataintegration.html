@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output(
+			[ '../css/common.css', './css/common.css',
+					'./css/dataintegration.css' ])
+</script>
+<title>新增库表集成</title>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- 头部 -->
+	<div class="top">
+		<a href="javascript:void(0);" onclick="back();" class="back l">返回</a>
+	</div>
+	<div id="main" class="main acc-box hide-scroll">
+		<div class="custom-accordions">
+			<div role="accordion">
+				<div role="head" title="基本信息">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">基本信息</li>
+					</ul>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="fui-form">
+							<div role="form">
+								<div role="row">
+									<div role="control" label="流程名称" starred="true"
+										style="margin-right: 250px">
+										<input id="flowname" class="mini-textbox main-input" vtype="maxLength:100"
+											required="true" bind="flowName" requiredErrorText="流程名称不能为空" />
+									</div>
+									<div role="control" label="节点域" starred="true">
+										<input id="nodeguid" class="mini-combobox main-input" allowInput="true"
+											action="getNodeList" showClose="true" bind="nodeGuid"
+											required="true" requiredErrorText="节点域不能为空" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="选择数据源">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">数据来源</li>
+						<li class="ct-item">数据去向</li>
+					</ul>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<!-- 选择数据源 -->
+						<div class="fui-form" id="selectDataSource">
+							<div role="form">
+								<div role="row"></div>
+								<div role="row">
+									<div role="control" label="数据源" starred="true"
+										style="margin-right: 250px;">
+										<input id="fromds" action="getFromDSList" required="true"
+											 bind="fromDs"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="数据源不能为空" />
+									</div>
+									<div role="control" label="数据源" starred="true">
+										<input id="targetds" action="getTargetDSList" bind="targetDs"
+											required="true" class="mini-combobox main-input"
+											 showClose="true"
+											requiredErrorText="数据源不能为空" />
+									</div>
+								</div>
+								<div role="row" id="table-row">
+									<div role="control" label="表" starred="true">
+										<input id="fromtable" action="getFromTableList"
+											 bind="fromTable" required="true"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="源表不能为空" />
+
+									</div>
+									<a id="viewData" class="mini-button" onclick="viewData()"
+										enabled="false"
+										style="width: 80px; margin-left: 10px; margin-right: 126px;">预览</a>
+									<div role="control" label="表" starred="true">
+										<input id="targetable" action="getTargetTableList"
+											 bind="targetTable" required="true"
+											class="mini-combobox main-input" showClose="true"
+											requiredErrorText="目标表不能为空" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="字段映射">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">源头表</li>
+						<li class="ct-item">目标表</li>
+					</ul>
+					<i>
+						<div class="tip-btn fui-toolbar-helper" style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden" >
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+								<em>同名映射：</em>自动匹配源和目标表字段名称相同的字段，自动拉线建立映射关系
+							</p>
+							<p>
+								<em>同行映射：</em>源和目标在同一行的字段自动拉线建立映射关系
+							</p>
+							<p>
+								<em>取消映射：</em>取消所有已经配置的映射关系
+							</p>
+							<p>
+								<em>自动排版：</em>将映射后的字段关系排版为同行映射
+							</p>
+							<p>
+								<em>新增字段：</em>可以添加一个源字段，该字段可以是UUID值或者时间戳（当前系统时间），该字段不在源表中正式存在
+							</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="mod-content">
+							<!-- 表格上方工具栏 -->
+							<div class="toolbar-box clearfix">
+								<div id="tool-btns" class="tool-btns l">
+									<span class="link-name tool-btn box-inline active">同名映射</span>
+									<span class="link-row tool-btn box-inline">同行映射</span> <span
+										class="link-cancel tool-btn box-inline">取消映射</span> <span
+										class="link-composing tool-btn box-inline">自动排版</span>
+								</div>
+								<div class="toolbar-r r" style="margin-right: 50px;">
+									<span>筛选</span> <input id="filter" class="mini-combobox"
+										style="width: 90px;" textField="text" valueField="id"
+										emptyText="请选择..." required="true" allowInput="true" />
+								</div>
+							</div>
+							<!-- 表格头部 -->
+							<div class="table-hd clearfix">
+								<!-- 左侧头部 -->
+								<div class="table-hd-l l clearfix">
+									<div class="table-item col-l-1 l">主键</div>
+									<div class="table-item col-l-2 l ver-inner-md relative">
+										<span class="ver-md">来源表字段</span> <span id="left-search"
+											class="search-icon ver-md"></span>
+										<div id="source-search" class="search hidden">
+											<input id="source-input" class="search-input" type="text">
+											<span class="action-icon icon-remove search-close"></span>
+										</div>
+									</div>
+									<div class="table-item col-l-3 l ver-inner-md relative">
+										<span class="ver-md">类型</span>
+										<!-- <span class="row-type row-type-l ver-md"></span> -->
+									</div>
+									<!-- <div class="table-item col-l-4 l"></div> -->
+								</div>
+								<!-- 右侧头部 -->
+								<div class="table-hd-r r clearfix" style="margin-right: 50px;">
+									<div class="table-item col-r-1 l ver-inner-md relative">
+										<span class="ver-md">目标表字段</span> <span id="right-search"
+											class="search-icon ver-md"></span>
+										<div id="target-search" class="search hidden">
+											<input id="target-input" class="search-input" type="text">
+											<span class="action-icon icon-remove search-close"></span>
+										</div>
+									</div>
+									<div class="table-item col-r-2 l ver-inner-md">
+										<span class="ver-md">类型</span>
+										<!-- <span class="row-type row-type-r ver-md"></span> -->
+									</div>
+									<!-- <div class="table-item col-r-3 l"></div> -->
+								</div>
+							</div>
+							<!-- 表格主体 -->
+							<div class="table-main relative" style="margin-right: 50px;">
+								<!-- 显示字段 -->
+								<div id="table-bd" class="table-bd">
+									<div class="table-bd-container relative clearfix">
+										<!-- 左侧字段列表 -->
+										<div id="table-bd-l" class="table-bd-l l hide-scroll">
+											<div class="source-add table-row clearfix hidden"
+												id="source-add">
+												<div class="table-item col-l-1 l"></div>
+												<div class="table-item col-l-2 l">
+													<input id="source-add-field" class="mini-textbox"
+														style="width: 100%;" />
+												</div>
+												<div class="table-item col-l-3 l">
+													<input id="source-add-dataType" class="mini-combobox"
+														style="width: 100%;vertical-align: middle;" textField="name" valueField="name"
+														allowInput="true" />
+												</div>
+												<div class="table-item col-l-4 l">
+													<a class="table-btn source-save-btn">保存</a> <a
+														class="table-btn source-cancel-btn">取消</a>
+												</div>
+											</div>
+										</div>
+										<!-- 右侧字段列表 -->
+										<div id="table-bd-r" class="table-bd-r r hide-scroll"></div>
+										<!-- 连线 -->
+										<div id="svg-content" class="svg-content">
+											<svg id="svg-box" class="svg-box"
+												xmlns="http://www.w3.org/2000/svg" version="1.1">
+                                            <line id="drag-line"
+													class="hidden" height="10" x1="400" y1="20" x2="400"
+													y2="20" stroke="#adadad" stroke-width="2"
+													marker-end="url(#arrowdark)">
+                                            </line>
+                                        </svg>
+										</div>
+										<span id="delete-btn" class="delete-btn hidden">删除</span>
+									</div>
+								</div>
+								<!-- 移除字段 -->
+								<div id="table-bd-bottom" class="table-bd-bottom clearfix">
+									<!-- 左侧移除字段 -->
+									<div id="table-bd-bottom-l" class="table-bd-bottom-l l">
+										<div class="table-addbtn text-center">+&nbsp;新增字段</div>
+										<div id="table-remove-hd-l"
+											class="table-remove-hd table-remove-hd-l text-center hidden">
+											<span class="ver-md"><span id="remove-l-num">0</span>个字段已移除</span>
+											<span class="ver-md row-remove"></span>
+										</div>
+										<div id="table-remove-bd-l"
+											class="table-remove-bd table-remove-bd-l hidden"></div>
+									</div>
+									<!-- 右侧移除字段 -->
+									<div id="table-bd-bottom-r" class="table-bd-bottom-r r">
+										<div id="table-remove-hd-r"
+											class="table-remove-hd table-remove-hd-r text-center hidden">
+											<span class="ver-md"><span id="remove-r-num">0</span>个字段已移除</span>
+											<span class="ver-md row-remove"></span>
+										</div>
+										<div id="table-remove-bd-r"
+											class="table-remove-bd table-remove-bd-r hidden"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="流程属性">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">流程属性</li>
+					</ul>
+					<i>
+						<div class="tip-btn fui-toolbar-helper" style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+								<em>交换策略：</em>一共支持全量、时间戳增量、触发器增量、CDC四种交换策略，选项会根据源库和目标库的数据库类型来决定！
+							</p>
+							<p>
+								<em>全量：</em>从源表全量导入目标表； 
+								若选择同步规则为[清空目标表]，则先清空后全量导入目标表；
+								若选择同步规则为[不清空目标表]，则不清空目标直接导入目标表，若主键冲突则丢弃；
+								若选择同步规则为[插入更新]，则不清空目标表直接导入目标表，若主键冲突则更新对应主键记录；
+							</p>
+							<p>
+								<em>时间戳增量：</em>需要指定时间戳字段，会根据指定的字段来判断记录是否为增量数据； 时间戳字段必须是时间类型的字段；
+								同步历史选择是的时候，则首次执行时会先全量导入历史数据，根据同步规则的不同控制导入历史数据时是否先清空目标表。
+							</p>
+							<p>
+								<em>触发器增量：</em>根据配置的触发模式在源库中创建对应触发器，同时会创建一个存放增量数据的快照表；同步历史选择是的时候，则首次执行时会先全量导入历史数据，根据同步规则的不同控制导入历史数据时是否先清空目标表。
+							</p>
+							<p>
+								<em>CDC:</em>非侵入式增量策略。通过数据库日志抽取数据，支持mysql、sqlserver、oracle三大数据源，只支持增量推送，历史数据需另外配置全量任务抽取。
+							</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="fui-form">
+							<div role="form">
+								<div role="row">
+									<div role="control" label="交换策略" starred="true"
+										style="margin-right: 250px">
+										<input id="template" bind="templatecode" action="getTemplates"
+											required="true" class="mini-combobox" textField="text"
+											valueField="value" showClose="true"
+											requiredErrorText="交换策略不能为空" />
+									</div>
+									<div role="control" label="触发模式" starred="true" id="model">
+										<input id="transModel" bind='transModels'
+											requiredErrorText="触发模式不能为空"
+											data="[{text:'插入',id:'I'},{text:'更新',id:'U'},{text:'删除',id:'D'}]"
+											required="true" class="mini-checkboxlist" repeatItems="3"
+											repeatLayout="table" textField="text" valueField="id" /> <input
+											id="timefield" required="true" bind="timefield"
+											requiredErrorText="时间戳字段不能为空" class="mini-combobox"
+											textField="text" valueField="value" action="getTimeFields"
+											showClose="true" /><input id="isTruncateFull"
+											bind='fullTransModels' requiredErrorText="同步规则不能为空"
+											data="[{text:'清空目标表',id:'full_truncate'},{text:'不清空目标表',id:'full_notruncate'},{text:'插入更新',id:'full_insert_update'}]"
+											required="true" class="mini-combobox" textField="text"
+											valueField="id" showClose="true" />
+											<input id="resetCdcSite" class="mini-checkbox"/>
+									</div>
+								</div>
+								<div role="row"  id="startTimes">
+									<div role="control" label="自定义起始时间戳" style="margin-right: 250px" >
+										<input id="startTimestamp" bind="startTimestamp"
+											class="mini-datepicker"  />
+									</div>
+									<div role="control"></div>
+								</div>
+								<div role="row" id="synHistory-row">
+									<div role="control" label="同步历史" starred="true"
+										style="margin-right: 250px">
+										<input id="synHistory" requiredErrorText="同步历史不能为空"
+											bind="synHistoryData"
+											data="[{text:'是',id:'Y'},{text:'否',id:'N'}]" required="true"
+											class="mini-radiobuttonlist" value="N" textField="text"
+											valueField="id" />
+									</div>
+									<div role="control" label="同步规则" starred="true" id="truncate">
+										<input id="isTruncate" requiredErrorText="同步规则不能为空"
+											data="[{text:'清空目标表',id:'Y'},{text:'不清空目标表',id:'N'}]"
+											required="true" class="mini-combobox" bind="isTruncate"
+											textField="text" valueField="id" showClose="true" />
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="调度方式">
+										<input id="scheduler"
+											data="[{text:'时间间隔',id:'1'},{text:'定时',id:'2'},{text:'自定义',id:'3'},{text:'无',id:'0'}]"
+											class="mini-radiobuttonlist" textField="text" valueField="id" value="0"/>
+										<input id="schedulerType" class="mini-hidden" value="0"
+											bind="dxpscheduler.schedulerType" />
+									</div>
+								</div>
+								<div role="row" id="row1">
+									<div role="control" starred="true" label="间隔单位"
+										style="margin-right: 250px">
+										<input id="schedulerunit" required="true"
+											data="[{text:'秒',id:'sec'},{text:'分',id:'min'}]"
+											class="mini-combobox" value="sec" textField="text"
+											valueField="id" />
+									</div>
+									<div role="control" starred="true" label="时间间隔" id="interval">
+										<input id="intervalSeconds" class="mini-textbox" vtype="int;range:1,86400"
+											required="true" bind="dxpscheduler.intervalSeconds"
+											style="width: 280px" vtype="int" requiredErrorText="时间间隔不能为空" /> <input vtype="int;range:1,1440"
+											id="intervalMinutes" class="mini-textbox" required="true"
+											bind="dxpscheduler.intervalMinutes" style="width: 280px"
+											vtype="int" requiredErrorText="时间间隔不能为空"/> <span id='unit'
+											style="width: 5px; padding-left: 5px">分</span>
+									</div>
+								</div>
+								<div role="row" id="row2">
+									<div role="control" starred="true" label="定时类型"
+										style="margin-right: 250px">
+										<input id="timingtype" required="true" requiredErrorText="定时类型不能为空"
+											data="[{text:'每天',id:'day'},{text:'每周',id:'week'},{text:'每月',id:'month'}]"
+											class="mini-combobox" textField="text" valueField="id" />
+									</div>
+									<div role="control" starred="true" label="时间" id="time">
+										<input id="weekDay" bind="dxpscheduler.weekDay" requiredErrorText="时间不能为空"
+											style="width: 90px;" class="mini-combobox" textField="text"
+											valueField="id" required="true" visible="false"
+											action="getWeekDayCombobox" minValue="0" /><span id="week"
+											style="width: 2px; margin: 5px"></span><input required="true"
+											id="dayOfMonth" visible="false"
+											bind="dxpscheduler.dayOfMonth" class="mini-spinner"
+											minValue="1" style="width: 80px;" maxValue="31" /><span
+											id="day" style="width: 20px; padding-left: 5px">日</span> <input
+											id="hour" bind="dxpscheduler.hour" style="width: 80px;"
+											class="mini-spinner" minValue="0" maxValue="23"
+											required="true" visible="false" /><span
+											style="width: 20px; padding-left: 5px">时</span><input
+											required="true" id="minutes" bind="dxpscheduler.minutes"
+											class="mini-spinner" style="width: 80px;" visible="false"
+											minValue="0" maxValue="59" /><span
+											style="width: 5px; padding-left: 5px">分</span>
+									</div>
+								</div>
+								<div role="row" id="row3">
+									<div role="control" starred="true" label="cron表达式">
+										<input id="cron" class="mini-textbox" bind="dxpscheduler.cron"
+											required="true" requiredErrorText="cron表达式不能为空" />
+									</div>
+									<div role="control"></div>
+								</div>
+								<div role="row">
+									<div role="control" label="高级配置">
+										<input id="advancedsetting" class="mini-checkbox" text="" width="13px"/>
+									</div>
+									<div role="control"></div>
+								</div>
+								<div role="row" id="advancedsetting-01">
+									<div role="control" label="结果集大小" style="margin-right: 250px">
+										<input id="rowset" class="mini-textbox"
+											requiredErrorText="结果集大小不能为空" bind="rowset" vtype="int;range:1,100000" />
+									</div>
+									<div role="control" label="运行内存大小(M)">
+										<input id="memory" class="mini-textbox" bind="memory"
+											vtype="int;range:1,2048" />
+									</div>
+								</div>
+								<div role="row" id="advancedsetting-02">
+									<div role="control" label="输出批量提交数" style="margin-right: 250px">
+										<input id="outputCommitSize" class="mini-textbox"
+											bind="outputCommitSize" vtype="int;range:1,100000" />
+									</div>
+									<div role="control" label="插入批量提交数">
+										<input id="insertCommitSize" class="mini-textbox" bind="insertCommitSize"
+											vtype="int;range:1,100000" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="save-btn" class="save-btn btn">保&nbsp;存</div>
+		</div>
+
+		<!-- 连线箭头 -->
+		<svg class="hide">
+        <defs>
+            <marker id="arrowdark" markerUnits="strokeWidth"
+				markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="9"
+				refY="6" orient="auto">
+                <path xmlns="http://www.w3.org/2000/svg"
+				d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #adadad;"
+				stroke-width="0"></path>
+            </marker>
+            <marker id="arrowlight" markerUnits="strokeWidth"
+				markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="9"
+				refY="6" orient="auto">
+                <path xmlns="http://www.w3.org/2000/svg"
+				d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #f1a325;"
+				stroke-width="0"></path>
+            </marker>
+        </defs>
+    </svg>
+
+		<script id="table-row-l-tpl" type="x-tmpl-mustache">
+        {{#list}}
+		<div class="table-row clearfix relative source-item" data-field="{{field}}">
+            <div class="table-item col-l-1 l ver-inner-md font-0"><div class="checkbox {{extendClass}}"></div></div>
+            <div class="table-item col-l-2 l">{{field}}</div>
+            <div class="table-item col-l-3 l">{{dataType}}</div>
+            <div class="table-item col-l-4 l">
+                {{^remove}}
+                <span class="eye-close"></span>
+                {{/remove}}
+                {{#remove}}
+                <span class="table-row-close"></span>
+                {{/remove}}
+                <span class="table-drag"></span>
+            </div>
+            <div class="table-left-circle"></div>
+        </div>
+        {{/list}}
+    </script>
+		<script id="table-row-r-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix relative target-item" data-field="{{field}}">
+            <div class="table-item col-r-1 l">{{field}}</div>
+            <div class="table-item col-r-2 l">{{dataType}}</div>
+            <div class="table-item col-r-3 l"><span class="eye-close"></span><span class="table-drag"></span></div>
+            <div class="table-right-circle"></div>
+        </div>
+        {{/list}}
+    </script>
+		<script id="table-row-l-remove-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix sourceremove-item" data-field="{{field}}">
+            <div class="table-item col-l-2 l">{{field}}</div>
+            <div class="table-item col-l-3 l">{{dataType}}</div>
+            <div class="table-item col-l-4 l"><span class="eye-open"></span><span class="table-drag"></span></div>
+        </div>
+        {{/list}}
+    </script>
+		<script id="table-row-r-remove-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix targetremove-item" data-field="{{field}}">
+            <div class="table-item col-r-1 l">{{field}}</div>
+            <div class="table-item col-r-2 l">{{dataType}}</div>
+            <div class="table-item col-r-3 l"><span class="eye-open"></span><span class="table-drag"></span></div>
+        </div>
+        {{/list}}
+    </script>
+		<script src="../../rest/resource/jsboot"></script>
+
+		<script>
+			epoint.initPage('dxpflowinfoaddaction', '', function() {
+				var templateValue = mini.get('template').getValue();
+				var synHistoryValue = mini.get('synHistory').getValue();
+				var schedulerValue = mini.get('scheduler').getValue();
+				$('#synHistory-row').show();
+				mini.get('synHistory').setVisible(true);
+				mini.get('isTruncate').setVisible(true);
+				mini.get('isTruncateFull').setVisible(false);
+				mini.get('resetCdcSite').setVisible(false);
+				$('#startTimes').hide();
+				if (templateValue == '003') {
+					//触发器
+					Util.form.showField('#model');
+					mini.get('timefield').setVisible(false);
+					mini.get('transModel').setVisible(true);
+					Util.form.setLabel('#model', '触发模式');
+				} else if (templateValue == '002') {
+					//时间戳
+					$('#startTimes').show();
+					Util.form.showField('#model');
+					mini.get('transModel').setVisible(false);
+					mini.get('timefield').setVisible(true);
+					Util.form.setLabel('#model', '时间戳字段');
+				} else if (templateValue == '001') {
+					//全量
+					$('#synHistory-row').hide();
+					mini.get('synHistory').setVisible(false);
+					mini.get('isTruncate').setVisible(false);
+					Util.form.showField('#model');
+					mini.get('transModel').setVisible(false);
+					mini.get('timefield').setVisible(false);
+					mini.get('isTruncateFull').setVisible(true);
+					Util.form.setLabel('#model', '同步规则');
+				} else if (templateValue == '007') {
+					//cdc
+					$('#synHistory-row').hide();
+					Util.form.hideField('#model');
+					mini.get('synHistory').setVisible(false);
+					mini.get('isTruncate').setVisible(false);
+					mini.get('transModel').setVisible(false);
+					mini.get('timefield').setVisible(false);
+					mini.get('isTruncateFull').setVisible(false);
+					Util.form.showField('#model');
+					Util.form.setLabel('#model', '重置位点');
+					mini.get('resetCdcSite').setVisible(true);
+				} else {
+					Util.form.hideField('#model');
+					mini.get('timefield').setVisible(false);
+					mini.get('transModel').setVisible(false);
+				}
+				if (synHistoryValue == 'Y') {
+					Util.form.showField('#truncate');
+				} else {
+					Util.form.hideField('#truncate');
+				}
+				if ("0" == schedulerValue) {
+					Util.form.hideField('#time');
+					$('#row1').hide();
+					$('#row2').hide();
+					$('#row3').hide();
+				}
+				
+				//高级配置不展开
+				$('#advancedsetting-01').hide();
+				$('#advancedsetting-02').hide();
+				//是否展示预览
+				var fromtable=mini.get('fromtable').getValue();
+				if(fromtable){
+					mini.get('viewData').setEnabled(true);
+				}else{
+					mini.get('viewData').setEnabled(false);
+				}
+				
+			});
+			
+			//数据预览
+			function viewData() {
+				var dsconfig = mini.get('fromds').getValue();
+				var tableName = mini.get('fromtable').getValue();
+				epoint.execute('isExitTable','fromds',tableName,function(data){
+					if(data){
+						epoint.openDialog('预览',
+								'dxp/dataintegration/prviewdata?dsconfig=' + dsconfig
+										+ "&tableName=" + tableName);
+					}else{
+						epoint.alert('表不存在');
+					}
+				});
+			}
+
+			function back() {
+				window.history.go(-1);
+			}
+			
+		</script>
+		<!-- 模拟数据 -->
+		<script src="./js/dataintegration.js"></script>
+</body>
+
+</html>

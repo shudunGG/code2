@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Configuration management</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-save"
+				onclick="addNew">save and new</a> <a class="mini-button" id="addClose"
+				iconCls="icon-save" onclick="add">save and close</a> <a class="mini-button"
+				id="save" iconCls="icon-save" onclick="saveModify">save changes</a> <a
+				class="mini-button" iconCls="icon-removecircle"
+				onclick="epoint.closeDialog">shut down</a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">directions for use</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			1.Each task execution conditions by atrigRecord control,multipletrigCan be implemented1A task according to the various cases is carried out。
+		</p>
+		<p>
+			2.eachtrigThe configuration of the main is controlled by execution strategy。
+		</p>
+		<p>
+			3.Round robin point in time:Is a time controls, can be accurate to seconds, cooperate with the round robin type used。For example, I want to configure the task in a day2Some run{First choose round robin type for the day,thenRound robin point in timeTo choose2points,The day is free to choose,Because the filter condition starts to calculate day。
+		</p>
+		<p>
+		    4.Trigger configuration name:trigThe name of the,Any logo can be。
+		</p>
+	</div>
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="configuration name" starred="true">
+						<input bind="dataBean.tasktrigname" required="true"
+							requiredErrorText="trigger configuration nameCan't be empty" class="mini-textbox"
+							style="width: 350px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="execution strategy">
+						<input bind="dataBean.operateusername" id="operateusername"
+							action="getExecutetypeModal" repeatItems="5" repeatLayout="table"
+							textField="text" valueField="id" class="mini-radiobuttonlist" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="round robin type" id="recuretype">
+						<input bind="dataBean.recuretype" id="recuretypecomp"
+							action="getRecuretypeModal" repeatItems="10" repeatLayout="table"
+							textField="text" valueField="id" class="mini-radiobuttonlist" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="round robin time" id="operatedate">
+						<input class="mini-datepicker" bind="dataBean.operatedate" id="operatedate" data-options="{'format':'yyyy-MM-dd H:mm:ss'}"
+							style="width: 250px" showTime="true"
+							showOkButton="true" showClearButton="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The start time" id="startexecutedate">
+						<input class="mini-datepicker" id="startexecutedate"
+							onValuechanged="validateDate(this)"
+							bind="dataBean.startexecutedate" data-options="{'format':'yyyy-MM-dd H:mm:ss'}"
+							style="width: 250px; float: left"
+							showTime="true" showOkButton="true" showClearButton="false" />
+						&#160;(Don't set to the current time)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The end of time" id="endexecutedate">
+						<input class="mini-datepicker" id="endexecutedate"
+							onValuechanged="validateDate(this)"
+							bind="dataBean.endexecutedate" style="width: 250px" data-options="{'format':'yyyy-MM-dd H:mm:ss'}" showTime="true" showOkButton="true"
+							showClearButton="false" /> &#160;(Don't set would have been implemented)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="interval" id="taskinterval">
+						<input bind="dataBean.taskinterval" vType="int"
+							style="width: 300px" class="mini-textbox" /> &#160;(Units are seconds)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Repeat the number" id="tasktimes">
+						<input bind="dataBean.tasktimes" vType="int" style="width: 300px"
+							class="mini-textbox" /> &#160;(Don't set would have been implemented,perform1Time is set to0)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The customExecution strategyinterface" id="yearflag">
+						<input bind="dataBean.yearflag" class="mini-textbox"
+							style="width: 350px" /> <span><font color="red">
+								Write a class, there must be a name forgetTriggerthepublicMethod, the return value isTrigger(org.quartz.Trigger)That method is2A parameter(FrameTaskMsg,FrameTaskTrig),Built in the methodtriggerobjecttheTime,triggernamethroughFrameTaskTrig.getTasktrigname()To obtain,groupnamethroughFrameTaskMsg.getCategoryguid()To obtain,The final will be theThe customthetriggerreturns</font></span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Particular point in time" id="belongxiaqucode">
+						<input bind="dataBean.belongxiaqucode"
+							action="getOperatedateModal" emptyText="Please select a..."
+							showNullItem="true" nullItemText="Please select a..." class="mini-combobox"
+							style="width: 350px" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('frametasktrigaction', '', initCallBack);
+
+		// Execution strategyThe default value,Polling typeThe default value
+		var executeType, recureType;
+
+		// initializationthecallback
+		function initCallBack(data) {
+			if (data.edit) {
+				//Hide the new button
+				mini.get('addNew').setVisible(false);
+				mini.get('addClose').setVisible(false);
+			} else {
+				//Hide the modify button
+				mini.get('save').setVisible(false);
+			}
+
+			// The background value
+			executeType = mini.get("operateusername").getValue();
+			recureType = mini.get("recuretypecomp").getValue();
+			// According to the background valueInitialize the page
+			setVisibleOfComp(executeType);
+		}
+
+		//　Button group events
+		var rbl = mini.get("operateusername");
+		rbl.on("valuechanged", function(e) {
+			setVisibleOfComp(e.value);
+		});
+
+		// According to theExecution strategySet the control development
+		function setVisibleOfComp(val) {
+			initCompVisible();
+			if (val == '0') {
+				showRow("#recuretype");
+				showRow("#operatedate");
+			}
+			if (val == '1') {
+				showRow("#startexecutedate");
+				showRow("#endexecutedate");
+				showRow("#taskinterval");
+				showRow("#tasktimes");
+			}
+			if (val == '2') {
+				showRow("#yearflag");
+			}
+			if (val == '3') {
+				showRow("#belongxiaqucode");
+			}
+		}
+
+		function initCompVisible() {
+			hideRow("#recuretype");
+			hideRow("#operatedate");
+			hideRow("#startexecutedate");
+			hideRow("#endexecutedate");
+			hideRow("#taskinterval");
+			hideRow("#tasktimes");
+			hideRow("#yearflag");
+			hideRow("#belongxiaqucode");
+		}
+
+		function hideRow(id) {
+			$(id).parent().addClass('hidden');
+		}
+
+		function showRow(id) {
+			$(id).parent().removeClass('hidden');
+		}
+
+		//　Date controlsthevalidation
+		var start = mini.get("start");
+		var end = mini.get("end");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'start') {
+						epoint.alert("The start timeIs not greater thanThe end of time!", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("The end of timeNot less thanThe start time!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		// new
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		// new
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// edit
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// newoperationthecallback
+		function newCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// Empty form
+					epoint.clear('fui-form');
+
+					// restoreThe default value
+					mini.get("operateusername").setValue(executeType);
+					mini.get("recuretypecomp").setValue(recureType);
+				}
+			}
+		}
+
+		// Shut downoperationthecallback
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Code item management</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle"
+				onclick="addCodeItems()">new code</a> <a class="mini-button"
+				iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {epoint.confirm('Delete the main code item will sync delete child items,Sure you want to delete?','',deleteSelected);}">Delete item code</a>
+			<a class="mini-button" iconCls="icon-save" onclick="saveAll()">save the code</a>
+			<a class="mini-button" iconCls="icon-save"
+				onclick="openCodeItemLev()">classification definition</a>
+		</div>
+
+		<!--Help button -->
+		<a role="helper" class="mr10">In use process need to pay attention to information</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<font style="color: blue;">Note: for multilevel code, such as the administrative divisions,***Corresponding Numbers for320502, the code item value must be numeric320502And please note that the code length must comply with the codeClassification definitionspecification。</font>
+		</p>
+		<p>
+			<font style="color: blue;">The default code item level value and the code is the same, namely the organization hierarchy using the field。When you don't have an hierarchy concept, the value of this property can be set manually</font>
+		</p>
+	</div>
+	<div class="fui-condition">
+		<!-- The form layout -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="itemcode" starred="true">
+						<input bind="codeItems.itemText" class="mini-textbox"
+							required="true" requiredErrorText="The text item codeCan't be empty"
+							vtype="maxLength:50" />
+
+					</div>
+					<div role="control" label="codevalues" starred="true">
+						<input bind="codeItems.itemValue" required="true"
+							requiredErrorText="code item valuesCan't be empty" vtype="maxLength:50"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<!-- Add a hidden field to the tree and the linkage of the table -->
+				<input bind="categoryNum" id="categoryNum" class="mini-hidden" />
+			</div>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="itemid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			action="getAllDataGridData" showPager="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="60"></div>
+
+				<div type="indexcolumn" headerAlign="center" width="80">order</div>
+
+				<div field="itemText" headerAlign="center"  width="100%">
+					code name<input property="editor" class="mini-textbox" required="true"
+						requiredErrorText="The text item codeCan't be empty" style="width: 100%" />
+				</div>
+				<div field="itemLevCode" headerAlign="center"  width="250">
+					code item level values<input property="editor" class="mini-textbox"
+						style="width: 100%" />
+				</div>
+				<div field="itemValue" headerAlign="center" align="right"   width="180">
+					code value<input property="editor" class="mini-textbox" required="true"
+						requiredErrorText="Code item valuesCan't be empty" style="width: 100%" />
+				</div>
+				<div field="dmAbr2" headerAlign="center" align="right"  width="180">
+					pinyin referred to as" <input property="editor" class="mini-textbox" minWidth="200" />
+				</div>
+				<div field="orderNo" headerAlign="center" align="right"  width="150">
+					roworderNo. <input property="editor" class="mini-textbox" vtype="int"
+						style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage("processcategorysformlistaction", "", initCallback);
+
+		var codeID;
+
+		function initCallback(e) {
+			if (e.codeID) {
+				codeID = e.codeID;
+			}
+		}
+
+		function openCodeItemLev() {
+			epoint.openDialog('Code instructions',
+					"framemanager/metadata/code/codeitemlevlist?codeID="
+							+ codeID, searchData, {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		// Table object
+		var grid = mini.get("datagrid");
+
+		// Load data in the table after open the table editor
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		// The new codeitem
+		function addCodeItems() {
+			if (epoint.validate()) {
+				epoint.execute('addCodeItems', '', msgCallBack);
+			}
+		}
+
+		// save
+		function saveAll() {
+			var grid = mini.get("datagrid");
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', 'datagrid', msgCallBack);
+		}
+
+		// delete
+		function deleteSelected() {
+			epoint.execute('deleteAllSelected', 'datagrid', msgCallBack);
+		}
+
+		// Back off to remind
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(msg, '', searchData(), 'info');
+			}
+		}
+
+		// Forms, tree search
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form'],'',true);
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>
+
+

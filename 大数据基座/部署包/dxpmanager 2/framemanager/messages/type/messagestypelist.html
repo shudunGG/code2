@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息类型表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新增记录 </a> <a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('将同步删除消息类型下的消息发送规则，确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+		</div>
+
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="类型ID">
+						<input class="mini-combobox" bind="typeID" showNullItem="true" action="getTypeIdList" emptyText="请选择..." oncloseclick="onCloseClick"
+							nullItemText="请选择..." showClose="true" allowInput="true" textField="typeId" valueField="typeId" />
+					</div>
+					<div role="control" label="类型名称">
+						<input class="mini-textbox" bind="typeName" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="typeid" headerAlign="center" align="left" width="250">类型编号</div>
+				<div field="typeName" headerAlign="center" align="left" width="250">类型名称</div>
+				<div field="orderNumber" headerAlign="center" align="right"
+					width="60">排序值</div>
+				<div field="bigIcon" headerAlign="center" align="center"
+					width="100%">图标</div>
+				<div field="smallIcon" headerAlign="center" align="center"
+					width="200">小图标</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+				<div width="100" align="center" headerAlign="center"
+					renderer="onSendRenderer">模拟发送</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagestypelistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"framemanager/messages/type/messagestypeadd", searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"framemanager/messages/type/messagestypeedit?guid=" + id,
+					searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//绘制模拟发送按钮
+		var onSendRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon modicon-15", "sendMessage");
+		};
+
+		// 发送一条模拟消息
+		function sendMessage(id) {
+			epoint.execute("sendMessage", '', id, callback);
+		}
+		
+		// 类型Id下拉选关闭方法
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

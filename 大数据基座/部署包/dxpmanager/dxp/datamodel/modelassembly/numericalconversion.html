@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>数值转换</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" vtype="maxLength:20"
+							required="true" emptyText="请输入步骤名称"  requiredErrorText="步骤名称不能为空！"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="列选择" starred="true">
+						<input id="columnid" name="columnid" class="mini-combobox"
+							textField="text" valueField="id"
+							emptyText="请选择..." required="true" allowInput="false"
+							showNullItem="false" nullItemText="请选择..." requiredErrorText="列选择不能为空！"
+							onvaluechanged="onValueChangedColumn(e)" />
+					</div>
+
+					<div role="control" label="转换类型" starred="true">
+						<div id="converttype" name="converttype"
+							class="mini-combobox" textField="text" valueField="id" requiredErrorText="转换类型不能为空！"
+							onvaluechanged="onValueChangedtype(e)" required="true"></div>
+					</div>
+				</div>
+				<div role="row" style="display: none" id="showdateformat">
+					<div role="control" label="原日期格式" starred="true">
+						<input id="dateformat" name="dateformat" class="mini-combobox"
+							style="width: 250px;" textField="text" valueField="id"
+							emptyText="请选择..."  showNullItem="false"
+							nullItemText="请选择..." required="true" requiredErrorText="日期格式不能为空!"
+							data="[{'id':'yyyy-MM-dd HH:mm:ss','text':'yyyy-MM-dd HH:mm:ss'},{'id':'yyyy/MM/dd HH:mm:ss','text':'yyyy/MM/dd HH:mm:ss'},{'id':'yyyyMMdd HH:mm:ss','text':'yyyyMMdd HH:mm:ss'},{'id':'yyyyMMddHHmmss','text':'yyyyMMddHHmmss'},{'id':'yyyy-MM-dd','text':'yyyy-MM-dd'},{'id':'yyyy/MM/dd','text':'yyyy/MM/dd'},{'id':'yyyyMMdd','text':'yyyyMMdd'}]" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="是否新增列">
+						<div id="isreplacecolumn" name="isreplacecolumn"
+							class="mini-checkbox" checked="true" readOnly="false"
+							onvaluechanged="onValueChangedReplace(e)"></div>
+					</div>
+				</div>
+
+
+				<div role="row" style="display: none" id="shownewcolumn">
+					<div role="control" label="新字段名" starred="true">
+						<input id="newcolumnid" name="newcolumnid" class="mini-textbox"
+							required="true" onvalidation="englishjy"
+							requiredErrorText="新字段名不能为空!" />
+					</div>
+					<div role="control" label="中文注释" starred="true">
+						<input id="newcolumnname" name="newcolumnname" required="true"
+							class="mini-textbox" requiredErrorText="字段中文注释不能为空！" />
+					</div>
+				</div>
+
+				<div role="row" style="display: none" id="showtargettype">
+					<div role="control" label="目标类型" starred="true">
+						<input id="targettype" name="targettype" class="mini-combobox"
+							style="width: 150px;" textField="text" valueField="id" onvaluechanged="targetChanged"
+							emptyText="请选择..." allowInput="false" required="true"
+							showNullItem="false" nullItemText="请选择..." requiredErrorText="目标类型不能为空!"
+							data="[{'id':'0','text':'Double'},{'id':'1','text':'Int'},{'id':'2','text':'Long'}]" />
+					</div>
+					<div role="control" label="保留小数点位数" starred="true" id="decimal">
+						<input id="decimalstr" name="decimalstr" class="mini-textbox"  requiredErrorText="保留小数点位数不能为空!"
+							vtype="int;range:1,2147483647" inputStyle="text-align:left;" required="true" />
+					</div>
+				</div>
+
+				
+
+				<div role="row" style="display: none" id="showreplacestr">
+					<div role="control" label="需要替换的字符">
+						<input id="replacestrold" name="replacestrold"
+							class="mini-textbox"/>
+					</div>
+					<div role="control" label="替换字符">
+						<input id="replacestrnew" name="replacestrnew"
+							class="mini-textbox"/>
+					</div>
+				</div>
+
+				<div role="row" style="display: none" id="showdefaultModel">
+					<div role="control" label="离散值/区间设置">
+						<div id="defaultModel" class="mini-datagrid" idField="rowguid"
+							showPager="false" action="getDataGridData">
+							<div property="columns">
+								<div width="60" headerAlign="center" name="value" field="value"
+									align="center">
+									离散值 <input property="editor" class="mini-textbox"
+										style="width: 100px;" inputStyle="text-align:center"
+										required="true" requiredErrorText="离散值必填！" vtype="float"/>
+								</div>
+								<div width="100" headerAlign="center" name="leftfh"
+									field="leftfh" align="center">
+									左区间<input property="editor" class="mini-combobox"
+										data="[{'id':'0','text':'大于等于'},{'id':'1','text':'大于'}]"
+										style="width: 70%;" inputStyle="text-align:left"
+										showClose="true" required="true" oncloseclick="onCloseClick"
+										textField="text" valueField="id" requiredErrorText="左区间必填！"/>
+								</div>
+								<div width="60" headerAlign="center" name="leftvalue"
+									field="leftvalue" align="center">
+									左区间值 <input property="editor" class="mini-textbox"
+										style="width: 100px;" inputStyle="text-align:center"
+										required="true" requiredErrorText="左区间值必填！"/>
+								</div>
+								<div width="100" name="rightfh" field="rightfh"
+									headerAlign="center" align="center">
+									右区间<input property="editor" class="mini-combobox"
+										data="[{'id':'0','text':'小于等于'},{'id':'1','text':'小于'}]"
+										style="width: 70%;" inputStyle="text-align:left"
+										showClose="true" required="true" oncloseclick="onCloseClick"
+										textField="text" valueField="id" requiredErrorText="右区间必填！"/>
+								</div>
+								<div width="60" headerAlign="center" name="rightvalue"
+									field="rightvalue" align="center">
+									右区间值 <input property="editor" class="mini-textbox"
+										style="width: 100px;" inputStyle="text-align:center"
+										required="true" requiredErrorText="右区间值必填！"/>
+								</div>
+								<div name="add" width="20" headerAlign="center" align="center"
+									renderer="onaddRenderer">操作</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<input id="datadiscretization" name="datadiscretization"
+					class="mini-hidden">
+
+				<div role="row" style="display: none" id="showcodeitemname" >
+					<div role="control" label="关联代码项" style="width: 300px" starred="true">
+						<input id="codeitemname" name="codeitemname" class="mini-combobox"
+							action="getCodeitems" allowInput="true" required="true" requiredErrorText="关联代码项不能为空！" />
+					</div>
+				</div>
+				<div role="row" style="display: none" id="showsubstrindex"
+					starred="true">
+					<div role="control" label="截取起始位置">
+						<input id="startindex" name="startindex" class="mini-textbox"
+							vtype="int;range:1,2147483647" inputStyle="text-align:left;"
+							emptyText="注意:截取起始位置从1开始" />
+					</div>
+
+					<div role="control" label="截取字符长度">
+						<input id="endindex" name="endindex" class="mini-textbox"
+							vtype="int;range:1,2147483647" inputStyle="text-align:left;"
+							emptyText="注意:从起始位置起往后的截取长度" />
+					</div>
+				</div>
+
+
+				<div role="row" style="display: none" id="showfixadd">
+					<div role="control" label="固定值前缀">
+						<input id="prefix" name="prefix" class="mini-textbox"
+							inputStyle="text-align:left;" />
+					</div>
+
+					<div role="control" label="固定值后缀">
+						<input id="suffix" name="suffix" class="mini-textbox"
+							inputStyle="text-align:left;" />
+					</div>
+				</div>
+
+				<div role="row" style="display: none" id="showinterval">
+					<div role="control" label="区间起始值" starred="true">
+						<input id="startinterval" name="startinterval" vtype="int;range:1,2147483647"
+							class="mini-textbox" inputStyle="text-align:left;" required="true" requiredErrorText="区间起始值不能为空！"/>
+					</div>
+
+					<div role="control" label="区间结束值" starred="true">
+						<input id="endinterval" name="endinterval" class="mini-textbox" vtype="int;range:1,2147483647"
+							inputStyle="text-align:left;" required="true" requiredErrorText="区间结束值不能为空！"/>
+					</div>
+				</div>
+
+				<div role="row" style="display: none" id="showdivisor">
+					<div role="control" label="取模被除数" style="width: 300px"  starred="true">
+						<input id="divisor" name="divisor" class="mini-textbox"
+							inputStyle="text-align:left;" required="true" requiredErrorText="取模被除数不能为空！"
+							vType="float"/>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script src="./js/fieldcheck.js">
+		SrcBoot.output([
+	        'js/fieldcheck.js'
+	    ]);
+	</script>
+	
+	<script>
+		//获取表单数据
+		var selectcolumn = mini.get("columnid");
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var datagrid = mini.get("defaultModel");
+		var nodeData;
+		var nodeInfo;
+		var gridcount = 0;
+		datagrid.load();
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modelnumericalconversionaction?stepId='
+					+ nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			loadParam();
+			var type=mini.get('targettype').getValue();
+			if(type=='0'){
+				$('#decimal').show();
+				Util.form.showField("#decimal");
+
+			}else{
+				$('#decimal').hide();
+				Util.form.hideField("#decimal");
+			}
+		}
+
+		function loadParam() {
+			if (datagrid.data) {
+				for (var i = 0; i < datagrid.data.length; i++) {
+					datagrid.beginEditRow(datagrid.getRow(i));
+					gridcount++;
+				}
+			}
+			if (mini.get("isreplacecolumn").getValue() == 'true') {
+				$("#shownewcolumn").show();
+			} else {
+				$("#shownewcolumn").hide();
+			}
+
+			var stype;
+			var columnid = nodeData.columnid;
+			epoint.execute("getPreFields", null, null,
+					function(ret) {
+						var commboxObj = [];
+						for (var i = 0; i < ret.length; i++) {
+							var obj = {};
+							obj.text = ret[i].text + '(' + ret[i].type + ')';
+							obj.id = ret[i].id;
+							obj.type = ret[i].type;
+							if (columnid == ret[i].id) {
+								stype = ret[i].type;
+							}
+							commboxObj.push(obj);
+						}
+
+						selectcolumn.setData(commboxObj);
+						if (stype) {
+							stype = stype.toLowerCase();
+							if (stype == "string" || stype == "nvarchar2"
+									|| stype == "nvarchar"
+									|| stype == "varchar"
+									|| stype.indexOf("字符串") != -1) {
+								mini.get("converttype").setData([ {
+									text : '转换为标准字符串',
+									id : '0'
+								}, {
+									text : '字符串到数值',
+									id : '1'
+								}, {
+									text : '字符串到日期',
+									id : '2'
+								}, {
+									text : '字符串去空格',
+									id : '5'
+								}, {
+									text : '字符串替换',
+									id : '6'
+								}, {
+									text : '代码转换',
+									id : '8'
+								}, {
+									text : '字符串截取',
+									id : '9'
+								}, {
+									text : '固定值添加',
+									id : '10'
+								} ]);
+							} else if (stype == "date" || stype == "datetime"
+									|| stype == "timestamp"
+									|| stype.indexOf("日期型") != -1) {
+								mini.get("converttype").setData([ {
+									text : '转换为标准字符串',
+									id : '0'
+								}, {
+									text : '日期类型到字符串',
+									id : '4'
+								} ]);
+							} else if (stype == "numeric" || stype == "bigint"
+									|| stype == "decimal"
+									|| stype == "double" || stype == "float"
+									|| stype.indexOf("数值") != -1) {
+								mini.get("converttype").setData([ {
+									text : '转换为标准字符串',
+									id : '0'
+								}, {
+									text : '数值到字符串',
+									id : '3'
+								}, {
+									text : '数据离散',
+									id : '7'
+								}, {
+									text : '区间值匹配',
+									id : '11'
+								}, {
+									text : '取模',
+									id : '12'
+								} ]);
+							}else if (stype == "int" || stype == "integer") {
+								mini.get("converttype").setData([ {
+									text : '转换为标准字符串',
+									id : '0'
+								}, {
+									text : '数值到字符串',
+									id : '3'
+								}, {
+									text : '数据离散',
+									id : '7'
+								}, {
+									text : '区间值匹配',
+									id : '11'
+								}, {
+									text : '取模',
+									id : '12'
+								} ]);
+							} else {
+								setType();
+							}
+						} else {
+							setType();
+						}
+					});
+
+			var type = mini.get("converttype").getValue();
+			switch (type) {
+			case '0':
+				break;
+			case '1':
+				$("#showtargettype").show();
+				break;
+			case '2':
+				$("#showdateformat").show();
+				break;
+			case '3':
+				break;
+			case '4':
+				$("#showdateformat").show();
+				break;
+			case '5':
+				break;
+			case '6':
+				$("#showreplacestr").show();
+				break;
+			case '7':
+				$("#showdefaultModel").show();
+				break;
+			case '8':
+				$("#showcodeitemname").show();
+				break;
+			case '9':
+				$("#showsubstrindex").show();
+				break;
+			case '10':
+				$("#showfixadd").show();
+				break;
+			case '11':
+				$("#showinterval").show();
+				break;
+			case '12':
+				$("#showdivisor").show();
+				break;
+			}
+		}
+
+		function setGridData() {
+			var rows = datagrid.findRows();
+			$.each(rows, function(i, o) {
+				datagrid.commitEditRow(o);
+			});
+			var dataStr = JSON.stringify(datagrid.getData());
+			mini.get('datadiscretization').setValue(dataStr);
+		}
+
+		function beginEditGrid(){
+			if (datagrid.data) {
+				for (var i = 0; i < datagrid.data.length; i++) {
+						datagrid.beginEditRow(datagrid.getRow(i));
+				}
+			}
+		}
+
+
+		//保存修改
+		function saveModify() {
+		if (epoint.validate('@all', false)) {
+			//check 新增的字段名字不能和列选择存在的一样哦
+			if (mini.get("columnid").getValue().toLowerCase() == mini.get(
+					"newcolumnid").getValue()) {
+				epoint.alert("新增字段名不能和选择的字段名称一样!");
+				return;
+			}
+			//check开始位置 结束位置
+			if (mini.get("converttype").getValue() == '9') {
+				if (mini.get("startindex").getValue() == ""
+						&& mini.get("endindex").getValue() == "") {
+					epoint.alert("请填写开始位置或结束位置!");
+					return;
+				}
+				if (mini.get("startindex").getValue() != ""
+						&& mini.get("endindex").getValue() != "") {
+					
+				}
+			}
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+						beginEditGrid();
+					}
+				});
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		// 绘制新增的按钮
+		var onaddRenderer = function(e) {
+			var row = e.rowIndex;
+			var uid = e.record._uid;
+			//var totalCount = grid.totalCount;
+			if (row == 0) {
+				//epoint.alert(row);
+				return epoint
+						.renderCell(e, "action-icon icon-addcircle", "add");
+			} else {
+				var s = '<a href="javascript:deleteinfo(\'' + uid
+						+ '\')" class="action-icon icon-minuscircle"></a>';
+				return s;
+			}
+		};
+
+		// 新增一行调用的方法
+		function add() {
+			var newRow = {
+				name : "New Row"
+			};
+			datagrid.addRow(newRow, gridcount + 1);
+			datagrid.beginEditRow(newRow);
+			// 让新增栏在下方出现
+			gridcount++;
+		}
+
+		// 删除一行调用的方法
+		function deleteinfo(row_uid) {
+			gridcount--;
+			var row = datagrid.getRowByUID(row_uid);
+			datagrid.removeRow(row, true);
+		}
+
+		function onValueChangedReplace(e) {
+			var selectvalue = e.value;
+			if ('true' == selectvalue) {
+				$("#shownewcolumn").show();
+			} else {
+				$("#shownewcolumn").hide();
+			}
+		}
+
+		function hideallform() {
+			$("#showtargettype").hide();
+			$("#showdateformat").hide();
+			$("#showreplacestr").hide();
+			$("#showdefaultModel").hide();
+			$("#showcodeitemname").hide();
+			$("#showsubstrindex").hide();
+			$("#showfixadd").hide();
+			$("#showinterval").hide();
+			$("#showdivisor").hide();
+		}
+
+		function onValueChangedtype(e) {
+			var type = e.value + "";
+			hideallform();
+			switch (type) {
+			case '0':
+				break;
+			case '1':
+				$("#showtargettype").show();
+				break;
+			case '2':
+				$("#showdateformat").show();
+				break;
+			case '3':
+				break;
+			case '4':
+				$("#showdateformat").show();
+				break;
+			case '5':
+				break;
+			case '6':
+				$("#showreplacestr").show();
+				break;
+			case '7':
+				$("#showdefaultModel").show();
+				break;
+			case '8':
+				$("#showcodeitemname").show();
+				break;
+			case '9':
+				$("#showsubstrindex").show();
+				break;
+			case '10':
+				$("#showfixadd").show();
+				break;
+			case '11':
+				$("#showinterval").show();
+				break;
+			case '12':
+				$("#showdivisor").show();
+				break;
+			}
+		}
+
+		//根据列的类型选择参数
+		function onValueChangedColumn(e) {
+			hideallform();
+			var stype = e.selected.type
+			if (stype) {
+				stype = stype.toLowerCase();
+				if (stype == "string" || stype == "nvarchar2"
+						|| stype == "nvarchar" || stype == "varchar"
+						|| stype.indexOf("字符串") != -1) {
+					mini.get("converttype").setData([ {
+						text : '转换为标准字符串',
+						id : '0'
+					}, {
+						text : '字符串到数值',
+						id : '1'
+					}, {
+						text : '字符串到日期',
+						id : '2'
+					}, {
+						text : '字符串去空格',
+						id : '5'
+					}, {
+						text : '字符串替换',
+						id : '6'
+					}, {
+						text : '代码转换',
+						id : '8'
+					}, {
+						text : '字符串截取',
+						id : '9'
+					}, {
+						text : '固定值添加',
+						id : '10'
+					}]);
+				} else if (stype == "date" || stype == "datetime"
+						|| stype == "timestamp" || stype.indexOf("日期型") != -1) {
+					mini.get("converttype").setData([ {
+						text : '转换为标准字符串',
+						id : '0'
+					}, {
+						text : '日期类型到字符串',
+						id : '4'
+					}, ]);
+				} else if (stype == "numeric" || stype == "bigint"
+					|| stype == "decimal"
+						|| stype == "double" || stype == "float"
+						|| stype.indexOf("数值") != -1) {
+					mini.get("converttype").setData([ {
+						text : '转换为标准字符串',
+						id : '0'
+					}, {
+						text : '数值到字符串',
+						id : '3'
+					}, {
+						text : '数据离散',
+						id : '7'
+					}, {
+						text : '区间值匹配',
+						id : '11'
+					} , {
+						text : '取模',
+						id : '12'
+					} ]);
+				}else if (stype == "int" || stype == "integer") {
+					mini.get("converttype").setData([ {
+						text : '转换为标准字符串',
+						id : '0'
+					}, {
+						text : '数值到字符串',
+						id : '3'
+					}, {
+						text : '数据离散',
+						id : '7'
+					}, {
+						text : '区间值匹配',
+						id : '11'
+					}, {
+						text : '取模',
+						id : '12'
+					} ]);
+				}else {
+					setType();
+				}
+			} else {
+				setType();
+			}
+			mini.get("converttype").select(0);
+		}
+
+		function setType() {
+			mini.get("converttype").setData([ {
+				text : '转换为标准字符串',
+				id : '0'
+			} ]);
+		}
+
+		function targetChanged(e){
+			if(e.value=='0'){
+				$('#decimal').show();
+				Util.form.showField("#decimal");
+
+			}else{
+				$('#decimal').hide();
+				Util.form.hideField("#decimal");
+			}
+		}
+
+
+		function englishjy(e) {
+			var retainedFields = ['like','as'];
+			if(retainedFields.indexOf(e.value) != -1){
+				e.errorText = "字段名称不能为数据库保留字："+retainedFields;
+				e.isValid = false;
+				return;
+			}
+			var reg =  new RegExp("^[a-zA-Z][a-zA-Z0-9_]*$");
+			var v = reg.test(e.value);
+			if (!v) {
+				e.errorText = "必须以字母开头，英文、数字、下划线作为字段组合名称!";
+				e.isValid = false;
+			}
+	}
+		
+	</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where TABLE_SCHEMA=DATABASE() and TABLE_NAME='eia_module' and COLUMN_NAME='name' AND COLUMN_TYPE='varchar(150)'

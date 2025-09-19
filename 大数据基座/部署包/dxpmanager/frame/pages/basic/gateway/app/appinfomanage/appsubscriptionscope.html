@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>统一认证配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../fui/js/cssboot.js"></script>
+
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="save()"> 保存配置</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+
+		<div class="fui-block">
+			<div class="fui-block-hd">是否订阅</div>
+			<div class="fui-block-bd">
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div id="issyncrole" name="issyncrole" class="mini-checkbox" bind="dataBean.issyncrole"
+								style="margin: 10px" text="角色" readOnly="false"
+								onvaluechanged="onRoleValueChanged"></div>
+							<div id="issyncaddress" name="issyncaddress" text="群组"  bind="dataBean.issyncaddress"
+								style="margin: 10px" class="mini-checkbox" readOnly="false"
+								onvaluechanged="onAddressValueChanged"></div>
+							<div id="issyncwaithandle" name="issyncwaithandle" text="待办"  bind="dataBean.issyncwaithandle"
+								style="margin: 10px" class="mini-checkbox" readOnly="false"
+								onvaluechanged="onWaithandleValueChanged"></div>
+							<div id="issyncmessage" name="issyncmessage" text="消息"  bind="dataBean.issyncmessage"
+								style="margin: 10px" class="mini-checkbox" readOnly="false"
+								onvaluechanged="onMessageValueChanged"></div>
+							<div id="issyncuserconfig" name="issyncuserconfig" text="用户配置" bind="dataBean.issyncuserconfig"
+								style="margin: 10px" class="mini-checkbox" readOnly="false"
+								onvaluechanged="onUserConfigValueChanged"></div>
+							<div id="issyncworkflow" name="issyncworkflow" text="工作流"  bind="dataBean.issyncworkflow"
+								style="margin: 10px" class="mini-checkbox" readOnly="false" ></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">组织机构订阅</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<a class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin: 10px" onclick="onUserClick">用户</a> <a
+								class="mini-button" plain="true" style="margin: 10px"
+								iconCls="icon-addcircle" onclick="onRoleClick">角色</a> <a
+								class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin: 10px" onclick="onAddressClick">群组</a> <a
+								class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin: 10px" onclick="onApiClick">服务</a>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">消息订阅</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<a class="mini-button" plain="true" iconCls="icon-addcircle"
+								onclick="onMessageClick" style="margin: 10px">消息</a> <a
+								class="mini-button" plain="true" iconCls="icon-addcircle"
+								style="margin: 10px" onclick="onWaithandleClick">待办</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">参数订阅</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="control">
+							<a class="mini-button" plain="true" iconCls="icon-addcircle"
+								onclick="onUserConfigClick">用户配置</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appsubscriptionscopeaction');
+
+		var appguid = Util.getUrlParams('rowguid');
+
+		function save() {
+			epoint.execute('save', '', callback);
+		}
+		
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['fui-form' ]);
+		}
+		
+		function onUserClick(e) {
+			epoint.openDialog('设置用户范围',
+					"frame/pages/basic/gateway/app/appinfomanage/appuserscopesetting?guid="
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 750
+					});
+		}
+
+		function onRoleClick(e) {
+			epoint.openDialog('角色分发',
+					"frame/pages/basic/gateway/app/appinfomanage/approlesetting?guid="
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 750
+					});
+		}
+
+		function onAddressClick(e) {
+			epoint.openDialog('设置群组',
+					"frame/pages/basic/communication/groupmanagement/groupauthorizeduserlist?guid="
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onApiClick(e) {
+			epoint.openDialog('订阅服务',
+					"frame/pages/basic/gateway/app/appinfomanage/subscribeapi?appguid="
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onMessageClick(e) {
+			epoint.openDialog('消息订阅配置',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribemessage?appguid='
+							+ appguid+'&messagetype=message', '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onWaithandleClick(e) {
+			epoint.openDialog('待办订阅配置',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribemessage?appguid='
+							+ appguid+'&messagetype=waithandle', '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function onUserConfigClick(e) {
+			epoint.openDialog('用户配置订阅',
+					'frame/pages/basic/gateway/app/appinfomanage/subscribeuserconfig?appguid='
+							+ appguid, '', {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+</body>
+
+</html>

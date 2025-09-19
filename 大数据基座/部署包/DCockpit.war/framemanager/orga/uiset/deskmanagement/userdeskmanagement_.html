@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>桌面元件管理</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="./deskmanagement.min.css">
+
+</head>
+
+<body>
+    <!-- toolbar区域 -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="saveData">保存</a>
+            <a class="mini-button" onclick="addElemsFromDisabled" menu="#popupMenu">从禁用列表中添加</a>
+        </div>
+        <a role="helper" showtype="tooltip"></a>
+    </div>
+    <!-- 帮助信息区域 默认隐藏-->
+    <div class="fui-notice hidden">
+        <p><code>150 * 150</code>px为基准单位，间隔10px，横向扩展最大8倍，纵向最大2倍。</p>
+        <p>右下角拖拽可改变元件大小。</p>
+        <p>按住元件拖拽可移动位置。</p>
+        <p>实际显示行中不会有空位，是将元件大小按比例比例横向拉伸。</p>
+    </div>
+    <!-- 内容区域 -->
+    <div class="fui-content">
+        <div class="grid-container" id="grid-container">
+            <ul>
+
+            </ul>
+        </div>
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        SrcBoot.output([
+            'frame/fui/js/widgets/gridster/jquery.gridster.min.js',
+            './userdeskmanagement.js'
+        ]);
+    </script>
+
+    <!-- 配置变量 -->
+    <script>
+        // 点击从禁用元件的处理地址 参数 {id:'元件guid',query:'desabled-elem'}
+        var disabledUrl = "../../../../" + epoint.dealRestfulUrl("userdeskmanagementaction/forbidUserElement");
+    </script>
+
+    <script>
+  		//<![CDATA[  
+        // ElementManage: {
+        //     _gridster // 初始化后的gridster对象
+        //     init(data) // 页面首次加载从后端拿数据进行初始化，data为一个数组，格式参考./test/data.json
+        //     addElement(data) // 添加元件 参数为数组或对象，数组表示多个，对象表示一个  对象数据格式如下：
+        //     // * {
+        //     // *      code: '元件id',
+        //     // *      name: '元件名称',
+        //     // *      url: '元件内嵌iframe的url',
+        //     // * }
+        //     removeElement($el,cb) // 移除一个元件 $el:元件dom的jq对象 cb：移除后的回调函数
+        //     getData() // 获取所有元件的数据
+        // }
+    	epoint.initPage('userdeskmanagementaction');
+        // 模拟页面初始化
+        Util.ajax({
+        	url: "../../../../" + epoint.dealRestfulUrl("userdeskmanagementaction/initUserElement")
+        }).done(function (data) {
+            window.ElementManage.init(data);
+        });
+
+        // 从禁用列表中添加元件
+        function addElemsFromDisabled() {
+            epoint.openDialog('禁用元件列表', 'framemanager/orga/uiset/deskmanagement/userdeskprotalitemdisabledlist', function (data) {
+                // 在关闭回调中新增应用，关闭回调数据应为一个数组每个成员为一个元件的数据 {id:'元件id',name:'元件名称',url'元件url'}
+                // ElementManage.addElement 方法 参数为对象表示新增一个 参数为数组添加多个
+                if(data!='close'){
+                	ElementManage.addElement(data);
+                }
+            });
+        }
+        // 模拟保存
+        function saveData() {
+            // getDate 方法中已经实现了校验 
+            var data = window.ElementManage.getData();
+            if (!data) {
+                return;
+            }else{
+            	epoint.execute('userdeskmanagementaction.saveUserData', '',JSON.stringify({data:data}), msgCallBack);
+            }
+            // TODO
+            // console.log(JSON.stringify(data, 0, 4));
+
+            // 模拟测试
+            // var showPage = window.open('../desktop/desktop.html');
+
+            // setTimeout(function() {
+            //     showPage.postMessage(JSON.stringify(data),'*')
+            // }, 2000);
+        }
+        
+     	
+		function searchData() {
+			location.reload();
+		}
+        
+     	// 回diao提醒
+		function msgCallBack(data) {
+			var msg =data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+        // 页面直接编辑不会立即保存 离开时确认保存数据
+        // TODO
+        //window.onbeforeunload = function () {
+        //    return '';
+        //};
+        //]]>
+    </script>
+</body>
+
+</html>

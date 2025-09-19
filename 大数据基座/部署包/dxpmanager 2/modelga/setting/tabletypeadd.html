@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新增结构</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="add"
+				onclick="add">保存并关闭</a> <a class="mini-button" id="addAndSync"
+				iconCls="icon-addcircle" onclick="addAndNew">保存并新建</a> <a
+				class="mini-button" id="addCancel" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">取消添加</a> 
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="类别名称" starred="true">
+						<input class="mini-textbox"
+							bind="tableType.typeName"
+							required="true" requiredErrorText="类别名称不能为空" vtype="maxLength:50"
+							width="90%"> </input>
+					</div>
+					<div role="control" label="排序" >
+						<input class="mini-textbox"
+							bind="tableType.ordernum" value="0"
+
+							width="90%"> </input>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('dxpmodeltabletypeaddaction','',function(){
+			if(Util.getUrlParams('rowguid')){
+				mini.get('addAndSync').setVisible(false);
+			}
+		});
+
+
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute("add", '','', function(data){
+					if(data.msg.indexOf('成功')!=-1){
+						epoint.alertAndClose(data.msg,'','','','success');
+					}else{
+						epoint.alert(data.msg);
+					}
+				});
+			}
+		}
+
+		function addAndNew() {
+			if (epoint.validate()) {
+				epoint.execute("add", '', '', function(data){
+					if(data.msg.indexOf('成功')!=-1){
+						epoint.alert(data.msg,'',function(){
+							epoint.clear('fui-form');
+						},'success');
+					}else{
+						epoint.alert(data.msg);
+					}
+				});
+			}
+		}
+
+		function newCallback(data) {
+			var msg = data.strScript;
+			if (msg) {
+				if (msg.indexOf('alertAndClose') > 0) {
+					msg = msg.replace('alertAndClose', 'alert');
+					eval(msg);
+					// 清空表单
+					epoint.clear('fui-form');
+					epoint.initPage('eiatablestructaddaction', '', callback);
+					mini.get("controlwidth").setValue("1");
+					mini.get("fieldtype").setValue("nvarchar");
+					mini.get("defaultvalue").setValue("无");
+					mini.get("orderdirection").setValue("asc");
+				} else {
+					eval(msg);
+				}
+			}
+		}
+
+		function msgCallback(data) {
+			var msg = data.strScript;
+			if (msg) {
+				eval(msg);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

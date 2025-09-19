@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>指标分类详情页面</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10"
+			style="float: none; display: inline-block;">
+			<a class="mini-button mini-btn-primary" iconCls="icon-save"
+				id="addClose" onclick="saveAndClose">提交</a> <a class="mini-button"
+				id="save" onclick="save" style="display: none;">保存</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div role="accordion">
+			<div role="head" title="基础信息"></div>
+			<div role="body">
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row" id="setrow">
+							<div role="control" label="指标分类名称">
+								<div class="mini-outputtext" bind="dataBean.normsetname"></div>
+							</div>
+							<!-- 							<div role="control" label="ApiCode">
+								<div class="mini-outputtext" bind="dataBean.apicode"></div>
+							</div> -->
+						</div>
+						<div role="row" id="normrow">
+							<div role="control" label="指标名称">
+								<div class="mini-outputtext" bind="dataBean.normname"></div>
+							</div>
+							<div role="control" label="指标类型">
+								<div class="mini-outputtext" bind="dataBean.normtype"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="创建时间">
+								<input class="mini-outputtext" bind="dataBean.createtime" />
+							</div>
+							<div role="control" label="所属部门">
+								<div class="mini-outputtext" bind="dataBean.belongouname"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="联系人">
+								<div class="mini-outputtext" bind="dataBean.username"></div>
+							</div>
+							<div role="control" label="联系方式">
+								<div class="mini-outputtext" bind="dataBean.phone"></div>
+							</div>
+						</div>
+						<div role="row" id="yjyq">
+							<div role="control" label="预警要求">
+								<div class="mini-outputtext" bind="dataBean.yjyq"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="指标分类" starred="true">
+								<input id="normdomain" class="mini-treeselect"
+									action="getNormDomainTreeModel" bind="normNum"
+									showFolderCheckBox="true" showRadioButton="true"
+									showTreeIcon="true" textField="text" idField="id"
+									expandOnLoad="true" required="required" showFilter="true"
+									requiredErrorText="指标分类不能为空" />
+							</div>
+							<div role="control"></div>
+						</div>
+						<div role="row">
+							<div role="control" label="申请用途" starred="true">
+								<div class="mini-textarea" bind="reason" required="true"
+									requiredErrorText="申请用途不能为空!"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		var type = Util.getUrlParams('type');
+		var guid = Util.getUrlParams('guid');
+		var applyguid = Util.getUrlParams('applyguid');
+		// 初始化页面
+		epoint.initPage('cockpitnormlibraryapplyaction', null, function(data) {
+			if (type == '0') {
+				$('#normrow').css('display', 'none');
+				$('#yjyq').css('display', 'none');
+				$('#setrow').css('display', 'block');
+			}
+			if (type == '1') {
+				$('#normrow').css('display', 'block');
+				$('#yjyq').css('display', 'block');
+				$('#setrow').css('display', 'none');
+			}
+			if (applyguid) {
+				$('#save').css('display', 'block');
+			}
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('applySubmit', '', function(data) {
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				});
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', function(data) {
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				});
+			}
+		}
+	</script>
+</body>
+</html>

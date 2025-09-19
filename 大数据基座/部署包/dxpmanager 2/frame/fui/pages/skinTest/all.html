@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>F9 框架</title>
+        <script src="../../js/cssboot.js"></script>
+        <style>
+            .right-panel {
+                position: absolute;
+                top: 0;
+                left: 20%;
+                height: 100%;
+                width: 80%;
+                box-sizing: border-box;
+                padding-left: 18px;
+                /* margin-left: -14px; */
+                transform-origin: 0 50%;
+                transform: translate3d(100%, 0, 0) scale(0.8);
+                transition: all 0.2s ease-out;
+                /* background: #eee;
+            background: rgba(0, 0, 0, .3); */
+            }
+
+            .right-panel.show {
+                transform: translate3d(0, 0, 0) scale(1);
+                margin-left: 0px;
+                padding-left: 0;
+                border-left: 1px solid #ddd;
+                border-left: 0 rgba(0, 0, 0, 0.3);
+                box-shadow: -2px 0 6px rgba(0, 0, 0, 0.15);
+            }
+
+            .ie9 .right-panel {
+                transform: translateX(-100%);
+            }
+
+            .ie9 .right-panel.show {
+                transform: translateX(0);
+            }
+
+            .ie8 .right-panel {
+                left: auto;
+                right: -79%;
+            }
+
+            .ie8 .right-panel.show {
+                right: 0;
+            }
+
+            #right-toggle {
+                display: block;
+                position: absolute;
+                top: 40%;
+                left: 0;
+                width: 40px;
+                height: 160px;
+                /* font-size: 100px; */
+                overflow: hidden;
+                z-index: 1;
+            }
+
+            #right-toggle:before {
+                position: absolute;
+                display: block;
+                font-size: 100px;
+                line-height: 120px;
+                top: 1px;
+                left: -40px;
+            }
+
+            .icon-list li,
+            .mod-icon-list li {
+                float: left;
+                width: 150px;
+                width: 1.5rem;
+                height: 80px;
+                height: 0.8rem;
+                text-align: center;
+                margin-top: 10px;
+                line-height: 20px;
+                cursor: pointer;
+            }
+
+            .mod-icon-list li {
+                width: 100px;
+                width: 1rem;
+                margin-top: 20px;
+                height: auto;
+                line-height: 30px;
+                line-height: .3rem;
+            }
+
+            .mod-icon-list li:hover {
+                background: #ffffff;
+            }
+
+            .icon-list span {
+                font-size: 26px;
+                font-size: 0.26rem;
+                line-height: 30px;
+                line-height: .3rem;;
+            }
+
+            .mod-icon-list span {
+                font-size: 32px;
+                font-size: .32rem;
+                line-height: 40px;
+                line-height: 0.4rem;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="fui-left">
+            <div role="head" title="左侧标题"></div>
+            <div role="body">
+                <ul id="leftTree" class="mini-tree" url="https://fe.epoint.com.cn/miniui_dev/demo/data/tree.txt" style="width:100%;height:100%;" showTreeIcon="true" textField="text" idField="id" resultAsTree="true" autoLoad="false" showCheckbox="true"></ul>
+            </div>
+        </div>
+
+        <div class="fui-right">
+            <div class="fui-toolbar">
+                <div class="btn-group mr10">
+                    <a
+                        class="mini-button"
+                        onclick="epoint.openDialog('这是一个dialog', './contentPage.html', function() {}, { showModal: true, showMaxButton: true, showCloseButton: true, showRefreshButton: true, showMinButton: true, showCollapseButton: true });
+                    "
+                        >dialog</a
+                    >
+                    <a class="mini-button" onclick="toggleRightShow">抽屉式</a>
+                </div>
+
+                <div class="btn-group mr10">
+                    <span class="mini-dataexport" gridId="datagrid1" collapseText="导出" expandText="关闭">导出</span>
+                    <a class="mini-splitbutton" menu="#popupMenu2">操作</a>
+                    <a class="mini-menubutton " menu="#popupMenu">更多</a>
+
+                    <script>
+                        if ('-ms-scroll-limit' in document.documentElement.style) {
+                            document.write('<a class="mini-largefileuploader" >大上传</a>');
+                        }
+                    </script>
+                </div>
+
+                <div class="btn-group mr10">
+                    <a class="mini-button mini-btn-primary" enabled="false">禁用</a>
+                    <a class="mini-button mini-btn-primary">主要</a>
+
+                    <a class="mini-button mini-btn-info">信息</a>
+
+                    <a class="mini-button mini-btn-success">成功</a>
+
+                    <a class="mini-button mini-btn-warning">警告</a>
+
+                    <a class="mini-button mini-btn-danger">危险</a>
+                </div>
+
+                <ul id="popupMenu2" class="mini-menu" style="display:none;">
+                    <li>操作</li>
+                    <li class="separator"></li>
+                    <li iconCls="icon-open">打开</li>
+                    <li iconCls="icon-remove">关闭</li>
+                </ul>
+                <ul id="popupMenu" class="mini-menu" style="display:none;">
+                    <li>
+                        <span>操作</span>
+                        <ul>
+                            <li iconCls="icon-new" onclick="onItemClick">新建</li>
+                            <li class="separator"></li>
+                            <li iconCls="icon-add" onclick="onItemClick">增加</li>
+                            <li iconCls="icon-edit" onclick="onItemClick">修改</li>
+                            <li iconCls="icon-remove" onclick="onItemClick">删除</li>
+                        </ul>
+                    </li>
+                    <li class="separator"></li>
+                    <li iconCls="icon-open">打开</li>
+                    <li iconCls="icon-remove">关闭</li>
+                </ul>
+
+                <div class="btn-group mr5 r">
+                    <a class="mini-button" plain="true" iconCls="icon-addcircle">增加</a>
+                    <a class="mini-button" plain="true" iconCls="icon-edit">修改</a>
+                    <!-- <a class="mini-button" plain="true" enabled="false" iconCls="icon-minuscircle">删除</a> -->
+                </div>
+
+                <div class="btn-group mr5 r">
+                    <a class="mini-button" iconCls="icon-addcircle" tooltip="增加"></a>
+                    <a class="mini-button" iconCls="icon-edit" tooltip="编辑"></a>
+                    <a class="mini-button" iconCls="icon-minuscircle" tooltip="删除"></a>
+                </div>
+                <!--帮助按钮 -->
+                <a role="helper" showtype="tooltip">注意事项</a>
+            </div>
+            <!-- 帮助信息区域 默认隐藏-->
+            <div class="fui-notice hidden">
+                <p><em>注意点1：</em>我在这篇教程中介绍的BezierPlugin插件，可以使得几乎所有的属性沿着一条由一组点值定义的贝塞尔曲线路径运动。</p>
+                <p><em>注意点2：</em>我在这篇教程中介绍的BezierPlugin插件，可以使得几乎所有的属性沿着一条由一组点值定义的贝塞尔曲线路径运动。</p>
+                <p><em>注意点3：</em>我在这篇教程中介绍的BezierPlugin插件，可以使得几乎所有的属性沿着一条由一组点值定义的贝塞尔曲线路径运动。</p>
+            </div>
+            <div class="fui-search" primaryControl="pivotalKey" opened="false">
+                <!-- 
+                        primaryControl 值为一个下面搜索区域中的textbox的id。
+                        当指定了此属性，并且对应的控件类型为textbox 将会在工具栏高级搜索按钮旁边加上一个输入框，输入值自动关联设置给下面指定的控件，并绑定了回车触发搜索回调。
+                        仅当opened属性不为true时生效，且指定的控件类型必须为textbox
+                    -->
+                <!-- opened 是否默认展开 -->
+                <!-- 表单布局 -->
+                <div class="fui-form">
+                    <div role="form">
+                        <div role="row">
+                            <div role="control" label="搜索关键字段" starred="true">
+                                <input class="mini-textbox" id="pivotalKey" emptyText="请输入提示字符" style="width:100%;" />
+                            </div>
+                            <div role="control" label="表单字段11" starred="true">
+                                <input class="mini-textbox" id="country" emptyText="请输入提示字符" value="请在此输入要搜索的关键字" style="width:100%;" />
+                            </div>
+                            <div role="control" label="表单字段11" starred="true">
+                                <input class="mini-textbox" emptyText="请输入提示字符" value="请在此输入要搜索的关键字" style="width:100%;" />
+                            </div>
+                        </div>
+                        <div role="row">
+                            <div role="control" label="表单字段11" starred="true">
+                                <input class="mini-textbox" emptyText="请输入提示字符" value="请在此输入要搜索的关键字" style="width:100%;" />
+                            </div>
+                            <div role="control" label="表单字段11" starred="true">
+                                <input class="mini-textbox" emptyText="请输入提示字符" value="请在此输入要搜索的关键字" style="width:100%;" />
+                            </div>
+                            <div role="control" label="表单字段11" starred="true">
+                                <input class="mini-textbox" emptyText="请输入提示字符" value="请在此输入要搜索的关键字" style="width:100%;" />
+                            </div>
+                        </div>
+                        <!-- 2列 -->
+                        <div role="row">
+                            <div role="control" label="表单字段1" starred="true">
+                                <input class="mini-textbox" emptyText="请输入提示字符" style="width:100%;" />
+                            </div>
+                            <div role="control" label="国家" starred="true">
+                                <input name="country" class="mini-combobox" value="cn" data='[{"id":"usa","text":"美国"},{"id":"cn","text":"中国"},{"id":"jp","text":"日本"},{"id":"en","text":"英国"},{"id":"de","text":"德国"},{"id":"fr","text":"法国"},{"id":"ca","text":"加拿大"},{"id":"at","text":"奥地利"},{"id":"ch","text":"瑞士"}]' style="width:100%" />
+                            </div>
+                        </div>
+                        <!-- 4列 -->
+                        <div role="row">
+                            <div role="control" label="时间" starred="true">
+                                <input name="BirthDay" class="mini-datepicker" value="2010-10-12" style="width:100%" showTime="true"  />
+                            </div>
+                            <div role="control" label="年龄" starred="true">
+                                <input name="Age" class="mini-spinner" value="22" minValue="10" maxValue="50" style="width:100%" />
+                            </div>
+                        </div>
+                        <!-- 4列 -->
+                        <div role="row">
+                            <div role="control" label="表单字段5" starred="true">
+                                <input id="checkboxlist" name="country2" class="mini-checkboxlist" repeatItems="5" repeatLayout="table" textField="text" valueField="id" value="cn,usa" data='[{"id":"usa","text":"美国"},{"id":"cn","text":"中国"},{"id":"jp","text":"日本"},{"id":"en","text":"英国"},{"id":"de","text":"德国"},{"id":"fr","text":"法国"},{"id":"ca","text":"加拿大"},{"id":"at","text":"奥地利"},{"id":"ch","text":"瑞士"}]' style="width:100%" />
+                            </div>
+                            <div role="control" label="表单字段6" starred="true">
+                                <input id="checkbox1" class="mini-checkbox" text="我是CheckBook" checked="true" style="width:100%" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 搜索按钮 -->
+                <a role="searcher" callback="searchData"></a>
+                <a role="reset" callback="resetCallback"></a>
+                <a role="close" callback="closeCallback"></a>
+            </div>
+            <div class="fui-content">
+                <div class="fui-accordions" showNav="false">
+                    <div role="accordion">
+                        <div role="head" title="表格"></div>
+                        <div role="body">
+                            <div id="datagrid1" class="mini-datagrid" style="height:300px;" url="https://fe.epoint.com.cn/miniui_dev/demo/data/AjaxService.php?method=SearchEmployees" idField="id" allowResize="true" pageSize="6" allowCellEdit="true" allowCellSelect="true" multiSelect="true" editNextOnEnterKey="true" autoload="true">
+                                <div property="columns">
+                                    <div type="indexcolumn"></div>
+                                    <div type="checkcolumn"></div>
+                                    <div name="LoginName" field="loginname" headerAlign="center" allowSort="true" width="150">
+                                        员工帐号
+                                        <input property="editor" class="mini-textbox" style="width:100%;" minWidth="200" />
+                                    </div>
+                                    <div field="age" width="100" allowSort="true">
+                                        年龄
+                                        <input property="editor" class="mini-spinner" minValue="0" maxValue="200" value="25" style="width:100%;" />
+                                    </div>
+                                    <div name="birthday" field="birthday" width="100" allowSort="true" dateFormat="yyyy-MM-dd">
+                                        出生日期
+                                        <input property="editor" class="mini-datepicker" style="width:100%;" showTime="true"  />
+                                    </div>
+                                    <div field="remarks" width="120" headerAlign="center" allowSort="true">
+                                        备注
+                                        <input property="editor" class="mini-textarea" style="width:200px;" minWidth="200" minHeight="50" />
+                                    </div>
+                                    <!--ComboBox：本地数据-->
+                                    <div type="comboboxcolumn" autoShowPopup="true" name="gender" field="gender" width="100" allowSort="true" align="center" headerAlign="center">
+                                        性别
+                                        <input property="editor" class="mini-combobox" style="width:100%;" data="Genders" />
+                                    </div>
+                                    <!--ComboBox：远程数据-->
+                                    <div type="comboboxcolumn" field="country" width="100" headerAlign="center">
+                                        国家
+                                        <input property="editor" class="mini-combobox" style="width:100%;" url="https://fe.epoint.com.cn/miniui_dev/demo/data/countrys.txt" />
+                                    </div>
+                                    <div type="checkboxcolumn" field="married" trueValue="1" falseValue="0" width="60" headerAlign="center">婚否</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="accordion">
+                        <div role="head" title="表单"></div>
+                        <div role="body">
+                            <div class="fui-form">
+                                <div role="form">
+                                    <div role="row">
+                                        <div role="control" label="textbox" starred="true">
+                                            <input class="mini-textbox" required="true" vtype="mobile" />
+                                        </div>
+                                        <div role="control" label="password" starred="true">
+                                            <input class="mini-password" required="true" />
+                                        </div>
+                                    </div>
+                                    <div role="row">
+                                        <div role="control" label="combobox" starred="true">
+                                            <input class="mini-combobox" required="true" url="https://fe.epoint.com.cn/miniui_dev/demo/data/countrys.txt" />
+                                        </div>
+                                        <div role="control" label="ButtonEdit " starred="true">
+                                            <input class="mini-buttonedit" onbuttonclick='alert("弹出选择");' />
+                                        </div>
+                                    </div>
+                                    <div role="row">
+                                        <div role="control" label="datepicker" starred="true">
+                                            <input id="date1" name="BirthDay" class="mini-datepicker" value="2010-10-12" required="true" showTime="true" />
+                                        </div>
+                                        <div role="control" label="spinner" starred="true">
+                                            <input name="Age" class="mini-spinner" value="22" minValue="10" maxValue="50" />
+                                        </div>
+                                        <div role="control" label="timespinner" starred="true">
+                                            <input name="Time" class="mini-timespinner" format="H:mm" />
+                                        </div>
+                                    </div>
+                                    <div role="row">
+                                        <div role="control" label="checkbox" starred="true">
+                                            <input name="Married" class="mini-checkbox" text="婚否" value="Y" trueValue="Y" falseValue="N" />
+                                        </div>
+                                        <div role="control" label="switch" starred="true">
+                                            <div id="ck2" name="product" class="mini-checkbox switch" checked="true" readOnly="false" text="mini-checkbox switch"></div>
+                                        </div>
+                                        <div role="control" label="textboxlist" starred="true">
+                                            <input id="tbl1" class="mini-textboxlist" name="tbl" textName="tblName" required="true" url="https://fe.epoint.com.cn/miniui_dev/demo/data/AjaxService.php?method=FilterCountrys" value="cn,usa" text="中国,美国" valueField="id" textField="text" />
+                                        </div>
+                                    </div>
+                                    <div role="row">
+                                        <div role="control" label="checkboxlist" starred="true">
+                                            <div name="countrys" class="mini-checkboxlist" repeatItems="6" repeatLayout="flow" data='[{"id":"usa","text":"美国"},{"id":"cn","text":"中国"},{"id":"jp","text":"日本"},{"id":"en","text":"英国"},{"id":"de","text":"德国"},{"id":"fr","text":"法国"},{"id":"ca","text":"加拿大"},{"id":"at","text":"奥地利"},{"id":"ch","text":"瑞士"}]' value="cn,de,usa" textField="text" valueField="id" autoload="true"></div>
+                                        </div>
+                                        <div role="control" label="radiobuttonlist" starred="true">
+                                            <div name="countrys2" class="mini-radiobuttonlist" value="en" repeatItems="6" repeatLayout="flow" data='[{"id":"usa","text":"美国"},{"id":"cn","text":"中国"},{"id":"jp","text":"日本"},{"id":"en","text":"英国"},{"id":"de","text":"德国"},{"id":"fr","text":"法国"},{"id":"ca","text":"加拿大"},{"id":"at","text":"奥地利"},{"id":"ch","text":"瑞士"}]' textField="text" valueField="id" autoload="true"></div>
+                                        </div>
+                                    </div>
+                                    <div role="row">
+                                        <div role="control" label="textarea" starred="true">
+                                            <input id="textarea1" name="Area" class="mini-textarea" required="true" style="height:74px;" />
+                                        </div>
+                                        <div role="control" label="listbox" starred="true">
+                                            <div name="countrys3" showNullItem="false" class="mini-listbox" data='[{"id":"usa","text":"美国"},{"id":"cn","text":"中国"},{"id":"jp","text":"日本"},{"id":"en","text":"英国"},{"id":"de","text":"德国"},{"id":"fr","text":"法国"},{"id":"ca","text":"加拿大"},{"id":"at","text":"奥地利"},{"id":"ch","text":"瑞士"}]' value="cn" textField="text" valueField="id" style="height:74px;"></div>
+                                        </div>
+                                    </div>
+                                    <div role="row">
+                                        <div role="control" label="DateRangePicker" starred="true">
+                                            <input id="DateRangePicker" name="Area" class="mini-daterangepicker" required="true" rangeType="datetime"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="accordion" opened="true">
+                        <div role="head" title="tab panel"></div>
+                        <div role="body">
+                            <div style="height:200px" class="clearfix">
+                                <div class="l" style="width:50%;height:100%;padding: 10px;box-sizing: border-box">
+                                    <div id="tabs1" class="mini-tabs" activeIndex="0" style="height:100%;" plain="false" showNavMenu="true">
+                                        <div title="栏目名称1">
+                                            <div id="listbox1" class="mini-listbox" style="width:150px;height:100px;" textField="text" valueField="id" url="https://fe.epoint.com.cn/miniui_dev/demo/data/countrys.txt"></div>
+                                        </div>
+                                        <div title="栏目名称2" showCloseButton="true">22222</div>
+                                        <div title="栏目名称3">3</div>
+                                        <div title="栏目名称14">4</div>
+                                    </div>
+                                </div>
+                                <div class="l" style="width:50%;height:100%;padding: 10px;box-sizing: border-box">
+                                    <div class="mini-panel" title="面板标题" iconCls="icon-save" style="width:100%;height:100%;" showCollapseButton="true" showToolbar="true" showFooter="true" allowResize="true" buttons=" collapse restore refresh min max close">面板内容<br />面板内容 <br />面板内容 <br />面板内容 <br />面板内容 <br />面板内容</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="accordion" opened="true">
+                        <div role="head" title="TabsTreeSelect"></div>
+                        <div role="body">
+                            <div id="tabstreeselect" class="mini-tabstreeselect" url="https://fe.epoint.com.cn/miniui_dev/demo/data/tree.txt" showBorder="true" showFullPath="true" resultastree="true" loadWhenChecked="false">
+                                <div tabText="本部门" tabKey="tab1"></div>
+                                <div tabText="所有部门" tabKey="tab2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div role="accordion" opened="false">
+                        <div role="head" title="操作图标"></div>
+                        <div role="body">
+                            <ul id="icon-list" class="clearfix icon-list"></ul>
+                        </div>
+                    </div>
+                    <div role="accordion" opened="false">
+                        <div role="head" title="模块图标"></div>
+                        <div role="body">
+                            <ul id="mod-icon-list" class="clearfix mod-icon-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="right-panel" class="right-panel">
+            <span id="right-toggle" class="action-icon icon-toggleright"></span>
+            <iframe src="about:blank" frameborder="0" height="100%" width="100%" srcolling="no"></iframe>
+        </div>
+        <script>
+            var Genders = [
+                {
+                    id: 1,
+                    text: '男'
+                },
+                {
+                    id: 2,
+                    text: '女'
+                }
+            ];
+        </script>
+        <script src="../../js/jsboot.js"></script>
+        <script>
+            SrcBoot.output(['./applySkin.js']);
+        </script>
+        <script>
+            var leftTree = mini.get('leftTree');
+            leftTree.on('preload', function(e) {
+                var data = e.data;
+                if (data && data.length) {
+                    data[data.length - 1].expanded = true;
+                }
+            });
+            leftTree.load();
+
+            var $rightPanel = $('#right-panel');
+            var toggleRightShow = function() {
+                function toggle() {
+                    if (!$rightPanel.hasClass('show')) {
+                        $rightPanel.css('z-index', Util.getZIndex()).addClass('show');
+                    } else {
+                        $rightPanel.removeClass('show');
+                    }
+                }
+                var url = './advancesearch.html';
+                $rightPanel.find('iframe')[0].src = url;
+                toggle();
+                toggleRightShow = toggle;
+            };
+            $('#right-toggle').on('click', function() {
+                $rightPanel.removeClass('show');
+            });
+
+            mini.get('tabstreeselect').load();
+            // mini.get("datagrid1").load();
+
+            function searchData() {
+                console.log('search');
+                var sc = {};
+                $.map(mini.getChildControls($('.fui-form')[0]), function(item) {
+                    sc[item.id] = item.getValue();
+                });
+                console.log('搜索条件' + JSON.stringify(sc, 0, 4));
+                mini.get('datagrid1').load();
+            }
+
+            function resetCallback(params) {
+                console.log('reset');
+            }
+
+            function closeCallback(params) {
+                console.log('close');
+            }
+
+            var tip = new mini.ToolTip();
+            tip.set({
+                target: document,
+                selector: '.mini-button[title]',
+                autoHide: true
+            });
+        </script>
+        <script>
+            var icons = ['remove', 'check', 'error', 'info', 'success', 'warn', 'confirm', 'deny', 'paper', 'zoomin', 'zoomout', 'search', 'forward', 'backward', 'minuscircle', 'addcircle', 'pause', 'start', 'stop', 'process', 'quit', 'upload', 'download', 'unlock', 'lock', 'addsquare', 'copy', 'fix', 'doc', 'print', 'clock', 'console', 'mail', 'save', 'cut', 'chat', 'edit', 'gear', 'max', 'restore', 'refresh', 'recover', 'omit', 'date', 'trash', 'filter', 'advancedsearch', 'upcircle', 'downcircle', 'down', 'up', 'right', 'left', 'sort', 'rightdouble', 'leftdouble', 'reload', 'checkbox', 'checkboxchecked', 'checkboxcheckeddisabled', 'checkboxindetermina', 'radio', 'radiochecked', 'folder', 'folderopen', 'min', 'toggleleft', 'toggleright'];
+
+            var getIconHtml = function(name) {
+                return '<li data-name="action-icon icon-' + name + '"><span class="action-icon icon-' + name + '"></span><div class="code-name">.icon-' + name + '</div></li>';
+            };
+
+            $($.map(icons, getIconHtml).join('')).appendTo('#icon-list');
+
+            function getModIconHtml(i) {
+                var ret = [];
+
+                ret.push('<li class="item l" data-name="modicon-' + i + '">');
+                ret.push('<span class="modicon-' + i + '"></span>');
+                ret.push('<div class="item-name">modicon-' + i + '</div>');
+                ret.push('</li>');
+
+                return ret.join('');
+            }
+            $(
+                $.map(
+                    $.map(new Array(140), function(item, i) {
+                        return i + 1;
+                    }),
+                    getModIconHtml
+                ).join('')
+            ).appendTo('#mod-icon-list');
+
+            var $iconInput = $('<input class="hidden-accessible"/>').appendTo('body');
+            $('#icon-list').on('click', 'li', function() {
+                var $li = $(this);
+                var cls = $li.data('name');
+                var str = '<a href="javascript:;" class="' + cls + '"></a>';
+                $iconInput.val(str);
+                $iconInput[0].select();
+                document.execCommand('COPY');
+                epoint.showTips('图标 HTML 已经拷贝到剪贴板');
+            });
+            $('#mod-icon-list').on('click', 'li', function() {
+                var $li = $(this);
+                var cls = $li.data('name');
+                var str = '<span class="' + cls + '"></span>';
+                $iconInput.val(str);
+                $iconInput[0].select();
+                document.execCommand('COPY');
+                epoint.showTips('图标 HTML 已经拷贝到剪贴板');
+            });
+        </script>
+    </body>
+</html>

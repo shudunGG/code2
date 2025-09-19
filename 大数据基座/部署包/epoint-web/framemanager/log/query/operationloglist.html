@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>框架日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="expires" content="0" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="cache" content="no-cache" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+
+		<a class="mini-dataexport l" id="dataexport" gridId="datagrid"
+			fileName="日志列表" action="getExportModel" extraId="fui-form"
+			exportAction="operationloglistaction.export"></a>
+	</div>
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="日志记录时间">
+						<input name="dateFrom" id="beginDate" bind="beginDate"
+							class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" format="yyyy-MM-dd "
+							data-options="{'format': 'yyyy-MM-dd '}" showTime="false"
+							required="true" requiredErrorText="日志记录开始时间不能为空"
+							showClearButton="true" /> <span
+							style="width: 12%; text-align: center">至</span> <input
+							name="endDate" id="endDate" class="mini-datepicker"
+							onValuechanged="validateDate(this)" style="width: 44%;"
+							format="yyyy-MM-dd " bind="endDate" required="true"
+							requiredErrorText="日志记录结束时间不能为空"
+							data-options="{'format': 'yyyy-MM-dd '}" showTime="false"
+							showClearButton="true" ondrawdate="onDrawDate" />
+					</div>
+					<div role="control" label="人员">
+						<input bind="operateuserdisplayname" id="operateUserDisplayName"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="系统分类">
+						<input bind="subsystemtype" id="subSystemType"
+							class="mini-textbox" />
+					</div>
+					<div role="control" label="IP">
+						<input bind="fromIp" id="fromIp" class="mini-textbox" emptyText="" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="内容">
+						<input bind="content" id="content" class="mini-textbox"
+							emptyText="" />
+					</div>
+					<div role="control" label="应用名称">
+						<input bind="appname" id="appname" class="mini-textbox" emptyText="" />
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="operator_type" width="120">操作类型</div>
+				<div field="subsystem_type" width="150">系统分类</div>
+				<div field="content" width="100%">内容</div>
+				<div field="appname" width="150">应用名称</div>
+				<div field="userdisplayname" width="150">操作人员</div>
+				<div field="fromip" width="150">访问IP</div>
+				<div field="recorddate"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}" width="180">操作时间</div>
+				<div width="120" renderer="onEditRenderer">详情</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('operationloglistaction','',initCallBack);
+
+		var isdb = 0;
+		
+		function initCallBack(e){
+			if(e.isdb){
+				isdb = 1;
+			}
+		}
+		
+		$(document).ready(function() {
+			// 将导出按钮文字设置为“导出”
+			$("#dataexport").find(".mini-button-text").text("导出")
+			$("#dataexport").click(function(e) {
+				$("#dataexport").find(".mini-button-text").text("导出")
+			});
+		});
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			if (epoint.validate()) {
+				epoint.refresh('');
+			}
+		}
+
+		//　日期控件的验证
+		var start = mini.get("beginDate");
+		var end = mini.get("endDate");
+
+		function validateDate(e) {
+			if(e.id == 'beginDate'){
+				mini.get('endDate').setValue(null);
+			}
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'beginDate') {
+						epoint.alert("开始时间不能比结束时间晚!", '', null, 'warning');
+						end.setValue(null);
+					} else {
+						epoint.alert("结束时间不能比开始时间早!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+
+				if (start.getValue().getMonth() != end.getValue().getMonth()) {
+					epoint.alert("开始时间和结束时间必须是在同一个月内!", '', null, 'warning');
+					end.setValue(null);
+				}
+			}
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "editItems",
+					"rowguid,recorddate");
+		};
+
+		function editItems(e) {
+			var settings = {
+				'width' : 970,
+				'height' : 450
+			};
+			epoint.openDialog('操作日志',
+					'framemanager/log/query/operationlog?rowguid=' + e.rowguid + '&isdb=' + isdb
+							+ '&recorddate=' +Date.parse(new Date(e.recorddate.replace(/-/g, '/'))) + '', settings);
+		}
+
+		function onDrawDate(e) {
+			var date = e.date;
+			var d = start;
+			if (date.getMonth() != start.getValue().getMonth()) {
+				e.allowSelect = false;
+			}
+		}
+	</script>
+</body>
+</html>

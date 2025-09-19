@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增文档</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/editormd.css" />
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="btnRelease" onclick="releaseDoc">发布</a>
+			<a class="mini-button" id="btnSave" onclick="saveDoc">保存</a>
+			<a class="mini-button mini-btn-danger" id="btnDelete" onclick="deleteDoc" style="display:none">删除</a>
+           	<a class="mini-button" onclick="epoint.closeDialog('close')">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="标题" starred="true">
+					<input id="docTitle" class="mini-textbox"
+						bind="doc.title" required="true" requiredErrorText="标题不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="文档分类" starred="true">
+					<input id="selectedDocType" bind="doc.codeId" allowInput="false" width='200px'
+						class="mini-buttonedit" emptyText="" required="true" requiredErrorText="请选择文档分类"
+						onbuttonclick="selectDocType"
+						selectOnFocus="true" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="正文" starred="true">
+					<div id="docContent">
+               			<textarea style="display:none;"></textarea>
+          			</div>
+				</div>
+			</div>
+			<!-- 隐藏域 -->
+			<input bind="contentText" id="contentText" class="mini-hidden" />
+		</div>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script src="js/jquery.min.js"></script>
+    <script src="js/editormd.min.js"></script>
+	
+	
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('docaddaction', '', initCallBack);
+
+		var docGuid = '';
+		var docEditor;
+		function initCallBack(e){
+			docGuid = e.docGuid;
+			var root = Util.getSafeLocation().pathname.split('/')[1];
+			var domain = Util.getSafeLocation().protocol + '//' + Util.getSafeLocation().host + '/';
+			var connect = domain + root + '/rest/framemanager/orga/openplatform/doc/';
+			var uploadUrl = connect + "docaddaction/uploadImg?isCommondto=true&docGuid="+docGuid;
+			// 初始化MD编辑器
+	        $(function() {
+	        	docEditor = editormd("docContent", {
+	                width   : "100%",
+	                height  : 640,
+	                syncScrolling : "single",
+	                path    : "lib/",
+	                emoji   : true,
+	                tocm: true, // Using [TOCM]
+	                tex: true, // 开启科学公式TeX语言支持，默认关闭
+	                flowChart: true, // 开启流程图支持，默认关闭
+	                sequenceDiagram: true, // 开启时序/序列图支持，默认关闭
+	                saveHTMLToTextarea: true,
+	                imageUpload: true,
+	                imageUploadURL: uploadUrl,
+	                imageFormats: ["jpg", "jpeg", "gif", "png", "rar", "zip","doc","docx","xlsx","ppt"],
+	                crossDomainUpload: false,
+	                onchange: function(){
+	                	// 修改图片请求路径，使在MD预览界面可以请求图片显示
+	                	var images = this.preview.context.images;
+	                    if (images) {
+	                		for (var i=0; i<images.length; i++) {
+	                			var imgUrl = images[i].src;
+	                			// 截取请求图片的URL
+	                			if (imgUrl) {
+	                				var imgRestUrl= domain + root + imgUrl.split("framemanager/orga/openplatform/doc")[1];
+	                				images[i].src = imgRestUrl;
+	                			}
+	                		}
+	                	}
+	                	
+	                }
+	        	});
+	                        
+	        });
+		}
+
+				
+		// 获取正文文本内容
+		function getContentText(){
+			var contentText = docEditor.getMarkdown();
+			mini.get("contentText").setValue(contentText);
+		}
+		
+		// 发布
+		function releaseDoc(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('releaseDoc?docGuid=' + docGuid, '', docGuid, releaseDocCallBack);
+			}
+		}
+		
+		// 发布回调
+		function releaseDocCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.closeDialog("success");
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+
+		// 保存文档
+		function saveDoc(){
+			if (epoint.validate()) {
+				getContentText();
+				epoint.execute('saveDoc?docGuid=' + docGuid, '', docGuid, saveDocCallBack);
+			}
+		}
+		
+		// 保存文档回调
+		function saveDocCallBack(data){
+			var msg =data.msg;
+			if (msg) {
+				if(data.success){
+					epoint.showTips(msg, {timeout: 1000});
+					docGuid = data.docGuid;
+					// 显示删除按钮
+					document.getElementById("btnDelete").style.display = '';
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			} else {
+				epoint.alert('操作失败', '', '', 'warning');
+			}
+		}
+		
+		// 删除文档
+		function deleteDoc(){
+			epoint.confirm('是否删除该文档？', '删除文档确认', function () {
+				// 删除文档确认回调
+				epoint.execute('deleteDoc?docGuid=' + docGuid, '', docGuid, function (data) {
+					var msg = data.msg;
+					if (msg) {
+						if(data.success){
+							epoint.closeDialog("success");
+						} else {
+							epoint.alert(msg, '', '', 'warning');
+						}
+					} else {
+						epoint.alert('操作失败', '', '', 'warning');
+					}
+				});
+			}, function (data) {
+				// 删除文档取消回调
+				
+			})
+		}
+
+		// 选择文档分类
+		function selectDocType(){
+			epoint.openDialog("选择文档分类",
+					'framemanager/orga/openplatform/app/selectcodeitem?codeName=文档',
+					dealSelectServiceTypeBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+		// 选择代码项回调
+		function dealSelectServiceTypeBackValue(rtnValue){
+			if (rtnValue && rtnValue != 'close') {
+				// codeid_SPLIT_名称
+				var idAndName = rtnValue.split("_SPLIT_");
+				var id = idAndName[0];
+				var	name = idAndName[1];
+			
+				mini.get("selectedDocType").setText(name);
+				mini.get("selectedDocType").setValue(id);
+				
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

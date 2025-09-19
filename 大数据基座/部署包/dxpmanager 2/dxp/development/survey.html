@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>数据集成</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ '../css/common.css', './css/common.css',
+			'./css/survey.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<div>
+			<!-- step步骤 -->
+			<div class="step-wrap">
+				<h3 class="step-title">数据开发流程</h3>
+				<ul class="step-list clearfix">
+					<li>
+						<div class="step1">
+							<p class="step-name">Step1：流程开发</p>
+							<p class="step-info" title="这里是步骤的简要说明">转换、流程开发页面拖拽组件并填写组件信息后保存</p>
+						</div>
+					</li>
+					<li>
+						<div class="step2">
+							<p class="step-name">Step2：流程测试</p>
+							<p class="step-info" title="这里是步骤的简要说明">点击开发页面顶部运行按钮进行转换或流程的调试</p>
+						</div>
+					</li>
+					<li>
+						<div class="step3">
+							<p class="step-name">Step3：流程部署</p>
+							<p class="step-info" title="这里是步骤的简要说明">点击发布按钮，流程会发送到相关节点进行调度运行</p>
+						</div>
+					</li>
+					<li>
+						<div class="step4">
+							<p class="step-name">Step4：任务运维</p>
+							<p class="step-info" title="这里是步骤的简要说明">监控流程的运行成功失败情况及调度次数</p>
+						</div>
+					</li>
+				</ul>
+			</div>
+            <div class="clearfix bottom-wrap">
+				<div class="implement-wrap">
+					<div>
+						<h3 class="step-title">执行情况</h3>
+						<ul class="survey-list clearfix">
+							<li>
+								<div class="survey-content">
+									<div class="l survey-img">
+										<img src="images/survey1-icon.png" alt="icon">
+									</div>
+									<div class="survey-info">
+										<p class="survey-name">
+											<span>今日执行任务数</span>
+										</p>
+										<p class="survey-value">
+											<span id="situation-failnum"></span>
+										</p>
+									</div>
+									<div class="survey-bottom">
+										<span class="l">成功任务数：<span id="situation-faildeal"></span></span>
+										<a class="r font-waring" href="javascript:;">失败任务数：<span
+											id="situation-failwait"></span></a>
+									</div>
+								</div>
+							</li>
+							<li>
+								<div class="survey-content">
+									<div class="l survey-img">
+										<img src="images/survey2-icon.png" alt="icon">
+									</div>
+									<div class="survey-info">
+										<p class="survey-name clearfix">
+											<span>今日执行成功总数</span>
+										</p>
+										<p class="survey-value clearfix">
+											<span class="l" id="situation-implement"></span> <span
+												class="r" id="situation-implementcontrast"></span>
+										</p>
+									</div>
+									<div class="survey-bottom">
+										<span class="l">本月日均成功数:<span
+											id="situation-implementaverage"></span>次
+										</span> <span class="r">本月成功总数:<span
+											id="situation-implementtotal"></span>次
+										</span>
+									</div>
+								</div>
+							</li>
+							<li>
+								<div class="survey-content">
+									<div class="l survey-img">
+										<img src="images/survey3-icon.png" alt="icon">
+									</div>
+									<div class="survey-info">
+										<p class="survey-name clearfix">
+											<span>今日执行失败总数</span>
+											<!--  <span class="r">对比昨日</span> -->
+										</p>
+										<p class="survey-value">
+											<span class="l" id="situation-losenum"></span> <span
+												class="r" id="situation-loseratio"></span>
+										</p>
+									</div>
+									<div class="survey-bottom">
+										<span class="l">本月日均失败数:<span
+											id="situation-loseaverage"></span>次
+										</span> <span class="r">本月失败总数:<span id="situation-losetotal"></span>次
+										</span>
+									</div>
+								</div>
+							</li>
+						</ul>
+
+						<!-- 时间范围选择 -->
+						<div class="range-choose clearfix">
+							<ul class="range-list clearfix l">
+								<li data-id="01" class="date-item active">今日</li>
+								<li data-id="02" class="date-item">昨日</li>
+								<li data-id="03" class="date-item">近一周</li>
+								<li data-id="04" class="date-item">本月</li>
+								<li data-id="05" class="date-item">本年</li>
+							</ul>
+							<input bind=datePick type="text" id="datePick"
+								class="mini-textbox" style="display: none;">
+						</div>
+                        <div class="survey-chart">
+                            <div id="survey"></div>
+                        </div>
+					</div>
+				</div>
+				<div class="server-wrap">
+					<h3 class="step-title">节点服务</h3>
+					<div class="server-container">
+						<ul class="server-list clearfix" id="server">
+
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 节点服务模板 -->
+	<script type="text/template" id="server-temp">
+        {{#listData}}
+            <li>
+                <div class="server-box {{statename}}">
+					<p class="serverguid" style="display:none">{{serverguid}}</p>
+                    <p class="server-ip">IP地址：{{address}}</p>
+                    <p class="server-cpu">CPU：<span class="cpu-ratio">{{cpu}}</span>内存：<span>{{memory}}</span></p>
+                    <p class="server-storage">储存空间：<span>{{storage}}</span></p>
+                </div> 
+            </li>
+        {{/listData}}
+    </script>
+
+	<script src="../../frame/fui/js/jsboot.js"></script>
+
+	<!-- 接口配置 -->
+	<script>
+		var getAllData = epoint
+				.dealRestfulUrl("../../../../../../../rest/dxpsurveyaction/getSituationData");
+		var getChartsData = epoint
+				.dealRestfulUrl("../../rest/dxpsurveyaction/getExecuteSituationData");
+		var getServerInfoData = epoint
+		.dealRestfulUrl("../../rest/dxpsurveyaction/getServerInfo");
+	</script>
+
+
+	<!-- JS部分 -->
+	<script>
+		SrcBoot.output([ "../js/echarts.min.js",
+				"../js/jquery.nicescroll.min.js", "../js/laydate/laydate.js",
+				'./js/jquery.ellipsis.min.js', "../js/common.js",
+				'./js/survey.js' ]);
+	</script>
+
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+
+.margin-panel{
+	margin-top:10px !important;
+}
+    
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a> 
+		</div>
+		<!--帮助按钮 -->
+	</div>
+	
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+	  <div>
+	    <div style="margin: 0px auto; text-align: left; width: 750px">
+	    </div>
+	  </div>
+	</div>
+<div class="fui-content">
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepname" name="stepName" class="mini-textbox"
+					required="true" emptyText="请输入步骤名称" style="width: 79%" />
+			</div>
+		</div>
+		<div role="row" >
+			<div role="control" label="操作" starred="true" starred="true">
+				<input id="operationtype" name="operationtype"  class="mini-combobox"
+						 style="width: 79%"  required="true"
+						textField="text" valueField="id" action="getOperationTypes" />
+			</div>
+		</div>
+		<div class="mini-panel mini-panel-info" title="设置" width="65%"
+			style="margin: auto;" showCollapseButton="true" tabindex="0"
+			showCloseButton="false">
+			<div role="row">
+				<div role="control" label="Json条目名称">
+					<div id="jsonBloc" name="jsonBloc" class="mini-textbox"></div>
+				</div>
+				<div role="control" label="一个数据条目的数据行">
+					<div id="nrRowsInBloc" name="nrRowsInBloc" class="mini-textbox"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="输出值">
+					<div id="outputValue" name="outputValue" class="mini-textbox"></div>
+				</div>
+				<div role="control" label="兼容模式">
+					<input id="compatibilityMode" name="compatibilityMode"
+						class="mini-checkbox" />
+				</div>
+			</div>
+		</div>
+		<div class="mini-panel mini-panel-info margin-panel" title="输出文件" width="65%" tabindex="1"
+			style="margin: auto;" showCollapseButton="true"
+			showCloseButton="false">
+			<div role="row">
+				<div role="control" label="文件名">
+					<div id="filename" name="filename" class="mini-textbox"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="追加方式">
+					<div id="append" name="append" class="mini-checkbox"></div>
+				</div>
+				<div role="control" label="创建父文件夹">
+					<input id="createParentFolder" name="createParentFolder"
+						class="mini-checkbox" />
+				</div>
+				<div role="control" label="启动时不创建文件文件">
+					<div id="doNotOpenNewFileInit" name="doNotOpenNewFileInit"
+						class="mini-checkbox"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="扩展名">
+					<input id="extention" name="extention" class="mini-textbox" />
+				</div>
+				<div role="control" label="编码">
+					<input id="encoding" name="encoding" class="mini-combobox"
+						textField="text" valueField="id" action="getEncodings" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="添加日期到文件名">
+					<div id="adddate" name="adddate" class="mini-checkbox"></div>
+				</div>
+				<div role="control" label="添加时间到文件名">
+					<input id="addtime" name="addtime" class="mini-checkbox" />
+				</div>
+				<div role="control" label="添加文件到结果文件中">
+					<input id="addtoresult" name="addtoresult" class="mini-checkbox" />
+				</div>
+			</div>
+		</div>
+		<!-- 保存页面数据 -->
+		<input id="tableData" name="tableData" class="mini-textbox hidden">
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="" style="padding-top: 1px;padding-left:17%;padding-bottom:2px;">
+		<div class="btn-group">
+			<a  id= "addButton" class="mini-button mini-btn-primary" onclick="add" 
+				style="margin-left: 20px">新增字段</a>
+				<a id="deletetype"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+		</div>
+	</div>
+	<div class="fui-content" style="padding-top: 1px">
+		<!-- 保存页面数据 -->
+		<input id="fieldselect" class="mini-combobox hidden"
+			action="getFieldList" />
+		<input id="nodeInfo" bind="nodeInfo" class="mini-textbox hidden">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			multiSelect="true" allowCellValid="true"
+			allowCellEdit="true" style="margin:auto;width:65%;height:100%" 
+			allowResize="true" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true" action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="55"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="fieldname" headerAlign="center" width="150"
+					align="left">
+					字段名称<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." data="fields" textField="text" required="true"
+						valueField="text"  style="width: 100%" />
+				</div>
+				<div field="elementname" headerAlign="center" width="150"
+					align="left">
+					元素名称<input  property="editor" required="true"
+						class="mini-textbox" maxLength="50" style="width: 100%"  />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var grid = mini.get("datagrid");
+		var stepNameForm = mini.get('stepname');
+		var operationType=mini.get('operationtype');
+		var outputValue=mini.get('outputValue');
+		var encoding=mini.get('encoding');
+		var extention=mini.get('extention');
+		var filename=mini.get('filename');
+		var jsonBloc=mini.get('jsonBloc');
+		var outputValue=mini.get('outputValue');
+		var nrRowsInBloc=mini.get('nrRowsInBloc');
+		
+
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('jsonoutputaction?nodeInfoKey=' + nodeInfo.key,
+					{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+					initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			console.log(nodeData);
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			//初始化
+			if(!nodeData){
+				operationType.select(1);
+				outputValue.setEnabled(false);
+				encoding.setValue("UTF-8");
+				extention.setValue("js");
+				jsonBloc.setValue("data");
+				nrRowsInBloc.setValue("1");
+				outputValue.setValue("outputValue");
+			}else{
+				if(nodeData.operationtype=="outputvalue"){
+					encoding.setEnabled(false);
+					outputValue.setEnabled(true);
+					filename.setEnabled(false);
+				}else if(nodeData.operationtype=="writetofile"){
+					encoding.setEnabled(true);
+					outputValue.setEnabled(false);
+					filename.setEnabled(true);
+				}else if(nodeData.operationtype=="both"){
+					encoding.setEnabled(true);
+					outputValue.setEnabled(true);
+					filename.setEnabled(true);
+				}
+			}
+		}
+
+		operationType.on("valuechanged",function(data){
+			if(data.value=="outputvalue"){
+				encoding.setEnabled(false);
+				outputValue.setEnabled(true);
+				filename.setEnabled(false);
+			}else if(data.value=="writetofile"){
+				encoding.setEnabled(true);
+				outputValue.setEnabled(false);
+				filename.setEnabled(true);
+			}else if(data.value=="both"){
+				encoding.setEnabled(true);
+				outputValue.setEnabled(true);
+				filename.setEnabled(true);
+			}
+		});
+		
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+			};
+            var length = grid.getData().length;
+			grid.addRow(newRow, length);
+
+			grid.beginEditRow(newRow);
+		}
+		
+		//表格下拉框内容
+		var fields;
+		var combox_field = mini.get("fieldselect");
+		combox_field.on("load", function(e) {
+			fields = e.sender.data;
+		});
+		grid.reload();
+		
+		//删除选中
+		function deleteSelected() {
+			grid.removeRows(grid.getSelecteds(), false);
+			setGridData();
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute('saveAll', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+
+		function setGridData() {
+			var datas = grid.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"fieldname" : row.fieldname,
+					"elementname" : row.elementname
+				});
+			}
+			mini.get('tableData').setValue(JSON.stringify(array));
+		}
+
+	</script>
+</body>
+
+</html>

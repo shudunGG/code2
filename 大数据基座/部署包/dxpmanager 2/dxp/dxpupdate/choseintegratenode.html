@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>开发作业更新导入</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button mr10" onclick="select()">确定</a> <a
+				class="mini-button mr10" onclick="epoint.closeDialog(1)">取消</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="目标节点" starred="true" id="node">
+						<input id="belongNode" class="mini-combobox" required="true"
+							popupHeight="120px" action="getNodeList"
+							requiredErrorText="目标节点不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="同步历史" starred="true" id="synHistoryData">
+						<input id="synHistory" requiredErrorText="同步历史不能为空"
+							data="[{text:'是',id:'Y'},{text:'否',id:'N'}]" required="true"
+							class="mini-radiobuttonlist" value="N" textField="text"
+							valueField="id" />
+					</div>
+					<div role="control" label="同步规则" starred="true" id="truncate">
+						<input id="isTruncate" requiredErrorText="同步规则不能为空"
+							data="[{text:'清空目标表',id:'Y'},{text:'不清空目标表',id:'N'}]"
+							required="true" class="mini-combobox" textField="text"
+							valueField="id" showClose="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		epoint.initPage('dxpflowinfoaddaction', '', function() {
+			Util.form.hideField('#truncate');
+			mini.get('isTruncate').setVisible(false);
+		})
+		function select() {
+			if (epoint.validate()) {
+				var nodeGuid = mini.get('belongNode').getValue();
+				var synHistory = mini.get('synHistory').getValue();
+				var isTruncate = mini.get('isTruncate').getValue();
+				var config={};
+				config.nodeGuid=nodeGuid;
+				config.synHistory=synHistory;
+				config.isTruncate=isTruncate;
+				epoint.closeDialog(config);
+			}
+		}
+
+		// 同步历史变更
+		mini.get('synHistory').on('valuechanged', function(e) {
+			epoint.clear('isTruncate');
+			if (e.value == 'Y') {
+				mini.get('isTruncate').setVisible(true);
+				Util.form.showField('#truncate');
+			} else {
+				mini.get('isTruncate').setVisible(false);
+				Util.form.hideField('#truncate');
+			}
+
+		});
+	</script>
+</body>
+</html>

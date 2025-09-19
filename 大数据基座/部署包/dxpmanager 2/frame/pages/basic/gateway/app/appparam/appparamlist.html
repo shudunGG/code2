@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用参数列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<!-- local标签用于国际化 -->
+			<a class="mini-button" iconCls="icon-addcircle" onclick="add">
+				新建参数 </a> <a class="mini-button" iconCls="icon-addcircle"
+				onclick="addprikey"> 初始化私钥</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="paramname" name="paramname" headerAlign="center"
+					align="center" width="100">
+					参数名<input property="editor" class="mini-textbox" required="true"
+						style="width: 100%;" maxLength="50" />
+				</div>
+				<div field="paramvalue" headerAlign="center" align="center"
+					width="100">
+					参数值<input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="1000" />
+				</div>
+				<div field="description" headerAlign="center" align="left"
+					width="150" validateLevel="3">
+					说明<input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="500" />
+				</div>
+				<div field="isshowmobile" width="50" align="center"
+					type="checkboxcolumn" truevalue="1" falsevalue="0"
+					headerAlign="center">移动端</div>
+				<div name="save" width="80" align="center" headerAlign="center"
+					renderer="onSaveRender">保存</div>
+				<div width="80" align="center" headerAlign="center"
+					renderer="onRemoveRender">删除</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appparamlistaction');
+
+		function callback(data) {
+			if (data.msg) {
+				if (data.success) {
+					mini.showTips({
+						content : data.msg,
+						state : 'success',
+						x : 'center',
+						y : 'center'
+					});
+				} else {
+					mini.showTips({
+						content : data.msg,
+						state : 'warning',
+						x : 'center',
+						y : 'center'
+					});
+				}
+			}
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		function saveNoop() {
+		}
+
+		var onSaveRender = function(e) {
+			return epoint.renderCell(e, "action-icon icon-save", 'saveNoop');
+		};
+
+		function save(record) {
+			if (record.paramname) {
+				epoint.execute('save', '', [ record.rowguid, record.paramname,
+						record.paramvalue, record.isshowmobile,
+						record.description ], function(data) {
+					callback(data);
+				});
+			} else {
+				epoint.alert("参数名不能为空");
+			}
+			grid.beginEditRow(record);
+		}
+
+		var onRemoveRender = function(e) {
+			if (e.record.nooperate && e.record.nooperate == 1) {
+				return null;
+			}
+			return epoint.renderCell(e, "action-icon icon-remove", "remove");
+		};
+
+		function remove(e) {
+			epoint.execute('remove', '', e, callback);
+		}
+
+		var grid = mini.get("datagrid");
+
+		grid.on("update", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+				if (rows[i].nooperate == 1) {
+					mini.get("datagrid").getCellEditor('paramname', i)
+							.setEnabled(false);
+				}
+			}
+		});
+
+		grid.on('cellclick', function(e) {
+			if (e.column.name == 'save') {
+				grid.commitEditRow(e.record);
+				save(e.record);
+			}
+		})
+
+		function add() {
+			var newRow = {
+				rowguid : "123456789",
+				paramname : "",
+				paramvalue : "",
+				description : ""
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditRow(newRow);
+		}
+
+		function addprikey() {
+			epoint.execute('addprikey', '', searchData);
+		}
+	</script>
+</body>
+</html>

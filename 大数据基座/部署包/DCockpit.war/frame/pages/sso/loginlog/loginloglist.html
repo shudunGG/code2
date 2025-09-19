@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>统一认证</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openIpManager();" id="btnAddRecord">
+				IP管理</a>
+		</div>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-search" opened="false" primaryControl="loginid">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="登录名" id="loginidSearch">
+						<input id="loginid" class="mini-textbox" bind="loginid" />
+					</div>
+					<div role="control" label="登录状态">
+						<input id="loginstate" class="mini-radiobuttonlist"
+							action="getSelectItem" bind="loginstate" value="-1" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="登录时间">
+						<table>
+							<tr>
+								<td><input id="starttime" class="mini-datepicker"
+									bind="starttime" format="yyyy-MM-dd H:mm:ss"
+									timeFormat="H:mm:ss" showTime="true" showOkButton="false"
+									showClearButton="true" /></td>
+								<td>至</td>
+								<td><input id="endtime" class="mini-datepicker"
+									bind="endtime" format="yyyy-MM-dd H:mm:ss" timeFormat="H:mm:ss"
+									showTime="true" showOkButton="false" showClearButton="true"
+									onValuechanged="endtimeval" style="float: right" /></td>
+							</tr>
+						</table>
+					</div>
+					<div role="control" label="登录IP">
+						<input id="loginip" class="mini-textbox" bind="loginip" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="loginid" width="150" align="left" headerAlign="center">登录名</div>
+				<div field="username" width="150" align="center"
+					headerAlign="center">用户名称</div>
+				<div field="platformname" width="150" align="center"
+					headerAlign="center">登录平台</div>
+				<div field="appname" width="150" align="center" headerAlign="center">应用名称</div>
+				<div field="loginstate" width="250" align="center"
+					headerAlign="center" renderer="loginstaterenderer">登录状态</div>
+				<div field="clientip" width="200" align="center"
+					headerAlign="center">登录IP</div>
+				<div field="accesstime" width="250" align="center" allowSort="true"
+					sortOrder="desc" headerAlign="center" sortOrder="desc"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" allowSort="true">登录时间</div>
+				<div field="errordescription" width="100%" align="center"
+					headerAlign="center">异常原因</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+	
+		// 初始化页面
+		epoint.initPage('loginloglistaction', null, function(e) {
+			mini.get("loginstate").setValue("-1");
+			// 如果不是管理员，则隐藏用户名搜索框
+			if(!e.isAdmin){
+				var loginidSearch = $("#loginidSearch");
+			
+				loginidSearch.hide();
+				loginidSearch.prev('label').hide();
+				$("#toolbar-search-loginid").hide();
+			}
+		});
+
+		function openIpManager() {
+			top.epoint.openDialog('IP管理',
+					"frame/pages/sso/loginipmanager/loginipmanager");
+		};
+
+		var loginstaterenderer = function(e) {
+			var val = e.value;
+			if ("登录成功" == val) {
+				return "<div class='mini-grid-cell-inner  mini-grid-cell-nowrap'><img class='img-item' src='../../login/images/icon-check.png' width='15px'></div>";
+			} else {
+				return "<div class='mini-grid-cell-inner  mini-grid-cell-nowrap'><img class='img-item' src='../../login/images/icon-remove.png' width='15px'></div>";
+			}
+		};
+
+		//验证时间
+		function endtimeval(e) {
+			var starttime = mini.get("starttime").value;
+			if (starttime != "") {
+				if (e.value != "" && e.value < starttime) {
+					epoint.alert("日期填写有误，请重新选择！");
+					mini.get("endtime").setValue("");
+				}
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], function() {
+				if (mini.get("loginstate").getValue() == '') {
+					mini.get("loginstate").setValue("-1");
+				}
+
+			});
+		}
+	</script>
+</body>
+</html>

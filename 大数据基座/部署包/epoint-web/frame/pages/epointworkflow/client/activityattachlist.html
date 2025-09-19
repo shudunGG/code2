@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title></title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<div id="uploader" pickerText="选择文件上传" class="mini-webuploader"
+				action="activityattachlistaction.getFileUploadModel"
+				fileSingleSizeLimit="5120"
+				limitType="doc,docx,txt,rar,zip,jpg,jpeg,pdf,xls,xlsx,gif,bmp,png"
+				mimeTypes="" auto="true" onbeforefilequeued="onBeforeFileQueued"
+				onfilesqueued="onFilesQueued" onuploadcomplete="onUploadComplete"
+				onfilesuccess="onfilesuccess" onuploadfinished="onUploadFinished"></div>
+			<a class="mini-button" id="close" iconCls="icon-save"
+				onclick="epoint.closeDialog('ok');">确认并关闭</a>
+				<a style="display: none;" class="mini-button mini-btn-danger" id="del"
+				iconCls="icon-removecircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的附件！', null, null, 'warning');} else {epoint.confirm('是否确定删除？','',deleteSelected);}">删除选中</a>
+			
+		</div>
+	</div>
+
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="attachguid" multiSelect="true" action="getDataGridData"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" allowCellSelect="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div field="attachfilename" headerAlign="center" width="100%">
+					附件名称</div>
+				<div field="adddate" headerAlign="center" width="200">添加时间</div>
+				<div headerAlign="center" align="center" width="80"
+					renderer="onDownLoadRender">下载</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage('activityattachlistaction', null, initCallback);
+		
+		var msg;
+		
+		function initCallback(data) {
+			if (data.type == "add") {
+				document.getElementById("del").style.display = 'none';
+				document.getElementById("uploader").style.display = '';
+				mini.get("datagrid").hideColumn(3);
+			} else if (data.type == "del") {
+				document.getElementById("del").style.display = '';
+				document.getElementById("uploader").style.display = 'none';
+				mini.get("datagrid").hideColumn(3);
+			} else if (data.type == "down") {
+				document.getElementById("del").style.display = 'none';
+				document.getElementById("uploader").style.display = 'none';
+				mini.get("datagrid").showColumn(3);
+			} else if (data.type == "addanddel") {
+				document.getElementById("del").style.display = '';
+				document.getElementById("uploader").style.display = '';
+				mini.get("datagrid").hideColumn(3);
+			} else if (data.type == "addanddown") {
+				document.getElementById("del").style.display = 'none';
+				document.getElementById("uploader").style.display = '';
+				mini.get("datagrid").showColumn(3);
+		    }else if (data.type == "delanddown") {
+				document.getElementById("del").style.display = '';
+				document.getElementById("uploader").style.display = 'none';
+				mini.get("datagrid").showColumn(3);
+			} 
+			else if (data.type == "addanddelanddown") {
+				document.getElementById("del").style.display = '';
+				document.getElementById("uploader").style.display = '';
+				mini.get("datagrid").showColumn(3);
+			}else {
+				document.getElementById("uploader").style.display = 'none';
+				document.getElementById("del").style.display = 'none';
+				mini.get("datagrid").hideColumn(3);
+			}
+			
+			if(!window.isfirstpageload){
+				mini.get('uploader').clearFile();
+				window.isfirstpageload = true;
+			}
+		}
+	
+		function deleteSelected() {
+			epoint.execute('activityattachlistaction.delete', 'datagrid',
+					searchData);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid']);
+		}
+
+		//渲染下载按钮
+		var onDownLoadRender = function(e) {
+			if (e.row.attachguid)
+				return epoint.renderCell(e, "action-icon icon-download",
+						"getDownLoadUrl", "attachguid");
+		}
+        
+		function getDownLoadUrl(attachguid){
+			epoint.execute('getDownLoadUrl', 'datagrid', [attachguid], downloadReport);
+		}
+		
+        function downloadReport(data){
+        	console.log("data="+data.url);
+        	window.open("../../../../" +data.url);
+        	//window.open("../../../../mis/base/attach/attachdown?attachGuid=" + attachGuid);
+        }
+		
+		function onBeforeFileQueued(e) {
+			if (e.file.name.length > 100) {
+				epoint.alert("文件名称长度不可以超过100！", null, null, 'warning');
+				e.cancel = true;
+			}
+		}
+
+		function onFilesQueued(event) {
+			function getSize(size) {
+				var K = 1024, M = 1048576;
+
+				if (size > M) {
+					return (size / M).toFixed(2) + "M";
+				} else {
+					return (size / K).toFixed(2) + "K";
+				}
+			}
+			var files = event.files, html = [], item = '';
+			// 向文件列表中添加记录
+			for (var i = 0, len = files.length; i < len; i++) {
+				item = '<div id="' + files[i].id + '" class="mini-uploader-item">'
+						+ '<span class="mini-uploader-info">'
+						+ files[i].name
+						+ '</span>'
+						+ '<span class="mini-uploader-size">('
+						+ getSize(files[i].size)
+						+ ')</span>'
+						+ '<span class="mini-uploader-error"></span>'
+						+ '<span class="mini-uploader-progressbar" style="display: none;"><span class="progress-text">0%</span><div class="progress-body"></div></span>'
+						+ '</div>';
+				html.push(item);
+			}
+// 			mini.mask({
+// 				el : document.body,
+// 				html : '<div class="mini-uploader-list">' + html.join('')
+// 						+ '</div>'
+// 			});
+		}
+
+		function onUploadFinished(e) {
+			epoint.refresh(['datagrid']);
+			e.sender.clearFile();// 移除所有文件，否则无法重新上传相同的文件
+			if (msg) {
+				epoint.alert(msg, '', null, 'info');
+				msg = null;
+			}
+		}
+
+		// 单个文件上传完成，隐藏进度条
+		function onUploadComplete(event) {
+			var file = event.file;
+			jQuery('#' + file.id).find('.mini-uploader-progressbar').fadeOut();
+		}
+
+		function onfilesuccess(e) {
+			if (e.data && e.data.extraDatas && e.data.extraDatas.msg) {
+				msg = e.data.extraDatas.msg;
+				return;
+			}
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>
+	
+	

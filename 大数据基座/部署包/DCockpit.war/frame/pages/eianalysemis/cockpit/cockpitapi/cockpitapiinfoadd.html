@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增API</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="服务名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.serviceName"
+							required="required" requiredErrorText="服务名称不能为空"
+							vtype="maxLength:50;" emptyText="请填写服务名称..." />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="请求类型">
+						<input id="requestType" bind="dataBean.requestType"
+							class="mini-radiobuttonlist" action="getRequestType"
+							required="true" requiredErrorText="请求类型/方法不能为空"
+							onvaluechanged="setmethod3" />
+					</div>
+					<div role="control" label="服务源类型" starred="true" id="apitype">
+						<input id="apiurltype" bind="dataBean.apiurltype"
+							class="mini-radiobuttonlist"
+							data="[{value:'0',text:'RestAPI'},{value:'1',text:'WebService'}]"
+							textField="text" valueField="value" required="true"
+							onvaluechanged="setmethod" />
+					</div>
+
+				</div>
+				<div role="row" id="contype">
+					<div role="control" label="Content-Type">
+						<input id="contentType" bind="dataBean.contentType"
+							class="mini-radiobuttonlist"
+							data="[{value:'0',text:'application/x-www-form-urlencoded'},{value:'1',text:'application/json'}]"
+							textField="text" valueField="value" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="接口源地址" id="apiUrlDiv" starred="true">
+						<input bind="dataBean.apiUrl" id="apiurl"
+							style="margin-right: 10px" class="mini-textbox"
+							onvalidation="urlCheck" required="true"
+							requiredErrorText="接口源地址不能为空" onvaluechanged="change()" /> <a
+							class="mini-button" id="parseWsUrl" onclick="parseWsUrl()"
+							style="width: 83px;">查询</a>
+					</div>
+				</div>
+				<div role="row" id="wsdlFileUploadRow">
+					<div role="control" label="方法名" id="methodrow" starred="true">
+						<input class="mini-combobox" showNullItem="true" required="true"
+							onvaluechanged="methodChanged" bind="dataBean.method"
+							showClose="true" oncloseclick="onCloseClick" emptyText="请选择..."
+							nullItemText="请选择..." id="method" textField="text"
+							allowInput="true" valueField="value"
+							requiredErrorText="WebService方法名不能为空" />
+					</div>
+					<div role="control"></div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="所属部门" starred="true">
+						<input id="id_ouguid" class="mini-treeselect" textField="text"
+							valueField="id" bind="dataBean.ouguid"
+							action="frameoulistaction.getTreeModel"
+							oncloseclick="onCloseClick" showClose="true" required="true"
+							shownullitem="true" requiredErrorText="所属部门不能为空" />
+					</div>
+
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.OrderNum"
+							vtype="int;range:0,99999;" emptyText="请填写排序号..." />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitapiinfoaddaction', null, function(data) {
+			mini.get('id_ouguid').disable();
+			var apiurltype = mini.get('apiurltype').getValue();
+			if (apiurltype == '0') {
+				Util.form.hideField('#methodrow');
+				var requestType = mini.get('requestType').getValue();
+				if (requestType == '1') {
+					$('#contype').css('display', 'none');
+				} else {
+					$('#contype').css('display', 'block');
+				}
+				$('#parseWsUrl').css('display', 'none');
+				$('#wsdlFileUploadRow').css('display', 'none');
+			} else {
+				Util.form.showField('#methodrow');
+				$('#contype').css('display', 'none');
+				$('#parseWsUrl').css('display', 'block');
+				$('#wsdlFileUploadRow').css('display', 'block');
+				mini.get('method').enable();
+			}
+			if(data.ouname){
+				mini.get("id_ouguid").setText(data.ouname);
+			}
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		//设置方法
+		function setmethod(e) {
+			if (e.value == '0') {
+				Util.form.hideField('#methodrow');
+				var requestType = mini.get('requestType').getValue();
+				if (requestType == '1') {
+					$('#contype').css('display', 'none');
+				} else {
+					$('#contype').css('display', 'block');
+				}
+				$('#parseWsUrl').css('display', 'none');
+				$('#wsdlFileUploadRow').css('display', 'none');
+			} else {
+				Util.form.showField('#methodrow');
+				$('#contype').css('display', 'none');
+				$('#parseWsUrl').css('display', 'block');
+				$('#wsdlFileUploadRow').css('display', 'block');
+				mini.get('method').enable();
+			}
+		}
+
+		function urlCheck(e) {
+			var patt = /(^\s+)|(\s+$)|\s+/g;
+			var strRegex = "^([hH][tT]{2}[pP]://|[hH][tT]{2}[pP][sS]://)[^\s]+";
+			var re = new RegExp(strRegex);
+			if (e.isValid) {
+				if (patt.test(e.value)) {
+					e.errorText = "接口源地址不能有空格";
+					e.isValid = false;
+				} else if (!re.test(e.value)) {
+					e.errorText = "接口源地址格式错误";
+					e.isValid = false;
+				}
+			}
+		}
+
+		function setmethod3(e) {
+			if (e.value == '1') {
+				$('#contype').css('display', 'none');
+			} else {
+				var apiurltype = mini.get('apiurltype').getValue();
+				if (apiurltype == '0') {
+					$('#contype').css('display', 'block');
+				}
+			}
+		}
+
+		function change() {
+			var apiurl = mini.get('apiurl').getValue();
+			if (apiurl != "") {
+				var _apiurltype = mini.get("apiurltype").getValue();
+				if (_apiurltype == '1') {
+					methodUrl = "cockpitapiinfoaddaction.action?cmd=getWebServiceMethodList&wsdlUrl="
+							+ apiurl;
+					mini.get('method').setUrl(methodUrl);
+				}
+			}
+		}
+		function parseWsUrl() {
+			mini.get('method').setUrl(methodUrl);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

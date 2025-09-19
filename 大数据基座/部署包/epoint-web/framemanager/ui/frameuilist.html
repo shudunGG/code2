@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>界面风格列表</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="restartAll">初始化主题</a>
+		<a class="mini-button" onclick="saveAll">保存修改</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10" showtype="tooltip">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			初始化主题：已有配置主题会被全部删除,重新扫描本地可用主题并以默认配置载入（一般用于第一次初始主题配置或者是出现问题主题数据进行数据还原修复）。
+		</p>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="界面名称">
+						<input bind="uiName" class="mini-textbox" />
+					</div>
+					<div role="control" label="主题类别">
+						<input id="themeType" autoLoad="false" bind="themeType"
+							action="getThemeTypes" textField="text" emptyText="请选择"
+							valueField="id" class="mini-combobox mr10" /> <input
+							id="themeTypes" action="getThemeTypesExcludeNull" autoLoad="true"
+							class="mini-combobox hidden" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="系统标题">
+						<input bind="title" class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" allowCellEdit="true" showPager="true"
+			action="getDataGridData" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="uiname" sortOrder="desc" vtype="required;maxLength:50">
+					界面名称 <input property="editor" class="mini-textbox"
+						style="width: 100%" maxlength="50" />
+				</div>
+				<div field="pageid" width="50" sortOrder="desc">界面标识</div>
+				<div field="themeType" type="comboboxcolumn" autoShowPopup="true"
+					width="80" readonly="true">
+					主题类别<input property="editor" class="mini-combobox"
+						onvalidation="onComboValidation" data="themeTypes"
+						allowInput="false" style="width: 99%" />
+				</div>
+				<div field="title" width="80" sortOrder="desc">
+					系统标题 <input property="editor" class="mini-textbox"
+						style="width: 100%" ; maxlength="50" />
+				</div>
+
+				<div field="orderNumber" width="40" vtype="int;range:0,99999999"
+					allowSort="true" sortOrder="desc">
+					排序 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%" />
+				</div>
+				<div field="isdisable" width="30" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">禁用</div>
+				<div type="actioncolumn">
+					操作 <span type="action" icon="icon-copy" onclick="createUi">复制</span>
+					<span type="action" icon="icon-gear" onclick="auth">权限</span> <span
+						type="action" icon="icon-edit" onclick="editUi">修改</span> <span
+						type="action" icon="modicon-22" onclick="accredit"
+						renderer="onDeskManageRenderer">桌面管理</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		//初始化页面
+		epoint.initPage('frameuilistaction', '@all', function(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'warning'});
+			}
+		});
+
+		var themeTypes;
+
+		var combox = mini.get("themeType");
+
+		combox.on("load", function(e) {
+			themeTypes = e.sender.data;
+		});
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 在表格数据加载完之后打开表格编辑状态
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 弹出新增窗口
+		/* 		function addUi() {
+		 var url = 'framemanager/ui/frameuiadd';
+		 epoint.openDialog("新增界面", url, addCallBack, {
+		 'width' : 1100,
+		 'height' : 500
+		 });
+		 } */
+
+		//初始化主题
+		function restartAll() {
+			epoint.alert('初始化主题操作会删除全部主题已有配置,重新载入本地可用主题,确定要进行初始化操作？', '系统提醒',
+					function(action) {
+						if (action == 'ok') {
+							epoint.execute("restartAll", [ 'datagrid',
+									'fui-form' ], function(data) {
+								epoint.showTips(data.msg,  {state : 'success'});
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+							});
+						}
+					});
+
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		function editCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param,  {state : 'success'});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+		// 弹出修改窗口
+		function editUi(row) {
+			var url = 'framemanager/ui/frameuiedit?uiguid=' + row.rowguid;
+			epoint.openDialog("修改界面", url, editCallBack, {
+				'width' : 700,
+				'height' : 650
+			});
+		}
+
+		// 删除一行数据
+		function deleteUi(uiguid) {
+			// 弹出确认框
+			epoint.confirm("删除该界面将同时删除桌面应用数据，确定删除吗?", '', function() {
+				epoint.execute("deleteFrameUi", '', [ uiguid ], function(data) {
+					if (data.msg) {
+						epoint.showTips(data.msg,  {state : 'success'});
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		//绘制桌面管理按钮
+		var onDeskManageRenderer = function(e) {
+			if (!e.record.isAllowDesk) {
+				e.icon.visible = false;
+			}
+		};
+		// 弹出桌面管理窗口
+		function accredit(row) {
+			epoint.openDialog('模块订阅',
+					"framemanager/ui/desk/appmanagement/appmanagement?uiguid="
+							+ row.rowguid, searchData, {
+						'width' : 1400,
+						'height' : 900
+					});
+		}
+
+		// 弹出授权窗口
+		function auth(row) {
+			epoint.openDialog('权限', "framemanager/ui/frameuirightsetting?guid="
+					+ row.rowguid, searchData, {
+				'width' : 950,
+				'height' : 550
+			});
+		}
+		//绘制选择模块按钮
+		var onModuleRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-22",
+					"selectModule");
+		};
+		// 弹出模块窗口
+		function selectModule(id) {
+			epoint.openDialog('选择关联模块',
+					"framemanager/ui/selectupstagemodule?guid=" + id,
+					searchData, {
+						'width' : 800,
+						'height' : 550
+					});
+		}
+		//修改监听
+		function onComboValidation(e) {
+			var items = this.findItems(e.value);
+			if (!items || items.length == 0) {
+				e.isValid = false;
+				e.errorText = "输入值不在下拉数据中";
+			}
+		}
+
+		//保存列表修改
+		function saveAll() {
+
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+
+			epoint.execute("saveAll", [ 'datagrid', 'fui-form' ],
+					function(data) {
+						epoint.showTips(data.msg,  {state : 'success'});
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					});
+
+			//if(epoint.validate("datagrid")){
+			//	epoint.execute("saveAll",[ 'datagrid', 'fui-form' ],function(data){
+			//		epoint.alert(data.msg);
+			//		searchData();
+			//	});
+			//}
+		}
+
+		//]]>
+
+		//打开复制页
+		function createUi(row) {
+			epoint.openDialog("复制主题", 'framemanager/ui/frameuiadd?uiguid='
+					+ row.rowguid, addCallBack, {
+				'width' : 1000,
+				'height' : 580
+			});
+		}
+	</script>
+
+
+</body>
+</html>

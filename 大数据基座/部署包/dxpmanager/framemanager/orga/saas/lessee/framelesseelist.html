@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>三员管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/lesseemanage.css">
+<style>
+	.fui-toolbar {
+		height: 0.36rem;
+	}
+</style>
+
+</head>
+
+<body>
+	<div class="three-box">
+		<div class="three-header -close close" id="three-header">
+			<!-- 左侧信息 -->
+			<div class="left-info l">
+				<div class="info-img l">
+					<img src="css/images/three.jpg" alt="" />
+				</div>
+				<div class="info-status l">
+					<h3 class="info-title">
+						租户管理： <span class="status-text"></span>
+					</h3>
+
+					<p class="info-desc">开启后可进行租户的相关管理</p>
+
+					<div class="close-manage" id="closeManage"></div>
+				</div>
+			</div>
+		</div>
+		<!-- 表单 -->
+		<div class="three-contain">
+			<div class="three-tablelist close" id="three-tablelist">
+				<!-- 此处放列表 -->
+
+				<!-- toolbar区域 -->
+				<div class="fui-toolbar">
+					<div class="btn-group mr10">
+						<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();" id="btnAddRecord"> 新增租户 </a>
+						<a id="btnDel" class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+						onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}"> 删除选定 </a>
+					</div>
+				</div>
+
+				<!-- 条件区域 -->
+				<div class="fui-condition">
+					<div class="fui-form" id="fui-form">
+						<div id="cform" role="form">
+							<div role="row">
+								<div role="control" label="租户名称">
+									<input id="search_Lesseename" class="mini-textbox"  emptyText="" 
+									bind="dataBean.lesseename" onkeyenter="searchData();"
+									 />
+								</div>
+								<div role="control" label="租户标示名称">
+									<input id="search_Lesseesysname" class="mini-textbox"
+									bind="dataBean.lesseesysname"
+									onkeyenter="searchData();" />
+								</div>
+							</div>
+						</div>
+					</div>
+					 <a role="searcher" callback="searchData"></a> 
+				</div>
+				
+				<!-- 内容区域 -->
+				<div id="fuiContent" class="fui-content">
+					<div id="datagrid" class="mini-datagrid" idField="rowguid"
+					action="getDataGridData" sortOrder="desc" showPager="true"
+					style="height: 100%;" allowResize="true" multiSelect="true"
+					allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+					editNextRowCell="true">
+						<div property="columns">
+							<div type="checkcolumn" width="50"></div>
+							<div type="indexcolumn" width="50" headerAlign="center">
+								序
+							</div>
+							<div field="lesseename" headerAlign="center" width="200" >
+								租户名称
+							</div>
+							<div field="lesseesysname" headerAlign="center" width="100%">
+								租户标示名称
+							</div>
+							<div field="ouname" headerAlign="center" width="200" >
+								关联部门名称
+							</div>
+							<div field="datasourcename" headerAlign="center" width="100" >
+								关联数据源
+							</div>
+							<div field="ordernumber" headerAlign="center" align="right" width="100">
+								排序值
+							</div>
+							<div width="80" align="center" headerAlign="center"
+							renderer="onEditRenderer">
+								修改
+							</div>
+							修改
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		epoint.initPage('framelesseelistaction', null, initData);
+		
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录', "framemanager/orga/saas/lessee/framelesseeadd", function(){
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}, {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录', "framemanager/orga/saas/lessee/framelesseeedit?guid=" + id, function(){
+				epoint.refresh(['datagrid', 'fui-form'],'',true);
+			}, {
+				'width' : 1000,
+				'height' : 600
+			});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, 'info');
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form']);
+		} 
+
+	    var $threeHeader = $('#three-header'),
+	        $threeTablelist = $('#three-tablelist'),
+	        $threeLayer = $('#three-layer');
+
+	    var currentStatus;  // 当前开启/关闭状态 0 表示关闭，1表示开启
+
+	    // 初始化状态
+	    var renderStatus = function(currentStatus) {
+	        if(currentStatus == 0) {
+	            $threeHeader.addClass('close');
+	            $threeTablelist.addClass('close');
+	        } else {
+	            $threeHeader.removeClass('close');
+	            $threeTablelist.removeClass('close');
+	        }
+	    }
+
+	    // 初始化页面数据
+	    function initData(res){
+	    	currentStatus = res.enableLessee;
+	        renderStatus(currentStatus);
+	    }
+	    
+	    // 交互事件
+	    $threeHeader.on('click', '.close-manage', function() {
+	        // 调用接口，关闭成功就addClass('close');
+	        // 开启成功就 removeClass('close');
+	        if(currentStatus == 0) {
+    			confirmMsg = "是否确认开启租户模式";
+	    	}
+	    	else {
+	    		confirmMsg = "是否确认关闭租户模式";
+	    	}
+	    	epoint.confirm(confirmMsg, '确认', function(){
+	    		epoint.execute('switchLesseeManageStatus', '', function (data) {
+	        		if(data) {
+	        			if(data.success) {
+	    					epoint.alert(data.msg, '', '', 'success');
+	    					epoint.execute('init', '', function (data) {
+	        					initData(data);
+	            				epoint.refresh(['datagrid']);
+	            			});
+	        			}
+	        			else {
+	        				if(data.msg) {
+	    						epoint.alert(data.msg, '', '', 'warning');
+	    					}
+	        			}
+	                }
+	        	});
+	    	});
+	    });
+	</script>
+</body>
+
+</html>

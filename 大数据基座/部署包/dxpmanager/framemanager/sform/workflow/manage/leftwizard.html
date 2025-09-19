@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>工作流设计向导页</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+	//<![CDATA[       
+	var WizardNav = {
+		// 获取流程数据的请求url
+		loadUrl : 'sformproccess',
+
+		// ajax请求参数
+		params : {
+			query : 'init-wizard',
+			moduleCode : Util.getUrlParams('moduleCode')
+		},
+		
+		// 初始化回调
+		function onInit(flow) {
+			var params = Util.getUrlParams(),
+				url = flow.getData().url,
+				prop = null,
+				rt = {};
+			for(prop in params) {
+				if(prop == 'moduleCode' || prop == 'dialogId') {
+					delete params[prop];
+				}
+			}
+			flow.setUrl(url + (url.indexOf('?') == -1 ? '?' : '&') + $.param(params));
+		},
+
+		// dir为步骤切换标识：
+		// 'next'（下一步）
+		// 'prev'（上一步）
+		// 'over'（结束）
+		// --------------------------------
+		// flow为当前流程对象，支持方法：
+		// next(): 获取下一步流程对象
+		// prev(): 获取上一步流程对象
+		// getIndex(): 获取流程的顺序索引，从0开始
+		// isFirst(): 是否为第一步
+		// isLast(): 是否为最后一步
+		// disable(): 锁死流程（使流程失效），不可切换到该流程
+		// enable(): 解锁路程（启动流程）
+		// isDisabled(): 是否为锁死状态
+		// getData(): 获取流程相关数据（即初始化时ajax返回的json数据）
+		// --------------------------------
+		// 返回false，终止步骤切换
+		onStepChange : false
+	};
+//]]>
+	</script>
+</body>
+</html>

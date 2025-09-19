@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Change line condition setting</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" onclick="addTransition" style="display: none;">sure add</a>
+			<a class="mini-button" id="save" onclick="saveTransition" style="display: none;">save changes</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="Name of conditions" starred="true">
+						<input id="conName" class="mini-textbox" required="true" requiredErrorText="Name of conditions Can't be empty!"
+							bind="workflowTransitionCondition.conditionName" />
+					</div>
+				</div>
+				<div role="row" id="singleLRow">
+					<div role="control" label="The left value">
+						<input id="leftMethodGuid" bind="workflowTransitionCondition.leftValue" class="mini-buttonedit" onbuttonclick="selectLeft" selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row" id="singleCRow">
+					<div role="control" label="Comparison operators">
+						<input class="mini-combobox"
+							bind="workflowTransitionCondition.compareOperation"
+							data="[{text:'Less than',id:'&lt;'},{text:'Is greater than',id:'&gt;'},{text:'Is equal to the',id:'='},{text:'Don'tIs equal to the',id:'!='}]" />
+					</div>
+				</div>
+				<div role="row" id="singleRRow">
+					<div role="control" label="The right value">
+						<input id="rightMethodGuid" bind="workflowTransitionCondition.rightValue" class="mini-buttonedit" onbuttonclick="selectRight" selectOnFocus="true"  />
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitytransitionconditionaction', null, initCallBack);
+		
+		var processVersionGuid;
+		
+		//Initializes the callback event
+		function initCallBack(data) {
+			processVersionGuid = data.processVersionGuid;
+			buttonShow(data.type);
+			if (data.type == 'edit')//edit by jihy type='10'changed to type == 'edit',appear left and right value when in edit status
+			{
+				mini.get("leftMethodGuid").setText(mini.get("leftMethodGuid").getValue());
+				mini.get("rightMethodGuid").setText(mini.get("rightMethodGuid").getValue());
+			}
+		}
+		
+		//Choose left value
+		function selectLeft() {
+			epoint.openDialog(
+							'Select relevant data',
+							"framemanager/sform/workflow/design/designhelper?mode=contextmaterialfield&processVersionGuid="
+									+ processVersionGuid, selectLeftCallBack, {
+								width : 480,
+								height : 300
+							});
+		}
+		
+		function selectLeftCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				//To determine whether the direct selection of the material form field
+				if(datas.length==2){
+					mini.get("leftMethodGuid").setValue("[#=" + datas[1] + "#]");
+					mini.get("leftMethodGuid").setText("[#=" + datas[1] + "#]");
+				}
+				else if(datas.length==3){//If it is a direct selection of material form fields,Parameter input pid，datas.length==3
+					//custom
+					if(datas[2]=="10"){
+						epoint.execute('calculateContextFieldType','',datas[0]);
+						mini.get("leftMethodGuid").setValue("[#=" + datas[1] + "#]");
+						mini.get("leftMethodGuid").setText("[#=" + datas[1] + "#]");
+					}
+					else{
+						//Material form field[#=EPOINTFORM (FromMaterialGuid, FromMisTableID,  FromFieldName)#])，FieldType after the value type is obtained, the entity is stored
+						epoint.execute('calculateMaterialFieldType','',datas[1]);
+						mini.get("leftMethodGuid").setValue("[#=EPOINTFORM(" + datas[2] + "," + datas[1] + "," + datas[0] + ")#]");
+						mini.get("leftMethodGuid").setText("[#=" + datas[0] + "#]");
+					}
+				}
+			}
+		}
+		
+		//右值选择
+		function selectRight() {
+			epoint.openDialog(
+							'Select relevant data',
+							"framemanager/sform/workflow/design/designhelper?mode=context&processVersionGuid="
+									+ processVersionGuid, selectRightCallBack,
+							{
+								width : 480,
+								height : 300
+							});
+		}
+
+		function selectRightCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("rightMethodGuid").setValue("[#=" + datas[1] + "#]");
+				mini.get("rightMethodGuid").setText("[#=" + datas[1] + "#]");
+			}
+		}
+
+		//Show hidden control
+		function buttonShow(type) {
+			if (type == "add") {
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+			} else if (type == "edit") {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("save").style.display = "";
+			}
+		}
+
+		//new
+		function addTransition() {
+			if (epoint.validate()) {
+				epoint.execute('addTransition', 'fui-form', function(data) {
+					if(data.flag !=null && (data.flag == "1")){
+						epoint.alertAndClose(data.message, '', null, null, 'info');
+					}else{
+						epoint.alert(data.message, '', null, 'info');
+					}
+					buttonShow("edit");
+				});
+			}
+		}
+
+		//save
+		function saveTransition() {
+			if (epoint.validate()) {
+				epoint.execute('saveTransition', 'fui-form', function(data) {
+					epoint.alert(data.message, '', null, 'info');
+				});
+			}
+		}
+		
+		//delete
+		function deleteTransition() {
+			epoint.execute('delTransition', 'fui-form', function(data) {
+				epoint.alert(data.message, '', null, 'info');
+				//Restore page
+
+				buttonShow('add');
+				epoint.clear("fui-form");
+				mini.get("conditionExpressionType").setValue(10);
+			});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

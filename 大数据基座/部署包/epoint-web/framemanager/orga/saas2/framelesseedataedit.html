@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<title>租户数据管理修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="租户名称">
+					<input id="lesseename" class="mini-outputtext" bind="dataBean.lesseename"></input>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="租户标示名称">
+					<input id="lesseesysname" class="mini-outputtext" bind="dataBean.lesseesysname"></input>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="数据初始化类" starred="true">
+					<input id="classname" class="mini-textbox"
+						   bind="dataBean.classname" required="true"
+						   requiredErrorText="初始化类不能为空!" maxLength="100" vtype="maxLength:100"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="数据初始化策略">
+					<input id="strategy" class="mini-combobox"
+						   bind="dataBean.strategy" action="getItemList" maxLength="100" vtype="maxLength:100"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序值">
+					<input id="ordernumber" class="mini-textbox"
+						   bind="dataBean.ordernumber" vtype="int;range:0,99999999"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="默认同步范围">
+					<input id="noteDesc" class="mini-outputtext" style="color:red"/>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('framelesseedataeditaction', null, function(){
+			var list = ['框架默认实现类：com.epoint.basic.controller.sysconf.saas2.DefaultSynchroData'];
+			list.push('同步用户：defaultSynchroData.getOrgan()');
+			list.push('同步系统参数：defaultSynchroData.getFrameConfig()');
+			list.push('同步代码主项：defaultSynchroData.getCodeMains()');
+			list.push('同步代码子项：defaultSynchroData.getCodeItems()');
+			var html = list.join('<br/>');
+			mini.get('noteDesc').setValue(html);
+		});
+		
+		var onCloseClick = function(e) {
+
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.success) {
+				epoint.closeDialog(data.msg);
+			} else {
+				epoint.showTips(data.msg, {state : 'danger'});
+			}
+		}
+	</script>
+</body>
+</html>

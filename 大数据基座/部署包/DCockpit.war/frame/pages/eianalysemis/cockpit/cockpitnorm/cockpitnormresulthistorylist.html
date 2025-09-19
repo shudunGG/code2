@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标定义表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	
+	<!-- toolbar区域 -->
+	<!-- <div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存并送审</a>
+		</div>
+	</div> -->
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="width: 100%; height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns"></div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitnormresulthistorylistaction', null, function(e) {
+			if (e.msg == "error") {
+				epoint.alert("数据异常");
+				return;
+			}
+			if(e.joblogCount == 0) {
+				epoint.alert("该指标还未运行，暂无数据", "查看数据" );
+			}
+			else {
+				if(e.count == 0 ){
+					epoint.alert("上次执行无结果，请检查指标配置或查看执行日志");
+				}
+			}
+			createGrid(e.columns);
+		});
+		
+		function saveAndClose() {
+			epoint.alertAndClose("已经提交审核");
+		}
+		
+		var grid = mini.get("datagrid");
+		function createGrid(columns) {
+			// for(var i=0;i<columns.length;i++){
+			// 	if (columns[i].header != '序') {
+			// 		columns[i].editor={
+			// 			type:'textbox'
+			// 		}
+			// 	}
+			// }
+			grid.setColumns(columns);
+		}
+	</script>
+</body>
+</html>

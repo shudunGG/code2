@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>分库分表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="openAdd();"
+			id="btnAddRecord"> 新增配置 </a> <a class="mini-button"
+			onclick="saveAll()">保存修改</a> <a id="btnDel" class="mini-button"
+			state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" id="sourceTable" bind="sourceTable"
+				emptyText="请输入源表名称搜索" onenter="searchData" /> <input
+				class="mini-combobox" id="shardingType" bind="shardingType"
+				action="getTypeList" emptyText="请输入分库分表类型搜索" allowInput="false"
+				autoLoad="true" onvaluechanged="searchData" showClose="true"
+				oncloseclick="onCloseClick" onenter="searchData" /> <a
+				class="mini-button ml8" state="primary" iconCls="icon-search"
+				onclick="searchData" tooltip="搜索"></a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>初始化：包含2步，先按规则 建表，然后 将源表数据导入到这些表中。如果表已自行建立，请确保这些 规则表 中 无数据。</p>
+		<p>超过5w条的数据请自行按照既定规则 导入到各个分表或分库中。</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="sourcedbname" width="100"
+					renderer="onSourcedbnameRender">源库名称</div>
+				<div field="sourcetable" width="200">源表名称</div>
+				<div field="showshardingtype" width="80">类型</div>
+				<div field="showshardingkey" width="100%">分(片/库)键</div>
+				<div field="showshardinginter" width="150">分(片/库)策略</div>
+				<div field="orderNumber" width="80" vtype="int" allowSort="true">
+					排序 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%;" />
+				</div>
+				<div field="isuse" width="60" type="checkboxcolumn" truevalue="1"
+					falsevalue="0">启用</div>
+				<div width="80" renderer="onInitRenderer">初始化</div>
+				<div width="80" renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('frameshardinglistaction', '', function(e) {
+			if (e.dependency) {
+				epoint.showTips('检测到组件未引入，请联系管理员！',  {state : 'warning'});
+			}
+		});
+
+		//初始化
+		function initSharding(rowguid) {
+			epoint.confirm('确认要初始化吗', '初始化确认', function () {
+				epoint
+				.execute('initSharding', '', '[' + rowguid + ']',
+						msgCallBack);
+			}, function () {
+				epoint.closeDialog('close');
+			});
+
+			
+			
+		}
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 绘制源数据源名称
+		var onSourcedbnameRender = function(e) {
+			var sourcedbname = e.value;
+			if (sourcedbname == 'unknow') {
+				return "<span style=\"color:red;\">源数据源已删除，请删除重建</span>";
+			}
+			return sourcedbname;
+		}
+
+		//绘制初始化按钮
+		var onInitRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"initSharding", "rowguid");
+		};
+
+		// 绘制修改
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit",
+					"rowguid");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增分库分表配置',
+					"framemanager/metadata/sharding/frameshardingadd",
+					function(param) {
+						if (param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 800,
+						'height' : 600
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改分库分表配置',
+					"framemanager/metadata/sharding/frameshardingedit?guid="
+							+ id, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 800,
+						'height' : 650
+					});
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg, {state : 'success'});
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				} else {
+					epoint.showTips(msg, {state : 'warning'});
+				}
+			}
+		}
+
+		// 保存
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', msgCallBack);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', msgCallBack);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			searchData();
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

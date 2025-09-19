@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>外部通讯录列表</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+        SrcBoot.output([
+            './css/communicate.css'
+        ]);
+    </script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="content nicescroll">
+			<!--<img src="http://localhost:8081/EpointOA9/rest/oa9/communication/businesscard/outerdetailviewaction/loadImg?uid=0eb96dff-184c-484b-9ed4-7fab3c73fb48&isCommondto=true">-->
+
+
+			<!-- 头像信息栏 -->
+			<div class="staff-baseinfo clearfix">
+				<div class="staff-portrait big">
+					<img alt="portrait" class="icon-portrait" id="linkpic" /> <img
+						src="images/icon-girl.png" alt="gender" class="icon-gender"
+						id="icon-sex">
+				</div>
+				<p class="name" id="linkdisplayname"
+					style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 50%;"></p>
+				<p class="dept info">
+					部门 <span class="text" id="deptname"></span>
+				</p>
+				<p class="duty info">
+					职务 <span class="text" id="title"></span>
+				</p>
+				<p class="mobile info">
+					手机<span class="text" id="mobile"></span>
+				</p>
+				<p class="phone info">
+					办公<span class="text" id="telephoneoffice"></span>
+				</p>
+				<div class="sender-bar big">
+					<!--<a href="#" class="bar-func contactmail">发邮件</a>
+                    <a href="#" class="bar-func webmsg">微消息</a>-->
+					<!--<a href="#" class="bar-func sendermsg">发短信</a>-->
+					<!--<a href="#" class="bar-func share">分享</a>-->
+					<!--  <div class="bar-more">更多</div>-->
+				</div>
+				<div class="staff-btn">
+					<a class="mini-button" plain="true" iconCls="icon-minuscircle"
+						onclick="outeraddressdelete">删除</a> <a
+						class="mini-button mini-btn-primary" id="com-edit-btn"
+						onclick="outeraddressedit">编辑</a>
+				</div>
+			</div>
+			<!-- 详细信息栏 -->
+			<div class="detailsinfo">
+				<!-- 联系方式 -->
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<div role="row" style="display: none">
+
+							<div role="control" label="排序">
+								<span class="mini-outputtext" bind="dataBean.ordernumber" vtype="int;range:0,99999999"></span>
+							</div>
+						</div>
+						<!--<div role="row">
+							<div role="control" label="手机号码">
+								<span class="mini-outputtext" bind="dataBean.mobile"></span>
+							</div>
+							<div role="control" label="办公号码">
+								<span class="mini-outputtext" bind="dataBean.telephoneoffice"></span>
+							</div>
+						</div>-->
+						<div role="row">
+							<div role="control" label="QQ号码">
+								<span class="mini-outputtext" bind="dataBean.qqnumber"></span>
+							</div>
+							<div role="control" label="电子邮件">
+								<span class="mini-outputtext" bind="dataBean.email"></span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="家庭电话">
+								<span class="mini-outputtext" bind="dataBean.telephonehome"></span>
+							</div>
+							<div role="control" label="其他通讯">
+								<span class="mini-outputtext" bind="dataBean.otherimnumber"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- 其他 -->
+				<div class="otherinfo">
+					<div class="fui-form">
+						<div role="form">
+
+							<div role="row">
+								<div role="control" label="部门">
+									<span class="mini-outputtext" bind="dataBean.deptname"></span>
+								</div>
+								<div role="control" label="传真">
+									<span class="mini-outputtext" bind="dataBean.fax"></span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="职务">
+									<span class="mini-outputtext" bind="dataBean.title"></span>
+								</div>
+								<div role="control" label="邮编">
+									<span class="mini-outputtext" bind="dataBean.postaladdress"></span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="单位">
+									<span class="mini-outputtext" bind="dataBean.companyname"></span>
+								</div>
+								<div role="control" label="地址">
+									<span class="mini-outputtext" bind="dataBean.workaddress"></span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="主页">
+									<span class="mini-outputtext" bind="dataBean.weburl"></span>
+								</div>
+								<div role="control" label="个人博客">
+									<span class="mini-outputtext" bind="dataBean.txtpersonweburl"></span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="说明">
+									<span class="mini-outputtext" bind="dataBean.note"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+        SrcBoot.output([
+            '../../../fui/js/lib/jquery.nicescroll.min.js'
+        ]);
+    </script>
+	<script>
+         var $rightDetails = window.parent.$('#right-details'),
+            $initial = window.parent.$('.initial', $rightDetails),
+            $infodetail = window.parent.$('.infodetail', $rightDetails),
+            uid=Util.getUrlParams().uid;
+        epoint.initPage('outerdetailviewaction', null, function(data) {
+            $("#linkpic").attr('src','../../../rest/oa9/communication/businesscard/outerdetailviewaction/loadImg?uid='+data.dataBean.linkuserguid+'&isCommondto=true&vvv='+Math.random());
+            if(data.dataBean.sex=="男"){
+                $("#linkpic").attr('onerror',"javascript:this.src='images/photo-boy.png';");
+            }else{
+                $("#linkpic").attr('onerror',"javascript:this.src='images/photo-girl.png';");
+            }
+
+            if(data.dataBean){
+                $("#linkdisplayname").html(data.dataBean.linkdisplayname);
+                $("#deptname").html(data.dataBean.deptname);
+                $("#title").html(data.dataBean.title);
+                $("#mobile").html(data.dataBean.mobile);
+                $("#telephoneoffice").html(data.dataBean.telephoneoffice);
+
+                if(data.dataBean.sex=="男"){
+                     $("#icon-sex").attr('src','images/icon-boy.png');
+                }
+                else{
+                    $("#icon-sex").attr('src','images/icon-girl.png');
+                }
+
+            }
+        	//加个高度控制的js
+			var heightpart=$('.otherinfo').height();
+			$('.detailsinfo').height(heightpart+90);
+		});
+        Util.hidePageLoading();
+
+
+        //nicescroll
+        $(".nicescroll").niceScroll({
+            touchbehavior: false,
+            cursorcolor: "#f2f2f2",
+            cursoropacitymax: 1,
+            cursorwidth: 5,
+            cursorborder: "none",
+            cursorborderradius: "5px",
+            autohidemode: false
+        });
+
+        function outeraddressdelete() {
+
+        epoint.confirm("确定删除选中记录？", "", function(action) {
+             epoint.execute('outerdetailviewaction.outeraddressdelete', null, null, function(data) {
+
+                epoint.alert('刪除成功！','提醒' , function(action){
+                    window.parent.location.reload();
+                    reset(data);
+                });
+            });
+        });
+
+    }
+
+    function outeraddressedit() {
+            $initial.addClass('hidden');
+            $infodetail.children('iframe').attr('src', 'outerdetailedit?uid='+Util.getUrlParams().uid);
+            $infodetail.removeClass('hidden');
+            var tempsrc='outerdetailedit?uid='+Util.getUrlParams().uid;
+            if($infodetail.children('iframe').attr("src")!=tempsrc){
+                epoint.openDialog('修改人员信息', "oa9/communication/businesscard/outerdetailedit?uid="+Util.getUrlParams().uid, function(data){
+                	<!--searchData();-->
+                	window.location.reload();
+                }, {
+		        });
+            }
+    }
+    function searchData() {
+        epoint.refresh(['fui-form','fui-content']);
+        window.parent.requestCard();
+
+    }
+     function reset(data) {
+                <!--afterGetData(data);-->
+
+                <!--//刷新左侧列表内的文件夹列表-->
+                window.parent.parent.freshaddresslist(data);
+
+        }
+    </script>
+</body>
+
+</html>

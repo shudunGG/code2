@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>重发消息列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a id="btnDel" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!',  {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-search">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form" style="margin-right: 100px">
+				<div role="row">
+					<div role="control" label="时间">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options='{"format":"yyyy-MM-dd "}' width="44%"
+							dateFormat="yyyy-MM-dd " align="center" bind="beginTime" />
+							<div style="margin-left: 15px; margin-right: 15px">至</div>
+							 <input
+							class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options='{"format":"yyyy-MM-dd "}' width="44%"
+							dateFormat="yyyy-MM-dd " align="center" bind="endTime" />
+					</div>
+					<div role="control" label="剩余重试次数">
+						<input class="mini-textbox" vtype="int;max:99999999"
+							bind="retryCount" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a> <a role="reset"
+			callback="resetCallback"></a> <a role="close"
+			callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="messageguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="title" width="100%" renderer="onTitleRender">标题</div>
+				<div field="channelname" width="150">渠道</div>
+				<div field="waitsendtime" width="200"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">待发送时间</div>
+				<div field="retrycount" width="120">剩余重试次数</div>
+				<div type="actioncolumn">
+					操作 <span type="action" icon="icon-edit" onclick="openEdit">修改</span>
+					<span type="action" icon="modicon-44" onclick="sendMessage">立即重发</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesresendlistaction');
+
+		// 弹出修改窗口
+		function openEdit(row) {
+			epoint.openDialog('修改记录',
+					"framemanager/messages/waitsend/messageswaitsendedit?type=resend&guid="
+							+ row.messageguid, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 请求后台重发
+		function sendMessage(row) {
+			epoint.execute("sendMessage", '', row.messageguid, callback);
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+			if (data.messagesmessageguid) {
+				epoint.showTips(data.resultmsg,{state : 'success'});
+				openLog(data.messagesmessageguid, data.channelguid);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!", {state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!", {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		function onTitleRender(e) {
+			var messagesmessageguid = e.row['messagesmessageguid'];
+			var channelguid = e.row['channelguid'];
+			url = "<a style=\"cursor:pointer\" onclick=\"openLog('"
+					+ messagesmessageguid + "','" + channelguid + "')\" >"
+					+ e.value + "</a>";
+			return url;
+		}
+
+		function openLog(messagesmessageguid, channelguid) {
+			epoint.openDialog('关联日志',
+					"framemanager/messages/log/messagesloglist?messagesMessageGuid="
+							+ messagesmessageguid + "&channelGuid="
+							+ channelguid, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+</body>
+</html>

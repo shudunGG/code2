@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>信息发布</title>
+<!-- 请修改相对路径 -->
+<!-- <script>
+	window.UEDITOR_HOME_URL = "/eiAnalyse/frame/pages/eianalysemis/cockpit/js/ueditor/";
+</script> -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<!-- <script type="text/javascript" charset="utf-8"
+	src="../js/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8"
+	src="../js/ueditor/_examples/editor_api.js"></script> -->
+<style type="text/css">
+.form-label {
+	width: 10%;
+}
+
+.form-control.span2 {
+	width: 40%;
+}
+
+.form-control.span5 {
+	width: 90%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose(0)">保存</a><a class="mini-button"
+				iconCls="icon-save" id="addClose" onclick="saveAndClose(1)">发布</a> <a
+				class="mini-button" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="信息标题" starred="true">
+						<input class="mini-textbox" bind="dataBean.title"
+							required="required" requiredErrorText="信息标题不能为空"
+							vtype="maxLength:50;" emptyText="请填写信息标题..." />
+					</div>
+					<div role="control" label="放置栏目" starred="true">
+						<input id="category" class="mini-treeselect" textField="text"
+							idField="id" action="getOuCateTreeModel" maxlength="50"
+							bind="dataBean.categoryguid" required="true"/>
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="信息类型">
+						<div class="mini-radiobuttonlist" action="getInfoTypeList"
+							id="infotype" bind="dataBean.infotype"
+							onvaluechanged="onTypeChanged"></div>
+					</div>
+					<div role="control" label="标题类型" id="titletypelabel">
+						<div class="mini-radiobuttonlist"
+							onvaluechanged="onTitleTypeChanged" action="getTitleTypeList"
+							id="titletype" bind="dataBean.titletype"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="发布日期">
+						<input bind="dataBean.publishdate" id="beginDate"
+							class="mini-datepicker" onvaluechanged="onValueChanged" allowInput="false"/>
+					</div>
+					<div role="control" label="截止有效期">
+						<input bind="dataBean.publishenddate" id="endDate"
+							class="mini-datepicker" onvaluechanged="onValueChanged" allowInput="false"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="发布人" starred="true">
+						<input id="tree1" class="mini-treeselect" action="getRadModel" 
+							bind="dataBean.createuserguid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text" showFilter="true"
+							idField="id" expandOnLoad="true" required="true" />
+					</div>
+
+					<div role="control"></div>
+				</div>
+				<div class="news">
+					<div role="row" id="picrow">
+						<div role="control" label="标题图片">
+							<div id="uploader" class="mini-webuploader" pickerText="上传图片"
+								action="getPicModel" limitType="jpeg,jpg,gif,png,bmp"
+								auto="true" fileNumLimit="1" onfilesuccess="OnPictureSuccess"
+								fileSizeLimit="100k"></div>
+							<div class="img-view" id="picture" style="display: none;"></div>
+
+						</div>
+						<div role="control" label="轮播图片">
+							<div id="uploader2" class="mini-webuploader" pickerText="上传图片"
+								action="getListPicModel" limitType="jpeg,jpg,gif,png,bmp"
+								auto="true" fileNumLimit="1" onfilesuccess="OnPictureSuccess2"
+								fileSizeLimit="100k"></div>
+							<div class="img-view" id="picture2" style="display: none;"></div>
+						</div>
+					</div>
+					<div role="row" id="radiorow">
+						<div role="control" label="视频上传">
+							<div id="uploader4" class="mini-webuploader" pickerText="上传视频"
+								action="getRadiomodel" limitType="mp4,avi,mpeg,navi,asf,mov,wmv,3gp,flv,f4v,rm,rmvb"
+								auto="true" fileNumLimit="1" fileSizeLimit="10240k"></div>
+						</div>
+						<div role="control" label=""></div>
+					</div>
+					<div role="row">
+						<div role="control" label="简介">
+							<input class="mini-textbox" bind="dataBean.overview"
+								vtype="maxLength:250;" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="内容" starred="true">
+							<textarea id="ueditor" class="mini-webeditor" editstyle="light" editSkin="flat8"
+								readOnly="false" bind="dataBean.content" maxlength="10000"></textarea>
+
+							<!-- <script id="container" name="content" type="text/plain">在这里编辑信息内容</script>
+							<script type="text/javascript">
+								var ue = UE.getEditor('container');
+							</script> -->
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="附件">
+							<div id="uploader3" class="mini-webuploader" pickerText="上传附件"
+								action="getAttachModel" showDefaultUI="true" onload="onload"
+								limitType="xls,xlsx,docx,doc,txt,ppt,pptx,pdf,rar,zip,7z,mp3,mp4"
+								auto="true" fileNumLimit="5" fileSizeLimit="10000k"></div>
+						</div>
+						<div role="control"></div>
+					</div>
+				</div>
+				<div role="row" class="url" style="display: none;">
+					<div role="control" label="链接地址" starred="true">
+						<input id="url" class="mini-textbox" bind="dataBean.url" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="排序号" starred="true">
+						<input class="mini-textbox" bind="dataBean.OrderNum"
+							vtype="int;range:0,99999;" emptyText="请填写排序号..." required="true" requiredErrorText="排序号不能为空"/>
+					</div>
+					<div role="control"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var maxContent;
+		// 初始化页面
+		epoint.initPage('webinfoinfomationaddaction', null, function(data) {
+			if(data.categoryName){
+				mini.get('category').setText(data.categoryName);
+			}
+			if (data.maxContent){
+				maxContent = data.maxContent;
+			}
+			else {
+				maxContent = 10000;
+			}
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+			// if (data.content) {
+			// 	var content = escape2html(data.content);
+			// 	ue.ready(function() {
+			// 		ue.setContent(content);
+			// 	});
+			// }
+			onTypeChanged();
+			setTimeout(onTitleTypeChanged, 100);
+			if (data.pic1) {
+				showPicture(data.pic1);
+			}
+			if (data.pic2) {
+				showPicture2(data.pic2);
+			}
+
+		});
+
+		function saveAndClose(e) {
+			var infotype = mini.get('infotype').getValue();
+			var content;
+			if('news' == infotype){
+				content = mini.get("ueditor").getValue();
+				if (content.length==0){
+					epoint.alert("HTML内容不能为空");
+					return;
+				}
+				if (content && content.length > maxContent){
+					epoint.alert("实际HTML内容超出最大长度(" + maxContent + ")");
+					return;
+				}
+			}
+			if('link' == infotype){
+				content = mini.get("url").getValue();
+				if (content.length==0){
+					epoint.alert("链接地址不能为空");
+					return;
+				}
+			}
+			if (epoint.validate()) {
+				// var content = ue.getContent();
+				// content = html2escape(content);
+				// epoint.execute('save', 'fui-form', [ content, e ],
+				// 		closeCallback);
+				epoint.execute('save', 'fui-form', [ "", e ],closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if(data.msg.indexOf("成功") != -1){
+					epoint.alertAndClose(data.msg);
+				} else {
+					epoint.alert(data.msg);
+				}
+			}
+		}
+
+		//信息类型
+		function onTypeChanged() {
+			var type = mini.get("infotype").getValue();
+			$(".url").show();
+			$(".news").show();
+			Util.form.showField('#titletypelabel');
+			if (type == 'news') {
+				$(".url").hide();
+			} else {
+				$(".news").hide();
+				Util.form.hideField('#titletypelabel');
+			}
+		}
+
+		//标题类型
+		function onTitleTypeChanged() {
+			var type = mini.get("titletype").getValue();
+			if (type == "2") {//图片
+				$("#picrow").show();
+				$("#radiorow").hide();
+			} else if (type == "3") {//视频
+				$("#picrow").hide();
+				$("#radiorow").show();
+			}else{
+				$("#picrow").hide();
+				$("#radiorow").hide();
+			}
+
+		}
+
+		//上传成功
+		function OnPictureSuccess(args) {
+			if (args.data.extraDatas.obj) {
+				showPicture(args.data.extraDatas.obj);
+			}
+		}
+
+		//展示图片
+		function showPicture(tb) {
+			$(".mini-uploader-list:eq(0)").empty();
+			$("#picture").show();
+			$("#picture")
+					.html(
+							'<img id="tb" src="" width="120px" height="120px" alt="图标" /> <i class="action-icon icon-error" style="position: absolute; left: 110px; top: 0px;" onclick="delPicture(\''
+									+ tb.filepath + '\');" ></i>');
+			$("#tb").attr("src", tb.picture);
+			mini.get("uploader").setVisible(false);
+		}
+
+		//删除图片
+		function delPicture(filepath) {
+			epoint.execute('deletePicture', '', filepath, function(data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					$("#picture").hide();
+					mini.get("uploader").setVisible(true);
+					epoint.refresh('uploader');
+				}
+			});
+		}
+
+		//轮播图片
+		//上传成功
+		function OnPictureSuccess2(args) {
+			if (args.data.extraDatas.obj) {
+				showPicture2(args.data.extraDatas.obj);
+			}
+		}
+
+		//展示图片
+		function showPicture2(tb) {
+			$(".mini-uploader-list:eq(1)").empty();
+			$("#picture2").show();
+			$("#picture2")
+					.html(
+							'<img id="tb2" src="" width="120px" height="120px" alt="图标" /> <i class="action-icon icon-error" style="position: absolute; left: 110px; top: 0px;" onclick="delPicture2(\''
+									+ tb.filepath + '\');" ></i>');
+			$("#tb2").attr("src", tb.picture);
+			mini.get("uploader2").setVisible(false);
+		}
+
+		//删除图片
+		function delPicture2(filepath) {
+			epoint.execute('deleteListPicture', '', filepath, function(data) {
+				if (data.msg) {
+					mini.get("uploader2").clearFile();
+					$("#picture2").hide();
+					mini.get("uploader2").setVisible(true);
+					epoint.refresh('uploader2');
+				}
+			});
+		}
+		function onLoad(event) {
+			console.log(event);
+		}
+
+		//转义
+		function html2escape(sHtml) {
+			return sHtml.replace(/[<>&"]/g, function(c) {
+				return {
+					'<':'&lt;','>' : '&gt;',
+					'&' : '&amp;',
+					'"' : '&quot;'
+				}[c];
+			});
+		}
+		function escape2html(str) {
+			var arrEntities = {
+				'lt' : '<','gt':'>',
+				'nbsp' : ' ',
+				'amp' : '&',
+				'quot' : '"'
+			};
+			return str.replace(/&(lt|gt|nbsp|amp|quot);/ig, function(all, t) {
+				return arrEntities[t];
+			});
+		}
+
+		function onValueChanged(e) {
+			var sender = e.sender;
+			if (sender.id == 'beginDate') {
+				var todate = mini.get('endDate').getValue();
+				if (todate) {
+					if (sender.value.getTime() > todate.getTime()) {
+						epoint.alert('开始时间不能大于结束时间！', '', function() {
+							epoint.clear(sender.id);
+						});
+					}
+				}
+			} else if (sender.id == 'endDate') {
+				var bedate = mini.get('beginDate').getValue();
+				if (bedate) {
+					if (sender.value.getTime() < bedate.getTime()) {
+						epoint.alert('结束时间不能小于开始时间！', '', function() {
+							epoint.clear(sender.id);
+						});
+					}
+				}
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		var tree4 = mini.get('tree1');
+		tree4.on('beforenodeselect', function(obj) {
+			if (obj.node.isOU == "true") {
+				obj.cancel = true;
+			} else {
+				obj.cancel = false;
+			}
+		});
+		
+		var treeCategory = mini.get('category');
+		treeCategory.on('beforenodeselect', function(obj) {
+			if (obj.node.isOU == "true") {
+				obj.cancel = true;
+			} else {
+				obj.cancel = false;
+			}
+		});
+	</script>
+</body>
+</html>

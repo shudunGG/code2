@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Code management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<div class="fui-left">
+			<div role="head" title="Choose subsystem"></div>
+
+			<div role="body">
+				<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="getTreeData" resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right">
+			<!-- toolbar area -->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" iconCls="icon-addcircle"
+					onclick="addCodeMain()">new code</a><a class="mini-button"
+					iconCls="icon-save" onclick="saveCodeMain()">save the code</a><a
+					class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select you want to delete the code!', '', null, 'warning');} else {epoint.confirm('Delete the main code item will sync delete child items,Sure you want to delete?','',deleteSelected);}">delete the code</a>
+
+					<a class="mini-button" iconCls="icon-gear"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a want to export record!', '', null, 'warning');} else {epoint.execute('export','',exportsql)}">script export</a>
+
+				</div>
+
+				<input id="database" autoLoad="false"
+				action="getDsTypes" textField="text"
+				valueField="id" class="mini-combobox mr10" />
+
+				<!--Help button -->
+				<a role="helper" class="mr10">precautions</a>
+
+			</div>
+
+			<!-- Help information area Hidden by default-->
+			<div class="fui-notice hidden">
+				<p>
+					<font style="color: blue;">button“To generate the scriptA”The generated script will determine whether</font><font
+					style="color: red;">There areCodeID</font><font style="color: blue;">,There areDo not add; Don'tThere areThen add,After adding theCodeIDAnd in the source databaseCodeID</font><font
+					style="color: red;">consistent</font>。
+				</p>
+				<p>
+					<font style="color: blue;">button“To generate the scriptB”The generated script will determine whether</font><font
+					style="color: red;">There areCodeName</font><font style="color: blue;">,There areModify the code item; Don'tThere areThen add,After adding theCodeIDAnd in the source databaseCodeIDmay</font><font
+					style="color: red;">Don'tconsistent</font>。
+				</p>
+			</div>
+
+			<div class="fui-condition">
+				<!-- The form layout -->
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<!-- 2column -->
+						<div role="row">
+							<div role="control" label="code name" starred="true">
+								<input bind="codeMain.codeName" id="codeName"
+								class="mini-textbox" required="true"
+								requiredErrorText="Code nameDon'tFor empty" vtype="maxLength:50" />
+
+							</div>
+							<div role="control" label="code instructions" starred="false">
+								<input bind="codeMain.description" id="description"
+								class="mini-textbox" />
+							</div>
+						</div>
+						<!-- Add a hidden field,For trees and the linkage of the table -->
+						<input bind="categoryNum" id="categoryNum"
+						class="mini-hidden" />
+					</div>
+				</div>
+
+				<!-- searchbutton -->
+				<a role="searcher" callback="searchData"></a>
+
+			</div>
+			<div class="fui-content">
+				<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="codeid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDataGridData"
+				showPager="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+						<div type="checkcolumn" width="15"></div>
+
+						<div type="indexcolumn" headerAlign="center" width="15">
+							order
+						</div>
+
+						<div field="codeName" width="45" headerAlign="center">
+							code name
+						</div>
+						<div field="description" headerAlign="center">
+							code instructions
+							<input property="editor" class="mini-textbox" minWidth="200" />
+						</div>
+						<div field="dqjs" width="25" headerAlign="center" align="right">
+							current series
+						</div>
+						<div width="15" align="center" headerAlign="center"
+						renderer="onEditRenderer">
+							item management
+						</div>
+						<div width="15" headerAlign="center" align="center"
+						renderer="onFjdyRenderer">
+							classification definition
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("codemainlistaction", '', initDataBase);
+
+			function initDataBase(e) {
+				mini.get("database").setValue("oracle,B");
+				mini.get("database").setText("Oracle");
+			}
+
+			//The treejsobject
+			var tree = mini.get("tree");
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				var id = e.node.objectcode;
+				// To the leftThe treeClick on the nodeidIn a hidden field
+				// At the second request form to send,Will automatically bring conditions areaThe contents of the
+				mini.get('categoryNum').setValue(id == 'f9root' ? "" : id);
+				//Refresh the table
+				searchData();
+			});
+
+			// Drawing revisionbutton
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openAdd");
+			};
+
+			// drawClassification definitionbutton
+			var onFjdyRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-copy", "openCodeItemLev");
+			};
+
+			// new
+			function addCodeMain() {
+				if (epoint.validate()) {
+					epoint.execute('addCodeMain', '', addmsgCallBack);
+				}
+			}
+
+			// save
+			function saveCodeMain() {
+				epoint.execute('saveCodeMain', ['datagrid', 'categoryNum'], msgCallBack);
+			}
+
+			// delete
+			function deleteSelected() {
+				epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+			}
+
+			// Opens the page of the modified
+			function openAdd(codeID) {
+				epoint.openDialog('codeItem management', 'mis/sysconf/code/codeitemslist?codeID=' + codeID, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 550
+				});
+			}
+
+			// Open theClassification definitionpage
+			function openCodeItemLev(codeID) {
+				epoint.openDialog('Classification definition', 'mis/sysconf/code/codeitemlevlist?codeID=' + codeID, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 550
+				});
+			}
+
+			// exportsqlstatements
+			function exportsql(data) {
+				var combox = mini.get("database").getValue();
+				var obj = combox.split(",");
+				epoint.openDialog(mini.get("database").getText() + 'Script export', "framemanager/metadata/code/codemainexport?codeID=" + data.exportlist + "&databaseType=" + obj[0] + "&type=" + obj[1], '', {
+					'width' : 1000,
+					'height' : 400
+				});
+			}
+
+			// Back off to remind
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', function(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true);
+						}, 'success');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			// Back off to remind
+			function addmsgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						mini.get("codeName").setValue("");
+						mini.get("description").setValue("");
+						epoint.alert(msg, '', function(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true);
+						},'success');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			// Of the tablesearch
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+			//]]>
+		</script>
+
+	</body>
+
+</html>

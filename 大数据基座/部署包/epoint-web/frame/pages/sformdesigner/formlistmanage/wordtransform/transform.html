@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>word 转化</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './transform.css' ]);
+</script>
+
+<style>
+#toolbar .done-btn {
+	display: none;
+}
+
+#toolbar.done .done-btn {
+	display: inline-block;
+}
+
+#toolbar.done .progress-btn {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-cover"></div>
+	<div class="fui-content">
+		<!-- 完成上传功能的上传控件 -->
+		<span class="mini-webuploader" id="uploader" dnd="#drop-for-uploader"
+			auto="false" limitNum="1" limitType="doc,docx"
+			action="epointwordtransformaction.getWordModel"
+			onUploadSuccess="onUploadSuccess" onUploadError="onUploadError"
+			style="position: absolute; left: -10000px; opacity: 0;"></span>
+		<!-- 文件上传 -->
+		<div class="transform-content " id="transform-content">
+			<!-- 拖拽容器以及点击上传按钮 -->
+			<div class="transform-drop-container" id="drop-for-uploader">
+				<span class="drop-icon"></span> <span class="drop-text">点击或拖拽上传文件</span>
+				<span class="drop-tips">支持扩展名: <span
+					class="uploader-ext-info"></span>
+				</span> <span class="file-remove action-icon icon-trash"></span>
+			</div>
+			<!-- 已选文件 -->
+			<div class="transform-file-container" style="display: none;"></div>
+			<!-- <span class="mini-button" iconCls="icon-download" state="default" href="./demo.xlsx" download
+                target="_blank">点击下载文件模板</span> -->
+		</div>
+		<!-- 进度 -->
+		<div class="transform-progress-container hidden-accessible">
+			<div class="transform-progress-bar">
+				<input type="text" id="progress-input" value="0" />
+				<div class="transform-progress-text">
+					<span class="transform-progress-curr"></span> <span>%</span>
+				</div>
+			</div>
+
+			<p class="text">正在转换</p>
+			<p class="tips">正在进行表单布局转换，请耐心等候</p>
+		</div>
+		<!-- 结果区域 -->
+		<div class="transform-result hidden-accessible">
+			<div class="result-done">
+				<span class="action-icon icon-success"></span>
+				<p class="text">转化成功</p>
+				<p class="tips">表单转化成功，是否进入设计页面？</p>
+			</div>
+			<div class="result-error">
+				<span class="action-icon icon-error"></span>
+				<p class="text">转化失败</p>
+				<p class="tips">表单转化失败，请重新尝试？</p>
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar bottom" id="toolbar">
+		<span class="mini-button progress-btn" onclick="prevStep">上一步</span> <span
+			class="mini-button progress-btn" state="primary" id="start-btn"
+			enabled="false">开始转化</span> <span class="mini-button done-btn" onclick="epoint.closeDialog('success');">稍后再说</span>
+		<span class="mini-button done-btn" state="primary" id="start-design">开始设计</span>
+
+
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ './jquery.knob.min.js', './transform.js' ]);
+	</script>
+	<script>
+		epoint.initPage('epointwordtransformaction', '', function(data) {
+
+		});
+		function prevStep(params) {
+			if (Util.getUrlParams("editType") == "edit") {
+				location.href = '../epointsformedit?guid='
+						+ Util.getUrlParams("rowguid") + "&isSub="
+						+ Util.getUrlParams("isSub") + "&formType=office";
+			} else {
+				location.href = '../epointsformadd?rowguid='
+						+ Util.getUrlParams("rowguid") + "&isSub="
+						+ Util.getUrlParams("isSub") + "&formType=office";
+			}
+
+		}
+		
+		function onCloseForm() {
+			//epoint.execute('deleteSform','');
+			Util.ajax({
+			    url: 'sformdesigner/epointsformaddaction.action?cmd=deleteSform',		  
+	            async:false
+			});
+		}
+	</script>
+</body>
+
+</html>

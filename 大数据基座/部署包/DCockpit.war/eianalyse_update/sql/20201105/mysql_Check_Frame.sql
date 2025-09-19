@@ -1,0 +1,1 @@
+SELECT	count( 1 ) FROM	information_schema.COLUMNS WHERE	TABLE_SCHEMA = DATABASE ( ) AND table_name = 'portrait_relation' and column_name='reverse_relation_name'

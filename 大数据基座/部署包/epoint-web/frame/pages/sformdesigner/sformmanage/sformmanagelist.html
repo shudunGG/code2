@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>表单字段管理列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="业务类别">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" onclick="openType()"
+					tooltip="业务维护类别"></a>
+			</div>
+		</div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" action="getTreeModel"
+				style="height: 100%" showTreeIcon="true" textField="text"
+				idField="id" expandOnNodeClick="true">
+			</ul>
+		</div>
+
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" onclick="openAdd();"
+				id="btnAddRecord">添加字段</a>
+			<div class="mini-btn-group">
+				<a class="mini-button" onclick="openUsing(1)" style="margin-right: 8px">启用</a> <a
+					class="mini-button" onclick="openUsing(0)" style="margin-right: 8px">停用</a> <a id="btnDel"
+					class="mini-button" state="danger" style="margin-right: 8px"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选定 </a>
+			</div>
+
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="name" bind="dataBean.name"
+					emptyText="请输入字段名称搜索" onenter="searchData" /><a
+					class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+			<input class="mini-hidden" id="selectTree" bind="selectTree" />
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" showPager="true" style="height: 100%;"
+				allowResize="true" multiSelect="true" allowCellEdit="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="encodeName">字段编码</div>
+					<div field="name">字段名称</div>
+					<div field="controltype">控件类型</div>
+					<div field="businesstype">业务类别</div>
+					<div field="isenabled" visible="false"></div>
+					<div width="80" renderer="changeImage">状态</div>
+					<div width="100" align="center" headerAlign="center"
+						renderer="onOperationRenderer">操作</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('sformmanagelistaction', null, initCallback);
+
+		var tree = mini.get("tree");
+		tree.on("nodeclick", function(e) {
+			var id = e.node.id;
+			mini.get('selectTree').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'selectTree','fui-form' ]);
+		});
+
+		var codeId = "";
+
+		function initCallback(e) {
+			if (e && e.codeId) {
+				codeId = e.codeId;
+			}
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var selectTree = mini.get("selectTree").getValue();
+			epoint.openDialog('新增字段',
+					"frame/pages/sformdesigner/sformmanage/sformfieldadd?selectTree="
+							+ selectTree, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 600,
+						'height' : 550
+					});
+		}
+
+		//修改
+		function openEdit(rowguid) {
+			var selectTree = mini.get("selectTree").getValue();
+			epoint.openDialog('修改字段',
+					"frame/pages/sformdesigner/sformmanage/sformfieldedit?selectTree="
+							+ selectTree + "&rowguid=" + rowguid, function(
+							param) {
+						if (param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 600,
+						'height' : 550
+					});
+		}
+
+		// 绘制行操作按钮
+		var onOperationRenderer = function(e) {
+			var html = '<a href="javascript:void(0);" onclick="openEdit(\''
+					+ e.row.rowguid
+					+ '\');" class="action-icon icon-edit" title="修改"></a>&nbsp;&nbsp;'
+					+ '<a href="javascript:void(0);" onclick="openDel(\''
+					+ e.row.rowguid
+					+ '\');" class="action-icon icon-trash" title="删除"></a>&nbsp;';
+
+			return html;
+		};
+
+		//打开服务类别
+		function openType() {
+			epoint.openDialog('业务维护类别',
+					"frame/pages/sformdesigner/sformmanage/sformmanagetypelist?codeID="
+							+ codeId, updateTree, {
+						'width' : 1000
+					});
+		}
+
+		// 刷新tree
+		function updateTree() {
+			epoint.refresh([ 'tree' ]);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'selectTree' ]);
+		}
+
+		//删除
+		function openDel(rowguid) {
+			epoint.confirm('确认删除吗?', '', function() {
+				epoint.execute("deleteField", '', [ rowguid ], callback);
+			});
+		}
+
+		//批量删除
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function changeImage(e) {
+			if (e.row.isenabled == "1") {
+				return epoint.renderCell(e, "action-icon icon-start success",
+						"changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause error",
+						"changeStatus");
+			}
+		}
+
+		function changeStatus(e) {
+			epoint.confirm("是否确认切换状态?", '', function() {
+				epoint.execute('changeImage', '@none', [ e ], callback);
+			});
+		}
+
+		//启用
+		function openUsing(e) {
+			epoint.confirm("是否确认切换状态?", '', function() {
+				epoint.execute('openSelected', '', [ e ], callback);
+			});
+		}
+	</script>
+</body>
+</html>

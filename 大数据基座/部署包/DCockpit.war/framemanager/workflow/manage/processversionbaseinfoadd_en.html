@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Process version to add</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet"
+	href="../css/workflowicons.css?releaseNo=#{version.version}" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="addProcessVersion()">determine</a> <a class="mini-button"
+				iconCls="icon-removecircle" id="cancelbtn"
+				onclick="epoint.closeDialog()">cancel the add</a>
+		</div>
+
+		<a role="helper" class="mr10">In use process need to pay attention to information</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<font style="color: blue;">Listening class configuration of the full path to your classes, the class must implement<em>com.epoint.workflow.engine.event.EventObserver</em>Interface,
+			</font>
+		</p>
+		<p>
+			<font style="color: blue;">Used to monitor the whole process of circulation, when you realize it, principle, do not need to configure any other event。</font>
+		</p>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="version" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="workflowProcessVersion.version" emptyText="versionThe name cannot be empty"
+							style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="listening class" id="type">
+						<input class="mini-textbox" bind="workflowProcessVersion.tag" />
+					</div>
+					<div role="control" label="author" id="showFormUrl">
+						<input class="mini-textbox" bind="workflowProcessVersion.author" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="mobile todo marks">
+						<input class="mini-textbox" bind="workflowProcessVersion.mobileMessageTag" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">Description: multiple systems or personalized mobile interface can fill in</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="remark">
+						<input class="mini-textarea" bind="workflowProcessVersion.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Allowable time limit">
+						<input id="txtTimeLimit" bind="txtTimeLimit" class="mini-textbox"
+							style="width: 20%"/>
+						<input id="timeLimitUnit" name="timeLimitUnit" showNullItem="false"
+							bind="workflowProcessVersion.timeLimitUnit"
+							action="getTiemUnitList" class="mini-combobox" textField="text"
+							valueField="id" style="width: 30%" />
+					</div>
+					<div role="control" label="Early warning time">
+						<input id="txtWarningTime" bind="txtWarningTime"
+							class="mini-textbox" style="width: 20%"/>
+						<input id="earlyWarningTimeUnit" name="earlyWarningTimeUnit"
+							showNullItem="false"
+							bind="workflowProcessVersion.earlyWarningTimeUnit"
+							action="getTiemUnitList" class="mini-combobox" textField="text"
+							valueField="id" style="width: 30%" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage("processversionbaseinfoaddaction");
+
+		function addProcessVersion() {
+			if (epoint.validate()) {
+				epoint.execute('addProcessVersion', '', addComplete);
+			}
+		}
+
+		function addComplete(data) {
+			if (data) {
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alertAndClose(data.message, '', null, null, 'success');
+				}else{
+					epoint.alert(data.message, '', '', 'warning');
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

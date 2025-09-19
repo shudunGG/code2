@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用类别</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js""></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的左侧内容 -->
+	<div class="fui-left">
+		<!-- 左侧的内容区域 -->
+		<div role="head" title="应用类别"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" onclick="openAdd();"
+				id="btnAddRecord">新增类别</a> <a id="btnDel" class="mini-button"
+				state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" bind="appClassName"
+					emptyText="请输入类别名称搜索" onenter="searchData" /> <input
+					class="mini-hidden" bind="serarchId" id="serarchId" /> <a
+					class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="appclassguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="appclassname" width="160">类别名称</div>
+					<div field="appplatdisplayname" width="140">所属平台</div>
+					<div field="appclassremark" width="100%">描述</div>
+					<div field="orderNumber" sortOrder="desc" allowSort="true"
+						width="90">排序值</div>
+					<div width="60" renderer="onEditRenderer">修改</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appclasslistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"frame/pages/basic/gateway/app/appclass/appclassadd?parentTypeGuid="
+							+ mini.get('serarchId').getValue(),
+					function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 850,
+						'height' : 470
+					});
+		}
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"frame/pages/basic/gateway/app/appclass/appclassedit?guid="
+							+ id, function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 850,
+						'height' : 470
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchDataExcludeTree() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'tree' ]);
+		}
+
+		var serarchId = mini.get('serarchId');
+		var tree = mini.get('tree');
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			//将左侧树点击的节点id放到隐藏域中
+			serarchId.setValue(id);
+			//刷新表格
+			searchDataExcludeTree();
+		});
+	</script>
+</body>
+</html>

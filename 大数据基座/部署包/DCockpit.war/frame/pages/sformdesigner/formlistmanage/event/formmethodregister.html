@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>注册新方法</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%"
+				action="getTreeModal"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addClose" iconCls="icon-save"
+					onclick="if(epoint.validate()){btnSaveClick();}">新增并关闭</a> <a
+					class="mini-button" iconCls="icon-removecircle"
+					onclick="epoint.closeDialog();">取消添加</a>
+			</div>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fui-content" class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div role="control" style="color: #CDBA96">方法说明</div>
+				<div role="row">
+					<div role="control" label="方法名称" starred="true">
+						<input id="methodName" class="mini-textbox" enabled="false"
+							bind="epointsformMethod.methodName" required="true"
+							requiredErrorText="方法名称不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="类全路径" starred="true">
+						<input id="typeName" class="mini-textbox" enabled="false"
+							bind="epointsformMethod.typeName" required="true"
+							requiredErrorText="类全路径不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="方法备注">
+						<input id="note" class="mini-textbox"
+							bind="epointsformMethod.note" />
+					</div>
+					<div role="control" label="返回类型">
+						<input id="returnValueType" class="mini-textbox"
+							bind="epointsformMethod.returnValueType"  enabled="false"/>
+					</div>
+				</div>
+				<div role="control" style="color: #CDBA96">方法参数列表</div>
+				<!-- <div role="row">
+					<div role="control" label="参数名称" starred="true">
+						<input id="paraName" class="mini-textbox" bind="paraName" />
+					</div>
+					<div role="control" label="排序号">
+						<input id="ordinal" class="mini-textbox" bind="ordinal" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" class="btn-group mr10">
+						<a class="mini-button" id="btnAdd" width="100px"
+							iconCls="icon-addcircle" onclick="add">新增参数</a> <a
+							class="mini-button mini-btn-danger" id="btnDel" width="100px"
+							iconCls="icon-minuscircle"
+							onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的参数!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelected);}">删除选中</a>
+					</div>
+				</div> -->
+				<div role="row">
+					<div class="control-field span5">
+						<p class="text-danger">如果参数值是常量,可以直接在列表的参数值列上修改</p>
+					</div>
+				</div>
+			</div>
+
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="mpguid" multiSelect="true" action="getDefaultModel"
+				showPager="false" style="width: 100%; height: 100%;"
+				allowResize="true" allowCellEdit="true" allowCellSelect="true"
+				allowCellValid="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="20"></div>
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="mpname" width="60" headerAlign="center">参数名称</div>
+					<div field="mpnamedescription" width="50" headerAlign="center">
+						参数描述</div>
+					<div field="selected" type="checkboxcolumn" headerAlign="center"
+						width="20" align="center">加密</div>
+					<div field="lazyGuid" width="30" headerAlign="center">类型</div>
+
+					<div field="mpvalue" width="50" headerAlign="center">
+						参数值<input id="txtMPValue" property="editor" class="mini-textbox"
+							minWidth="60" value="object.mpvalue" />
+					</div>
+					<div field="mpvaluedescription" width="60" headerAlign="center">
+						参数值描述 <input property="editor" class="mini-textbox" minWidth="80" />
+					</div>
+					<div field="orderNum" width="30" headerAlign="center" align="right">
+						排序号<input property="editor" class="mini-textbox" minWidth="20"
+							inputStyle="text-align:right" vtype="int" />
+					</div>
+					<div width="40" align="center" headerAlign="center"
+						renderer="onEditRenderer">相关数据</div>
+					<div field="backa" visible="false"></div>
+				</div>
+			</div>
+			<input id="dllPath" class="mini-hidden"
+				bind="epointsformMethod.dllPath" /> <input id="isfromtree"
+				class="mini-hidden" bind="isfromtree" />
+		</div>
+
+		<input class="mini-hidden" id="tableId" bind="tableId" />
+	</div>
+
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('formmethodregisteraction');
+		//树js对象
+		var tree = mini.get("tree");
+		// 		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			if (e.node.isLeaf) {
+				//var title =e.node.text ;
+				//方法名称
+				mini.get('methodName').setValue(e.node.text);
+				//方法注解名
+				mini.get('note').setValue(e.node.titleExtra);
+				//类全路径				
+				mini.get('typeName').setValue(e.node.objectcode);
+				//返回类型
+				mini.get('returnValueType').setValue(e.node.recureMsg);
+				//参数
+				mini.get('dllPath').setValue(e.node.path);
+				//参数从树获取的标记。
+				mini.get('isfromtree').setValue("1");
+				//刷新表格
+				searchData();
+
+			}
+		});
+		// 新增方法
+		function btnSaveClick() {
+			if (checkParam()) {
+				epoint.execute("btnSaveClick", '', closeCallback);
+			}
+		}
+
+		// 新增参数
+		function add() {
+			if (checkParaName() && checkOrdinal()) {
+				epoint.execute("add", '', callback);
+			}
+		}
+
+		//新增回调事件
+		function newCallback(data) {
+			epoint.alert(data.msg, '', null, 'info');
+			epoint.refresh(["datagrid"], '', true);
+		}
+
+		// 绘制行相关数据按钮
+		var tempRow;
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "setParValue",
+					"mpguid");
+		};
+
+		function setParValue(mpguid) {
+			tempRow = mini.get("datagrid").getSelected();
+			var tableId = mini.get("tableId").getValue();
+			epoint.openDialog('选择参数值',
+					'frame/pages/sformdesigner/formlistmanage/event/formdesignhelpercontext?tableId='
+							+ tableId + "&range=" + tempRow.backa, setParValueOperJS, addCallBack);
+		}
+
+		function setParValueOperJS(data) {
+			if (data && data != "close") {
+				var tableId = mini.get('tableId').getValue();
+				var datas = data.split(";");
+				//判断是否直接选择的材料表单字段
+				if (datas.length == 2) {
+					if (datas[1].indexOf('Common_') == 0
+							|| datas[1].indexOf('Request_') == 0
+							|| datas[1] == "ExecutionContext") {
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvalue" : "[#=" + datas[1] + "#]"
+						});
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvaluedescription" : datas[0]
+						});
+					} else {
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvalue" : datas[1]
+						});
+						mini.get('datagrid').updateRow(tempRow, {
+							"mpvaluedescription" : datas[0]
+						});
+					}
+				} else if (datas.length == 3) {
+					//材料表单字段[#=EPOINTFORM (TableID,  FromFieldName)#])
+					mini.get('datagrid').updateRow(
+							tempRow,
+							{
+								"mpvalue" : "[#=EPOINTFORM(" + tableId + ","
+										+ datas[1] + ")#]"
+							});
+
+					mini.get('datagrid').updateRow(tempRow, {
+						"mpvaluedescription" : datas[2]
+					});
+				}
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-content', 'fui-form'], '', true);
+		}
+
+		function closeCallback(data) {
+			if (data.flag && data.flag == "1") {
+				epoint.closeDialog(data.method);
+			} else if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+		}
+
+		function checkParam() {
+			var inputs = document.getElementsByTagName("input");
+			for (var i = 0; i < inputs.length; i++) {
+				if (inputs[i].id.indexOf("txtMPValue") > -1) {
+					if (mini.get(inputs[i].id).getValue() == "") {
+						epoint.alert("至少有一个方法参数值为空。你确认要以空字符串为参数吗？", '', null,
+								'warning');
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		function checkParaName() {
+			var input = mini.get("paraName").getValue();
+			if (input == null || input == "") {
+				epoint.alert("参数名称不能为空！", '', null, 'warning');
+				return false;
+			}
+			return true;
+		}
+
+		function checkOrdinal() {
+			var input = mini.get("ordinal").getValue();
+			var re = /^[0-9]*[0-9][0-9]*$/;
+			if (input == null || input == "") {
+				epoint.alert("排序码不能为空！", '', null, 'warning');
+				return false;
+			}
+			if (!re.test(input)) {//判断输入的是否是整数  
+				epoint.alert("排序码必须为大于等于0的整数！", '', null, 'warning');
+				return false;
+			}
+			return true;
+		}
+
+		// 删除参数数据
+		function deleteSelected() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				if (data.msg == "该名称已经存在") {
+					epoint.alert(data.msg, '', null, 'warning');
+				} else
+					epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

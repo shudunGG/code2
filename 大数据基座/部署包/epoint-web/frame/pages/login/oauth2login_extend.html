@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<title>新点统一认证平台</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="sso/css/login.css">
+<link rel="stylesheet" href="sso/css/common.css">
+
+<style>
+.title {
+	color: white;
+	line-height: 55px;
+	height: 55px;
+	font-weight: bold;
+	font-size: 30px;
+	font-family: 宋体;
+	font-weight: bold;
+	position: relative;
+}
+
+.titletext {
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- 背景 -->
+	<div class="bg">
+		<img style="" src="sso/images/bg.jpg" />
+	</div>
+	<div class="content">
+		<!-- 登录页标题 -->
+		<div class="login-tt">
+			<div id="title" class="title">
+				<div id="titletext" class="titletext">新点统一认证平台</div>
+			</div>
+		</div>
+		<!-- 登录框 -->
+		<div class="login-wrap">
+			<div class="login-tab-head clearfix" data-role="head">
+				<h5 id="ID" class="login-tab-head-item l act" data-role="tab"
+					data-target="user" onclick="">用户登录</h5>
+				<h5 id="KEY" class="login-tab-head-item l" data-role="tab"
+					data-target="ca" onclick="">CA登录</h5>
+				<h5 id="EWM" class="login-tab-head-item l" data-role="tab"
+					data-target="ewm" onclick="">二维码</h5>
+			</div>
+			<div class="login-tabcontent" data-role="body">
+				<div class="login-tabcontent-item" data-role="tab-content"
+					data-id="user">
+					<div class="login-row">
+						<label for="username" class="icon-user"></label> <input
+							type="text" placeholder="请输入用户名" class="login-input"
+							id="username" name="username" /> <i class="icon-erwm"></i>
+					</div>
+					<div class="login-row">
+						<label for="psd" class="icon-psd"></label> <input type="password"
+							placeholder="请输入密码" class="login-input" id="password"
+							name="password" /> <i class="icon-keyboard"></i>
+					</div>
+					<div class="login-btn-row">
+						<button class="btn-login" onclick="check('0');" type="button">登
+							录</button>
+					</div>
+				</div>
+				<div class="login-tabcontent-item hidden" data-role="tab-content"
+					data-id="ca">
+					<div class="login-row">
+						<label for="psd" class="icon-psd"></label> <input type="password"
+							placeholder="请输入密码" class="login-input" id="passwordca"
+							name="passwordca" /> <i class="icon-keyboard"></i>
+					</div>
+					<div class="login-btn-row">
+						<button class="btn-login" onclick="check('1');" type="button">登
+							录</button>
+					</div>
+				</div>
+				<div class="login-tabcontent-item hidden" data-role="tab-content"
+					data-id="ewm">
+					<div id="qrcode"
+						style="width: 150px; height: 150px; margin: 0 auto;"></div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<object classid='clsid:4391DCDD-5FB4-462F-9308-70A195937DAE' height='0'
+		width='0' id='EliteIVGetSerialNumber'></object>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="sso/js/tabview.js"></script>
+	<script src="sso/js/jquery.placeholder.min.js"></script>
+	<script src="sso/js/login.js"></script>
+	<script src="js/jquery.qrcode.min.js"></script>
+
+	<script>
+		//<![CDATA[
+		// *********************************登录相关********************************************//
+		//再次访问可以自动登录
+		epoint.execute("loginaction.autoLoad");
+
+		var clientId = Util.getUrlParams("client_id");
+		$.ajax({
+			url : Util.getRightUrl("rest/oauth2/exchangeClientName"),
+			data : {
+				"client_id" : clientId
+			},
+			dataType : "json",
+			async : false,
+			error : function(XMLHttpRequest, textStatus, errorThrown) {
+				alert(errorThrown);
+			},
+			success : function(data, textStatus) {
+				if (data) { // 请求成功
+					$("#titletext").html(data.custom.client_name);
+				}
+			}
+		});
+
+		if (Util.getUrlParams()) {
+			if (Util.getUrlParams().session_control_kickout_key == "1") {
+				alert("您已经被挤出，请重新登录！");
+			}
+		}
+
+		function checkReset() {
+			document.getElementById("username").value = "";
+			document.getElementById("password").value = "";
+			return false;
+		}
+
+		function check(loadtype) {
+			var username = document.getElementById("username").value;
+			var password = document.getElementById("password").value;
+			if (1 == loadtype) {
+				username = checkUsbKey();
+				password = document.getElementById("passwordca").value;
+				if (password == "") {
+					epoint.alert("CA密码不能为空");
+					return false;
+				}
+			} else {
+				if (username == "") {
+					epoint.alert("用户名不能为空");
+					return false;
+				}
+				if (password == "") {
+					epoint.alert("密码不能为空");
+					return false;
+				}
+			}
+
+			username = epoint.encode(username);
+			password = epoint.encode(password);
+
+			// 登录
+			epoint.execute('loginaction.login', '', [ username, password,
+					loadtype ], callback);
+			return true;
+		}
+
+		function checkUsbKey() {
+			var str;
+			try {
+				str = document.all('EliteIVGetSerialNumber').SERIAL_NUMBER();
+			} catch (e) {
+				epoint.alert("当前浏览器不支持");
+				return false;
+			}
+			return str;
+		}
+
+		function callback(data) {
+			epoint.alert(data.systemMessages);
+		}
+
+		// *********************************二维码相关********************************************//
+		function uuid() {
+			var s = [];
+			var hexDigits = "0123456789abcdef";
+			for (var i = 0; i < 36; i++) {
+				s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			}
+			s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+			s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+			s[8] = s[13] = s[18] = s[23] = "-";
+
+			var uuid = s.join("");
+
+			return uuid;
+		}
+
+		var code = uuid();
+
+		function createqr() {
+			$('#qrcode')
+					.qrcode(
+							{
+								width : 150,//设置宽高 
+								height : 150,
+								render : "table",
+								text : "http://192.168.201.30:8090/EpointSSO/rest/oauth2/qrloginconfirm?code="
+										+ code
+							});
+		}
+
+		// *********************************长轮询相关********************************************//
+		// 是否点击了二维码登录
+		var alreadyQr = 0;
+
+		function longPolling() {
+			$.ajax({
+				url : Util.getRightUrl("rest/oauth2/qrlongpolling"),
+				data : {
+					"code" : code
+				},
+				dataType : "text",
+				timeout : 6000,
+				error : function(XMLHttpRequest, textStatus, errorThrown) {
+					if (textStatus == "timeout") { // 请求超时
+						if (alreadyQr == 1) {
+							longPolling(); // 递归调用
+						}
+						// 其他错误，如网络错误等
+					} else {
+						if (alreadyQr == 1) {
+							longPolling(); // 递归调用
+						}
+					}
+				},
+				success : function(data, textStatus) {
+					if (textStatus == "success") { // 请求成功
+						if (data) {
+							var json = Util.safeEval('(' + data + ')');
+							var loginid = json.loginid;
+							var validateCode = json.qrcredentials;
+							epoint.execute('loginaction.loginbyqr', '', [
+									loginid, validateCode ], callback);
+						} else {
+							if (alreadyQr == 1) {
+								longPolling(); // 递归调用
+							}
+						}
+					}
+				}
+			});
+		}
+
+		$(".login-tab-head").click(function(event) {
+			if (event.target.id == 'EWM') {
+				if (alreadyQr == 1) {
+					return;
+				}
+				alreadyQr = 1;
+				longPolling();
+			} else {
+				alreadyQr = 0;
+			}
+		});
+
+		// 初始化二维码
+		createqr();
+		$('#qrcode table').css("margin", 0);
+		$('#qrcode table').css("margin-top", 25);
+
+		Util.hidePageLoading();
+		
+		var $input = $('.login-input'),
+        $loginBtn = $('.btn-login');
+
+	    $input.on('keypress', function(event) {
+	        if(event.which == 13) {
+	            $loginBtn.filter(":visible").trigger('click');
+	        }
+	    });
+		//]]>
+	</script>
+</body>
+
+</html>

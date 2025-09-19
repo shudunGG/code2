@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>接口测试</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style>
+.fui-left {
+	width: 500px;
+}
+
+.fui-right {
+	margin-left: 501px;
+}
+
+pre {
+	outline: 1px solid #ccc;
+	padding: 5px;
+	margin: 5px;
+}
+
+.string {
+	color: green;
+}
+
+.number {
+	color: darkorange;
+}
+
+.boolean {
+	color: blue;
+}
+
+.null {
+	color: magenta;
+}
+
+.key {
+	color: red;
+}
+</style>
+
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+
+	<div class="fui-left">
+		<div role="head" title="选择服务接口"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%"
+				textField="text" idField="id" parentField="pid" filterMode="server"
+				action="getTreeModel" filterMode="server" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+
+
+	<div class="fui-right">
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" id="test" onclick="test">测试</a>
+			<input id="testtimes" class="mini-textbox" vtype="int;range:0,99999999"
+				emptyText="测试时间（单位：秒），不设置，默认执行一次。" style="width: 300px;" />
+
+			<!--帮助按钮 -->
+			<a role="helper" class="mr10">注意事项</a>
+		</div>
+
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>
+				1、多次执行插入的时候，对于不能重复的字段，为了避免重复，在字段值中添加<font style="color: red;">Index()</font>标识，会以数量递增。
+				例如：例如："loginid": "adminIndex()",入库的时候会是admin0、admin1...</p>
+			</p>
+		
+			<p>
+				2、主键是UUID的话，可以使用<font style="color: red;">UUID()</font>代替，例如："userguid":
+				"UUID()"
+			</p>
+		</div>
+
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div class="fui-accordions">
+				<div role="accordion" opened="true">
+					<div role="head" title="方法名称"></div>
+					<div role="body" style="height: 200px;">
+						<!-- <div class="mini-radiobuttonlist" repeatItems="1"
+							repeatDirection="horizontal" repeatLayout="table" bind=""
+							id="method" textField="text" valueField="id" data=""></div> -->
+
+						<input id="method" class="mini-filtertree" multiSelect="false"
+							required="true" emptyText="请选测试的方法" width="100%" />
+					</div>
+				</div>
+
+				<div role="accordion" opened="true">
+					<div role="head" title="方法参数"></div>
+					<div role="body" id="parameters"></div>
+				</div>
+
+				<div role="accordion" opened="true">
+					<div role="head" title="测试结果"></div>
+					<div role="body">
+						<div id="tabs1" class="mini-tabs" activeIndex="0"
+							style="width: 100%;" plain="false" buttons="#tabsButtons">
+							<div title="执行结果">
+								<div id="message"></div>
+							</div>
+							<div title="返回结果">
+								<div id="result"></div>
+							</div>
+							<div title="JSON格式化">
+								<pre id="resultJson"></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	</pre>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+
+
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("verificationaction");
+
+		//服务全路径
+		var className;
+
+		//方法序号
+		var num;
+
+		//参数个数
+		var count;
+
+		//树js对象
+		var tree = mini.get("tree");
+
+		//单选按钮组js对象
+		var radio = mini.get("method");
+
+		// 点击左侧树刷新右侧
+		tree.on("nodeselect", function(e) {
+			if (e.node) {
+				if (e.isLeaf) {
+					//获取方法列表
+					epoint.execute('getAllMethod', '', [ e.node.id ], function(
+							data) {
+						className = e.node.id;
+						radio.setData(data);
+					});
+				}
+
+			}
+		});
+
+		//点击选择单选按钮组
+		radio
+				.on(
+						"nodeselect",
+						function(e) {
+							console.dir(e)
+							epoint
+									.execute(
+											'getInputHTML',
+											'',
+											[ className, e.node.id ],
+											function(data) {
+												document
+														.getElementById("parameters").innerHTML = data.html;
+												count = data.count;
+												num = e.node.id;
+												$('#result').html("");
+												$('#message').html("");
+												$('#resultJson').html("");
+												if (count == 0) {
+													test();
+												}
+											});
+						});
+
+		function syntaxHighlight(json) {
+			if (typeof json != 'string') {
+				json = JSON.stringify(json, undefined, 2);
+			}
+			json = json.replace(/&/g, '&').replace(/</g, '<')
+					.replace(/>/g, '>');
+			return json
+					.replace(
+							/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+							function(match) {
+								var cls = 'number';
+								if (/^"/.test(match)) {
+									if (/:$/.test(match)) {
+										cls = 'key';
+									} else {
+										cls = 'string';
+									}
+								} else if (/true|false/.test(match)) {
+									cls = 'boolean';
+								} else if (/null/.test(match)) {
+									cls = 'null';
+								}
+								return '<span class="' + cls + '">' + match
+										+ '</span>';
+							});
+		}
+
+		//开始测试
+		function test() {
+			var params = new Array(count);
+			for (var i = 0; i < count; i++) {
+				var input = document.getElementById("field" + i);
+				var value;
+				if (input.type == 'checkbox') {
+					value = input.checked;
+				} else {
+					value = input.value;
+				}
+				if (value == "") {
+					value = '#blank#';
+				}
+				params[i] = value;
+			}
+			epoint.execute('execute', '', [ className, num,
+					mini.get("testtimes").getValue(), params.join('=split=') ],
+					function(data) {
+						//格式化展示
+						try {
+							$('#resultJson').html(
+									syntaxHighlight(JSON.parse(data.result)));
+						} catch (err) {
+							$('#resultJson').html("");
+						}
+						$('#result').html(data.result);
+						$('#message').html(data.message);
+					});
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

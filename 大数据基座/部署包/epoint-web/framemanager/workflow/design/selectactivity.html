@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择对应分支点</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input id="processVersionGuid" bind="processVersionGuid"
+			class="mini-hidden" />
+
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="ActivityGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true" action="getDataGridData" showPager="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div name="selectActivityGuid" field="selectActivityGuid"
+					headerAlign="center" align="center">选择</div>
+
+				<!-- 				<div type="checkcolumn" width="40"></div> -->
+				<div type="indexcolumn" width="40">序</div>
+				<div field="ActivityName" width="200">活动名称</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//初始化请求
+		epoint.initPage('selectactivityaction');
+		//渲染datagridA行按钮-处理人
+		var grida = mini.get("datagrid");
+		grida.load();
+		grida
+				.on(
+						"drawcell",
+						function(e) {
+							var record = e.record, column = e.column, field = e.field, value = e.value;
+							//belongDept列，操作按钮
+							if (column.name == "selectActivityGuid") {
+								e.cellStyle = "text-align:center;";
+								e.cellHtml = '<input type="radio" id="'
+										+ record.ActivityGuid
+										+ '"  onclick="javascript:callBack(\''
+										+ record.ActivityGuid + '\',\''
+										+ record.ActivityName + '\')" />';
+							}
+						});
+		function callBack(activityGuid, activityName) {
+			epoint.closeDialog(activityName + ";" + activityGuid);
+		}
+	</script>
+</body>
+
+</html>

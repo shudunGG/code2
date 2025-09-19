@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Modified shortcut</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="save" onclick="saveModify" iconCls="icon-save">
+				save changes
+				</a>
+				<a class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">
+				shut down
+				</a>
+			</div>
+		</div>
+
+		<!-- content area -->
+		<div class="fui-content">
+			<!-- The form area -->
+			<div id="fui-form" class="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="shortcut name" starred="true">
+							<input bind="dataBean.linkName" class="mini-textbox" required="true" requiredErrorText="Please enter theThe name of the shortcut" vtype="maxLength:50" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="correspondence add" starred="true">
+							<input bind="dataBean.linkUrl" class="mini-textbox" required="true" requiredErrorText="Please enter theCorrespondence address" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="order no">
+							<input bind="dataBean.orderNumber" class="mini-textbox" vType="int" value="0"/>
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="pop-up window">
+							<div name="tcck" bind="isBlank" class="mini-checkbox"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="small pictures">
+							<input id="smallRefresh" bind="dataBean.iconAddress"
+							class="mini-buttonedit" emptyText="" allowInput="false"
+							onbuttonclick="openicon"  selectOnFocus="true" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("quicklinkeditaction", '', initCallBack);
+
+			//bylistPage linked to trigger when the refs
+			function initCallBack(param) {
+				mini.get("smallRefresh").setText(mini.get("smallRefresh").getValue());
+			}
+
+			// The callback for the save operation
+			function saveCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+
+			function saveModify() {
+				if (epoint.validate()) {
+					epoint.execute('update', 'fui-form', saveCallback);
+				}
+			}
+
+			//Open theSmall pictures
+			function openicon(e) {
+				epoint.openDialog('Choose the icon', 'framemanager/orga/uiset/menu/module/selectoa8icon?type=small', function(param) {
+					if (param && param != 'close') {
+						mini.get("smallRefresh").setText(param);
+						mini.get("smallRefresh").setValue(param);
+					}
+				}, {
+					width : 1000,
+					height : 400
+				});
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

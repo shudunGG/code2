@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程活动表单权限修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" state="primary" onclick="save"
+				iconCls="icon-addcircle">保存设置</a>
+		</div>
+		<p class="text-special mr10">表单名称：
+		<div bind="misTableName" id="misTableName" class="mini-output"></div>
+		</p>
+
+		<div class="btn-group mr10 r">
+			<a class="mini-button" onclick="alldefault">全部缺省</a> <a
+				class="mini-button" onclick="allreadonly">全部只读</a> <a
+				class="mini-button" onclick="allreadwrite">全部读写</a> <a
+				class="mini-button" onclick="allnessary">全部必填</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="mini-radiobuttonlist hidden" textField="text"
+			valueField="id" id="rightLists" action="getRightList"></div>
+		<!-- 表单区域 -->
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDefaultModel" editNextOnEnterKey="true"
+			editNextRowCell="true" allowCellSelect="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="fieldName" width="200">字段名称</div>
+				<div field="fieldChineseName" width="200">字段中文名称</div>
+				<div field="accessRight" type="comboboxcolumn" width="200">
+					字段权限
+					<div property="editor" class="mini-combobox" textField="text"
+						valueField="id" data="rightLists" headerAlign="center"
+						width="100%"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitymanualfieldaccesseditaction');
+
+		var rightLists;
+
+		var radiobox = mini.get("rightLists");
+
+		radiobox.on("load", function(e) {
+			rightLists = e.sender.data;
+		});
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ], '', true);
+		}
+		//保存
+		function save() {
+			epoint.execute("save", "", callback);
+		}
+		//刷新
+		function refresh() {
+			searchData();
+		}
+		//全部缺省
+		function alldefault() {
+			right = "0";
+			epoint.execute("saveAll", "", [ right ], refresh);
+		}
+		//全部只读
+		function allreadonly() {
+			right = "10";
+			epoint.execute("saveAll", "", [ right ], refresh);
+		}
+		//全部可写
+		function allreadwrite() {
+			right = "20";
+			epoint.execute("saveAll", "", [ right ], refresh);
+		}
+		//全部必填
+		function allnessary() {
+			right = "40";
+			epoint.execute("saveAll", "", [ right ], refresh);
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

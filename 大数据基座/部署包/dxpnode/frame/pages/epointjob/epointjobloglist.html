@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>调度平台日志列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="refreshLog">日志刷新</a> <a
+			class="mini-button" onclick="openclearLog">清理</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<span class="text-danger"> 暂无描述 </span>
+		</p>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="row">
+				<div role="control" label="调度时间">
+					<input id="starttime" class="mini-datepicker" bind="startDate"
+						format="yyyy-MM-dd HH:mm:ss" onValuechanged="validateDate(this)"
+						timeFormat="HH:mm:ss" showTime="true" showOkButton="false"
+						showClearButton="true" allowInput="false" style="width: 44%" /><span
+						style="width: 12%; text-align: center">至</span><input id="endtime"
+						class="mini-datepicker" bind="endDate"
+						format="yyyy-MM-dd HH:mm:ss" timeFormat="HH:mm:ss" showTime="true"
+						showOkButton="false" showClearButton="true" allowInput="false"
+						onValuechanged="validateDate(this)" style="width: 44%" />
+				</div>
+				<div role="control" label="任务状态">
+					<input id="triggerStatus" class="mini-combobox" bind="logStatus"
+						action="getLogStatusList" emptyText="可选择..." showClose="false"
+						textField="text" valueField="id" onvaluechanged="logStatusChange"
+						width="48%" /> <input id="triggerStatusInput"
+						bind="logStatusInput" class="mini-textbox" emptyText="输入错误码"
+						showClose="true" width="48%"
+						style="margin-left: 4%; display: none" vtype="int" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="logId">
+					<input bind="logId" class="mini-textbox" vtype="int" />
+				</div>
+				<div role="control" label="触发类型">
+					<input id="triggerType" class="mini-combobox" bind="triggerType"
+						action="getTriggerTypeList" emptyText="请选择..."
+						nullItemText="请选择..." showNullItem="true" showClose="false"
+						textField="text" allowInput="false" valueField="id" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="执行器组">
+					<input class="mini-combobox" showNullItem="true" bind="groupName"
+						action="getJobGroupList" emptyText="请选择..." nullItemText="请选择..."
+						showClose="false" textField="text" allowInput="false"
+						valueField="id" />
+				</div>
+				<div role="control"></div>
+			</div>
+		</div>
+		<a id="logSearch" role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="logId" multiSelect="false"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="false" allowCellEdit="false" showPager="true"
+			action="getDataGridData" allowCellSelect="false">
+			<div property="columns">
+				<div type="indexcolumn" width="60">序</div>
+				<div field="logId" width="20%">ID</div>
+				<div field="triggerType" width="120">调度类型</div>
+				<div field="triggerTime" width="20%"
+					data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">调度时间</div>
+				<div field="triggerCode" width="20%"
+					renderer="onTriggerCodeRenderer">调度结果</div>
+				<div field="handleTime" width="20%"
+					data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">任务结束时间</div>
+				<div field="handleCode" width="20%" renderer="onHandleCodeRenderer">执行结果</div>
+				<div field="executorAddress" renderer="onHandleLogRenderer"
+					headeralign="center" align="center" width="100">执行器日志</div>
+				<div renderer="onOperationRenderer" headeralign="center"
+					align="center" width="100">终止</div>
+				<div renderer="onRetryRenderer" headeralign="center"
+					align="center" width="100">重试</div>
+			</div>
+		</div>
+		<div id="win1" class="mini-window" title="清理日志"
+			style="width: 500px; height: 180px;" showMaxButton="false"
+			showCollapseButton="false" showShadow="true" showToolbar="false"
+			showFooter="false" showModal="false" allowResize="true"
+			allowDrag="true">
+			<div class="fui-form" id="fui-form-clearLog">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="清理方式" starred="true">
+							<input class="mini-combobox" showNullItem="false"
+								bind="clearLogType" action="getClearLogTypeList"
+								emptyText="请选择..." showClose="false" textField="text"
+								allowInput="false" valueField="id" required="true" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="mini-button"
+				style="color: red; display: block; margin: 0 auto"
+				onclick="clearLog" width="80">删除日志</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobloglistaction', '@all', function(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+			}
+		});
+
+		// 查看调度结果
+		function openTriggerMsg(logId) {
+			var url = 'frame/pages/epointjob/epointjobschedulermsg?logId='
+					+ logId + '&msgType=0';
+			epoint.openDialog("查看调度结果", url, "", {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+
+		// 查看执行结果
+		function openHandleMsg(logId) {
+			var url = 'frame/pages/epointjob/epointjobschedulermsg?logId='
+					+ logId + '&msgType=1';
+			epoint.openDialog("查看执行结果", url, "", {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+
+		// 执行器日志渲染
+		var onHandleLogRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"openHandleLog", "epoint_total");
+		}
+
+		// 查看执行器日志
+		function openHandleLog(field) {
+			if (field.triggerCode == "200") {
+				var triggerTime = field.triggerTime;
+				var time = new Date(triggerTime).getTime(triggerTime);
+				// 如果调度成功，则可查看执行器日志
+				var url = 'frame/pages/epointjob/epointjobhandlerdatail?id='
+						+ field.logId;
+				epoint.openDialog("查看执行器日志", url, "", {
+					'width' : 1000,
+					'height' : 600
+				});
+			} else {
+				epoint.alert("该任务实例没有执行器日志", '执行器日志');
+			}
+		}
+
+		// 调度结果渲染
+		var onTriggerCodeRenderer = function(e) {
+			var statusName = "";
+			var code = e.row.triggerCode;
+			var id = e.row.logId;
+			if (code != "0") {
+				if (e.row.triggerCode == "200") {
+					statusName = '<a style="color:green;cursor:pointer" onclick="openTriggerMsg('
+							+ id + ')">成功</i>';
+				} else {
+					statusName = '<a style="color:red;cursor:pointer" onclick="openTriggerMsg('
+							+ id + ')">失败(' + code + ')</i>';
+				}
+			} else {
+				statusName = "";
+			}
+			return statusName;
+		}
+
+		// 执行结果渲染
+		var onHandleCodeRenderer = function(e) {
+			var statusName = "";
+			var code = e.row.handleCode;
+			var id = e.row.logId;
+			if (code != "0") {
+				if (e.row.triggerCode == "200" && code == "200") {
+					statusName = '<i style="color:green;cursor:pointer" onclick="openHandleMsg('
+							+ id + ')">成功</i>';
+				} else {
+					statusName = '<i style="color:red;cursor:pointer" onclick="openHandleMsg('
+							+ id + ')">失败(' + code + ')</i>';
+				}
+			} else {
+				statusName = "";
+			}
+			return statusName;
+		}
+
+		// 操作按钮渲染
+		function onOperationRenderer(e) {
+			var triggerCode = e.row.triggerCode;
+			var handleCode = e.row.handleCode;
+			// 判断如果调度成功，执行结果为0, 显示终止任务按钮
+			if (triggerCode == 200 && handleCode == 0) {
+				return epoint.renderCell(e, "action-icon icon-stop error",
+						"logKill", "logId");
+			} else {
+				return "";
+			}
+		}
+		
+		// 手动重试按钮添加
+		function onRetryRenderer(e){
+			var triggerCode = e.row.triggerCode;
+			var handleCode = e.row.handleCode;
+			// 调度失败或执行失败才显示重试按钮
+			return epoint.renderCell(e, "action-icon icon-reload", "retry", "logId");
+		}
+
+		//终止任务
+		function logKill(id) {
+			epoint.confirm('确定要手动终止正在进行的任务？', '终止确认', function() {
+				epoint.execute('logKill', '', [ id ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+		
+		// 手动重试
+		function retry(id){
+			epoint.confirm('确定要手动重试任务？', '重试确认', function() {
+				epoint.execute('retry', '', [ id ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			if (epoint.validate()) {
+				epoint.refresh([ 'datagrid', 'fui-form' ]);
+			}
+		}
+
+		// 弹出清理日志窗口
+		function openclearLog() {
+			epoint.openDiv('win1');
+		}
+
+		// 删除日志
+		function clearLog() {
+			epoint.confirm('确定要进行日志的清空操作吗？', '清空确认', function() {
+				epoint.execute('clearLog', 'fui-form-clearLog', closeCallback);
+			});
+		}
+
+		// 删除操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alert(data.msg, '', null, 'info');
+					epoint.closeDiv('win1');
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+
+		function renderCell(e, cls, func, fieldName) {
+			var param = '', isJson = false;
+
+			if (fieldName) {
+				//如果是total，处理成json
+				if (fieldName == 'epoint_total') {
+					param = epoint.encodeJson(e.row);
+					isJson = true;
+				}
+				//如果是多个，处理成json
+				else if (fieldName.indexOf(',') != -1) {
+					var pp = {};
+					var names = fieldName.split(',');
+					for (var i = 0, l = names.length; i < l; i++) {
+						var r = names[i];
+						pp[r] = e.row[r];
+					}
+					param = epoint.encodeJson(pp);
+					isJson = true;
+				} else {
+					param = e.row[fieldName];
+				}
+			} else {
+				fieldName = e.sender.idField;
+				param = e.row[fieldName];
+			}
+
+			if (isJson) {
+				param = param.replace(/'/g, "\\'");
+				param = param.replace(/\"/g, "\'");
+				return '<i onclick="' + func + "(" + param + ")\" class=\""
+						+ cls + '"></i>';
+			} else {
+				if (typeof param == 'string') {
+					param = param.replace(/'/g, "\\'");
+					param = param.replace(/\\/g, "/");
+				}
+				return '<i onclick="' + func + "('" + param + "')\" class=\""
+						+ cls + '"></i>';
+			}
+		}
+
+		// 刷新日志
+		function refreshLog() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], "", true);
+		}
+
+		//　日期控件的验证
+		var start = mini.get("starttime");
+		var end = mini.get("endtime");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'starttime') {
+						epoint.alert("开始时间不能比结束时间晚!", '', null, 'warning');
+						end.setValue(null);
+					} else {
+						epoint.alert("结束时间不能比开始时间早!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		// 任务状态选择
+		function logStatusChange(e) {
+			if (e.value == 4 || e.value == 5) {
+				document.getElementById("triggerStatusInput").style.display = "";
+			} else {
+				mini.get("triggerStatusInput").setValue("");
+				document.getElementById("triggerStatusInput").style.display = "none";
+			}
+		}
+	</script>
+</body>
+</html>

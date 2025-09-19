@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Application of modified</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save" onclick="saveModify">save and close</a> 
+			<a class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">cancel the change</a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">precautions</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<em> metro</em>The background color of the configuration, you can directly in the input box type in the name of the English color, for exampleyellow、green, or you can enterrgbvalue
+		</p>
+		<p>
+			<em> metro</em>An inter-bank across column attributes cannot be beyond screen allows, matrix screen size is by default4*4And if you want to modify, to the desktop configuration below。
+		</p>
+		<p>
+			<em> Number of messages address configuration:</em>You can configure a directlysql,Also can configure a page address,This address is used to return the number of messages,The program will automatically go to visit this address,At the same time will bring the current applicationrowguidSuch a parameter used for you
+		</p>
+		<p>
+			<em>Application opens wide high:</em>Desktop size percentage set application opens according to size, please fill in0to100Between thevalue。
+		</p>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="basic information"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="associated module" starred="true">
+									<input id="modulename" bind="dataBean.modulename"
+										allowInput="false" class="mini-buttonedit" emptyText=""
+										required="true" requiredErrorText="Please select a management module"
+										onbuttonclick="selectModule" selectOnFocus="true" />
+									<!-- Hide area -->
+									<input bind="dataBean.moduleguid" id="moduleguid"
+										class="mini-hidden" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="application name" starred="true">
+									<input id="appname" bind="dataBean.appname"
+										class="mini-textbox" required="true"
+										requiredErrorText="The application nameCan't be empty" vtype="maxLength:50" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="superior application">
+									<input id="parentguidname"
+										bind="appmanageappinfoeditaction.parentName"
+										class="mini-buttonedit" emptyText="" onbuttonclick="selectApp"
+										selectOnFocus="true" allowInput="false" />
+									<!-- Hide area-->
+									<input bind="dataBean.parentguid" id="parentguid"
+										class="mini-hidden" />
+								</div>
+								<div role="control" label="category">
+									<input id="categoryguid" bind="dataBean.categoryguid"
+										action="getYingYongList" allowInput="false" autoLoad="false"
+										class="mini-combobox" value="0" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="appto open the way">
+									<input id="isblank" bind="dataBean.isblank"
+										data="[{id:false,text:'DIVOpen the window way'},{id:true,text:'The new browserOpen the window way'}]"
+										allowInput="false" autoLoad="false" class="mini-combobox"
+										emptyText="Please select a..." />
+								</div>
+								<div role="control" label="start using">
+									<div id="isdisable"
+										bind="appmanageappinfoeditaction.appstatues" checked="true"
+										class="mini-checkbox"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="application address" starred="true">
+									<input id="url" bind="dataBean.url" class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="messages add no">
+									<input id="newmessageurl" bind="dataBean.newmessageurl"
+										class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="app of open width">
+									<input id="width" bind="dataBean.width" class="mini-textbox"
+										value="0" vtype="range:0,100" />
+								</div>
+								<div role="control" label="app to open the height">
+									<input id="heigth" bind="dataBean.heigth" class="mini-textbox"
+										value="0" vtype="range:0,100" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="MACSpecific attribute"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="app are briefly">
+									<input id="description" bind="dataBean.description"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="display icon">
+									<input id="imacIcon" bind="dataBean.desktopbigicon"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="openicon('imac');" selectOnFocus="true" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="METROSpecific attribute"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="an inter-bank">
+									<input id="rowspan" bind="dataBean.rowspan"
+										class="mini-textbox" value="1" vtype="int" />
+								</div>
+								<div role="control" label="across the column">
+									<input id="colspan" bind="dataBean.colspan"
+										class="mini-textbox" value="1" vtype="int" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="background color">
+									<input id="backgroundcolor" bind="dataBean.backgroundcolor"
+										class="mini-textbox" />
+								</div>
+
+							</div>
+							<div role="row">
+								<div role="control" label="list page address">
+									<input id="contenturl" bind="dataBean.contenturl"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="display icon">
+									<input id="metroIcon" bind="dataBean.desktopsmallicon"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="openicon('metro');" selectOnFocus="true" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('appmanageappinfoeditaction', '', initCallBack);
+
+		function initCallBack(data) {
+			mini.get("modulename").setText(mini.get("modulename").getValue());
+			mini.get("parentguidname").setText(data.parentName);
+			mini.get("parentguidname").setValue(data.parentName);
+			if (data.imacicon) {
+				mini.get("imacIcon").setText(data.imacicon);
+			}
+			if (data.metroicon) {
+				mini.get("metroIcon").setText(data.metroicon);
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', closeCallback);
+			}
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function selectModule(e) {
+			epoint.openDialog('chooseAssociated module',
+					"framemanager/orga/uiset/menu/app/selectModuleGuid",
+					selectModuleOperJS, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		function selectModuleOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split(";");
+				if (s[0] != "") {
+					mini.get("modulename").setText(s[0]);
+					mini.get("modulename").setValue(s[0]);
+					mini.get("moduleguid").setValue(
+							s[1] == 'undefined' ? '' : s[1]);
+
+					epoint.execute('searchModule', '', callBack);
+				}
+			}
+		}
+
+		function callBack(data) {
+			if (data) {
+				var arr = data.split(";");
+				if (arr.length == 3) {
+					mini.get("isblank").setValue(arr[0] == "0" ? true : false);
+					mini.get("isdisable").setValue(arr[1]);
+					mini.get("url").setValue(arr[2]);
+				}
+			}
+		}
+
+		//chooseapplication
+		function selectApp(e) {
+			epoint.openDialog('chooseapplication',
+					'framemanager/orga/uiset/menu/app/selectapp?type=1',
+					function(param) {
+						s = param.split(";");
+						if (param != 'close' && s[1] != 'f9root') {
+							mini.get("parentguidname").setText(s[0]);
+							mini.get("parentguidname").setValue(s[0]);
+							mini.get("parentguid").setValue(s[1]);
+						}
+					}, {
+						width : 300,
+						height : 500
+					});
+		}
+
+		function openicon(type) {
+			var iconId = type + "Icon";
+			epoint.openDialog('chooseicon',
+					'framemanager/orga/uiset/menu/app/selectappmanageicon?type='
+							+ type, function(param) {
+						if (param && param != 'close') {
+							mini.get(type + "Icon").setText(param);
+							mini.get(type + "Icon").setValue(param);
+						}
+					}, {
+						width : 1000,
+						height : 500
+					});
+		}
+		//]]>
+	</script>
+</body>
+</html>

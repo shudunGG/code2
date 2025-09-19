@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>活动选择材料</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="saveBtn">确定选择</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="materialGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true" action="selectmaterialaction.getDefaultModel"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">
+					序
+				</div>
+				<div field="materialName" width="200" headerAlign="center"
+					align="center">名称</div>
+				<div field="materialType" width="200" headerAlign="center"
+					align="center">类型</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//初始化请求
+		epoint.initPage('selectmaterialaction');
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.alertAndClose(args.msg, '', null, null, 'info');
+			}
+		}
+		//确认选择
+		function saveBtn() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.execute("saveMaterial", "", [ ids
+						.join(',') ], function(data) {
+					if (data.msg) {
+						epoint.alertAndClose(data.msg, '', null, null, 'info');
+					}
+				});
+			} else {
+				epoint.alert("请选择要保存的记录!", '', null, 'warning');
+			}
+		}
+	</script>
+</body>
+
+</html>

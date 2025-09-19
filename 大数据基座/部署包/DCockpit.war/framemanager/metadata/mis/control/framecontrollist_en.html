@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Component management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="content-type" content="text/html" />
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();" id="btnAddRecord"> add a record </a><a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}"> delete Selected </a>
+			</div>
+		</div>
+
+		<!-- conditions area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="component name">
+							<input id="search_chname" class="mini-textbox"
+							bind="framecontrollistaction.searchString"
+							onkeypress="searchData();" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- content area -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="controlguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">
+						order
+					</div>
+					<div field="chname" width="100%" headerAlign="center">
+						component name
+					</div>
+					<div field="name" width="300" headerAlign="center">
+						display type
+					</div>
+					<div field="type" width="300" align="center" headerAlign="center">
+						component type
+					</div>
+					<div field="ordernum" width="300" headerAlign="center" align="right">
+						roworderNo.
+					</div>
+					<div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer">
+						edit
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			// Initialize the page
+			epoint.initPage('framecontrollistaction');
+
+			// Draw Edit Columns button
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			};
+
+			// The new popup Windows
+			function openAdd() {
+				epoint.openDialog('Add a record', "framemanager/metadata/mis/control/framecontroladd", function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 500
+				});
+			}
+
+			// The pop-upeditwindow
+			function openEdit(id) {
+				epoint.openDialog('editrecord', "framemanager/metadata/mis/control/framecontroledit?guid=" + id, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 500
+				});
+			}
+
+			function callback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', function(){
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}, 'info');
+				}
+			}
+
+			// delete data
+			function deleteSelect() {
+				epoint.execute("deleteSelect", '', function(data) {
+					if(data.msg){
+						epoint.alert(data.msg,'',function(){
+							epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+						}, 'info')
+					}
+				});
+			}
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+		</script>
+	</body>
+</html>

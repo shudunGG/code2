@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>处理规则</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新增处理规则 </a><a id="btnDel" class="mini-button"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+		</div>
+
+	</div>
+	
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="规则名称">
+						<input class="mini-textbox" bind="rulename" />
+					</div>
+					<div role="control" label="处理类型">
+						<input class="mini-radiobuttonlist" bind="handleType" action="selectHandleType" id="handleType" repeatItems="2" textField="text"
+							valueField="id" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<div class="fui-content">
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData">
+				<div property="columns">
+					<div width="10" type="checkcolumn"></div>
+					<div type="indexcolumn" width="10" headerAlign="center">序</div>
+					<div field="rulename" headerAlign="center" align="center" width="50">规则名称</div>
+					<div field="ruleID" headerAlign="center" align="center" width="50">规则ID</div>
+					<div field="handletype1" headerAlign="center" align="center" width="50">处理类型</div>
+					<div field="enabled" headerAlign="center" align="center" width="40" renderer="onColorRenderer">启用</div>
+					<div headerAlign="center" align="center"
+						renderer="onOperationRenderer" width="50">操作</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('handlerulelistaction');
+		// 弹出新增窗口
+		function openAdd() {
+			epoint
+					.openDialog(
+							'新增处理规则页面',
+							"frame/pages/basic/gateway/api/apiinfo/handlerule?opentype=add",
+							searchData, {
+								'width' : 900,
+								'height' : 300
+							});
+		}
+
+		// 绘制行操作按钮
+		var onOperationRenderer = function(e) {
+			var html = '';
+			if ("未启用" == e.row.enabled) {
+				html += '<a href="javascript:void(0);" onclick="openStop(\''
+						+ e.row.enabled
+						+ '\');" class="action-icon icon-start" title="启用">';
+			}
+			if ("已启用" == e.row.enabled) {
+				html += '<a href="javascript:void(0);" onclick="openStop(\''
+						+ e.row.enabled
+						+ '\');" class="action-icon icon-stop" title="禁用">';
+			}
+			return html;
+		};
+		
+		function openStop(enabled) {
+			epoint.execute("modifyStatus", '', enabled, function() {
+				if ("未启用" == enabled) {
+					epoint.alert("启用成功！", '', searchData);
+				}
+				if ("已启用" == enabled) {
+					epoint.alert("禁用成功！", '', searchData);
+				}
+			});
+
+		}
+		
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', closeCallback);
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, null, null, null, 'info');
+					searchData();
+				} else {
+					epoint.alert(msg, null, null, 'info');
+					searchData();
+				}
+			}
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ,'fui-form']);
+		}
+	
+		function onColorRenderer(e) {
+			 var enabled = e.row.enabled;
+			 if ("已启用" == enabled) {
+				 e.cellStyle = " color:green;";
+					return enabled;
+			 }
+			 else if ("未启用" == enabled){
+				 e.cellStyle = " color:red;";
+					return enabled;
+			 }
+		}
+	</script>
+</body>
+</html>

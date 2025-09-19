@@ -1,0 +1,60 @@
+脚本编写规范
+1、sql脚本存储在webapp\dxp_update\sql目录下
+	按照每一天一个文件夹的形式（如：20200112,20100113）加入脚本文件，每个文件夹内必须有3个文件。
+	脚本文件：【mysql_Frame.sql】【dm_Frame.sql 【gauss_Frame.sql】【ora_Frame.sql】【sql_Frame.sql】
+	check文件：【mysql_Check_Frame.sql】【dm_Check_Frame.sql】【gauss_Check_Frame.sql】【ora_Check_Frame.sql】【sql_Check_Frame.sql】
+	1个说明文件：【脚本更新.txt】
+如：	
+【mysql_Frame.sql】
+	-- 如需手工在navicat中执行，把语句拷贝到查询设计器，然后将下一行DELIMITER GO和最后一行的DELIMITER ; 注释去除即可 --
+	-- DELIMITER GO --
+
+	-- 2020/01/09
+	-- 测试使用
+	drop procedure if exists`epoint_proc_alter`;
+	GO
+	create  procedure `epoint_proc_alter`()
+	begin 
+	if not exists (select * from test where rowguid = '1') then
+		insert into test(rowguid,column1,column2) values('1','1','1');
+	end if;
+	end;
+	GO
+	call epoint_proc_alter();
+	GO
+	drop procedure if exists `epoint_proc_alter`;
+	GO
+
+	-- DELIMITER ; --
+	
+【mysql_Check_Frame.sql】
+	select case count(1) when 0 then 0 else 1 end from test where rowguid = '1';
+【脚本更新.txt】	
+	【修改数据库】mysql/gaussdb100
+	<br>【作用】test/test1表
+	<br>【处理的表】test/test1
+
+
+2、索引脚本存储在webapp\dxp_update\index目录下
+索引脚本只需1个文件即可，如新增索引，则在对应索引文件中添加即可
+脚本文件：【mysql_Frame.sql】【dm_Frame.sql 【gauss_Frame.sql】【ora_Frame.sql】【sql_Frame.sql】
+内容如下
+第一行表名
+第二行索引类别;索引字段;索引名
+第三行执行语句
+不同表之间需要加空行，相同表不需要加空行，不需要额外加表面，直接换行写即可
+
+如
+【mysql_Frame.sql】
+-- TEST
+-- Normal;column1;IDX_TEST_COLUMN1
+alter table TEST add index IDX_TEST_COLUMN1(column1);
+-- Normal;column2;IDX_TEST_COLUMN2
+alter table TEST add index IDX_TEST_COLUMN2(column2);
+-- Normal;column3;IDX_TEST_COLUMN3
+alter table TEST add index IDX_TEST_COLUMN3(column3);
+
+-- TEST1
+-- Normal;column1;IDX_TEST1_COLUMN1
+alter table TEST1 add index IDX_TEST1_COLUMN1(column1);
+

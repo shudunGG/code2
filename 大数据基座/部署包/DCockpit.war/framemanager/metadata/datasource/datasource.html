@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据源管理子页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="add"
+				onclick="saveAndClose()">确定添加</a><a class="mini-button"
+				id="addCancel" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">取消添加</a><a class="mini-button"
+				iconCls="icon-addcircle" id="edit" onclick="saveAndClose()">保存修改</a>
+			<a class="mini-button" iconCls="icon-minuscircle" id="editCancel"
+				onclick="epoint.closeDialog">取消修改</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<!-- 加2个input防止密码浏览器自动填入 -->
+				<input type="text" name="username" class="hidden-accessible" /><input
+					type="password" class="hidden-accessible" />
+				<div role="row">
+					<div role="control" label="数据源名称" starred="true">
+						<input class="mini-textbox" bind="dataSource.dsName"
+							required="true" requiredErrorText="数据源名称不能为空"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="数据源类型" starred="true">
+						<input name="dsType" bind="dataSource.dsType" popupHeight="150"
+							allowInput="false" action="getDsTypes" value="SQL Server" required="true"
+							requiredErrorText="数据源类型不能为空" 
+							autoLoad="false" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="登录帐户" starred="true">
+						<input id="loginUser" class="mini-textbox" bind="dataSource.loginUser"
+							required="true" requiredErrorText="登录帐户不能为空" />
+					</div>
+					<div role="control" label="登录密码" starred="true">
+						<input id="loginPwd" class="mini-password" bind="dataSource.loginPwd"
+							required="true" requiredErrorText="登录密码不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否加密" starred="true">
+						<div id="isencry" class="mini-radiobuttonlist" bind="dataSource.isencry"
+							requiredErrorText="是否加密必须选择" required="true"
+							data="[{text:'是',id:'1'},{text:'否',id:'0'}]" value="0"
+							textField="text" valueField="id"></div>
+					</div>
+					<div role="control" label="配置类型" starred="true">
+						<div id="conntype" class="mini-radiobuttonlist" bind="dataSource.conntype"
+							requiredErrorText="配置类型必须选择"
+							data="[{text:'服务器数据库名称配置',id:'0'},{text:'连接字符串配置',id:'1'}]" value="0"
+							textField="text" valueField="id" onvaluechanged="onConnectTypeChanged"></div>
+					</div>
+				</div>
+				<div role="row" id="serverdbname">
+					<div role="control" label="服务器名称或地址" starred="true">
+						<input id="serverName" class="mini-textbox" bind="dataSource.serverName"
+							required="true" requiredErrorText="服务器名称或地址不能为空" />
+					</div>
+					<div role="control" label="数据库名称" starred="true">
+						<input id="dbname" class="mini-textbox" bind="dataSource.dbname" required="true" requiredErrorText="数据库名称不能为空" />
+					</div>
+				</div>
+				<div role="row" id="connectionstr">
+					<div role="control" label="数据源连接字符串">
+						<input id="connectionString" class="mini-textbox" bind="dataSource.connectionString" required="true" requiredErrorText="数据源连接字符串不能为空"  />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="数据源描述">
+						<input class="mini-textbox" bind="dataSource.dsDesc" vtype="maxLength:100"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// sm2加密引入js文件
+		SrcBoot.output([
+			'../../../frame/fui/js/libs/sm2security.js'
+		]);
+	</script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('datasourceaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			if (data.add) {
+				//隐藏修改按钮
+				mini.get('edit').setVisible(false);
+				mini.get('editCancel').setVisible(false);
+			} else {
+				//隐藏新增按钮
+				mini.get('add').setVisible(false);
+				mini.get('addCancel').setVisible(false);
+			}
+			if(data.conntype){
+				if (data.conntype == '1') {//连接字符串配置
+					$('#serverdbname').hide();
+					$('#connectionstr').show();
+				} else {//服务器数据库名称配置
+					$('#connectionstr').hide();
+					$('#serverdbname').show();
+				}
+			}
+		}
+
+		// 数据源配置类型改变行为
+		function onConnectTypeChanged(e) {
+			if (e.value == '1') {//连接字符串配置
+				$('#serverdbname').hide();
+				$('#connectionstr').show();
+			} else {//服务器数据库名称配置
+				$('#connectionstr').hide();
+				$('#serverdbname').show();
+			}
+		}
+		
+		// 保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var oldUser = mini.get("loginUser").value;
+				var oldPwd = mini.get("loginPwd").value;
+				var oldServer = mini.get("serverName").value;
+				var olddbname = mini.get("dbname").value;
+				var oldconnstr = mini.get("connectionString").value;
+				mini.get("loginUser").setValue(encrypt(oldUser));
+				mini.get("loginPwd").setValue(encrypt(oldPwd));
+				mini.get("serverName").setValue(encrypt(oldServer));
+				mini.get("dbname").setValue(encrypt(olddbname));
+				mini.get("connectionString").setValue(encrypt(oldconnstr));
+				if (mini.get('add').getVisible()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				} else if (mini.get('edit').getVisible()) {
+					epoint.execute('save', 'fui-form', closeCallback);
+				}
+				mini.get("loginUser").setValue(oldUser);
+				mini.get("loginPwd").setValue(oldPwd);
+				mini.get("serverName").setValue(oldServer);
+				mini.get("dbname").setValue(olddbname);
+				mini.get("connectionString").setValue(oldconnstr);
+			}
+		}
+		
+		// 客户端加密类型
+		function encrypt(str){
+			if(str){
+				str = Util.encryptSM2(str);
+			}
+			return str;
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				Util.safeEval(data.msg);
+			}
+		}
+	</script>
+
+</body>
+
+</html>

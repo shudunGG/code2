@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>条件配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="add" onclick="addCondition"
+			style="display: none;">确定新增</a> <a class="mini-button" id="save"
+			onclick="saveCondition" style="display: none;">保存修改</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="筛选编号" starred="true">
+						<input id="conditionNo" class="mini-textbox" required="true"
+							requiredErrorText="筛选编号不能为空!" bind="dataBean.conditionno" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="筛选类型" starred="true">
+						<div class="mini-combobox" action="getQueryType" id="queryType"
+							bind="dataBean.querytype" onvaluechanged="queryTypeChange" required="true" requiredErrorText="筛选类型不能为空!"/></div>
+					</div>
+				</div>
+				<div role="row" id="selectArea"  style="display: none">
+					<div role="control" label="数据表选择">
+						<input id="dataTable" class="mini-combobox"
+							bind="dataBean.tableId" action="getTableList"
+							onvaluechanged="selectTableChange(this.value)" />
+					</div>
+					<div role="control" label="表字段选择" starred="true">
+						<div id="dataField" class="mini-combobox" textField="text"
+							valueField="id" bind="dataBean.fieldId"></div>
+					</div>
+				</div>
+				<div role="row" id="conditionArea"  style="display: none">
+					<div role="control" label="判断条件">
+						<div id="compare" class="mini-combobox" textField="text"
+							valueField="id" bind="dataBean.comparision"
+							data="[{text:'小于',id:'&lt;'},{text:'大于',id:'&gt;'},{text:'等于',id:'='},{text:'不等于',id:'!='}]"></div>
+					</div>
+					<div role="control" label="匹配值" >
+						<input id="value" class="mini-textbox" bind="dataBean.datavalue" />
+					</div>
+				</div>
+				<div role="row">
+				<div role="control" label="排序码"  starred="true">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int" required="true" requiredErrorText="排序码不能为空!"/>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('mobilescreeningconditionconfigaddaction', null, initCallBack);
+
+		//初始化回调事件
+		function initCallBack(data) {
+			if(data && data.type){
+				buttonShow(data.type);
+				if(data.type=='edit'){
+					mini.get("conditionNo").setEnabled(false);
+				}
+			}else{
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+			}
+			if(data && data.flag){
+				document.getElementById("selectArea").style.display = "block";
+				document.getElementById("conditionArea").style.display = "block";
+				if(data.tableName && data.fieldName){
+					mini.get('dataTable').setText(data.tableName);
+					mini.get('dataField').setText(data.fieldName);
+				}
+			}
+		}
+		
+		//控制显隐
+		function buttonShow(type) {
+			if (type == "edit") {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("save").style.display = "";
+			}else{
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+			}
+		}
+
+		//新增
+		function addCondition() {
+			if (epoint.validate()) {
+				epoint.execute('addCondition', 'fui-form', function(data) {
+					if (data.message) {
+						if(data.message =='新增成功'){
+							epoint.alertAndClose(data.message, '', null, null, 'info');
+						}else{
+							epoint.alert(data.message, '', null, null, 'info');
+						}
+					}
+				});
+			}
+		}
+
+		//保存
+		function saveCondition() {
+			if (epoint.validate()) {
+				epoint.execute('saveCondition', 'fui-form', function(data) {
+					epoint.alertAndClose(data.message, '', null, 'info');
+				});
+			}
+		}
+
+		function queryTypeChange() {
+			var queryType = mini.get("queryType").getValue();
+			//如果是自定义，显示个性配置项
+			if (queryType == "4") {
+				document.getElementById("selectArea").style.display = "block";
+				document.getElementById("conditionArea").style.display = "block";
+			} else {
+				document.getElementById("selectArea").style.display = "none";
+				document.getElementById("conditionArea").style.display = "none";
+			}
+		}
+
+		function selectTableChange(tabelId) {
+			if (tabelId) {
+				epoint.execute("dataTableValueChange", 'fui-form', [ tabelId ], mcallback);
+			}
+		}
+		
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				mini.get("dataField").setData(data.fieldslist);
+				mini.get("dataField").select(0);
+			}	
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

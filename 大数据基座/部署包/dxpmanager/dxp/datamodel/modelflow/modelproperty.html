@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>流程属性</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a> 
+		</div>
+	</div>
+
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="流程名称" starred="true">
+				<input id="changeName" name="changeName" class="mini-textbox" vtype="maxLength:100"
+					required="true" emptyText="请输入流程名称"  />
+			</div>
+		</div>
+		<div role="row" >
+			<!-- <div role="control" label="hive数据源" >
+				<input id="dsId" name="dsId" class="mini-combobox" vtype="maxLength:100"
+					required="true" enabled="false"  action="dxpmodelflowaddaction.getHiveDs"/>
+			</div> -->
+			<div role="control" label="presto数据源" >
+				<input id="prestoDsid" name="prestoDsid" class="mini-combobox" vtype="maxLength:100"
+					required="true" enabled="false"  action="dxpmodelflowaddaction.getPrestoDs"/>
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="最小内存（M）">
+				<input id="xms" name="xms" bind="xms" class="mini-textbox" vtype="int;range:1,2048" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="最大内存（M）">
+				<input id="xmx" name="xmx" bind="xmx" class="mini-textbox" vtype="int;range:1,2048" />
+			</div>
+		</div>
+	</div>
+	<div class="hidden" style="padding-top: 1px">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" onclick="add"
+				style="margin-left: 20px">新增参数</a>
+		</div>
+	</div>
+
+		<script src="../../../frame/fui/js/jsboot.js"></script>
+
+		<script>
+		
+		 epoint.initPage('uploadflowaction','', function(){
+				//从父页面获取表单数据
+				var property = Util.getUrlParams('property');
+				var xms = Util.getUrlParams('xms');
+				var xmx = Util.getUrlParams('xmx');
+				var flowName = Util.getUrlParams('flowName');
+				var livyPath = Util.getUrlParams('livyPath');
+				var hdpType = Util.getUrlParams('hdpType');
+				var dsId = Util.getUrlParams('dsId');
+				var prestoDsid = Util.getUrlParams('prestoDsId');
+				console.log(property);
+				if (property && "undefined" != property) {
+					var data = JSON.parse(property);
+					data.xms = xms;
+					data.xmx = xmx;
+					data.livyPath = livyPath;
+					data.hdpType = hdpType;
+					data.dsId=dsId;
+					data.prestoDsid=prestoDsid;
+					form.setData(data);
+				}else{
+					var data = {
+							xms:xms,
+							xmx:xmx,
+							changeName:flowName,
+							livyPath:livyPath,
+							hdpType:hdpType,
+							dsId:dsId,
+							prestoDsid:prestoDsid
+					};
+					form.setData(data);
+				}
+		 });
+		 
+			var form = new mini.Form("#form");
+			
+			
+			//保存修改
+			function saveModify() {
+				if (epoint.validate()) {
+					// 把表格的数据拿出来放到隐藏域中
+					var xms=parseInt(mini.get('xms').getValue());
+					var xmx=parseInt(mini.get('xmx').getValue());
+					console.log(xms+':'+xmx);
+					if(xms>xmx){
+						epoint.alert('最小内存不能大于最大内存');
+						epoint.clear('xms');
+						return;
+					}
+					var data = form.getData(true, false);
+					epoint.closeDialog(data);
+
+				}
+			}
+
+		</script>
+</body>
+
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>消息配置</title>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<script>
+		SrcBoot.output(['./css/messagesetting.css']);
+	</script>
+	<script>
+		SrcBoot.outputCustomSkin("./skins/messagesetting/");
+	</script>
+</head>
+
+<body>
+	<div class="fui-content detail-container">
+		<div class="scroll-container">
+			<div class="cate-header fui-theme-main-color">消息提醒</div>
+
+			<div class="voices-setting">
+				<div class="row clearfix">
+					<span class="sumary-left ">语音提醒</span> <span class="sumary-right ">
+						<input class="mini-checkbox switch " trueValue="true" falseValue="false" bind="messagesound"
+							onclick="onVoiceStateChange" />
+					</span>
+				</div>
+			</div>
+
+			<!-- 消息配置sumary -->
+			<div class="remind-setting-sumary" id="remind-setting-sumary">
+				<div class="row clearfix">
+					<span class="sumary-left sumary-title">消息配置</span> <span class="sumary-right "> <span
+							class="sumary-advance fui-theme-main-color" onclick="openAdvanceWin()">高级设置</span>
+					</span>
+				</div>
+				<div id="remind-sumary-list"></div>
+				<!-- 模板渲染插入 -->
+			</div>
+		</div>
+		<div class="scroll-container">
+			<div class="cate-header fui-theme-main-color">消息中心配置</div>
+
+			<!-- 消息配置sumary -->
+			<div class="remind-setting-sumary">
+				<div class="row clearfix">
+					<span class="sumary-left sumary-title">窗口默认尺寸</span> <span class="sumary-right "> <input
+							class="mini-radiobuttonlist sumary-advance fui-theme-main-color " textField="text"
+							valueField="value" bind="isMsgCenterMaxSize" onvaluechanged="changeMsgCenterMax"
+							data="[{value:'1',text:'最大化'},{value:'0',text:'自适应'}]" />
+					</span>
+				</div>
+				<div class="row clearfix">
+					<span class="sumary-left sumary-title">消息排序</span> <span class="sumary-right "> <input
+							class="mini-radiobuttonlist sumary-advance fui-theme-main-color " textField="text"
+							valueField="value" bind="msgCenterOrder" onvaluechanged="changeMsgSort"
+							data="[{value:'asc',text:'按最早'},{value:'desc',text:'按最新'}]" />
+					</span>
+				</div>
+				<!--  -->
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 强制所有请求发送时立即出现遮罩，解决OA测试提出的点击过快出现重放攻击问题
+		epoint.forceShowLoading = true;
+
+		epoint.initPage('mypagesettingaction');
+		// 获取数据 数据格式参考json文件 查询参数{query: 'getMessageData'}
+		var getMessageSettingUrl = epoint
+			.dealRestfulUrl('mypagesettingaction/getMessageSetting');
+		// 保存数据地址
+		// 方式一： 外部点击总开关的实时保存
+		// 请求参数：
+		// {
+		// 	query: 'saveMasterData',
+		// 	data: {
+		// 		id: '消息提醒分类的标识',
+		// 		state: '总的开启关闭状态 取值 布尔值 true / false'
+		// 	}
+		// }
+		// 方式二： 高级设置中详情操作完毕的保存
+		// 请求参数：
+		// {
+		// 	query: 'saveDetailData',
+		// 	data: [{
+		// 			id: '提醒分类的标识',
+		// 			state: '总开关状态',
+		// 			detail: [{
+		// 					id: '子渠道标识',
+		// 					state: '当前子渠道状态',
+		// 					disabled: '是否不支持此渠道'
+		// 				},
+		// 				...
+		// 			]
+		// 		},
+		// 		...
+		// 	]
+		// }
+		var saveMessageSettingUrl = epoint
+			.dealRestfulUrl('mypagesettingaction/saveMessageSetting');
+
+		function openAdvanceWin() {
+			MessageSetting.showAdvance();
+		}
+
+		function onVoiceStateChange(e) {
+			var ctr = e.sender,
+				trueValue = ctr.trueValue + '',
+				value = ctr.value === trueValue ? true :
+				false;
+			// todo 实现语音提醒的保存
+			epoint.showLoading();
+			//alert('当前语音提醒开关状态:' + value);
+			epoint.execute('mypagesettingaction.save', null, function (data) {
+				if (data.success) {
+					epoint.showTips('修改成功', {
+						state: 'success'
+					});
+				}
+				epoint.hideLoading();
+			});
+		}
+
+		function changeMsgCenterMax(e) {
+			console.log(e.value);
+			epoint.execute('mypagesettingaction.changeMsgCenterMax', null,
+				e.value,
+				function (data) {
+					if (data.success) {
+						epoint.showTips('修改成功', {
+							state: 'success'
+						});
+					}
+				});
+		}
+
+		function changeMsgSort(e) {
+			epoint.execute('mypagesettingaction.changeMsgSort', null, e.value,
+				function (data) {
+					if (data.success) {
+						epoint.showTips('修改成功', {
+							state: 'success'
+						});
+					}
+				});
+		}
+	</script>
+	<script>
+		SrcBoot.output(['./messagesetting.js']);
+	</script>
+
+</body>
+
+</html>

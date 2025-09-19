@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>方法管理</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="btnAddRecord"
+				onclick="openAdd()">添加事件</a> <a class="mini-button"
+				iconCls="icon-save" id="btnUpdate" onclick="saveAll()">修改排序</a> <a
+				class="mini-button mini-btn-danger" iconCls="icon-minuscircle"
+				id="btnDel"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">删除选中</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="eventGuid" multiSelect="true" action="getDefaultModel"
+			showPager="true" style="width: 100%; height: 100%;"
+			allowResize="true" allowCellEdit="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="eventname" width="150" headerAlign="center" Align="left">方法名称</div>
+				<div field="eventtypename" headerAlign="center" width="150">事件类型</div>
+				<div field="eventmethodname" headerAlign="center" Align="left"
+					width="100%">事件处理办法</div>
+				<div field="orderNum" width="60" headerAlign="center" align="right"
+					vType="range:0,99999999;int;required">
+					排序号<input property="editor" class="mini-textbox" minWidth="20"
+						inputStyle="text-align:right" />
+				</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer" name="btnedit">修改</div>
+			</div>
+		</div>
+		<input class="mini-hidden" id="versionGuid" bind="versionGuid"></input>
+		<input class="mini-hidden" id="tableGuid" bind="tableGuid"></input> <input
+			class="mini-hidden" id="tableId" bind="tableId"></input> <input
+			class="mini-hidden" id="belongTo" bind="belongTo"></input>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		var grid = mini.get("datagrid");
+		var isSub = "";
+		var isOuAdmin = false;
+		var isLesseeMode = false;
+		epoint
+				.initPage(
+						'formeventlistaction',
+						'',
+						function(data) {
+							if (data.isLesseeMode) {
+								isLesseeMode = data.isLesseeMode;
+							}
+							if (data.isOuAdmin) {
+								isOuAdmin = data.isOuAdmin;
+							}
+							if (data.isSub == "1") {
+								isSub = data.isSub;
+								//没有开启租户模式或者开启租户模式并且不是租户的时候，禁止操作已经按钮
+								if (!isLesseeMode
+										|| (isLesseeMode && !isOuAdmin)) {
+									document.getElementById("btnAddRecord").style.display = "none";
+									document.getElementById("btnDel").style.display = "none";
+									document.getElementById("btnUpdate").style.display = "none";
+									grid.hideColumn("btnedit");
+								}
+							}
+						});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ], '', true);
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit",
+					"eventGuid");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			var versionGuid = mini.get("versionGuid").getValue();
+			var tableGuid = mini.get("tableGuid").getValue();
+			var tableId = mini.get("tableId").getValue();
+			var belongTo = mini.get("belongTo").getValue();
+			epoint.openDialog('新增事件',
+					"frame/pages/sformdesigner/formlistmanage/event/formeventadd?versionGuid="
+							+ versionGuid + "&tableGuid=" + tableGuid
+							+ "&tableId=" + tableId + "&belongTo=" + belongTo
+							+ "&isSub=" + isSub, searchData);
+		}
+
+		// 弹出修改窗口
+		function openEdit(eventGuid) {
+			var belongTo = mini.get("belongTo").getValue();
+			var versionGuid = mini.get("versionGuid").getValue();
+			epoint.openDialog('修改事件',
+					"frame/pages/sformdesigner/formlistmanage/event/formeventedit?eventGuid="
+							+ eventGuid + "&versionGuid=" + versionGuid
+							+ "&belongTo=" + belongTo + "&isSub=" + isSub,
+					searchData);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		// 保存
+		function saveAll() {
+			var grid = mini.get("datagrid");
+			/* if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			} */
+			if (mini.get('datagrid').isValid()) {
+				epoint.execute('saveAll', [ 'datagrid', 'fui-content' ],
+						callback);
+			}
+
+		}
+		//]]>
+	</script>
+</body>
+</html>

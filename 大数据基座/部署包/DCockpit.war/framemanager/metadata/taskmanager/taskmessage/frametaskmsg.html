@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增任务</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-save"
+				onclick="addNew">保存并新建</a> <a class="mini-button" id="addClose"
+				iconCls="icon-save" onclick="add">保存并关闭</a> <a class="mini-button"
+				id="save" iconCls="icon-save" onclick="saveModify">保存修改</a> <a
+				class="mini-button" iconCls="icon-removecircle"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">使用说明</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>1.接口实现说明:如果需要异步执行的接口，那么自己写的任务类必须实现org.quartz.Job接口,如果需要同步执行的接口，那么自己写的任务类必须实现org.quartz.StatefulJob接口，任务的执行内容写在这个接口的execute方法中。</p>
+		<p>2.执行类名称:自己写的任务类的全路径,具体是包名.类名,比如我写了1个EpointJbobA,所在包是com.epoint.taskmanager.taskschedule,那么路径配置成com.epoint.taskmanager.taskschedule.EpointJbobA</p>
+		<p>
+			3.任务名称:随意填写，标注当前任务的意义即可。
+		</p>
+		<p>4.执行方式:分手动和自动两种。如果配置为自动,那么该任务会在应用程序启动之后自动运行。手动执行的话，需要自己调用相关api，或者点击页面上面的执行链接进行。</p>
+		<p>5.任务所属分类:对任务做1个分类管理，同时也是线程池管理中的组别标识</p>
+		<p>6.在服务化模式下执行类名称是一个接口的全路径，这个接口中固定实现一个excute()的方法即可，这个方法中就是job的实现逻辑</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="执行类名称" starred="true">
+						<input bind="dataBean.taskclassname" required="true"
+							requiredErrorText="执行类名称不能为空" class="mini-textbox" />
+					</div>
+					<div role="control" label="任务名字" starred="true">
+						<input bind="dataBean.taskname" requiredErrorText="任务名字不能为空"
+							class="mini-textbox" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<!-- <div role="control" label="执行方式">
+						<input bind="dataBean.executetype" action="getExecutetype"
+							id="executetype" class="mini-combobox" value="0" />
+					</div> -->
+					<div role="control" label="任务所属分类">
+						<input bind="dataBean.categoryguid" emptyText="请选择"
+							action="getCategoryguidModal" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="自定义执行策略接口">
+						<input bind="dataBean.yearflag" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<font color="red">某些时候，我们的执行配置非常多，而且在另外一个地方已经配置过了，我们不想做重复的配置，那么可以写一个类，里面必须有个名字为getTrigger的public方法，返回值为List
+							Trigger(org.quartz.Trigger)，方法有1个参数(FrameTaskMsg),在方法中构建trigger对象的时候，
+							groupname通过FrameTaskMsg.getCategoryguid()获取，最后将这个自定义的trigger返回即可，如果需要回调参数，那么可以设置在trigger的description属性里面，然后可以在job接口的实现里面通过
+							jobCtx.getTrigger().getDescription()进行获取</font>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('frametaskmsgaddpageaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			if (data.edit) {
+				//隐藏新增按钮
+				mini.get('addNew').setVisible(false);
+				mini.get('addClose').setVisible(false);
+			} else {
+				//隐藏修改按钮
+				mini.get('save').setVisible(false);
+			}
+		}
+
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					mini.get("executetype").setValue("0");
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

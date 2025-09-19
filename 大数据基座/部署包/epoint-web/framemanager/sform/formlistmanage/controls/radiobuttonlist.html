@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>RadioButtonList单选</title>
+    <link rel="stylesheet" href="../css/base.css"></link>
+    <link rel="stylesheet" href="../css/control.css"></link>
+</head>
+
+<body>
+    <div class="control-form">
+        <input type="hidden" id="DataField"/>
+        <input type="hidden" id="DefaultValue"/>
+        <input type="hidden" id="IsExtra"/>
+        <input type="hidden" id="DataCtrl"/>
+        <input type="hidden" id="fieldCreateFlag"/>
+        
+ 		<ul class="form-field">
+   			<li class="form-title">控件名称</li>
+   			<li>
+   			    <input type="text" id="DataFieldCn" class="form-control"></input>
+   			</li>
+ 		</ul>
+ 		<ul id="fieldEn" style="display:none" class="form-field">
+   			<li class="form-title">控件英文名称</li>
+   			<li>
+   			    <input type="text" id="DataFieldEn" class="form-control"></input>
+   			</li>
+ 		</ul>
+ 		<ul class="form-field">
+            <li class="form-title">自定义下拉子项值</li>
+            <li>
+                <input type="text" id="addItem" class="form-control"/> 
+                <input type="button" style="font-size: 12px;" id="addRecord" width="100px" onclick="addRecord()" value="新增子项"/>
+				<input type="button" style="font-size: 12px;" id="delRecord" width="100px" onclick="delRecord()" value="删除子项"/>
+            </li>
+            <li>
+                <select id="items" multiple="multiple" style="margin-top: 5px;width: 100%; height: 100%"></select>
+            </li>
+        </ul>
+        <ul class="form-field">
+            <li class="form-title">选择项排列方向</li>
+            <li>
+                <select id="RepeatDirection" class="form-control">
+                    <option value="Horizontal">横向</option>
+                    <option value="Vertical">纵向</option>
+                </select>
+            </li>
+        </ul>
+        <ul class="form-field">
+            <li class="form-title">每行排列项个数</li>
+            <li>
+                <input type="text" id="RepeatColumns" class="form-control"/>
+            </li>
+        </ul>
+        <div id="validatepropertylst" class="form-field" style="float:left;width:100%">
+        </div>
+        <ul class="form-field">
+   			<li class="form-title">分类选择</li>
+   			<li>
+ 				<select id="CodeId" class="form-control"></select>
+   			</li>
+ 		</ul>
+ 		<ul class="form-field">
+   			<li class="form-title">栏目选择</li>
+   			<li>
+ 				<select id="ItemId" class="form-control"></select>
+   			</li>
+ 		</ul>
+ 		<ul class="form-field">
+   			<li class="form-title">栏目顺序编号</li>
+   			<li>
+   			    <input type="text" id="ColumnOrderNum" class="form-control"></input>
+   			</li>
+ 		</ul>
+    </div>
+
+    <script type="text/x-template" id="ctrl-templ">
+        <div><input type="text"
+            title="{{title}}"
+            class="radiobuttonlist"
+            data-ctrl={{datactrl}}
+            id="{{id}}"
+            DataField="{{dataField}}"
+            DataFieldCn="{{dataFieldCn}}"
+            RepeatDirection="{{repeatDirection}}" 
+            {{#repeatColumns}}
+            RepeatColumns="{{repeatColumns}}"
+            {{/repeatColumns}}
+            dataoptions="{{dataoptions}}"
+            defaultvalue="{{defaultvalue}}"
+            isextra="{{isextra}}"
+            validate="{{validate}}"
+            CodeId="{{codeId}}"
+            ItemId="{{itemId}}"
+            ColumnOrderNum="{{columnOrderNum}}"/></div>
+    </script>
+
+     <script type="text/javascript">
+         var tableId = parent.tableId;
+         var propertyUrl = '../formlistmanage/propertyinfoaction.action?cmd=pageLoad';
+         var codeItemsUrl = '../formlistmanage/propertyinfoaction.action?cmd=getCodeItems';
+         
+         var itemsString ="";
+
+         function addRecord() {
+  			var addItem = document.getElementById("addItem").value;
+  			if(addItem){
+  				var m=0;
+  				if(itemsString != null && itemsString != ""){
+  					for(var n=0;itemsString.split(";").length>0 && n<itemsString.split(";").length; n++){
+  	 					if(itemsString.split(";")[n] == addItem){
+  	 						return;
+  	 					}else{
+  	 						m++;
+  	 					}
+  	 				}
+  	 				if(m == itemsString.split(";").length){
+  	 					var selObj = $("#items");
+  	 	 				selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+  	 	 				itemsString += addItem +";";
+  	 				}else{
+ 	 					return;
+  	 				}
+  				}else{
+  					var selObj = $("#items");
+ 	 	 			selObj.append("<option value='"+addItem+"'>" + addItem + "</option>");
+ 	 	 			itemsString += addItem +";";
+  				}
+  			}
+  			document.getElementById("addItem").value="";
+  		 }
+
+ 		 function delRecord() {
+ 			//删除选中下拉值，清空下拉值输入框
+  			var selOpt = $("#items option:selected");
+  			selOpt.remove();
+  			document.getElementById("addItem").value="";
+  			
+  			//删除子项后重置下拉值
+  			var opts =  $("#items option");
+  			var delAfterStr = "";
+  			for(var n=0; opts!=null && opts.length>0 && n<opts.length; n++){
+  				delAfterStr += opts[n].innerHTML+";";
+  			}
+  			itemsString = delAfterStr;
+ 		 }
+    </script>
+    <script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="../js/mustache.js"></script>
+    <script type="text/javascript" src="../js/controls/control.js"></script>
+    <script type="text/javascript" src="../js/controls/RadioButtonList.js"></script>
+</body>

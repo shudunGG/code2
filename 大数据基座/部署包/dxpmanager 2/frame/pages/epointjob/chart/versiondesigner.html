@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务调度平台设计器</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output(['./css/designer.css']);
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="top" id="top clearfix">
+            <div class="l"><span></span><span></span></div>
+            <div class="r top-right">
+                <div class="l toolbar-wrap clearfix">
+                    <span class="toolbar-item l " data-type="layout" title="自动排列"></span>
+                    <span class="toolbar-item l " data-type="fullscreen" title="全屏"></span>
+                </div>
+            </div>
+        </div>
+        <div class="left" id="left">
+            <span class="left-title">工具栏</span>
+            <ul class="node-list">
+            </ul>
+        </div>
+        <div class="main-wrap">
+            <div class="diagram" id="task-designer-diagram"></div>
+
+            <!-- <div class="diagram-tooltip show" id="diagram-tooltip"></div> -->
+            <ul id="node-context-menu" class="diagram-context-menu">
+                <li class="context-menu-item" data-action="run">运行</li>
+                <li class="context-menu-item" data-action="showLog">日志</li>
+            </ul>
+            <ul id="link-context-menu" class="diagram-context-menu">
+            </ul>
+        </div>
+    </div>
+    <div class="right-panel" id="right-panel">
+        <div class="panel-header">当前节点配置</div>
+        <div class="panel-body">
+            <iframe class="panel-ifr" id="config-iframe" src="" height="100%" width="100%" frameborder="0" scrolling="no"></iframe>
+        </div>
+        <div class="panel-footer">
+            <span class="design-btn cancel-btn">取消</span>
+            <span id="node-config-save" class="design-btn save-btn ">确认添加</span>
+        </div>
+    </div>
+    <!-- 配置时应只能操作配置页面 将其他区域遮起来 -->
+    <div class="config-cover"></div>
+
+    <!-- 提示信息模板 -->
+    <template class="hidden" id="tooltip-tpl">
+        <ul class="tip-list">
+            <li class="tip-item"><span class="label">名称</span><span class="content">{{taskName}}</span></li>
+            <li class="tip-item"><span class="label">状态</span><span class="content">{{status}}</span></li>
+            <li class="tip-item"><span class="label">类型</span><span class="content">{{type}}</span></li>
+            <li class="tip-item"><span class="label">host</span><span class="content">{{host}}</span></li>
+            <li class="tip-item"><span class="label">重试次数</span><span class="content">{{executorFailRetryCount}}</span></li>
+            <li class="tip-item"><span class="label">提交时间</span><span class="content">{{commitTime}}</span></li>
+            <li class="tip-item"><span class="label">开始时间</span><span class="content">{{startTime}}</span></li>
+            <li class="tip-item"><span class="label">结束时间</span><span class="content">{{endTime}}</span></li>
+        </ul>
+    </template>
+
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        // 配置信息
+        var addPageUrl = './taskVersionDetail.html';
+        // 配置页面地址
+        var editPageUrl = './taskVersionDetail.html';
+        // 路径编辑地址
+        var linkEditUrl = './linkVersionDetail.html';
+
+        var designerConfig = {
+            // 初始化加载 还原历史数据
+            init: function (data) {
+            	epoint.execute('epointjobdagversiondesigneraction.init', '', function(data){
+					if (data.status) {//成功
+						designerUtil.setData(JSON.parse(data.initJson));
+					}else{//失败
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+            },
+            /**
+             * 节点右键菜单 运行
+             * @param {string} nodeGuid 节点id
+             * @param {string} nodeType 节点类型
+             */
+            onNodeRun: function (nodeGuid, nodeType) {
+            	// TODO 流程外触发
+            	epoint.openDialog('流程外运行一次任务节点',
+						'frame/pages/epointjob/epointjobtrigger?guid='
+								+ nodeGuid + "&type=2", function(param) {
+							if (param != 'close') {
+								epoint.alert(param, null, null, 'info');
+							}
+						}, {
+							'width' : 400,
+							'height' : 200
+						});
+            },
+            /**
+             * 节点右键菜单 查看日志
+             * @param {string} nodeGuid 节点id
+             * @param {string} nodeType 节点类型
+             */
+             onNodeShowLog: function (nodeGuid, nodeType){
+            	// 查看当前任务节点日志
+     			var url = 'frame/pages/epointjob/epointjobdagtaskloglist?dagTaskGuid=' + nodeGuid;
+    			epoint.openDialog("查看任务节点日志", url, "", {
+    				'width' : 1400,
+    				'height' : 1000
+    			});
+             },
+        };
+
+    </script>
+    <script>
+        SrcBoot.output([
+            './js/go.js',
+            './js/designer.js'
+        ]);
+    </script>
+</body>
+
+</html>

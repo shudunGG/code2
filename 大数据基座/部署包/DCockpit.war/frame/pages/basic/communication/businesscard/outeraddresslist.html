@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>外部通讯录列表</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+        SrcBoot.output([
+            './css/communicate.css',
+            '../../js/classifysearch/classifysearch.css',
+            './css/outerraddresslist.css'
+        ]);
+    </script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" style="border-bottom: 1px solid #d8ecfb;">
+		<div class="btn-group com-toolbar-item">
+			<a class="mini-button  hidden" id="setting"
+				onclick="setting">分组设置</a> <a
+				class="mini-button  hidden" iconCls="icon-addcircle"
+				id="com-new-btn" onclick="openAdd();">新建</a> <a
+				class="mini-button  hidden" id="com-delete-btn"
+				onclick="outeraddressdelete();">删除</a>
+			<!--<a class="mini-button mini-btn-primary" id="com-remove-btn">转移</a>-->
+			<a class="mini-menubutton hidden" menu="#moveto" id="move">转移到</a>
+			<ul id="moveto" class="mini-menu" idField="categoryguid"
+				textField="categoryname" style="display: none;"></ul>
+			<!--<a class="mini-menubutton" menu="#more" style="margin-left:1px">更多</a>
+            <ul id="more" class="mini-menu" style="display:none;">
+                <li>
+                    <span id="com-delete-btn">删除</span>
+                </li>
+                <li>
+                    <span id="com-deleteforever-btn">永久删除</span>
+                </li>
+                <li>
+                    <span id="com-replyall-btn">回复所有</span>
+                </li>
+            </ul>-->
+		</div>
+		<div class="com-toolbar-ext">
+			<div class="com-toolbar-item" id="view-wrap">
+				<div class="com-btn">
+					<a href="card" class="view view-card" title="卡片式" id="acard"></a>
+				</div>
+				<div class="com-btn">
+					<a href="list" class="view view-list active" title="列表式" id="alist"></a>
+				</div>
+			</div>
+			<div class="com-toolbar-item">
+				<div class="classify-search" id="com-search">
+					<input type="text" placeholder="姓名、手机号" class="classify-search-input"
+						id="smart-search" />
+					<button class="button-search" title="点击搜索"></button>
+				</div>
+			</div>
+			<div class="com-toolbar-item" style="display:none">
+				<div class="com-question">
+					<span class="icon-question" title="帮助" style='display:none'></span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!--撑满页面-->
+		<div class="mini-fit" style="overflow: hidden;">
+			<!-- 左侧列表栏 -->
+			<div class="left-list">
+				<div class="fui-toolbar"
+					style="background: #fff; border-bottom: 1px solid #a3bdd0;">
+					<div class="menubox" id="menubox"></div>
+					<!-- <div class="com-search r" id="com-search">
+                        <input type="text" placeholder="姓名，号码" class="com-search-input" id="smart-search" style="width:160px;" />
+                        <button class="button-search" title="点击搜索"></button>
+                    </div>-->
+				</div>
+				<!-- 左侧栏内容 -->
+				<div class="left-content">
+					<!-- 信息列表 -->
+					<div class="outerlist nicescroll">
+						<ul class="list-items" id="list-items">
+						</ul>
+					</div>
+				</div>
+			</div>
+			<!-- 右侧详情栏 -->
+			<div class="right-details" id="right-details">
+				<div class="initial">
+					<img src="images/outernone.png" alt="请选择人员" />
+					<p>请选择人员</p>
+				</div>
+				<div class="infodetail hidden">
+					<iframe src="" id="outerdetailview" width="100%" height="100%"
+						frameborder="0"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 首字母下拉菜单模板 -->
+	<script type="x-tmpl-mustache" id="menu-tmpl">
+        <a class="mini-menubutton" menu="#letter" style="vertical-align: top;">按首字母A-Z</a>
+        <ul id="letter" class="mini-menu" style="display:none;">
+            {{#item}}
+            <li onclick="letterMenuScroll" style="margin-left:35px">{{namefletter}}</li>
+            {{/item}}
+        </ul>
+    </script>
+	<!-- 信息列表模板 -->
+	<script type="x-tmpl-mustache" id="list-item-tmpl">
+        {{#list}}
+        <li class="list-item">
+            <h2 id="{{namefletter}}">{{namefletter}}</h2>
+            <ul class="item-infos">
+                {{#items}}
+                <li class="item-info" data-id="{{userguid}}">
+                        {{#canManager}}<div class="cx l" id="checkcol">
+                            <span class="mini-checkbox cxt" id="{{userguid}}" name="cxt" style="border-width: 0px; cursor:pointer;"onvaluechanged="singleMailSelectChanged"></span>
+                        </div>{{/canManager}}
+                        <div class="outer-portrait">
+                            <img src="../../../rest/oa9/communication/businesscard/outerdetailviewaction/loadImg?uid={{userguid}}&isCommondto=true&vvv={{rand}}" alt="portrait" class="icon-portrait" onerror="javascript:if('{{{sex}}}'=='男') this.src='images/photo-boy.png'; else this.src='images/photo-girl.png';" />
+                        </div>
+                        <p class="name"><span class="sname">{{displayname}}</span></p>
+                        <p class="company">{{unit}}</p>
+
+                </li>
+                {{/items}}
+            </ul>
+        </li>
+        {{/list}}
+    </script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 接口 -->
+	<script>
+        var queryString = Util.getUrlParams(),
+            groupguid = queryString.groupguid, // 群组guid
+            grouptype = queryString.grouptype; // 群组type
+        $('#acard').attr('href','cardout?inorout=2&group='+grouptype+'&guid='+groupguid);
+        $('#alist').attr('href','outeraddresslist?grouptype='+grouptype+'&groupguid='+groupguid);
+    </script>
+<script>
+    SrcBoot.output([
+            '../../../fui/js/lib/jquery.nicescroll.min.js',
+            '../../js/classifysearch/classifysearch.js',
+            './js/businesscommon.js',
+            './js/outeraddress.js'
+    ]);
+</script>
+
+<script>
+    // 弹出新增窗口
+    function openAdd() {
+		if(grouptype==1){
+			epoint.openDialog('新增联系人', "oa9/communication/businesscard/newoabusinesscarduseradd?categoryguid=" + groupguid+"&type=Pub", searchData, {
+
+			});
+		}else if(grouptype==2){
+		    epoint.openDialog('新增联系人', "oa9/communication/businesscard/newoabusinesscarduseradd?categoryguid="+groupguid+"&type=", searchData, {
+
+			});
+		}
+    }
+      // 刷新页面
+    function searchData() {
+        //window.parent.location.reload();
+        window.parent.requestOuterAddress(3);
+        window.parent.requestOuterAddress(4);
+        requestCard();
+    }
+
+    function outeraddressdelete() {
+        var query = getQuery();
+        query.arr = new Array();
+
+        var $cxbs = mini.getsbyName("cxt"),
+        amount = $cxbs.length;
+
+        for (var i = 0; i < amount; i++) {
+            if ($cxbs[i].checked) {
+                query.arr.push($cxbs[i].id);
+            }
+        }
+
+        if (query.arr.length === 0) {
+            epoint.showTips("请选择需要删除的联系人！", {
+                state: 'danger',
+                y: 'center'
+            });
+            return;
+        }
+        epoint.confirm("确定删除选中记录？", "", function(action) {
+             epoint.execute('outaddresslistaction.outeraddressdelete', null, epoint.encodeJson(query), function(data) {
+                epoint.showTips("删除成功！", {
+                state: 'success',
+                y: 'center'
+             });
+            reset(data);
+            var $rightDetails = $('#right-details'),
+            $initial = $('.initial', $rightDetails),
+            $infodetail = $('.infodetail', $rightDetails);
+            $initial.removeClass('hidden');
+            $infodetail.children('iframe').attr('src', '');
+            $infodetail.addClass('hidden');
+            });
+        });
+
+    }
+
+    function moveto(categoryguid) {
+            var query = getQuery();
+            query.arr = new Array();
+
+            var $cxbs = mini.getsbyName("cxt"),
+                amount = $cxbs.length;
+
+            for (var i = 0; i < amount; i++) {
+                if ($cxbs[i].checked) {
+                    query.arr.push($cxbs[i].id);
+                }
+            }
+
+            if (query.arr.length === 0) {
+                epoint.showTips("请选择需要转移的联系人！", {
+                    state: 'danger',
+                    y: 'center'
+                });
+                return;
+            }
+
+            query.targetcategoryguid = categoryguid;
+
+            epoint.execute('outaddresslistaction.moveto', null, epoint.encodeJson(query), function(data) {
+                afterGetData(data);
+                epoint.showTips("转移成功！", {
+                    state: 'success',
+                    y: 'center'
+                });
+                reset(data);
+
+            });
+        }
+        function reset(data) {
+                requestCard();
+                //renderListTmpl(epoint.decodeJson(data.addresslist));
+                //刷新左侧列表内的文件夹列表
+                window.parent.freshaddresslist(data);
+
+        }
+        // 标识是否搜索过，搜索过之后，清空输入框才进行重新加载。
+    	var isSearched = false;
+        initSearch();
+
+        // smartsearch 搜索
+        function clickenter (id,key) {
+        	var index=id;
+            var type;
+
+            if(index === -1 || index === undefined) {
+                type = 0;
+            }else{
+            	type=index;
+            }
+
+                query = getQuery();
+            if(key && key.length>0) {
+                query.key = key;
+                query.type = type;
+                console.log(query);
+                // <!--epoint.refresh(query);-->
+                 epoint.execute('outaddresslistaction.getLeftArrdessList', null, query, function(data) {
+                    afterGetData(data);
+                    renderListTmpl(epoint.decodeJson(data.addresslist));
+                    // 解析控件
+                    mini.parse();
+                });
+            }
+            isSearched = true;
+        }
+
+        // 分类搜索按键回调函数
+        function searchkeyup (index, key) {
+            if (key.length === 0 && isSearched) { // 清空输入框时，重新加载表格
+
+                requestCard();
+                isSearched = false;
+            }
+        }
+
+        function letterMenuScroll(e){
+            var item=e.sender;
+            var key = item.getText(),
+                keyword = /^[a-zA-Z]+$/;
+            var $listItem = $('.list-item', $listItems);
+
+            // 大写字母定位
+            if (keyword.test(key) && key.length === 1) {
+                $.each($listItem, function(index, el) {
+                    var namefletter = $(el).children('h2').text();
+                    var $listItem = $('.list-item', $listItems);
+                    if (namefletter == key || namefletter.toLowerCase() == key) {
+                        var heigh = 0;
+                        for (var len = $listItem; index < len; index++) {
+                            heigh += $listItem[index].height();
+                        }
+                        var top = $(el).offset().top,
+                            basicTop = $('.list-items').offset().top,
+                            screenHeigh = $(document).height();
+                        if (heigh < screenHeigh - 74) {
+                            var cha = screenHeigh - heigh - 74;
+                            $listItems.css('padding-bottom', cha + 'px');
+                        }
+                        $('.outerlist').animate({
+                            scrollTop: top - basicTop
+                        }, 500);
+                        return false;
+                    }
+                });
+                return false;
+            }
+            if (key && key.length) {
+                defaultPageIndex = 0;
+                requestCard(true);
+                return false;
+            }
+        }
+
+        function setting(){
+            if(grouptype==1){
+                epoint.openTopDialog('分组管理','oa9/communication/businesscard/oabusinesscardcategory/oabusinesscardcategorylist?type=Pub',searchData,{
+                        width:1000,
+				        height:750,
+             			'showCloseButton':true,
+             			'showMaxButton':true,
+             			'allowResize': true
+                });
+            }
+            if(grouptype==2){
+                epoint.openTopDialog('分组管理','oa9/communication/businesscard/oabusinesscardcategory/oabusinesscardcategorylist',searchData,{
+                        width:1000,
+				        height:750,
+             			'showCloseButton':true,
+             			'showMaxButton':true,
+             			'allowResize': true
+                });
+            }
+        }
+    </script>
+
+	<script>
+         //nicescroll
+        $(".nicescroll").niceScroll({
+            touchbehavior: false,
+            cursorcolor: "#f2f2f2",
+            cursoropacitymax: 1,
+            cursorwidth: 5,
+            cursorborder: "none",
+            cursorborderradius: "5px",
+            autohidemode: false
+        });
+
+    </script>
+</body>
+
+</html>

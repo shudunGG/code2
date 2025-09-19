@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>选择顶级模块</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../fui/js/cssboot.js"></script>
+
+<style>
+.search-btn .mini-buttonedit-icon {
+	background-position: -109px -154px;
+	background-image: url(../../image/home/icon-13x13.png);
+	background-repeat: no-repeat;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">确认选择</a>
+			<a class="mini-button" id="btnClose" onclick="epoint.closeDialog">取消</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="顶级模块"></div>
+				<div role="body">
+					<div class="fui-form" id="role-form">
+						<div class="mini-repeat clearfix" id="repeat"
+							templateId="roleTemplate"></div>
+						<input id="controlIds" class="mini-hidden" /> <input
+							bind="selectedRoles" id="roleValues" class="mini-hidden" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/template" id="roleTemplate">
+			<div id="panel1" class="mini-panel" title="{{title}}" showCollapseButton="false"  allowResize="false" showFooter="false" style="width:49%;float:left;margin-left:1%;margin-top:10px;">
+			<div id="{{roleType}}" class="mini-checkboxlist" repeatLayout="table" repeatItems="3" textField="text" valueField="value"></div>
+			</div>
+		</script>
+
+	<script src="../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('selectupstagemoduleaction', '', initCallback);
+
+		var repeat = mini.get('repeat');
+
+		function initCallback(e) {
+			//初始化角色区域
+			var data = e.uirepeat;
+			console.log(data);
+			repeat.setData(data);
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") != -1) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', null, 'warning');
+				}
+			}
+		}
+
+		//保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				saveUserRole();
+				epoint.execute('saveUserSetting', '', closeCallback);
+			}
+		}
+
+		//将角色值赋到隐藏域
+		function saveUserRole() {
+			var selected = '';
+			var cValue = mini.get('all').getValue();
+			if (cValue) {
+				selected += cValue + ",";
+			}
+			//将所有checkboxlist 的选中值存入隐藏域
+			mini.get("roleValues").setValue(
+					selected.substring(0, selected.length - 1));
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

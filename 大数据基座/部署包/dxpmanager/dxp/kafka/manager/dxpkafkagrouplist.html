@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>消费者组列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<input id="newgroupname" class="mini-textbox" emptyText="请输入消费者组名称"/>
+				<a class="mini-button mini-btn-primary" iconCls="icon-addcircle" onclick="add();">新增消费组</a> 
+				<a class="mini-button mini-btn-danger" iconCls="icon-minuscircle" onclick="deleteSelected();">删除选中</a>
+			</div>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-search" primaryControl="topicName" opened="false">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="消费者组名称">
+							<input bind="groupName" id=groupName class="mini-textbox" />
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="needPrincipal" id="needPrincipal" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="groupname"
+				multiSelect="true" action="getDataGridModel"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellEdit="true" showPager="true" allowCellSelect="true">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="groupname" headerAlign="center" align="center">消费者组名称</div>
+					<div field="topicname" headerAlign="center" align="center">授权topic</div>
+					<div field="createdate" headerAlign="center" align="center"
+						data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">创建时间</div>
+					<div headerAlign="center" align="center" renderer="onOptRender">查看关联任务</div>
+				</div>
+			</div>
+		</div>	
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		epoint.initPage('dxpkafkagrouplistaction');
+
+		var grid = mini.get("datagrid");
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onOptRender(e) {
+			return '<a href="javascript:void(0);" onclick="subscribeManage('
+					+ "'" + e.row.groupname + "'" + ');" >' + '查看' + '</a>';
+		}
+
+		// 查看
+		function subscribeManage(groupname) {
+			epoint.openDialog("关联任务",
+					'dxp/kafka/manager/dxpkafkagrouprelatetasklist?groupGuid='
+							+ groupname, function() {
+						searchData();
+					}, {
+						'width' : 1200,
+						'height' : 900
+					});
+		}
+
+		// 删除选中
+		function deleteSelected() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认删除？', '操作确认', function() {
+					epoint.execute('delete', [ 'datagrid',
+							'fui-form' ], null, function(data) {
+						if (data.success) {
+							epoint.alert(data.msg, '', null,
+									'success');
+							searchData();
+						} else {
+							epoint.alert(data.msg, '', null,
+									'warning');
+						}
+					});
+				});
+			}
+		}
+
+		// 新增
+		function add() {
+			var groupname = mini.get('newgroupname').getValue();
+			if(groupname == ''){
+				epoint.alert('请输入消费者组名称', '', null, 'warning');
+				return;
+			}
+			epoint.execute('add',null, groupname , function(data){
+				if(data.success){
+					epoint.alert(data.msg);
+					searchData();
+				}else{
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			});
+		}
+
+	</script>
+</body>
+</html>

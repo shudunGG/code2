@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>添加子表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="btnAdd" onclick="add();" iconCls="icon-save">添加并关闭</a> 
+		<a class="mini-button" id="btnCancel" onclick="epoint.closeDialog();" iconCls="icon-removecircle">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="子表中文名称" starred="true">
+					<input id="tableName" class="mini-textbox" bind="tableBasicInfo.tableName" 
+					    required="true" requiredErrorText="子表中文名称不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="子表名" starred="true">
+					<input id="sqlTableName" class="mini-textbox" bind="tableBasicInfo.sqlTableName" 
+					    required="true" requiredErrorText="数据库表名不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序码"  starred="true">
+					<input id="orderNumber" class="mini-textbox" bind="tableBasicInfo.orderNum" vtype="int;range:0,99999999" required="true" requiredErrorText="排序码不能为空，请输入正整数!"/>
+				</div>
+				<div></div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('subtableaddaction');
+
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+		
+		//]]>
+	</script>
+</body>
+</html>

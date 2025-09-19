@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+	<head>
+		<title>分库分表</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="content-type" content="text/html" />
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="openAdd();" id="btnAddRecord" iconCls="icon-save"> 新增记录 </a>
+				<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要操作的记录!', '', null, 'warning');} else {enableSelect();}" iconCls="icon-save" > 禁用/启用 </a>
+				<a class="mini-button" onclick="initTable" > 初始化 </a>
+				<a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warnings');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}" iconCls="icon-minuscircle"> 删除选定 </a>
+				
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="源数据表名称">
+							<input id="sourcetablename" class="mini-textbox"
+							bind="dataBean.sourcetablename"/>
+						</div>
+						<div role="control" label="所属租户">
+							<input class="mini-treeselect" action="getTreeModel" id="TreeModel" multiSelect="false" onbeforenodeselect="beforenodeselect"
+							bind="dataBean.tenantguid" textField="text" valueField="id" parentField="pid" showFilter="true" showRadioButton="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">
+						序
+					</div>
+					<div field="sourcetablename" headerAlign="center" width="200">
+						源数据表名称
+					</div>
+					<div field="totablename" headerAlign="center" >
+						目标数据表名称
+					</div>
+					<div field="dsname" headerAlign="center" width="120">
+						目标数据源标示
+					</div>
+					<div field="tenantname" headerAlign="center" >
+						所属租户
+					</div>
+					<div field="isdel" width="80" align="center" headerAlign="center"
+					renderer="onStateRenderer">
+						状态
+					</div>
+					<div width="80" align="center" headerAlign="center"
+					renderer="onEditRenderer">
+						修改
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			//<![CDATA[
+			// 初始化页面
+			epoint.initPage('frametenanttablelistaction');
+			
+			function beforenodeselect(e) {
+	            //禁止选中根节点
+	            if (e.node.id=='f9root') e.cancel = true;
+	        }
+
+			// 绘制状态
+			var onStateRenderer = function(e) {
+				if (e.value == '0') {
+					return '启用';
+				} else {
+					return '禁用';
+				}
+			};
+
+			// 绘制修改
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			};
+
+			// 弹出新增窗口
+			function openAdd() {
+				epoint.openDialog('新增分库分表配置', "framemanager/orga/saas/library/frametenanttable", function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 450
+				});
+			}
+
+			// 禁用/启用
+			function enableSelect() {
+				epoint.execute("enableSelect", '', msgCallBack);
+			}
+
+			// 初始化
+			function initTable() {
+				epoint.execute("initTable", '', msgCallBack);
+			}
+
+			// 弹出修改窗口
+			function openEdit(id) {
+				epoint.openDialog('修改分库分表配置', "framemanager/orga/saas/library/frametenanttable?guid=" + id, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 450
+				});
+			}
+
+			// 回掉提醒
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', function(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true);
+						}, 'success');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			// 删除数据
+			function deleteSelect() {
+				epoint.execute("deleteSelect", '', msgCallBack);
+			}
+
+			// 表格的搜索
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>门户修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="门户名称" starred="true">
+						<input id="portalname" class="mini-textbox"
+							bind="dataBean.portalname" required="true"
+							requiredErrorText="门户名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="门户类型">
+						<input id="portaltype" class="mini-combobox"
+							action="selectPortalTypeModel" bind="dataBean.portaltype"
+							required="true" requiredErrorText="请选择门户类型"
+							onValueChanged="showPortalUrl" />
+					</div>
+				</div>
+				<div role="row" id="portalurl">
+					<div role="control" label="门户地址">
+						<input class ="mini-textbox"
+							bind="dataBean.portalurl" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="禁用">
+						<div class="mini-checkbox" bind="dataBean.isdisable" truevalue="1"
+							falsevalue="0" readOnly="false"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input id="ordernumber" bind="dataBean.ordernumber" maxLength="8"
+							class="mini-textbox" vtype="int;maxLength:8" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameportaleditaction', '', function() {
+			var portaltype=mini.get("portaltype").value;
+			if(portaltype!="3"){
+				$("#portalurl").hide();
+			}			
+		});
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'info');
+				}
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+		function showPortalUrl() {
+			var portalType = mini.get("portaltype").getValue();
+			if (portalType && portalType == '3') {
+				$("#portalurl").show();
+			} else {
+				$("#portalurl").hide();
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>列高级配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btn">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addNew"
+				onclick="save();">保存</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div>
+				<p>
+					<span class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;高级设置(设置表、字段、比较条件、比较值):</span>
+				</p>
+			</div>
+			<div role="row">
+				<div role="control" label="配置描述" starred="true">
+					<input id="conditionDescription" class="mini-textbox"
+						bind="dataBean.conditiondescription" required="true"
+						requiredErrorText="配置描述不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="表" starred="true">
+					<div id="tableId" class="mini-combobox" textField="text"
+						required="true" valueField="id" bind="dataBean.tableid"
+						action="getTableList"
+						onvaluechanged="selectTableChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="字段" starred="true">
+					<div id="fieldId" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.fieldid" required="true"
+						onvaluechanged="selectFieldChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="比较条件" starred="true">
+					<div id="comparison" class="mini-combobox" textField="text"
+						required="true" valueField="id" bind="dataBean.comparison"
+						action="getCompareType"></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="值类型" starred="true">
+					<div id="valueType" class="mini-combobox" textField="text"
+						required="true" valueField="id" bind="dataBean.valuetype"
+						action="getValueType"
+						onvaluechanged="selectValueTypeChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="requestFlag" style="display: none">
+				<div role="control" label="请求值类型" starred="true">
+					<div id="requestValue" class="mini-combobox" textField="text"
+						valueField="id" action="getRequestValue" required="true"
+						onvaluechanged="selectValueChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="sessionFlag" style="display: none">
+				<div role="control" label="session值" starred="true">
+					<div id="sessionValue" class="mini-combobox" textField="text"
+						valueField="id" action="getSessionValue" required="true"
+						onvaluechanged="selectValueChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="commonFlag" style="display: none">
+				<div role="control" label="常用值" starred="true">
+					<div id="commonValue" class="mini-combobox" textField="text"
+						valueField="id" action="getCommonItemdValue" required="true"
+						onvaluechanged="selectValueChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="itemsFlag" style="display: none">
+				<div role="control" label="代码项值" starred="true">
+					<div id="codeItemsValue" class="mini-combobox" textField="text"
+						required="true" valueField="id"
+						onvaluechanged="selectValueChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="relationFlag" style="display: none">
+				<div role="control" label="关联字段值" starred="true">
+					<div id="relationValue" class="mini-combobox"
+						onvaluechanged="selectValueChange(this.value)" required="true"></div>
+				</div>
+			</div>
+
+			<div role="row" id="selectValue" style="display: none">
+				<div role="control" label="比较值" starred="true">
+					<input id="value" class="mini-textbox" bind="dataBean.comparevalue"
+						required="true" />
+				</div>
+			</div>
+			<!-- 			<div role="row" id="formats" style="display: none"> -->
+			<!-- 				<div role="control" label="格式化内容"> -->
+			<!-- 					<input id="formattype" class="mini-textarea" -->
+			<!-- 						bind="dataBean.formattype" /> -->
+			<!-- 				</div> -->
+			<!-- 			</div> -->
+			<div role="row">
+				<div role="control" label="控制类型" starred="true">
+					<div id="controltype" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.controltype" required="true"
+						action="getControlType"
+						onvaluechanged="selectControlTypeChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="colorPickerRow" style="display: none;">
+				<div role="control" label="设置颜色" starred="true">
+					<input class="mini-colorpicker" allowInput="true" format="hex"
+						bind="colorValue" style="width: 150px;" value="#fff"
+						id="colorPicker" required="true" />
+				</div>
+			</div>
+			<div role="row" id="htmlTemplateRow" style="display: none;">
+				<div role="control" label="html模板内容" starred="true">
+					<input id="htmlTemplate" class="mini-textarea" required="true"
+						bind="dataBean.htmltemplate" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序码" starred="true">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int;range:0,99999999" required="true"
+						requiredErrorText="排序码不能为空!" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('advancedconfigaddaction', '', initCallback);
+
+		function initCallback(data) {
+			if (data.type && 'edit' == data.type) {
+				if (data.tableName && data.fieldName) {
+					mini.get('tableId').setText(data.tableName);
+					mini.get('fieldId').setText(data.fieldName);
+				}
+				if (data.isCustomValue) {
+					$("#selectValue").show();
+				}
+				selectTableChange(mini.get('tableId').getValue());
+
+				// 重新加载代码项下拉列表
+				selectFieldChange(mini.get("fieldId").getValue());
+				if (data.isCodeItem) {
+					$("#itemsFlag").show();
+					mini.get("codeItemsValue").setValue(
+							mini.get("value").getValue());
+				}
+				if (data.isRequestValue) {
+					$("#requestFlag").show();
+					mini.get("requestValue").setValue(
+							mini.get("value").getValue());
+				}
+				if (data.isSessionValue) {
+					$("#sessionFlag").show();
+					mini.get("sessionValue").setValue(
+							mini.get("value").getValue());
+				}
+				if (data.isCommonValue) {
+					$("#commonFlag").show();
+					mini.get("commonValue").setValue(
+							mini.get("value").getValue());
+				}
+				if (data.isRelationValue) {
+					$("#relationFlag").show();
+					mini.get("relationValue").setValue(
+							mini.get("value").getValue());
+				}
+
+				if (data.controlType) {
+					selectControlTypeChange(data.controlType);
+				}
+			}
+		}
+
+		function selectTableChange(tabelId) {
+			if (tabelId) {
+				epoint.execute("dataTableValueChange", 'fui-form', [ tabelId ],
+						mcallback);
+			}
+		}
+
+		function selectValueTypeChange(valueTypeId) {
+			//请求值
+			if (valueTypeId == "0") {
+				document.getElementById("requestFlag").style.display = "block";
+				document.getElementById("sessionFlag").style.display = "none";
+				document.getElementById("commonFlag").style.display = "none";
+				document.getElementById("itemsFlag").style.display = "none";
+				document.getElementById("relationFlag").style.display = "none";
+				document.getElementById("selectValue").style.display = "none";
+
+			} else if (valueTypeId == "1") {
+				//session值
+				document.getElementById("requestFlag").style.display = "none";
+				document.getElementById("sessionFlag").style.display = "block";
+				document.getElementById("commonFlag").style.display = "none";
+				document.getElementById("itemsFlag").style.display = "none";
+				document.getElementById("relationFlag").style.display = "none";
+				document.getElementById("selectValue").style.display = "none";
+
+			} else if (valueTypeId == "2") {
+				//常用值
+				document.getElementById("requestFlag").style.display = "none";
+				document.getElementById("sessionFlag").style.display = "none";
+				document.getElementById("commonFlag").style.display = "block";
+				document.getElementById("itemsFlag").style.display = "none";
+				document.getElementById("relationFlag").style.display = "none";
+				document.getElementById("selectValue").style.display = "none";
+
+			} else if (valueTypeId == "3") {
+				//代码项值
+				document.getElementById("requestFlag").style.display = "none";
+				document.getElementById("sessionFlag").style.display = "none";
+				document.getElementById("commonFlag").style.display = "none";
+				document.getElementById("itemsFlag").style.display = "block";
+				// 重新加载代码项下拉列表
+				var fieldId = mini.get("fieldId").getValue();
+				if (fieldId != '') {
+					selectFieldChange(mini.get("fieldId").getValue());
+				}
+				document.getElementById("relationFlag").style.display = "none";
+				document.getElementById("selectValue").style.display = "none";
+			} else if (valueTypeId == "4") {
+				//字段关联值
+				document.getElementById("requestFlag").style.display = "none";
+				document.getElementById("sessionFlag").style.display = "none";
+				document.getElementById("commonFlag").style.display = "none";
+				document.getElementById("itemsFlag").style.display = "none";
+				document.getElementById("relationFlag").style.display = "block";
+				// 重新加载关联字段下拉列表
+				var tableId = mini.get("tableId").getValue();
+				if (tableId != '') {
+					selectTableChange(tableId);
+				}
+				document.getElementById("selectValue").style.display = "none";
+			} else if (valueTypeId == "5") {
+				//自定义值
+				document.getElementById("requestFlag").style.display = "none";
+				document.getElementById("sessionFlag").style.display = "none";
+				document.getElementById("commonFlag").style.display = "none";
+				document.getElementById("itemsFlag").style.display = "none";
+				document.getElementById("relationFlag").style.display = "none";
+				document.getElementById("selectValue").style.display = "block";
+			}
+		}
+
+		function selectControlTypeChange(typeId) {
+			if (typeId == "3") {
+				$('#htmlTemplateRow').show();
+				$('#colorPickerRow').hide();
+			} else if (typeId == '2') {
+				$('#htmlTemplateRow').hide();
+				$('#colorPickerRow').show();
+			} else {
+				$('#htmlTemplateRow').hide();
+				$('#colorPickerRow').hide();
+			}
+		}
+
+		function selectValueChange(value) {
+			mini.get("value").setValue("");
+			if (value) {
+				mini.get("value").setValue(value);
+			}
+		}
+
+		// 		function valueSet(value) {
+		// 			if (value) {
+		// 				mini.get("value").setValue(value);
+		// 				alert(value);
+		// 			}
+		// 		}
+
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				mini.get("fieldId").setData(data.fieldslist);
+				// 				mini.get("fieldId").select(0);
+				var valueType = mini.get("valueType").getValue();
+				if (valueType == "4") {
+					mini.get("relationValue").setData(data.fieldslist);
+					// 					mini.get("relationValue").select(0);
+				}
+			}
+			if (data && data.codeItemsList) {
+				mini.get("codeItemsValue").setData(data.codeItemsList);
+				if (mini.get("value").getValue() == ""
+						|| mini.get("value").getValue() == null) {
+					mini.get("codeItemsValue").select(0);
+
+				}
+
+				if (data.codeItemsList.length != 0) {
+					if (mini.get("value").getValue() == ""
+							|| mini.get("value").getValue() == null) {
+						mini.get("value").setValue(data.codeItemsList[0].id)
+					}
+				}
+
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				// 				mini.get("htmlTemplate").setValue(
+				// 						epoint.encodeUtf8(mini.get("htmlTemplate").getValue()));
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function selectFieldChange(fieldId) {
+			if (fieldId) {
+				epoint.execute("fieldValueChange", 'fui-form', [ fieldId ],
+						mcallback);
+			}
+
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

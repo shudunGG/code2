@@ -1,0 +1,138 @@
+{@PackageName};
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.epoint.core.dao.CommonDao;
+import com.epoint.core.dao.ICommonDao;
+import com.epoint.core.grammar.Record;
+import com.epoint.core.utils.sql.SqlConditionUtil;
+import com.epoint.core.utils.sql.SqlHelper;
+import com.epoint.database.peisistence.crud.impl.model.PageData;
+import {@DomainClassPackage};
+
+/**
+ * {@BeanChineseName}对应的后台service
+ * 
+ * @author {@Author}
+ * @version [版本号, {@GenerateDate}]
+ */
+public class {@ServiceClassName}
+{
+ 	/**
+     * 数据增删改查组件
+     */
+    protected ICommonDao baseDao;
+
+    public {@TableBeanName}Service() {
+        baseDao = CommonDao.getInstance();
+    }
+    
+    /**
+     * 插入数据
+     * 
+     * @param record
+     *            BaseEntity或Record对象 <必须继承Record>
+     * @return int
+     */
+    public int insert({@TableBeanName} record) {
+        return baseDao.insert(record);
+    }
+
+    /**
+     * 删除数据
+     * 
+     * @param guid
+     *            主键guid
+     * @return int
+     */
+    public <T extends Record> int deleteByGuid(String guid) {
+        T t = baseDao.find({@TableBeanName}.class, guid);
+        return baseDao.delete(t);
+    }
+
+    /**
+     * 更新数据
+     * 
+     * @param record
+     *            BaseEntity或Record对象 <必须继承Record>
+     * @return int
+     */
+    public int update({@TableBeanName} record) {
+        return baseDao.update(record);
+    }
+
+    /**
+     * 查询数量
+     * 
+     * @param conditionMap
+     *            查询条件集合
+     * @return Integer
+     */
+    public Integer count{@TableBeanName}(Map<String, Object> conditionMap) {
+    	SqlConditionUtil conditionUtil = new SqlConditionUtil(conditionMap);
+        conditionUtil.setSelectFields("count(*)");
+        List<Object> params = new ArrayList<>();
+        return baseDao.queryInt(new SqlHelper().getSqlComplete({@TableBeanName}.class, conditionUtil.getMap(), params),
+                params.toArray());
+    }
+
+    /**
+     * 根据ID查找单个实体
+     * 
+     * @param primaryKey
+     *            主键
+     * @return T extends BaseEntity
+     */
+    public {@TableBeanName} find(Object primaryKey) {
+        return baseDao.find({@TableBeanName}.class, primaryKey);
+    }
+
+    /**
+     * 查找单条记录
+     * 
+     * @param conditionMap
+     *            查询条件集合
+     * @return T {String、Integer、Long、Record、FrameOu、Object[]等}
+     */
+    public {@TableBeanName} find(Map<String, Object> conditionMap) {
+    	List<Object> params = new ArrayList<>();
+        return baseDao.find(new SqlHelper().getSqlComplete({@TableBeanName}.class, conditionMap, params), {@TableBeanName}.class, 
+        		params.toArray());
+    }
+
+    /**
+     * 查找一个list
+     * 
+     * @param conditionMap
+     *            查询条件集合
+     * @return T extends BaseEntity
+     */
+    public List<{@TableBeanName}> findList(Map<String, Object> conditionMap) {
+    	List<Object> params = new ArrayList<>();
+        return baseDao.findList(new SqlHelper().getSqlComplete({@TableBeanName}.class, conditionMap, params), {@TableBeanName}.class,
+                params.toArray());
+    }
+
+    /**
+     * 分页查找一个list
+     * 
+     * @param conditionMap
+     *            查询条件集合
+     * @param pageNumber
+     *            记录行的偏移量
+     * @param pageSize
+     *            记录行的最大数目
+     * @return T extends BaseEntity
+     */
+    public PageData<{@TableBeanName}> paginatorList(Map<String, Object> conditionMap, int pageNumber, int pageSize) {
+    	List<Object> params = new ArrayList<>();
+        List<{@TableBeanName}> list = baseDao.findList(new SqlHelper().getSqlComplete({@TableBeanName}.class, conditionMap, params), pageNumber,
+                pageSize, {@TableBeanName}.class, params.toArray());
+        int count = count{@TableBeanName}(conditionMap);
+        PageData<{@TableBeanName}> pageData = new PageData<{@TableBeanName}>(list, count);
+        return pageData;
+    }
+
+}

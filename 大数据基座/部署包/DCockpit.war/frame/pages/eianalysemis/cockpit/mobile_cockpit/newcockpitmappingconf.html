@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>列表指标映射配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style type="text/css" media="screen">
+.form-labels {
+	display: block;
+	-webkit-box-sizing: border-box !important;
+	-moz-box-sizing: border-box !important;
+	box-sizing: border-box !important;
+	width: 15%;
+	min-height: 26px;
+	padding-right: 5px;
+	text-align: right;
+	color: blue;
+}
+</style>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar" id="toolbar">
+		<a class="mini-button mini-btn-primary" iconCls="icon-doc" id="importResource" onclick="openSearch()">数据查看</a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="false" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="normfield" headerAlign="center" align="center" width="100">映射字段</div>
+				<div width="40" headerAlign="center" align="center" renderer="onChooseRenderer">确认映射</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var normguid = Util.getUrlParams('normguid');
+		// 初始化页面
+		epoint.initPage('newcockpitmappingconfaction', '@all', function(data) {
+			if(data.error){
+				epoint.alertAndClose(data.error);
+			}
+		});
+		
+		//确认选择
+		var onChooseRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-check", "choose", "epoint_total");
+		}
+		
+		function choose(e) {
+			epoint.execute('choose', '', [ e.normfield], closeCallback);
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', '', '', 'info');
+			}
+		}
+		
+		function openSearch() {
+			epoint.openDialog('列表指标结果', "../cockpitmobilecard/normlistdatalist?normguid=" + normguid, '', {
+						'width': 800,
+						'height': 500
+					});
+		}
+		
+	</script>
+</body>
+</html>

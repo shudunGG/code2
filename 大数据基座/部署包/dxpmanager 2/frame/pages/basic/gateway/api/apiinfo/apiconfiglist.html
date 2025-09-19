@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>系统参数</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addConfig()"> 保存参数</a> <a
+				class="mini-button"
+				onclick="epoint.confirm('确认要初始化吗，将会比较服务网关与本地的服务应用数据，重置同步状态并删除垃圾数据?','',restgateway);">
+				初始化网关</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="启用服务网关" style="width: 700px">
+						<input class="mini-checkbox" id="opengateway" bind="opengateway"
+							onvaluechanged="enableChanged" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="网关类型" style="width: 100px">
+						<input class="mini-combobox" id="gatewaytype" bind="gatewaytype" 
+						textField="value" valueField="id" data="[{'id': 'kong', 'value':'Kong'},{'id':'zuul','value':'Zuul'}]" value="kong" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="网关注册地址" style="width: 700px"
+						id="registeraddresstext">
+						<input class="mini-textbox" id="registeraddress"
+							bind="registeraddress" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">网关注册地址：服务网关的对外注册地址，示例：http://192.168.206.33:8001，服务网关安装后默认的对外注册端口都是8001</div>
+				</div>
+				<div role="row">
+					<div role="control" label="网关调用地址" style="width: 700px"
+						id="calladdresstext">
+						<input class="mini-textbox" id="calladdress" bind="calladdress" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">网关调用地址：服务网关的对外注册地址，示例：http://192.168.206.33:8000，服务网关安装后默认的对外注册端口都是8000</div>
+				</div>
+				<div role="row">
+					<div role="control" label="网关授权地址" style="width: 700px"
+						id="apiauthtext">
+						<input class="mini-textbox" id="apiauth" bind="apiauth" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">网关授权地址：服务网关Https通道地址，示例：https://192.168.206.33:8443，服务网关安装后默认的对外授权端口都是8443</div>
+				</div>
+				<div role="row">
+					<div role="control" label="日志监听地址" style="width: 700px"
+						id="logmonitortext">
+						<input class="mini-textbox" id="logmonitor" bind="logmonitor" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">服务网关日志接收地址，示例：http://192.168.112.44:8080/epoint-web/rest/am/v2/receiveLog，一般只需要修改ip、端口、应用名称即可，
+						接口后缀rest/am/v2/receiveLog不用修改，指向统一支撑平台（epoint-web）或者应用服务管理平台（epoint-am）,视具体应用场景
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="网关redis地址" style="width: 700px"
+						id="redisaddresstext">
+						<input class="mini-textbox" id="redisaddress" bind="redisaddress" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">修改服务网关的数据源，一般我们选用redis存储必要数据，redis地址与统一认证平台配置的redis地址保持一致，说明：(redis://host:port/dbIndex或者
+						redis://user:password@host:port/dbIndex。示例：redis://192.168.203.100:6379/9)
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="日志保留时间" style="width: 700px"
+						starred="true">
+						<input class="mini-textbox" style="width: 500px" id="retaintime"
+							required="true" requiredErrorText="日志保留时间不能为空!" vType="int"
+							bind="retaintime" />(天)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" style="width: 700px">服务调用、同步日志保存的时间，默认7天</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- jsboot.js会自动把框架页面所需的所有js都加载进来 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiconfiglistaction', "", initCallBack);
+
+		function initCallBack(param) {
+			if (mini.get("opengateway").value == "true") {
+				mini.get("registeraddress").set({
+					required : true,
+					requiredErrorText : "服务注册地址不能为空!"
+				});
+				mini.get("calladdress").set({
+					required : true,
+					requiredErrorText : "服务调用地址不能为空!"
+				});
+				mini.get("apiauth").set({
+					required : true,
+					requiredErrorText : "服务授权地址不能为空!"
+				});
+				mini.get("logmonitor").set({
+					required : true,
+					requiredErrorText : "日志监听地址不能为空!"
+				});
+				mini.get("redisaddress").set({
+					required : true,
+					requiredErrorText : "网关Redis不能为空!"
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() != "启用服务网关："
+									&& $(this).html() != "日志保留时间：") {
+								$(this).addClass("required");
+							}
+						});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('fui-form');
+		}
+
+		function addConfig() {
+			if (epoint.validate()) {
+				epoint.execute('apiconfiglistaction.addConfig', '', callback);
+			}
+		}
+
+		function restgateway() {
+			if (epoint.validate()) {
+				epoint.execute("initGateway", '', callback);
+			}
+		}
+
+		function enableChanged(e) {
+			if (e.value == "true") {
+				mini.get("registeraddress").set({
+					required : true,
+					requiredErrorText : "服务注册地址不能为空!"
+				});
+				mini.get("calladdress").set({
+					required : true,
+					requiredErrorText : "服务调用地址不能为空!"
+				});
+				mini.get("apiauth").set({
+					required : true,
+					requiredErrorText : "服务授权地址不能为空!"
+				});
+				mini.get("logmonitor").set({
+					required : true,
+					requiredErrorText : "日志监听地址不能为空!"
+				});
+				mini.get("redisaddress").set({
+					required : true,
+					requiredErrorText : "网关Redis不能为空!"
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() != "启用服务网关："
+									&& $(this).html() != "日志保留时间：") {
+								$(this).addClass("required");
+							}
+						});
+			} else {
+				mini.get("registeraddress").set({
+					required : false,
+					requiredErrorText : "服务注册地址不能为空!"
+				});
+				mini.get("calladdress").set({
+					required : false,
+					requiredErrorText : "服务调用地址不能为空!"
+				});
+				mini.get("apiauth").set({
+					required : false,
+					requiredErrorText : "服务授权地址不能为空!"
+				});
+				mini.get("logmonitor").set({
+					required : false,
+					requiredErrorText : "日志监听地址不能为空!"
+				});
+				mini.get("redisaddress").set({
+					required : false,
+					requiredErrorText : "网关Redis不能为空!"
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() != "启用服务网关："
+									&& $(this).html() != "日志保留时间：") {
+								$(this).removeClass("required");
+							}
+						});
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					searchData();
+				});
+			}
+		}
+	</script>
+</body>
+
+</html>

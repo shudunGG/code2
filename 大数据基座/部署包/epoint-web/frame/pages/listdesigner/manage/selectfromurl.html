@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>模版配置添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="选择类型" starred="true">
+						<div class="mini-combobox mr10" repeatItems="2" id="formlisttype"
+							bind="formlisttype" textField="text" valueField="id" value="0"
+							action="getformList" onvaluechanged="changfromtype"
+							style="width: 80px"></div>
+						<div class="mini-combobox mr10" repeatItems="2" id="templateguid"
+							bind="templateguid" textField="text" valueField="id"
+							allowInput="true" value="0" action="gettableid"
+							style="width: 200px" onvaluechanged="changtemplatetype"></div>
+						<div class="mini-combobox mr10" repeatItems="2" id="version"
+							bind="version" textField="text" valueField="id" allowInput="true"
+							value="0" action="getVersionList" style="width: 80px"></div>
+						<div class="mini-combobox" repeatItems="2" id="pagetype"
+							bind="pagetype" textField="text" valueField="id"
+							allowInput="true" value="0" action="getPagesList"
+							style="width: 200px" onvaluechanged="changpagestype"></div>
+					</div>
+
+				</div>
+				<div role="row" id="form1">
+					<div role="control" label="页面生成路径" starred="true">
+						<input class="mini-textbox" bind="absolutePath" enabled="false"
+							id="absolutepath"></input><span class="text-danger mb5">(*注意：该路径为框架项目的部署路径)</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<div id="configFile" class="form-control span2"></div>
+						<div id="syshjblData" class="mini-hidden" bind="syshjblData"></div>
+					</div>
+				</div>
+				<div id="tableid" bind="tableID" class="mini-hidden"></div>
+			</div>
+
+		</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			epoint.initPage('selectfromurlaction', '', initCallBack);
+
+			var configFileDataG;
+			var configFileKeyDataG;
+			var chkDataG;
+			var zyxzDataG;
+			var wjgzdDataG;
+			var imageFlag;
+			//获取url对象
+			var getUrlParams = function() {
+				var params = {}, query = location.search.substring(1), arr = query
+						.split('&'), rt;
+
+				$.each(arr, function(i, item) {
+					var tmp = item.split('='), key = tmp[0], val = tmp[1];
+
+					if (typeof params[key] == 'undefined') {
+						params[key] = val;
+					} else if (typeof params[key] == 'string') {
+						params[key] = [ params[key], val ];
+					} else {
+						params[key].push(val);
+					}
+				});
+				return params;
+			}
+			var isadd = false;
+			// 初始化操作的回调
+			function initCallBack(data) {
+				//容器操作人员隐藏修改按钮
+
+				if (data.isCtnrOperate) {
+					$('#edit').hide();
+				} else if (data.isCtnrView) {
+					$('#edit').hide();
+					$('#imageVersionBtn').hide();
+				} else {
+					$('#imageVersionBtn').hide();
+				}
+
+				iniConfig(data);
+				if (data.srvtext) {
+					mini.get('selector').setValue(data.srvtext);
+					mini.get('selector').setText(data.srvtext);
+					mini.get('type').setValue(data.srvtype);
+				}
+				if (data.add) {
+					autoMounting(data.srvtype, false);
+				}
+
+			}
+			//绘制配置文件编辑按钮
+			function onDrawCell(e) {
+				//组织HTML设置给cellHtml
+				e.cellHtml = "<span class=\"action-icon icon-gear\" onClick=\"showCfgEdit('"
+						+ e + "')\"></span><span>" + e.value + "</span>";
+			}
+
+			var constant = [ 'configFile' ];
+
+			var configFileContent = "<div class=\"pzwjian file\" style=\"line-height:35px;width:800px\">"
+					+ "<input keyname keyPlace style='width:320px' class=\"mini-combobox cfginput\" data=\"[{text:'rowGuid',id:'rowGuid'},{text:'parentRowGuid',id:'parentRowGuid'}]\" configkeydata textField=\"text\" valueField=\"id\" onitemClick=\"cbxwjgzdClick\" cofigid />"
+					+ " = "
+					+ "<input style='width:300px' valuename valuePlace class=\"mini-buttonedit cfgcombobox\" thistext configdata textField=\"text\" valueField=\"id\" onbuttonclick=\"onButtonEdit\" ondrawcell=\"onDrawCell\" cfgid />"
+					+ " <a btnId onclick=\"addVariable(this.id)\" class=\"action-icon icon-addcircle\"></a>"
+					+ "</div>";
+
+			var content = "<div class=\"file hjbliang\" style=\"line-height:35px;margin:0px auto;width:800px\" >"
+					+ "<input style='width:250px;margin-left:20px' keyname keyPlace class=\"mini-textbox\" onValueChanged=\"autoMounting(null,false)\"/>"
+					+ " = "
+					+ "<input style='width:450px' valuename valuePlace class=\"mini-textbox\" onValueChanged=\"autoMounting(null,false)\"/>"
+					+ " <a class=\"action-icon icon-addcircle\" btnId onclick=\"addVariable(this.id)\"></a>"
+					+ "</div>";
+
+			function iniConfig(data) {
+				appendConfig('configFile', 0);
+				// 将配置文件右侧输入框设置不可修改
+				//$('.mini-buttonedit-input').attr("readonly","true");
+				if (data.add && data.copy) {
+					$("#configFileBtn")
+							.before(
+									"<a class=\"action-icon icon-minuscircle delVis\" onclick=\"delVis('configFileBtn',this);\" style=\"width:20px;margin-top:15px;\"></a>");
+
+				}
+
+			}
+			function onButtonEdit(e) {
+
+				epoint.openDialog('选择所属类别',
+						'sformworkflow/manage/selectItemcode',
+						showSelectOperJS, {
+							'width' : 300,
+							'height' : 550
+						});
+
+			}
+
+			function showSelectOperJS(data) {
+				if (data && data != 'close') {
+					var codeItem = data.split(";")[1];
+					var codeName = data.split(";")[0];
+					mini.get('className').setValue(codeName);
+					mini.get('className').setText(codeName);
+					mini.get('classId').setValue(codeItem);
+				}
+			}
+
+			function cbxwjgzdClick(e) {
+				if (e.item.text == '自定义')
+					this.setValue('');
+			}
+
+			function delVis(id, e) {
+				if ('configFileBtn' == id) {
+					if ($('.pzwjian').length == 1) {
+						$('.pzwjian input').val("");
+					}
+				}
+
+				if ($(e).parent().parent().children().length == 1) {
+					var $parent = $(e).parent().parent();
+					console.log($parent.children().attr('class'));
+					if ($parent.children().attr('class').indexOf('pzwjian') > 0
+							&& $('.pzwjian').length != 1) {
+						$(e).parent().remove();
+						addVariable(id);
+					}
+				} else {
+					var $parent = $(e).parent().parent();
+					var index = ($(e).parent()).index();
+					console.log($parent.children().attr('class') + "23");
+					$(e).parent().remove();
+					if (index == $parent.children().length) {
+						$parent
+								.children()
+								.last()
+								.append(
+										"<a class=\"action-icon icon-addcircle\" btnId onclick=\"addVariable(this.id)\"></a>"
+												.replace("btnId", "id=\"" + id
+														+ "\""));
+					}
+				}
+
+			}
+
+			function addVariable(id, key, value) {
+				var tmpContent = content;
+
+				if (id == 'configFileBtn') {
+					tmpContent = configFileContent.replace("configdata",
+							"data=\"" + configFileDataG + "\"").replace(
+							"configkeydata",
+							"data=\"" + configFileKeyDataG + "\"");
+				}
+				var $parent = $("#" + id.replace("Btn", ""));
+				$("#" + id)
+						.parent()
+						.append(
+								"<a class=\"action-icon icon-minuscircle delVis\" onclick=\"delVis('"
+										+ id
+										+ "',this);\" style=\"width:20px;margin-top:15px;\"></a>");
+				if ($("#" + id).prev(".delVis")) {
+					$("#" + id).prev(".delVis").remove();
+				}
+				$("#" + id).remove();
+				// 
+				var thiskeytext = key === undefined ? "" : key.replace("value",
+						"text");
+				var thistext = "";
+				var cjson = epoint.decodeJson(configFileDataG);
+				if (cjson && id == 'configFileBtn') {
+					for (var k = 0; k < cjson.length; k++) {
+						var json = cjson[k];
+						var idkey = json.id;
+						var textvalue = json.text;
+						if (value == ("value='" + idkey + "'")) {
+							thistext = textvalue;
+						}
+					}
+				}
+
+				$parent
+						.append(tmpContent.replace('keyPlace',
+								key === undefined ? '' : key).replace(
+								'valuePlace', value === undefined ? '' : value)
+								.replace("btnId", "id=\"" + id + "\"").replace(
+										"keyname",
+										"name=\"" + id.replace("Btn", "")
+												+ "key" + "\"").replace(
+										"valuename",
+										"name=\"" + id.replace("Btn", "")
+												+ "value" + "\"").replace(
+										"labelname",
+										"name=\"" + id.replace("Btn", "")
+												+ "\"").replace(
+										"chkname",
+										"name=\"" + id.replace("Btn", "")
+												+ "chk" + "\"").replace(
+										"ipname",
+										"name=\"" + id.replace("Btn", "")
+												+ "ip" + "\"").replace(
+										"portname",
+										"name=\"" + id.replace("Btn", "")
+												+ "port" + "\"")
+								.replace("thistext",
+										"text=\"" + thistext + "\"").replace(
+										"thiskeytext", thiskeytext))
+				if ($parent.children().length != 1) {
+					$("#" + id)
+							.before(
+									"<a class=\"action-icon icon-minuscircle delVis\" onclick=\"delVis('"
+											+ id
+											+ "',this);\" style=\"width:20px;margin-top:15px;\"></a>");
+				} else if ($parent.children().length == 1) {
+					$("#" + id)
+							.before(
+									"<a class=\"action-icon icon-minuscircle delVis\" onclick=\"delVis('"
+											+ id
+											+ "',this);\" style=\"width:20px;margin-top:15px;\"></a>");
+				}
+
+				mini.parse();
+			}
+
+			function appendConfig(id, index) {
+				var tmpContent = content;
+				if (id == 'configFile') {
+					tmpContent = configFileContent.replace("configdata",
+							"data=\"" + configFileDataG + "\"").replace(
+							"configkeydata",
+							"data=\"" + configFileKeyDataG + "\"").replace(
+							"cofigid", "id=\"cofig0\"").replace("cfgid",
+							"id=\"cfg0\"");
+					$("#configFile").append(
+							tmpContent.replace("keyname",
+									"name=\"" + id + "key" + "\"").replace(
+									"valuename",
+									"name=\"" + id + "value" + "\"").replace(
+									"btnId", "id=\"" + id + "Btn\""));
+				}
+				mini.parse();
+			}
+
+			function saveAndClose() {
+				if (epoint.validate()) {
+					var inp = $('#configFile').children().find(
+							'input.mini-buttonedit-input');
+					var valuestr = "";
+					for (var i = 0; i < inp.length; i++) {
+						if (i == 0) {
+							valuestr += "?" + inp[i].value;
+						} else if (i % 2 == 0) {
+							valuestr += "&" + inp[i].value;
+
+						} else {
+							valuestr += "=" + inp[i].value;
+						}
+
+					}
+					var pageurl = mini.get('absolutepath').getValue()
+							+ valuestr;
+					alert(pageurl);
+					epoint.closeDialog(pageurl);
+				}
+			}
+
+			// 新增操作的回调
+			function newCallback(data) {
+				if (data) {
+					var msg = data.msg;
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alert(data.msg, null, null, 'info');
+						// 清空表单
+						epoint.clear('fui-form');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				if (data) {
+					var msg = data.msg;
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alertAndClose(data.msg);
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+
+			}
+
+			function changfromtype() {
+				epoint.clear('templateguid');
+				epoint.clear('version');
+				epoint.clear('pagetype');
+				epoint.clear('absolutepath');
+				epoint.refresh([ 'formlisttype', 'templateguid', 'version',
+						'pagetype' ], function() {
+
+				});
+			}
+
+			function changtemplatetype() {
+				epoint.clear('version');
+				epoint.clear('pagetype');
+				epoint.clear('absolutepath');
+				var templateguid = mini.get("templateguid").getValue();
+				epoint.refresh([ 'formlisttype', 'templateguid', 'version',
+						'pagetype' ], function() {
+
+				});
+				epoint.execute('searchTaleId', '', [ templateguid ], function(
+						data) {
+					mini.get('tableid').setValue(data);
+
+				});
+
+			}
+
+			function changpagestype() {
+				var formtype = mini.get('formlisttype').getValue();
+				var tableid = mini.get('tableid').getValue();
+				var version = mini.get('version').getText();
+				var pagetype = mini.get('pagetype').getText();
+				//列表
+				if (formtype == "0") {
+					var pageurlcheck = "epointtemp" + "/" + "epointsform" + "/"
+							+ "list" + "/" + tableid + "/" + version + "/"
+							+ pagetype;
+					mini.get('absolutepath').setValue(pageurlcheck);
+				} else {
+					var pageurlcheck = "epointtemp" + "/" + "epointsform" + "/"
+							+ "form" + "/" + tableid + "/" + version + "/"
+							+ pagetype;
+					mini.get('absolutepath').setValue(pageurlcheck);
+				}
+			}
+		</script>
+</body>
+</html>

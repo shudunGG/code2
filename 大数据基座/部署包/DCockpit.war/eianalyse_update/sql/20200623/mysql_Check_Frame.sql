@@ -1,0 +1,1 @@
+select count(1) from frame_config where CONFIGNAME='SYS_TAGS_SERVICE_ADDRESS'

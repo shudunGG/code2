@@ -1,0 +1,222 @@
+@charset "utf-8";
+
+.row {
+    display: flex;
+
+    box-sizing: border-box;
+    padding: 0;
+
+    flex-flow: row nowrap;
+}
+
+.col {
+    position: relative;
+
+    box-sizing: border-box;
+    box-sizing: border-box;
+    min-height: 30px;
+    padding: 6px;
+
+    line-height: 30px;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.col {
+    &.hasSub {
+        padding: 0;
+    }
+
+    & > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    &:after {
+        position: absolute;
+        z-index: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+
+        display: block;
+
+        box-sizing: border-box;
+
+        content: '';
+
+        background: transparent;
+    }
+
+    // 内嵌单元格的时候 自身全部无边框
+    &.hasSub:after {
+        border-top-width: 0 !important;
+        border-right-width: 0 !important;
+        border-bottom-width: 0 !important;
+        border-left-width: 0 !important;
+    }
+
+    // 普通单元格 非 第一 最后 强制去掉左边
+    &.mid:after {
+        border-left-width: 0 !important;
+    }
+
+    // 嵌套在内部的第一个强制去掉左边
+    @at-root {
+        .col.mid > .row > &.first:after,
+        .col.mid > .row-container > .row > &.first:after,
+        .col.last > .row > &.first:after,
+        .col.last > .row-container > .row > &.first:after {
+            border-left-width: 0 !important;
+        }
+    }
+
+    // 最后一个去掉右边 必须是真实的最后一个不能是即是第一又是最后
+    &.mid ~ &.last:after,
+    &.first ~ &.last:after {
+        border-left-width: 0 !important;
+    }
+
+    @at-root {
+        // 非第一行的 内嵌列的 top 强制去掉
+        .row.mid > .col:after {
+            border-top-width: 0 !important;
+        }
+
+        // 嵌套在内部的行中的 top 也需要去掉
+        .row.mid {
+            > .col > .row > .col:after,
+            > .col > .dropArea > .row > .col:after {
+                border-top-width: 0 !important;
+            }
+        }
+    }
+}
+
+// 单元格对齐
+.col {
+    display: flex;
+    flex-direction: column;
+    &.text-left {
+        text-align: left;
+    }
+
+    &.text-center {
+        text-align: center;
+    }
+
+    &.text-right {
+        text-align: right;
+    }
+
+    &.vertical-top {
+        vertical-align: top;
+    }
+
+    &.vertical-middle {
+        vertical-align: middle;
+    }
+
+    &.vertical-bottom {
+        vertical-align: bottom;
+    }
+
+    // &.vertical-top > .design-control {
+    //   display: flex;
+    //   flex-direction: column;
+
+    //   align-items: center;
+    //   justify-content: flex-start;
+    // }
+    // &.vertical-middle > .design-control {
+    //   display: flex;
+    //   flex-direction: column;
+
+    //   align-items: center;
+    //   justify-content: center;
+    // }
+    // &.vertical-bottom > .design-control {
+    //   display: flex;
+    //   flex-direction: column;
+
+    //   align-items: center;
+    //   justify-content: flex-end;
+    // }
+    &.text-left {
+        align-items: flex-start;
+    }
+
+    &.text-center {
+        align-items: center;
+    }
+
+    &.text-right {
+        align-items: flex-end;
+    }
+
+    &.vertical-top {
+        justify-content: flex-start;
+    }
+
+    &.vertical-middle {
+        justify-content: center;
+    }
+
+    &.vertical-bottom {
+        justify-content: flex-end;
+    }
+}
+
+.design-form-title,
+.design-form-label {
+    position: relative;
+
+    display: block;
+
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+}
+.design-form-label {
+    padding-right: 8px;
+    &.required:after {
+        position: absolute;
+        top: 50%;
+        right: -2px;
+
+        display: block;
+
+        width: 8px;
+        height: 16px;
+        margin-top: -8px;
+
+        font-size: 16px;
+        line-height: 16px;
+
+        content: '*';
+
+        color: red;
+    }
+}
+
+.mini-textbox-readOnly .mini-textbox-border,
+.mini-textbox-readOnly .mini-textbox-input,
+.mini-buttonedit-readOnly .mini-buttonedit-border,
+.mini-buttonedit-readOnly .mini-buttonedit-input,
+.mini-readonly .mini-textboxlist-border {
+    cursor: default;
+
+    border: 0;
+    background: none;
+}
+
+.mini-buttonedit-readOnly .mini-buttonedit-button,
+.mini-readonly .mini-textboxlist-close {
+    display: none;
+}
+
+.mini-readonly .mini-textboxlist-item {
+    padding-right: 8px;
+}

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>群组管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 左侧树 -->
+	<div class="fui-left">
+
+		<div role="head" title="分组设置">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" onclick="openGroup()"
+					id="groupset"></a>
+			</div>
+		</div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+
+	<!-- 右侧内容区域 -->
+	<div class="fui-right">
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" onclick="openAdd" id="add">添加联系人</a>
+			<a class="mini-button" onclick="saveOrderNum" id="save">保存排序</a><a
+				class="mini-button" state="danger" onclick="deleteSelect"
+				id="delete">删除选中</a>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="名称">
+							<input bind="txtName" class="mini-textbox" />
+						</div>
+						<div role="control" label="办公电话">
+							<input bind="tel" class="mini-textbox" />
+						</div>
+					</div>
+
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="leftTreeCode" id="leftTreeNodeGuid"
+						class="mini-hidden" /> <input bind="userGuid" id="userGuid"
+						vtype="int" class="mini-hidden" />
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+
+		<!-- 列表区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true"
+				allowCellEdit="true">
+				<!-- allowCellEdit="true" -->
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40">序</div>
+					<div field="objectName" width="100%">名称</div>
+					<div field="ouName" width="220">部门</div>
+					<div field="telphone" width="220">办公电话</div>
+					<div field="orderNumber" width="100" vtype="int">
+						排序号 <input property="editor" class="mini-textbox" maxLength="8" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="appGuid" bind="appGuid" />
+
+</body>
+
+
+
+<script src="../../../../../rest/resource/jsboot"></script>
+
+<!-- 配置变量 -->
+<script>
+	//<![CDATA[  
+	//初始化页面
+	epoint.initPage("groupauthorizeduserlistaction", "", initGrid);
+
+	function initGrid(e) {
+		if (e.enableSOA == 'true') {//要隐藏掉增删改操作
+			mini.get('groupset').setVisible(false);
+			mini.get('add').setVisible(false);
+			mini.get('save').setVisible(false);
+			mini.get('delete').setVisible(false);
+		}
+	}
+
+	//树js对象
+	var tree = mini.get("tree");
+
+	//表格js对象
+	var grid = mini.get("datagrid");
+
+	//新增回调事件
+	function addCallBack() {
+
+		searchData();
+	}
+
+	//打开新增地址簿人员页面
+	function openAdd() {
+		if (tree.getValue() && tree.getValue() != "f9root") {
+			epoint
+					.openDialog(
+							"选择人员",
+							'frame/pages/basic/communication/groupmanagement/authorizeduserselect?groupguid='
+									+ tree.getValue()
+									+ '&appGuid='
+									+ mini.get("appGuid").getValue(), function(
+									param) {
+								if (param && param != "close") {
+									epoint.showTips(param, {
+										state : 'success'
+									});
+								}
+								addCallBack();
+							}, {
+								'width' : 660,
+								'height' : 470
+							});
+		} else {
+			epoint.showTips("请先选择地址组!", {
+				state : 'warning'
+			});
+		}
+	}
+
+	//保存回调事件
+	function saveCallback(data) {
+		if (data.msg) {
+			if (data.msg == "没有排序") {
+				epoint.showTips(data.msg, {
+					state : 'warning'
+				});
+				searchData();
+			} else {
+				epoint.showTips(data.msg, {
+					state : 'success'
+				});
+				searchData();
+			}
+
+		}
+	}
+
+	//保存排序号
+	function saveOrderNum() {
+		grid.validate();
+		if (grid.isValid() == false) {
+			//alert("请校验输入单元格内容");
+			var error = grid.getCellErrors()[0];
+			grid.beginEditCell(error.record, error.column);
+			return;
+		}
+		var ids = grid.getColumnData("rowguid");
+		var ordernums = grid.getColumnData("orderNumber");
+		epoint.execute('saveOrderNum', '',
+				[ ids.join(';'), ordernums.join(';') ], saveCallback);
+	}
+
+	// formThe search of
+	function searchData() {
+		if (epoint.validate()) {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	}
+
+	//点击树节点刷新表格
+	tree.on("nodeselect", function(e) {
+		if (e.node) {
+			var id = e.node.id;
+			//将左侧树点击的节点id放到隐藏域中
+			mini.get('leftTreeNodeGuid').setValue(id);
+		}
+		//刷新表格
+		searchData();
+	});
+
+	//删除回调事件
+	function callback(data) {
+		epoint.showTips(data.msg, {
+			state : 'success'
+		});
+	}
+
+	//删除选中行
+	function deleteSelect() {
+		var datagrid = mini.get('datagrid');
+		var ids = datagrid.getSelectedIds();
+		if (ids.length > 0) {
+			epoint.confirm("确定删除选中记录？", "", function(action) {
+				epoint.execute("delete", "", [ ids.join(',') ], function(data) {
+					if (data.msg) {
+						epoint.showTips(data.msg, {
+							state : 'success'
+						});
+						searchData();
+					}
+				});
+			});
+		} else {
+			epoint.showTips("请选择要删除的记录!", {
+				state : 'warning'
+			});
+		}
+	}
+
+	//分组设置回调事件
+	function groupCallBack() {
+		epoint.refresh([ 'datagrid', 'tree', 'fui-form' ], '', true);
+	}
+
+	//分组设置
+	function openGroup() {
+		var userGuid = mini.get('userGuid').getValue();
+		epoint.openDialog("分组设置",
+				'frame/pages/basic/communication/groupmanagement/groupmanagelist?userGuid='
+						+ userGuid + '&appGuid='
+						+ mini.get("appGuid").getValue(), groupCallBack, {
+					'width' : 1000,
+					'height' : 600
+				});
+	}
+
+	//]]>
+</script>
+</html>

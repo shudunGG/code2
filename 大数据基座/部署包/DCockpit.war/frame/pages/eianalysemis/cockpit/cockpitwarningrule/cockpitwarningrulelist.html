@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>预警规则列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd" id="btnAddRecord">新增规则 </a>
+			<a id="btnDel" class="mini-button" iconCls="icon-minuscircle" onclick="deleteData">删除选定 </a>
+		</div>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="RuleName" headerAlign="center">预警规则</div>
+				<div field="Status" headerAlign="center" data-options="{code:'是否启用'}" align="center">是否启用</div>
+				<div field="WarningType" headerAlign="center" align="center">预警类型</div>
+				<div field="LastWarningTime" name="lastupdatetime" width="75" headerAlign="center" align="center" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" dateFormat="yyyy-MM-dd HH:mm:ss">上次预警时间</div>
+				<div width="50" align="center" headerAlign="center" renderer="onEditRenderer">修改</div>
+				<div width="50" align="center" headerAlign="center" renderer="onDetailRenderer">查看</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var normtype = Util.getUrlParams("normtype");
+		var normguid = Util.getUrlParams("guid");
+		// 初始化页面
+		epoint.initPage('cockpitwarningrulelistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增规则', "frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningruleadd?normguid="+normguid, searchData, {
+				'width' : 1440,
+				'height' : 960
+			});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录', "frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningruleadd?guid=" + id, searchData, {
+				'width' : 1440,
+				'height' : 960
+			});
+		}
+
+		// 弹出明细窗口
+		function openDetail(id) {
+			epoint.openDialog('详细信息', "frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningruledetail?guid=" + id, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		function deleteData() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+	</script>
+</body>
+</html>

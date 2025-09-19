@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新增指标分类</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10"
+			style="float: none; display: inline-block;">
+			<a class="mini-button mini-btn-primary" iconCls="icon-save"
+				id="addClose" onclick="saveAndClose">保存</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+					<!-- 表单布局 -->
+					<div class="fui-form" id="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="指标分类名称" starred="true">
+									<input class="mini-textbox" bind="dataBean.normsetname"
+										id="normsetname" required="true" vtype="maxLength:50;"
+										requiredErrorText="指标分类名称不能为空!"
+										maxLengthErrorText="指标分类名称不能超过50个字符" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row" id="apicoderow">
+								<div role="control" label="ApiCode" starred="true">
+									<input class="mini-textbox" bind="dataBean.apicode"
+										id="apicode" required="true" enabled="false" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row">
+								<div role="control" label="指标分类描述">
+									<input class="mini-textarea" bind="dataBean.remark" id="remark"
+										vtype="maxLength:1000;" maxLengthErrorText="指标分类描述不能超过1000个字符" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="父指标分类">
+									<input id="pnormset" class="mini-treeselect" textField="text"
+										valueField="id" bind="dataBean.parentguid"
+										oncloseclick="onCloseClick" showClose="true" required="false"
+										shownullitem="true" action="getOuSetTreeModel" />
+								</div>
+								<div role="control" label="公开状态" starred="true" id="showisopen">
+									<div id="isopen" class="mini-radiobuttonlist"
+										bind="dataBean.isopen" requiredErrorText="公开状态必须选择"
+										data="[{text:'公开',id:'1'},{text:'私有',id:'0'}]" value="0"
+										textField="text" valueField="id" onvaluechanged="openChanged"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="所属部门" starred="true">
+									<input id="id_ouguid" class="mini-treeselect" textField="text"
+										valueField="id" bind="dataBean.belongouguid"
+										action="frameoulistaction.getTreeModel"
+										oncloseclick="onCloseClick" showClose="true" required="false"
+										shownullitem="true" onvaluechanged="onOuChanged" />
+								</div>
+								<div role="control" label="创建人" starred="true">
+									<div class="mini-textbox" bind="createusername" enabled="false"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="指标信息"></div>
+				<div role="body">
+					<div class="fui-toolbar" id="toolbar">
+						<div class="btn-group mr10">
+							<div class="mini-button" id="confignorm" onclick="confignorm">配置指标</div>
+							<div class="mini-button" id="deletenorm" onclick="deleteNorm">删除所选</div>
+						</div>
+						<input bind="normguids" id="normguids" class="mini-hidden" />
+					</div>
+					<div class="form-wrap">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="rowguid" multiSelect="true"
+							style="width: 100%; max-height: 300px;" allowResize="false"
+							showPager="false" action="getDataGridData" allowCellSelect="true"
+							allowCellEdit="true" editNextOnEnterKey="true">
+							<div property="columns">
+								<div type="checkcolumn" width="50"></div>
+								<div type="indexcolumn" width="50" headerAlign="center">序号</div>
+								<div field="normname" width="85%" headerAlign="center">指标名称</div>
+								<div field="normtypeText" width="220" headerAlign="center"
+									align="center">指标类型</div>
+								<div field="source" width="80" headerAlign="center"
+									align="center">来源</div>
+								<div field="statusText" width="100" headerAlign="center"
+									align="center">状态</div>
+								<!-- <div field="ordernum" width="100" headerAlign="center"
+									align="center">排序号</div> -->
+								<div name="operate" type="actioncolumn" headerAlign="center"
+									align="center" renderer="onSubit">操作
+									<!-- <span type="action" icon="icon-edit" onclick="openEdit">编辑</span> -->
+									<!-- <span type="action" icon="icon-trash" onclick="deleteSelect">删除</span> -->
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		var rowguid = Util.getUrlParams('rowguid');
+		var type = Util.getUrlParams('type');
+		var belongouguid = Util.getUrlParams('belongouguid');
+		epoint.initPage('cockpitnormsetaddaction', null, function(data) {
+			if (rowguid) {
+				mini.get('id_ouguid').disable();
+				$('#apicoderow').show();
+			} else {
+				$("#apicoderow").hide();
+			}
+			if (data.isAdmin == 'false') {
+				mini.get('id_ouguid').disable();
+			}
+			if (data.ouName) {
+				mini.get('id_ouguid').setText(data.ouName);
+			}
+			if (type == 'set') {
+				mini.get('pnormset').setValue(belongouguid);
+				mini.get('pnormset').setText(data.setname);
+			}
+			if (data.isopen == '1') {
+				mini.get('normsetname').disable();
+				mini.get('remark').disable();
+				mini.get('pnormset').disable();
+				$('#toolbar').hide();
+			}
+			if (data.isAdd == 'true') {
+				Util.form.hideField('#showisopen');
+			}
+		});
+
+		var outree = mini.get('id_ouguid');
+		outree.on('beforenodeselect', function(obj) {
+			if (obj.node.id == "f9root") {
+				obj.cancel = true;
+			} else {
+				obj.cancel = false;
+			}
+		});
+		var settree = mini.get('pnormset');
+		settree.on('beforenodeselect', function(obj) {
+			if (obj.node.isOU == "true") {
+				obj.cancel = true;
+			} else {
+				obj.cancel = false;
+			}
+			if (obj.node.id == rowguid) {
+				obj.cancel = true;
+				epoint.alert('不能选择自己');
+			}
+		});
+
+		function openChanged() {
+			var isopen = mini.get('isopen').getValue();
+			if (isopen == '1') {
+				mini.get('normsetname').disable();
+				mini.get('remark').disable();
+				mini.get('pnormset').disable();
+				$('#toolbar').hide();
+			} else if (isopen == '0') {
+				mini.get('normsetname').enable();
+				mini.get('remark').enable();
+				mini.get('pnormset').enable();
+				$('#toolbar').show();
+			}
+		}
+
+		function onOuChanged() {
+			var ouGuid = mini.get('id_ouguid').getValue();
+			if (ouGuid) {
+				epoint.refresh([ 'id_ouguid', 'pnormset' ], function(data) {
+					var pnormset = mini.get('pnormset').getValue();
+					if (pnormset) {
+						mini.get('pnormset').setValue('');
+						mini.get('pnormset').setText('');
+					}
+				});
+			}
+		}
+
+		function confignorm() {
+			if (epoint.validate()) {
+				var belongouguid = mini.get('id_ouguid').getValue();
+				var normguids = mini.get('normguids').getValue();
+				epoint.openDialog('配置指标',
+						"./cockpitnormsetnormrelatelist?setguid=" + rowguid
+								+ "&belongouguid=" + belongouguid
+								+ "&normguids=" + normguids, function(data) {
+							if (data != "close") {
+								console.log(data);
+								var normguids = mini.get('normguids')
+										.getValue();
+								if (normguids) {
+									data = normguids + "," + data;
+								}
+								mini.get('normguids').setValue(data);
+								epoint.refresh([ 'normguids', 'datagrid' ], '',
+										true);
+							}
+						}, {
+							'width' : 1200,
+							'height' : 850
+						});
+			}
+		}
+
+		function deleteNorm() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', function(data) {
+					var selecteds = mini.get('datagrid').getSelecteds();
+					var normGuidArray = [];
+					var normguids = mini.get('normguids').getValue();
+					if (normguids) {
+						normGuidArray = normguids.split(",");
+					}
+					for (j = 0, len = selecteds.length; j < len; j++) {
+						var rowguid = selecteds[j].rowguid;
+						if (normGuidArray.indexOf(rowguid) > -1) {
+							normGuidArray.remove(rowguid);
+						}
+					}
+					if (normGuidArray.length > 0) {
+						var normguidsnew = '';
+						for (j = 0, len = normGuidArray.length; j < len; j++) {
+							normguidsnew = normguidsnew + normGuidArray[j]
+									+ ",";
+						}
+						normguidsnew = normguidsnew.substring(0,
+								normguidsnew.length - 1);
+						mini.get('normguids').setValue(normguidsnew);
+						epoint.refresh([ 'normguids', 'datagrid' ], '', true);
+					} else {
+						mini.get('normguids').setValue('');
+						epoint.refresh([ 'normguids', 'datagrid' ], '', true);
+					}
+				});
+			}
+		}
+
+		function deleteSelect(guid) {
+			epoint.confirm('确认要取消关联吗?', '', function() {
+				var normGuidArray = [];
+				var normguids = mini.get('normguids').getValue();
+				if (normguids) {
+					normGuidArray = normguids.split(",");
+				}
+				if (normGuidArray.indexOf(guid) > -1) {
+					normGuidArray.remove(guid);
+				}
+				if (normGuidArray.length > 0) {
+					var normguidsnew = '';
+					for (j = 0, len = normGuidArray.length; j < len; j++) {
+						normguidsnew = normguidsnew + normGuidArray[j] + ",";
+					}
+					normguidsnew = normguidsnew.substring(0,
+							normguidsnew.length - 1);
+					mini.get('normguids').setValue(normguidsnew);
+					epoint.refresh([ 'normguids', 'datagrid' ], '', true);
+				} else {
+					mini.get('normguids').setValue('');
+					epoint.refresh([ 'normguids', 'datagrid' ], '', true);
+				}
+			});
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', [ 'fui-form', 'normguids' ],
+						closeCallback);
+			}
+		}
+
+		// 保存并关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf('成功') > -1) {
+					epoint.alertAndClose(data.msg);
+				} else {
+					epoint.alert(data.msg);
+				}
+			}
+		}
+		
+		// 点击关闭按钮
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+		
+		function onSubit(e) {
+			return '<span type="action" style=\"color:blue\" onclick="deleteSelect(\''
+			+ e.row.rowguid + '\')">删除</span>';
+		}
+	</script>
+</body>
+
+</html>

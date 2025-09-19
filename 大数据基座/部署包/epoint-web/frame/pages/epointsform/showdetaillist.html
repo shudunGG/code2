@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>记录明细</title>
+<script src="../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addTest" onclick="addTest();">新增记录</a><span style="margin-left: 8px">数据表中文名称：</span>
+		<input class="mini-output" id="name" bind="name" />
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				allowResize="true" idField="rowguid" multiSelect="true"
+				action="getDefaultDataModel" style="width: 100%; height: 100%;">
+			</div>
+			<input class="mini-hidden" id="params" bind="params" /> 
+			<input class="mini-hidden" id="tableId" bind="tableID" />
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'frame/fui/js/epoint/epoint.controlconfig.js',
+			 'frame/fui/js/epoint/epoint.form.js']);
+	</script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('showdetaillistaction', '', initCallBack);
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		var tId = "";
+
+		var fieldMaps = null, params = mini.get('params');
+
+		// 初始化回调，动态生成列
+		function initCallBack(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, null, null, null, 'info');
+			} else {
+				//adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+				if (data && data.controls) {
+					//appearCondition(data);
+					drawDynamicColumn(data);
+					if (data.fields) {
+						fieldMaps = data.fields;
+					}
+					mini.parse();
+				}
+			}
+			tId = mini.get("tableId").getValue();
+			epoint.refresh('datagrid', function(){});
+		}
+
+		/*// 加载查询区域
+		function appearCondition(data) {
+			var html = epoint.parseForm(data.controls);
+			$('#fuiCondition').prepend(html);
+			initCondition();
+		}*/
+
+		// 绘制动态列
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = Util.safeEval('(' + tmp + ')');
+			grid.set(columns);
+		}
+
+		// 在表格数据加载完之后打开表格编辑状态
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		//新增回调
+		function callBack(param) {
+			if (param != 'close') {
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			// 获取查询区域的值并赋值给params
+			if (fieldMaps) {
+				$.each(fieldMaps, function(k, v) {
+					var control = mini.get(k);
+					if (control) {
+						fieldMaps[k] = control.getValue();
+					}
+				});
+				params.setValue(JSON.stringify(fieldMaps));
+			}
+			epoint.refresh(['datagrid', 'params']);
+		}
+
+		//修改记录
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"openEditViewDialog", "rowguid");
+		}
+
+		function openEditViewDialog(rowGuid) {
+			var flag = "add";
+			epoint.execute('getPreviewUrl', '', [tId, rowGuid, flag], showUrl);
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				epoint.openDialog("表单详细信息", args.previewUrl, callBack);
+			} else {
+				epoint.alertAndClose("当前记录没有查询到对应数据", null, null, null, 'error');
+			}
+		}
+
+		//查看记录
+		function onSearchRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openViewDialog", "rowguid");
+		}
+
+		function openViewDialog(rowGuid) {
+			var flag = "printdetail";
+			epoint.execute('getPreviewUrl', '', [tId, rowGuid, flag], showUrl);
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				epoint.openDialog("表单详细信息", args.previewUrl, callBack);
+			} else {
+				epoint.alertAndClose("当前记录没有查询到对应数据", null, null, null, 'error');
+			}
+		}
+
+		//删除记录
+		function onDelRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-removecircle", "del",
+					"rowguid");
+		}
+
+		function del(rowguid) {
+			epoint.execute('deleteitem', '', [rowguid], searchData);
+		}
+
+		//新增记录
+		function addTest() {
+			epoint.execute('getEnableVersionUrl', '', [tId], openAdd);
+		}
+
+		function openAdd(args) {
+			if (args.openAddUrl) {
+				epoint.openDialog("新增记录", args.openAddUrl, searchData, {
+					'width' : 1000
+				});
+			} else {
+				epoint.alertAndClose(args.msg, null, null, null, 'info');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

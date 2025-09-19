@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title></title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="topic名称">
+						<input bind="topicName" class="mini-output" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="消费组名称">
+						<input bind="groupName" class="mini-output" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<div class="mini-radiobuttonlist" showNullItem="true"
+							id="resetType" bind="resetType" repeatItems="2"
+							repeatLayout="table" repeatDirection="vertical"
+							action="getResetTypeList" textField="text" valueField="id"
+							onvaluechanged="onValueChanged"></div>
+					</div>
+				</div>
+				<div role="row" id="dateRow" style="display: none;">
+					<div role="control">
+						<input class="mini-datepicker" style="width: 15%;"
+							bind="resetTime" showTime="true"
+							data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}" />
+					</div>
+				</div>
+			</div>
+			<div class="btn-group" style="margin: 0 auto; width: 25%;">
+				<a class="mini-button" onclick="epoint.closeDialog();">关闭</a> <a
+					class="mini-button mr10" onclick="save();">确定</a>
+			</div>
+		</div>
+
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			epoint.initPage('dxpkafkagrouprestoffsetaction');
+
+			function save() {
+				epoint.execute('reset', '@all', function(data) {
+					if (data.success == 'success') {
+						epoint.alert(data.msg, '提示', function() {
+							epoint.closeDialog();
+						}, 'success');
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			}
+
+			function onValueChanged() {
+				if (mini.get('resetType').getValue() == 'time') {
+					$('#dateRow').show();
+				} else {
+					$('#dateRow').hide();
+				}
+			}
+		</script>
+</body>
+</html>

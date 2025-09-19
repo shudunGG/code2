@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>应用类别添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="应用分类父级名称">
+						<input class="mini-treeselect" multiSelect="false" id="tree1"
+							showRadioButton="true" bind="dataBean.appClassParentGuid"
+							allowSelect="false" action="getTreeData" style="width: 90%" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="应用分类名称" starred="true">
+						<input bind="dataBean.appClassName" class="mini-textbox" maxLength="50"
+							style="width: 90%" required="true" requiredErrorText="应用分类名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属平台">
+						<div bind="dataBean.appPlat" action="getAppplatModel"
+							class="mini-combobox" textField="text" valueField="id"
+							style="width: 90%"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input id="orderNumber" bind="dataBean.orderNumber" maxLength="8"
+							style="width: 90%" class="mini-textbox" vtype="int;range:0,99999999"
+							allowSort="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="类别描述">
+						<input bind="dataBean.appClassRemark" style="width: 90%"
+							class="mini-textarea" allowSort="true" maxLength="200"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew" onclick="saveAndNew">保存并新建</a> 
+		<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a> 
+	</div>
+	
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appclassaddaction', '', function(e) {
+			if (e.parentName) {
+				mini.get("tree1").setText(e.parentName);
+			}
+		});
+
+		//树js对象
+		var tree = mini.get("tree1");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeclick", function(e) {
+			if (e.node) {
+				var id = e.node.id;
+				mini.get("tree1").setValue(id);
+			}
+		});
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					if(data.appClassParentGuid){
+						mini.get("tree1").setValue(data.appClassParentGuid);
+						mini.get("tree1").setText(data.parentName);
+					}
+					epoint.refresh(['tree1']);
+					epoint.showTips(data.msg, {state : 'success'});
+				}else{
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+			}
+		}
+	</script>
+</body>
+</html>

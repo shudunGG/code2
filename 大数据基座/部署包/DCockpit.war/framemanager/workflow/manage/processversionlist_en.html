@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Process versioning</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="openAddDialog()">new version</a> <a class="mini-button"
+				iconCls="icon-removecircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {epoint.confirm('Sure to delete?','',deleteSelected);}">delete selected</a>
+			<a class="mini-button" iconCls="icon-copy"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to duplicate record!', '', null, 'warning');} else {copyWorkflow();}">version to copy</a>
+			<a class="mini-button" iconCls="icon-download"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a want to export record!', '', null, 'warning');} else {check();}">exportXML</a>
+			<div id="dataImport" class="mini-webuploader" pickerText="importXML"
+				action="processversionlistaction.getDataImportModel"
+				fileNumLimit="5" showDefaultUI="false" fileSingleSizeLimit="5120"
+				limitType="text,xml" dataImport="true" onuploadfinished="searchData"
+				onuploadaccept="UploadSuccess" auto="true"></div>
+		</div>
+
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+
+		<a role="helper" class="mr10">In use process need to pay attention to information</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<font style="color: blue;">If you need the personalized affiliated subprocesses, suggest you<em>toVersion to copy</em>, using the copy version to personalized editor, or will be<em>Change the original version</em>。In addition if version is used as affiliated sub-process。<em>Enable disable option will no longer be limited</em>!
+			</font>
+		</p>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="processVersionGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDefaultModel" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">order</div>
+				<div field="version" headerAlign="center" align="center" width="50">version</div>
+				<div field="note" headerAlign="center" align="center" width="100%">remark</div>
+				<div field="name" headerAlign="center" align="center" width="80">affiliated relationship</div>
+				<div width="50" headerAlign="center" renderer="affiliated"
+					align="center">affiliated</div>
+				<div width="50" headerAlign="center" align="center"
+					renderer="changeImage">state</div>
+				<div width="80" headerAlign="center" align="center"
+					renderer="material">process materials</div>
+				<div width="80" headerAlign="center" align="center"
+					renderer="context">relevant data</div>
+				<div headerAlign="center" align="center" width="80"
+					renderer="method">approach to managing</div>
+				<div headerAlign="center" align="center" width="80"
+					renderer="design">process design</div>
+				<div headerAlign="center" align="center" width="50" renderer="edit">edit</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="hidMainPVActivityGuid"
+		bind="hidMainPVActivityGuid" />
+	<input class="mini-hidden" id="hidProcessVersionGuid"
+		bind="hidProcessVersionGuid" />
+	<input class="mini-hidden" id="processGuid" bind="processGuid" />
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage("processversionlistaction");
+
+		function affiliated(e) {
+			return epoint.renderCell(e, "action-icon icon-fix",
+					"JumpToSelectMainProcess");
+		}
+
+		function material(e) {
+			return epoint.renderCell(e, "action-icon icon-doc",
+					"JumpToMaterial");
+		}
+
+		function context(e) {
+			return epoint.renderCell(e, "action-icon icon-console",
+					"JumpToContext");
+		}
+
+		function method(e) {
+			return epoint.renderCell(e, "action-icon icon-paper",
+					"JumpToMethod");
+		}
+
+		function design(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-gear", "JumpToDesign");
+		}
+
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editVersion");
+		}
+
+		function changeImage(e) {
+			if (e.row.status == 10) {
+				return epoint.renderCell(e, "action-icon icon-start",
+						"changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause",
+						"changeStatus");
+			}
+		}
+
+		function copyWorkflow() {
+			epoint.execute('copyVersion', 'datagrid', msgCallBack);
+		}
+
+		function changeStatus(e) {
+			epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+		}
+
+		// delete
+		function deleteSelected() {
+			epoint.execute('deleteSelect', 'datagrid', msgCallBack);
+		}
+
+		function check() {
+			epoint.execute('check', 'datagrid', exportafter);
+		}
+
+		function exportafter(data) {
+			if (data.guid) {
+				var form = document.getElementById('download_form');
+				form.action = "../../../"
+						+ epoint
+								.dealRestfulUrl("processversionlistaction/exportWorkflow?exportguid="
+										+ data.guid);
+				form.submit();
+			} else if (data.msg) {
+				epoint.alert(data.msg, '', '', 'warning');
+			}
+		}
+
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alert(msg, '', function(){
+						epoint.refresh('datagrid','',true);
+					}, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function openAddDialog() {
+			var processGuid = mini.get('processGuid').getValue();
+			var url = "processversionbaseinfoadd?processGuid=" + processGuid;
+			epoint.openDialog('new version', "framemanager/workflow/manage/" + url,
+					function(){
+				epoint.refresh('datagrid','',true);
+			}, {
+						'width' : 1000
+					});
+		}
+
+		function changeComplete(msg) {
+			if (msg) {
+				epoint.alertAndClose(msg, '', null, null, 'info');
+			}
+		}
+
+		function editVersion(processVersionGuid) {
+			var url = "processversionbaseinfoedit?processVersionGuid="
+					+ processVersionGuid;
+			epoint.openDialog('editversion', "framemanager/workflow/manage/" + url,
+					function(){
+				epoint.refresh('datagrid','',true);
+			}, {
+						'width' : 1000
+					});
+		}
+
+		function JumpToDesign(processVersionGuid) {
+			var url = "designbodyoa9?processVersionGuid=" + processVersionGuid
+					+ "&mainPVActivityGuid="
+					+ mini.get('hidMainPVActivityGuid').getValue();
+			epoint.openTopDialog('Process design', "framemanager/workflow/design/" + url);
+		}
+
+		function JumpToMaterial(processVersionGuid) {
+			var url = "processmaterial?processVersionGuid="
+					+ processVersionGuid + "&mainPVActivityGuid="
+					+ mini.get('hidMainPVActivityGuid').getValue();
+			epoint.openDialog('configurationProcess materials', "framemanager/workflow/manage/" + url, '', {
+				'width' : 1000
+			});
+		}
+
+		function JumpToContext(processVersionGuid) {
+			var url = "framemanager/workflow/design/contextfieldlist?processVersionGuid="
+					+ processVersionGuid;
+			epoint.openDialog('configuration relevant data', url, '', {
+				'width' : 1000
+			});
+		}
+
+		function JumpToMethod(processVersionGuid) {
+			var url = "methodlist?processVersionGuid=" + processVersionGuid;
+			epoint.openDialog('configurationProcess method', "framemanager/workflow/design/" + url, '', {
+				'width' : 1000
+			});
+		}
+
+		function JumpToSelectMainProcess(processVersionGuid) {
+			var url = "processselectmainprocessframe?processVersionGuid="
+					+ processVersionGuid;
+			epoint.openDialog('hitch main process', "framemanager/workflow/manage/" + url,
+					JumpToSelectMainProcessOperJS, {
+						'width' : 1000
+					});
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh('datagrid');
+		}
+
+		function UploadSuccess(args) {
+			if (args.ret.extraDatas.msg) {
+				epoint.alert(args.ret.extraDatas.msg, '', '', 'warning');
+			} else {
+				epoint.alert('The importsuccessful', '', null, 'success');
+			}
+		}
+
+		function JumpToSelectMainProcessOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				mini.get('hidMainPVActivityGuid').setValue(
+						rtnValue.split(";")[0]);
+				// 			    mini.get('hidProcessVersionGuid').setValue(rtnValue.split(";")[1]);
+				epoint.refresh('datagrid','',true);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

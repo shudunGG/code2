@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>过程版本添加</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="stylesheet"
+	href="../css/workflowicons.css?releaseNo=#{version.version}" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addbtn"
+			onclick="addProcessVersion()">确定新增</a> <a class="mini-button"
+			id="cancelbtn" onclick="epoint.closeDialog('close')">取消新增</a> <a
+			role="helper" class="mr10">使用过程中需注意的信息</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			监听类的配置为类全路径，该类必须实现com.epoint.workflow.engine.event.EventObserver接口，</p>
+		<p>用于监听整个流程的流转，当你实现它后，原则上将不需要配置任何其他事件。</p>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="版本" starred="true">
+						<input class="mini-textbox" required="true"
+							bind="workflowProcessVersion.version" emptyText="版本名称不能为空"
+							style="width: 100%;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="监听类" id="type">
+						<input class="mini-combobox" bind="workflowProcessVersion.tag"
+							action="processversionbaseinfoeditaction.getWorkFlowEvent"
+							id="tag" allowInput="true" showClose="true"
+							oncloseclick="onCloseClick" />
+					</div>
+					<div role="control" label="作者" id="showFormUrl">
+						<input class="mini-textbox" bind="workflowProcessVersion.author" />
+					</div>
+				</div>
+				<div role="row" style="word-break:keep-all">
+					<div role="control" label="移动端待办事宜标识">
+						<input class="mini-textbox"
+							bind="workflowProcessVersion.mobileMessageTag" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">说明：多系统或者需个性化移动接口时可以填写</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textarea" bind="workflowProcessVersion.note"
+							style="width: 100%; height: 80px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="允许时限">
+						<input id="txtTimeLimit" bind="txtTimeLimit" class="mini-textbox"
+							style="width: 20%" /> <input id="timeLimitUnit"
+							name="timeLimitUnit" showNullItem="false"
+							bind="workflowProcessVersion.timeLimitUnit"
+							action="getTiemUnitList" class="mini-combobox" textField="text"
+							valueField="id" style="width: 30%; margin-left: 8px" />
+					</div>
+					<div role="control" label="提前预警时间">
+						<input id="txtWarningTime" bind="txtWarningTime"
+							class="mini-textbox" style="width: 20%" /> <input
+							id="earlyWarningTimeUnit" name="earlyWarningTimeUnit"
+							showNullItem="false"
+							bind="workflowProcessVersion.earlyWarningTimeUnit"
+							action="getTiemUnitList" class="mini-combobox" textField="text"
+							valueField="id" style="width: 30%; margin-left: 8px" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("processversionbaseinfoaddaction");
+
+		function addProcessVersion() {
+			if (epoint.validate()) {
+				epoint.execute('addProcessVersion', '', addComplete);
+			}
+		}
+
+		function addComplete(data) {
+			if (data) {
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.closeDialog(data.message);
+				} else {
+					epoint.alert(data.message, '', '', 'warning');
+				}
+			}
+		}
+
+		//清除监听类
+		function onCloseClick() {
+			mini.get('tag').setValue('');
+			mini.get('tag').setText('');
+		}
+		//]]>
+	</script>
+</body>
+</html>

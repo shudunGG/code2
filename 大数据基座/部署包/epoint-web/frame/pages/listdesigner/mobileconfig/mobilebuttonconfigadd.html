@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>按钮配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="按钮名称" starred="true">
+					<input id="columnText" class="mini-textbox"
+						bind="dataBean.buttonname" required="true"
+						requiredErrorText="按钮名称不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="按钮类型" starred="true">
+					<div class="mini-combobox" id="buttonType"
+						bind="dataBean.buttontype"
+						onvaluechanged="selectTypeChange(this.value)"
+						data="[{id:'Add',text:'新增'},{id:'Edit',text:'修改'},{id:'Del',text:'删除'},{id:'Process',text:'发起流程'},{id:'Export',text:'导出Excel'}]"
+						required="true" requiredErrorText="按钮类型不能为空!" /></div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序码" starred="true">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int" required="true" requiredErrorText="排序码不能为空!" />
+				</div>
+			</div>
+			<div role="row" id="linkArea" style="display: none">
+				<div role="control" label="链接地址">
+					<input id="linkurl" class="mini-textbox" bind="dataBean.linkurl" />
+				</div>
+			</div>
+			<div role="row" id="processArea">
+				<div role="control" label="流程选择">
+					<input class="mini-buttonedit" allowInput="false"
+						id="processSelect" required="true" emptyText="流程不能为空"
+						style="width: 100%;" onbuttonclick="selMainProcess"
+						bind="dataBean.processguid" />
+					<!-- <div id="copyprocess" class="mini-combobox" bind="copyProcess" action="getAllProcessList"
+							onvaluechanged="processChange();" textField="text"
+							valueField="id" enabled="true" ></div> -->
+					<input class="mini-hidden" id="processName"
+						bind="dataBean.processname" />
+				</div>
+			</div>
+			<div role="row" id="openTypeArea" style="display: none">
+				<div role="control" label="打开方式">
+					<div id="openType" class="mini-combobox" bind="dataBean.opentype"
+						data="[{id:'0',text:'新窗口'},{id:'1',text:'弹窗'}]" textfield="text"
+						valuefield="id" onvaluechanged="openTypeChange(this.value)"></div>
+				</div>
+			</div>
+			<div role="row" id="dialogConfig" style="display: none">
+				<div role="control" label="弹窗宽度（px）">
+					<input id="dialogWidth" class="mini-textbox"
+						bind="dataBean.dialogwidth" />
+				</div>
+				<div role="control" label="弹窗高度（px）">
+					<input id="dialogHeigh" class="mini-textbox"
+						bind="dataBean.dialogheigh" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('mobilebuttonconfigaddaction', '', initCallback);
+
+		function initCallback(data) {
+			var type = mini.get("buttonType").getValue();
+			selectTypeChange(type);
+
+			var openType = mini.get("openType").getValue();
+			openTypeChange(openType);
+
+			mini.get('processSelect').setText(
+					mini.get("processName").getValue());
+		}
+
+		function selMainProcess() {
+			epoint.openDialog('选择流程', "epointworkflow/manage/selectprocess",
+					selMainProcessOperJS, {
+						'width' : 300,
+						'height' : 500
+					});
+		}
+
+		function selMainProcessOperJS(rtnValue) {
+			if (rtnValue && rtnValue != "close") {
+				var s = rtnValue.split(";");
+				mini.get('processSelect').setText(s[0]);
+				mini.get('processSelect').setValue(s[1]);
+				mini.get('processSelect').validate(s[0]);
+				mini.get('processName').setValue(s[0]);
+			}
+		}
+
+		function selectTypeChange(data) {
+			if (data == 'Add' || data == 'Edit') {
+				document.getElementById("linkArea").style.display = "block";
+				document.getElementById("processArea").style.display = "none";
+				document.getElementById("openTypeArea").style.display = "block";
+
+			} else if (data == 'Process') {
+				document.getElementById("linkArea").style.display = "none";
+				document.getElementById("processArea").style.display = "block";
+				document.getElementById("openTypeArea").style.display = "none";
+			} else {
+				document.getElementById("linkArea").style.display = "none";
+				document.getElementById("processArea").style.display = "none";
+				document.getElementById("openTypeArea").style.display = "none";
+			}
+		}
+
+		//打开方式变更
+		function openTypeChange(openType) {
+			if (openType == "1") {
+				document.getElementById("dialogConfig").style.display = "block";
+			} else {
+				document.getElementById("dialogConfig").style.display = "none";
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

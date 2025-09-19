@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择部门</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content" style="padding: 5px; box-sizing: border-box;">
+		<ul id="tree" class="mini-filtertree"
+			style="height: 100%; width: 100%;" textField="text" idField="id"
+			parentField="pid" action="themedataaction.getTreeOnlineUserModel"
+			resultAsTree="false" filterMode="server"></ul>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化请求
+		epoint.initPage('themedataaction', '', function() {
+			refreshData;
+		});
+		var tree = mini.get('tree');
+		var refreshData = function(callback) {
+			//更新树的布局
+			tree.doLayout();
+			Util.ajax({
+				type : 'POST',
+				dataType : 'json',
+				url : epoint
+						.dealRestfulUrl('themedataaction/getOnlineUserCount'),
+				success : function(data) {
+					// 更新人员树
+					// 在线人数
+					var count = data.count;
+					// 调用callback，更新主界面中的在线人数数目
+					callback(count);
+					tree.load();
+				}
+			});
+			console.log('刷新在线人员列表');
+		}
+		tree.on('nodeselect', function(obj) {
+			if (obj.node.isLeaf == true) {
+				top.OpenEMsg(obj.node.id)
+			}
+		});
+	</script>
+
+
+</body>
+</html>

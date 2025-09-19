@@ -1,0 +1,1 @@
+SELECT count(*) FROM information_schema. COLUMNS WHERE table_schema = DATABASE () AND table_name = 'portrait_manageinfo' AND COLUMN_NAME='hbaseaddress' AND COLUMN_TYPE='varchar(255)'

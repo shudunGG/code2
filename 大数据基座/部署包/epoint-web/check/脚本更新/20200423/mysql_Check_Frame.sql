@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where table_schema = database() and table_name ='COMM_MESSAGE_REMIND_INFO' and column_name = 'targetusername' and data_type = 'text'

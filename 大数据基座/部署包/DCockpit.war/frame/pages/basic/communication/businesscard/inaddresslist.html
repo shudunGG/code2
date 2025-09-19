@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>内部通讯录列表</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            'fui/pages/navpages/topTabNav/topTabNav.min.css',
+            './css/communicate.css',
+            '../../js/classifysearch/classifysearch.css',
+            './css/inaddresslist.css'
+        ]);
+
+    </script>
+</head>
+
+<body>
+<div class="page-loading"></div>
+
+<div class="fui-condition" style="display: none; height: 0">
+    <div class="fui-form" id="fui-form">
+        <div role="form">
+            <div style="display: none">
+                <input class="mini-textbox" id="searchdisplayname"
+                       bind="searchdisplayname"/> <input class="mini-textbox"
+                                                         id="txtmobile" bind="txtmobile"/>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <!-- <div id="check-all" name="product" class="mini-checkbox mr10" text="全选" onvaluechanged=""></div> -->
+
+    <div class="btn-group mr10">
+        <a class="mini-button hidden" id="groupmanager"
+           onclick="opensetting">分组设置</a> <a
+            class="mini-button  hidden" id="btnadd"
+            onclick="openadd">添加联系人</a> <a
+            class="mini-button  hidden" id="btndel"
+            onclick="deleteSelect">删除选中</a>
+        <!--  <a class="mini-button">群发</a>-->
+        <!--<a class="mini-button">导出</a>-->
+        <!--<a class="mini-dataexport" id="dataexport" gridId="datagrid"  fileName="内部通讯录"-->
+        <!--action="getExportModel" extraId="fui-form"></a>-->
+        <!--    <a class="mini-menubutton" menu="#moveto">更多</a>-->
+        <!-- <a class="mini-dataexport" id="dataexport" gridId="datagrid"  fileName="内部通讯录"
+        action="getExportModel" extraId="fui-form" style="margin-left:1px"></a>-->
+        <!-- <ul id="moveto" class="mini-menu" idField="boxtypeguid" textField="boxname" style="display:none;">
+         <li iconCls="icon-open">更多</li>
+         <li iconCls="icon-open">更多</li>
+         <li iconCls="icon-remove">关闭</li>
+     </ul>-->
+    </div>
+
+    <div class="com-toolbar-ext">
+        <div class="com-toolbar-item" id="view-wrap">
+            <div class="com-btn">
+                <a href="card" class="view view-card" title="卡片式" id="acard"></a>
+            </div>
+            <div class="com-btn">
+                <a href="list" class="view view-list active" title="列表式" id="alist"></a>
+            </div>
+        </div>
+        <div class="com-toolbar-item">
+            <div class="classify-search" id="com-search">
+                <input type="text" placeholder="姓名、手机号" class="classify-search-input"
+                       id="smart-search"/>
+                <button class="button-search" title="点击搜索"></button>
+            </div>
+        </div>
+        <div class="com-toolbar-item" style="display:none">
+            <div class="com-question">
+                <span class="icon-question" title="帮助" style='display:none'></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 内容区域 -->
+<div class="fui-content">
+    <!--撑满页面-->
+    <div class="mini-fit"
+         style="background: red; height: 100px; overflow: hidden;">
+
+        <div id="datagrid" class="mini-datagrid"
+             style="width: 100%; height: 100%;" idField="userguid"
+             sizeList="[10,20,50,100]"  multiSelect="true"
+             action="getDataGridData">
+            <div property="columns">
+                <div type="indexcolumn" width="40" headerAlign="center"
+                     name="indexcol">序
+                </div>
+                <div type="checkcolumn" name="checkcol" width="40"></div>
+                <div field="displayname" width="200" headerAlign="center"
+                     allowSort="false" renderer="onNameRenderer" href="javascript:openDetail(111)">人员姓名
+                </div>
+                <!--       <div field="state" width="120" headerAlign="center" align="center" allowSort="true">人员状态</div>-->
+                <div field="title" width="80%" renderer="onTitleRenderer"
+                     align="center" headerAlign="center">部门/职务
+                </div>
+                <div field="usermobile" width="100" align="center"
+                     headerAlign="center">手机号码
+                </div>
+                <div field="telephoneoffice" width="100" align="center"
+                     headerAlign="center">办公电话
+                </div>
+                <div field="shortmobile" width="80" headerAlign="center"
+                     align="center">短号
+                </div>
+                <div width="100" headerAlign="center" align="center"
+                     renderer="onActionRenderer">快捷应用
+                </div>
+            </div>
+        </div>
+
+        <!-- 侧滑展开通讯录详情 -->
+        <div class="aside-wrap hidden" id="aside-wrap">
+            <iframe src="" frameborder="0" scrolling="no" width="100%"
+                    height="100%" id="aside-detailframe"></iframe>
+        </div>
+    </div>
+
+</div>
+<script src="../../../rest/resource/jsboot"></script>
+<!-- 配置接口 -->
+<script>
+    // 内部通讯录表格式列表视图接口
+
+
+</script>
+<script>
+    SrcBoot.output([
+        '../../js/classifysearch/classifysearch.js',
+        './js/businesscommon.js'
+    ]);
+
+</script>
+
+<script>
+    var userGuid, canManager;
+
+    var queryString = Util.getUrlParams(),
+            groupguid = queryString.groupguid, // 群组guid
+            grouptype = queryString.grouptype; // 群组type
+    $('#acard').attr('href', 'card?inorout=1&group=' + grouptype + '&guid=' + groupguid);
+    $('#alist').attr('href', 'inaddresslist?grouptype=' + grouptype + '&groupguid=' + groupguid);
+
+    var dataGrid = mini.get("datagrid");
+    var $smartSearch = $("#smart-search");
+    var $asideDetailFrame = $("#aside-detailframe");
+
+    // 内部通讯录，有群组type时请求list数据
+    if (grouptype) {
+
+        var query = {grouptype: grouptype};
+        if (groupguid) {
+            query.groupguid = groupguid;
+        }
+        epoint.initPage('frameinaddresslistaction', query, function (data) {
+            if (data.userGuid) {
+                userGuid = data.userGuid;
+            }
+            if (data.canManager) {
+                canManager = data.canManager;
+            }
+
+            //分组设置显示隐藏控制
+            if (grouptype == 3 || (grouptype == 2 && canManager == true)) {
+                $("#groupmanager").removeClass("hidden");
+                $("#btnadd").removeClass("hidden");
+                $("#btndel").removeClass("hidden");
+                dataGrid.hideColumn("indexcol");
+            } else {
+                dataGrid.hideColumn("checkcol");
+            }
+
+
+        });
+
+    }
+
+    dataGrid.on('beforeload', function (e) {
+        var key = $.trim($smartSearch.val());
+
+        if (key && key.length) {
+            e.data.key = key;
+        }
+
+    });
+
+    initSearch();
+
+    // 快捷应用单元格render
+    function onActionRenderer(e) {
+        var record = e.record,
+                uid = record.userguid,
+                uname = record.displayname;
+
+        var s = '<a class="btn-writemail" href="javascript:writeMail(\'' + uid + '\',\'' + uname + '\')" title="发邮件"></a>' +
+
+                ' <a class="btn-mobilemsg hidden" href="javascript:sendMobileMsg(\'' + uid + '\')" title="发短信"></a>';
+        if (e.record.showex == "1")
+            s += ' <a class="btn-msg" href="javascript:sendMsg(\'' + uid + '\')" title="发消息"></a>';
+
+        return s;
+    }
+
+    // 姓名单元格render
+    function onNameRenderer(e) {
+        var newName = "";
+        var uid = e.record.userguid;
+
+
+
+            newName = '<div class="custom-name" onclick="javascript:openDetail(\'' + uid + '\')"><img src="../../../rest/readpictureaction/getUserPicture?isCommondto=true&userGuid=' + uid + '" class="portrait-icon" alt="portrait"/>' +
+                    '<a class="showdetail-btn" href="javascript:;">' + e.record.displayname + '</a></div>';
+
+
+        return newName;
+    }
+
+    // 部门+职务render
+    function onTitleRenderer(e) {
+        var dept = e.record.ouname,
+                title = e.record.title;
+
+        return '<span class="new-ou">' + dept + '</span>' +
+                '<span class="new-title">' + title + '</span>';
+    }
+
+    // 发送邮件
+    var userguid;
+    var username;
+    function writeMail(id, name) {
+        userguid = id;
+        username = name;
+        epoint.execute('getUser', '', id, writeMailCallback);
+    }
+
+    function writeMailCallback(data) {
+        if (data.hasdel) {
+            epoint.alert("此用户已被删除！");
+        } else {
+
+            if (top.TabsNav) { //如果顶层窗口支持 tab 式打开  使用 tab  打开整个邮件应用
+                top.TabsNav.addTab({
+                    id: 'tab-' + userguid,
+                    name: '公务邮件',
+                    url: 'oa9/mail/mailframe',
+                    closeIcon: true, // 是否显示最小化按钮
+                    maxIcon: true,
+                    param: {
+                        target: "mailsend",// 如果是开打 mailframe 页面 初始化加载哪个子页面
+                        touser: [{id: userguid, name: username, userType: 0}] //收件人数组
+                    }
+                });
+            }
+            else { // 否则使用div 方式打开邮件发送页面
+                epoint.openDialog('发送邮件', 'oa9/mail/mailsend', '', {
+                    'width': null,
+                    'height': null,
+                    'showCloseButton': true,
+                    'showMaxButton': true,
+                    'allowResize': false
+                });
+            }
+
+
+        }
+
+    }
+
+    // TODO 发消息
+    function sendMsg(id) {
+        userguid = id;
+        epoint.execute('getUser', '', id, sendMsgCallback);
+    }
+
+    function sendMsgCallback(data) {
+        if (data.hasdel) {
+            epoint.alert("此用户已被删除！");
+        } else {
+            top.OpenEMsg(userguid);
+        }
+    }
+    // TODO 发短信
+    function sendMobileMsg(id) {
+        userguid = id;
+        epoint.execute('getUser', '', id, sendMobileMsgCallback);
+    }
+
+    function sendMobileMsgCallback(data) {
+        if (data.hasdel) {
+            epoint.alert("此用户已被删除！");
+        } else {
+            console.log(userguid);
+        }
+    }
+    // 侧滑弹出人员详情
+    function openDetail(id) {
+        userguid = id;
+        epoint.execute('getUser', '', id, usercallback);
+    }
+
+    function usercallback(data) {
+        if (data.hasdel) {
+            epoint.alert("此用户已被删除！");
+        } else {
+            $asideDetailFrame.attr("src", "");
+            $("#aside-wrap").removeClass('hidden').animate({"right": "0"}, 300, function () {
+                $asideDetailFrame.attr("src", "innerdetail?uid=" + userguid + "&view=1");
+            });
+        }
+    }
+
+    // 标识是否搜索过，搜索过之后，清空输入框才进行重新加载。
+    var isSearched = false;
+
+    // 点击搜索回调函数
+    // function clickenter(index){
+    //     clickenter(index);
+    // }
+
+    // 分类搜索按键回调函数
+    function searchkeyup(index, key) {
+        if (key.length === 0 && isSearched) { // 清空输入框时，重新加载表格
+            mini.get("searchdisplayname").setValue(""); // 重新加载前，需要清空表单的数据
+            mini.get("txtmobile").setValue("");
+            dataGrid.reload();
+            isSearched = false;
+        }
+    }
+
+    // smartsearch 搜索
+    function clickenter(id, key) {
+        var index = id;
+        var type;
+
+        if (index === -1 || index === undefined) {
+            type = 0;
+        }
+
+        query = {groupguid: groupguid, grouptype: grouptype};
+
+        if (index === 0 || type === 0) {
+            mini.get("searchdisplayname").setValue(key);
+            mini.get("txtmobile").setValue("");
+        }
+        if (index === 1) {
+            mini.get("searchdisplayname").setValue("");
+            mini.get("txtmobile").setValue(key);
+        }
+        if (key && key.length) {
+            query.key = key;
+            query.type = type;
+            epoint.refresh(query);
+        }
+
+        isSearched = true;
+    }
+
+
+    //删除选中行
+    function deleteSelect() {
+        var datagrid = mini.get('datagrid');
+        var ids = datagrid.getSelectedIds();
+        if (ids.length > 0) {
+            epoint.confirm("确定删除选中记录？", "", function (action) {
+                epoint.execute("delete", "", [ids
+                        .join(',')], function (data) {
+                    if (data.msg) {
+                        epoint.alert(data.msg);
+                        searchData();
+                    }
+                });
+            });
+        } else {
+            mini.alert("请选择要删除的记录!");
+        }
+    }
+
+    function opensetting() {
+        if (grouptype == 2) {
+            epoint.openTopDialog('分组管理', 'frame/communication/addressbook/addressgrouplist?userGuid=public', searchData, {
+                width: 1000,
+                height: 750,
+                'showCloseButton': true,
+                'showMaxButton': true,
+                'allowResize': true
+
+            });
+        }
+        if (grouptype == 3) {
+            epoint.openTopDialog('分组管理', 'frame/communication/addressbook/addressgrouplist?userGuid=' + userGuid, searchData, {
+                width: 1000,
+                height: 750,
+                'showCloseButton': true,
+                'showMaxButton': true,
+                'allowResize': true
+            });
+        }
+    }
+
+    function openadd() {
+        epoint.openTopDialog('添加联系人', 'oa9/communication/businesscard/oaaddressuserselect?groupguid=' + groupguid + '&grouptype=' + grouptype, searchData, {
+            width: 700,
+            Height: 450,
+            'showCloseButton': true,
+            'showMaxButton': true
+        });
+    }
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid']);
+        window.parent.requestGroup(1);
+        window.parent.requestGroup(2);
+        //window.parent.location.reload();
+    }
+
+</script>
+</body>
+
+
+</html>

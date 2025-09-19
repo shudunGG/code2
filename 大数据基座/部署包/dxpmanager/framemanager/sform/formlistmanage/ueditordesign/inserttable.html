@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+    <style>
+        .content {
+            margin-top: 20px;
+        }
+        
+        .size-wrap {
+            width: 220px;
+            height: 220px;
+            background: url("../../../../frame/fui/js/lib/ueditor/themes/default/images/unhighlighted.gif");
+        }
+        
+        .size-light {
+            background: url("../../../../frame/fui/js/lib/ueditor/themes/default/images/highlighted.gif");
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+
+        <div class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label" for=" table-class">主题配置</label>
+                <div class="controls">
+                    <select name="table-class" id="table-class">
+                        <option value="formdesign-default">默认主题</option>
+                        <option value="formdesign-wide">较宽主题</option>
+                        <option value="formdesign-narrow">较窄主题</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label " for="row">行数</label>
+                <div class="controls">
+                    <input type="text" name="row" id="row" pattern="[0-9]+" placeholder="请输入表格行数" required="required">
+                    <span class="help-inline" style="display:none;">必须输入正确的表格行数</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="col">列数</label>
+                <div class="controls">
+                    <input type="text" name="col" id="col" pattern="[0-9]" placeholder="请输入表格列数" required="required">
+                    <span class="help-inline" style="display:none;">必须输入正确的表格行数</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">拖动选择</label>
+                <div class="controls">
+                    <div class="size-wrap" id="size-wrap" title="滑动选择，点击确认">
+                        <div class="size-light" id="size-light"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 必须引入此JavaScript 用以在此页面直接获取dialog实例！ -->
+    <script src="../../../../frame/fui/js/lib/jquery-1.11.1.min.js "></script>
+    <script src="../../../../frame/fui/js/lib/ueditor/dialogs/internal.js "></script>
+    <script>
+        // (function() {
+        // 表格主体样式名
+        var $tableClass = $('#table-class'),
+            // row
+            $row = $('#row'),
+            // col
+            $col = $('#col'),
+            // 滑块选择区域
+            $sildeWrap = $('#size-wrap'),
+            // 高亮区域
+            $silde = $('#size-light');
+
+        // 验证状态
+        var InputValidate = {
+            inSuccess: function(el) {
+                if (!(el instanceof $)) {
+                    el = $(el);
+                }
+                el.next().hide()
+                    .closest('.control-group').addClass('success').removeClass('error');
+            },
+            inError: function(el) {
+                if (!(el instanceof $)) {
+                    el = $(el);
+                }
+                el.next().show()
+                    .closest('.control-group').addClass('error').removeClass('success');
+            },
+            reset: function(el) {
+                if (!(el instanceof $)) {
+                    el = $(el);
+                }
+                el.next().hide()
+                    .closest('.control-group').removeClass('error').removeClass('success');
+            }
+        }
+
+        var initEvent = function() {
+            // 滑块区域在页面中的位置
+            var SILDEWRAP_OFFSET = $sildeWrap.offset(),
+                // 当前位置信息
+                curr_pos = {},
+                // 当前对应的尺寸信息
+                curr_size = {};
+
+            var getRowColBypos = function(pos) {
+                return {
+                    row: Math.ceil(pos.top / 22),
+                    // row: Math.round(pos.top / 22),
+                    col: Math.ceil(pos.left / 22)
+                        // col: Math.round(pos.left / 22)
+                };
+            };
+
+
+            $sildeWrap
+            // 鼠标移动时，实时更新高亮
+                .on('mousemove', function(e) {
+
+                    if (e.offsetX) {
+                        curr_pos.top = e.offsetY;
+                        curr_pos.left = e.offsetX;
+                    } else {
+                        curr_pos.top = e.clientY - SILDEWRAP_OFFSET.top;
+                        curr_pos.left = e.clientX - SILDEWRAP_OFFSET.left;
+                    }
+                    curr_size = getRowColBypos(curr_pos);
+
+                    $silde.css({
+                        width: 22 * curr_size.col,
+                        height: 22 * curr_size.row
+                    });
+                    // $row.val(curr_size.row);
+                    // $col.val(curr_size.col);
+                })
+                // 鼠标离开时 以输入框中的为准，最大为10*10
+                .on('mouseleave', function(e) {
+                    // console.log('out');
+                    var col = parseInt($col.val()) || 0,
+                        row = parseInt($row.val()) || 0;
+                    $silde.css({
+                        width: 22 * (col > 10 ? 10 : col),
+                        height: 22 * (row > 10 ? 10 : row)
+                    });
+                })
+                // 点击时 以滑动区域为准 并更新输入框 同时出发相应的验证
+                .on('click', function() {
+                    $silde.css({
+                        width: 22 * curr_size.col,
+                        height: 22 * curr_size.row
+                    });
+                    $row.val(curr_size.row).focus().blur();
+                    $col.val(curr_size.col).focus().blur();
+                });
+
+            // 输入值改变时同步下方高亮 最大为10
+            $row.on('change', function() {
+                var row = parseInt(this.value) || 0;
+
+                $silde.css('height', 22 * (row > 10 ? 10 : row));
+            });
+            $col.on('change', function() {
+                var col = parseInt(this.value) || 0;
+                $silde.css('width', 22 * (col > 10 ? 10 : col));
+            });
+            // 禁止输入非数字 0~9: 96-105 , 48-57; tab: 9 ; enter:13; 退格 8; del: 46；home,end: 35 36
+            var codeArr = [96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 9,
+                13, 8, 46, 35, 36
+            ];
+            $().add($row).add($col).on('keydown', function(e) {
+                var code = e.which;
+                // console.log(code);
+                if ($.inArray(code, codeArr) == -1) return false;
+            }).on('focus', function() {
+                InputValidate.reset(this);
+            }).on('blur', function() {
+                var value = this.value;
+
+                if (!parseInt(value, 10)) {
+                    InputValidate.inError(this);
+                }
+            });
+        };
+
+        initEvent();
+
+        var getData = function() {
+            return {
+                tableClass: $tableClass.val(),
+                numRows: parseInt($row.val(), 10),
+                numCols: parseInt($col.val(), 10)
+            };
+        }
+
+        var validate = function(data) {
+            // var key;
+            // for (key in data) {
+            //     if (Object.prototype.hasOwnProperty.call(data, key)) {
+            //         if (!data[key]) return false;
+            //     }
+            // }
+            if (!data) return false;
+            if (!data.tableClass) return false;
+            if (!data.numRows) {
+                InputValidate.inError($row);
+                // try {
+                //     top.epoint.alert('必须输入正确的表格行数');
+                // } catch (e) {
+                //     throw e;
+                // }
+                return false;
+            }
+            if (!data.numCols) {
+                InputValidate.inError($col);
+                // try {
+                //     top.epoint.alert('必须输入正确的表格列数');
+                // } catch (e) {
+                //     throw e;
+                // }
+                return false;
+            }
+
+            return true;
+        };
+
+        dialog.onok = function() {
+            var data = getData();
+
+            if (!validate(data)) return false;
+
+            dialog.editor.execCommand('_inserttablewidthstyle', data);
+        };
+
+        // })();
+    </script>
+</body>
+
+</html>

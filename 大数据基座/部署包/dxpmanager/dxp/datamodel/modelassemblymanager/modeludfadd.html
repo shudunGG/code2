@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增函数</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.id_connection_row .form-control {
+	width: 70%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog(0)">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="函数名称" starred="true" starred="true">
+						<input id=udfname class="mini-textbox"
+							bind="dataBean.udfname" required="true"
+							requiredErrorText="函数名称不能为空!" />
+					</div>
+				</div>
+				<div role="row" id="jar-row">
+<!-- 					<div role="control" label="hive数据源" starred="true">
+						<input class="mini-combobox" action="getHiveDs" id="hivedsid"
+							multiSelect="false" bind="dataBean.hivedsid" required="true"
+							textField="text" valueField="id" requiredErrorText="hive数据源不能为空" />
+					</div> -->
+					<div role="control" label="JAR包" starred="true">
+						<input class="mini-combobox" action="getJars" id="jarguid"
+							multiSelect="false" bind="dataBean.jarguid" required="true"
+							textField="text" valueField="id" requiredErrorText="JAR包不能为空" />
+					</div>
+					<div role="control" label="presto数据源" starred="true">
+						<input class="mini-combobox" action="getPrestoDs" id="type"
+							multiSelect="false" bind="dataBean.prestodsid" required="true"
+							textField="text" valueField="id" requiredErrorText="presto数据源不能为空" 
+							onvaluechanged="prestoChanged"/>
+					</div>
+				</div>
+				<div role="row" id="jarclass-row">
+					<div role="control" label="UDF实现类" starred="true">
+						<input id="jarclasspath" class="mini-textbox"
+							bind="dataBean.jarclasspath" required="true"
+							requiredErrorText="UDF实现类不能为空!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="UDF函数名" starred="true">
+						<input id="functionname" class="mini-textbox"
+							bind="dataBean.functionname" required="true"
+							requiredErrorText="UDF函数名不能为空!" />
+					</div>
+					<div role="control" label="UDF函数参数">
+						<input id="functionparams" class="mini-textbox"
+							bind="dataBean.functionparams"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="组件简介" starred="true">
+						<input id="description" class="mini-textbox"
+							bind="dataBean.description" required="true"
+							requiredErrorText="组件简介不能为空!" />
+					</div>
+					<div role="control" label="排序">
+						<input id="ordernum" class="mini-textbox"
+							bind="dataBean.ordernum"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否启用">
+						<input id="isenable" class="mini-checkbox"
+							bind="isenable"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpmodeludfaddaction', '', function() {
+			var type = mini.get("type").getValue();
+			if(type==1){
+				$('#jar-row').hide();
+				$('#jarclass-row').hide();
+				mini.get("hivedsid").setValue('');
+			}
+		});
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功') != -1) {
+				epoint.alertAndClose(data.msg, '', '', 'success');
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+		
+		function typeChanged(e){
+			if(e.value == 1){
+				$('#jar-row').hide();
+				$('#jarclass-row').hide();
+				mini.get("hivedsid").setValue('');
+				mini.get("jarguid").setValue('');
+				mini.get("jarclasspath").setValue('');
+			}else{
+				$('#jar-row').show();
+				$('#jarclass-row').show();
+			}
+		}
+	</script>
+</body>
+</html>

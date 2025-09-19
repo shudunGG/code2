@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>交换节点信息表修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.id_connection_row .form-control {
+	width: 70%;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" iconCls="icon-addcircle" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button mini-btn-danger" iconCls="icon-minuscircle" onclick="epoint.closeDialog(0)">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节点名称" starred="true" starred="true">
+						<input id="nodename" class="mini-textbox" bind="dataBean.nodename"
+							required="true" requiredErrorText="节点名称不能为空!"
+							vtype="maxLength:25" maxLengthErrorText="不能超过25字" />
+					</div>
+				</div>
+				<div role="row" class="xxl">
+					<div role="control" label="调度应用名" starred="true">
+						<input id="appname" class="mini-textbox" bind="dataBean.appname"
+							required="true" requiredErrorText="调度应用名不能为空" />
+						<input id="oldAppName" class="mini-hidden" bind="oldAppName" />
+					</div>
+				</div>
+				<div role="row" class="xxl">
+					<div role="control" style="color: red">
+						调度应用名：与所配置节点application.properties中xxl.job.executor.appname配置相同</div>
+				</div>
+				<div role="row">
+					<div role="control" label="节点类型" starred="true">
+						<input class="mini-combobox" action="dxpnodeaddaction.getNodeTypeList()"
+							id="nodetype" multiSelect="false" bind="dataBean.nodetype"
+							required="true" textField="text" valueField="id"
+							requiredErrorText="节点类型不能为空" />
+					</div>
+					<div role="control">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="描述" >
+						<textarea class="mini-textarea" bind="dataBean.description" 
+							id="description" vtype="maxLength:500"
+							maxLengthErrorText="不能超过500字" style="height:150px"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<!-- <script src="./js/nodecommon.js"></script> -->
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpnodeeditaction', '', function(data) {
+			if(data.nodeType==0){
+				//管理节点，除appName外，不能编辑
+				mini.get('nodename').disable();
+				mini.get('nodetype').disable();
+				mini.get('description').disable();
+			}
+			if(data.schedulerType=='quartz'){
+				//quartz调度的情况下，不需要配置appName
+				$('.xxl').hide();
+			}
+		});
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功')!=-1) {
+				epoint.alertAndClose(data.msg + '请设置节点服务！','','','success');
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+
+		// 是否为空字符串，全空格也是空字符串   
+		function isBlank(str) {
+			if (str == null || typeof str == "undefined" || str == ""
+					|| trim(str) == "") {
+				return true;
+			}
+			return false;
+		};
+
+		//去掉字符串头尾空格   
+		function trim(str) {
+			if (str == null || typeof str == "undefined") {
+				return "";
+			}
+			return str.replace(/(^\s*)|(\s*$)/g, "");
+		};
+	</script>
+</body>
+</html>

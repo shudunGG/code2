@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>基本信息</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="save" onclick="saveModify">确认保存 </a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">你知道吗？</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<em>你知道吗？<br /></em>浏览活动不是流程中一个真正的活动，而是代表了一组浏览流程实例的设置。你可以象设置人工活动那样设置用什么页面显示流程信息，查看哪些材料。一个过程版本可以设置多个浏览活动，已满足不同的需求，通过识别标记区别。
+		</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="活动名称" starred="true">
+						<input id="activityName" bind="workflowActivity.activityName"
+							class="mini-textbox" required="true" requiredErrorText="活动名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input id="note" bind="workflowActivity.note" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动标识">
+						<input id="activityDispName" bind="workflowActivity.activityDispName" class="mini-textbox" />
+						<span class="text-danger">(用来唯一定位到该活动,一旦设定不允许修改,与活动对象的activityDispName关联)</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitybrowserbaseinfoaction');
+
+		// 关闭操作的回调
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if(data.flag != null && (data.flag == "1")){
+					if (!data.edit) {
+						parent.updateTab();
+					}
+					var textValue = mini.get('activityName').getValue();
+					var param = {
+						Added : !data.edit,
+						Edit : data.edit,
+						ID : parent.Util.getUrlParams('MaxID'),
+						NodeType : 'Browser',
+						Text : textValue
+					};
+					parent.setDialogValue(param);
+				}
+			}
+		}
+
+		// 保存操作的回调
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('saveActivity', 'fui-form', callback);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

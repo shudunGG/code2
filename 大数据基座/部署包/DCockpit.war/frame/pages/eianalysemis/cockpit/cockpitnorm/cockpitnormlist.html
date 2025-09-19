@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标定义表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style>
+.content {
+	position: absolute;
+	z-index: 19999;
+}
+
+.dropdown li a {
+	cursor: pointer;
+	display: block;
+	height: 20px;
+	line-height: 20px;
+	color: #3d3b4f !important;
+	background: #ffffff !important;
+	padding-left: 5px;
+}
+
+.dropdown {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 120px;
+	height: 25px;
+	z-index: 19999;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="指标分类">
+			<div class="btn-group r">
+				<a class="action-icon icon-gear" title="指标分类管理"
+					style="margin-right: 10px;" onclick="openType()"></a>
+			</div>
+			<!-- <a class="action-icon icon-gear" title="编辑分类"
+				onclick="editcategory()" style="float: right; margin-top: 8px"></a> -->
+		</div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getNormDomainTreeModel"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+
+		<div class="fui-toolbar">
+			<div id="operate" class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增指标</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="deleteData">删除选定 </a> <a id="btnStop" class="mini-button"
+					iconCls="icon-pause" onclick="stopNorm">批量停用 </a> <a id="btnStop"
+					class="mini-button" iconCls="icon-start" onclick="startNorm">批量启用</a>
+			</div>
+			<div id="operate2" class="btn-group mr10">
+				<a class="mini-button mini-btn-primary" id="querydownload"
+					onclick="downloadImportModel()" iconCls="icon-download">导入模版下载</a>
+				<a class="mini-button" iconCls="icon-download"
+					onclick="exportModel()">导出指标</a>
+			</div>
+			<div id="operate3" class="btn-group mr10">
+				<a id="updateHistory" class="mini-button hidden"
+					onclick="updateHistory">更新历史数据</a>
+			</div>
+
+			<div id="upload" class="btn-group mr10">
+				<div id="uploader" class="mini-webuploader" pickerText="指标导入"
+					action="cockpitnormlistaction.getDataImportModel9"
+					limitType="xls,xlsx" dataImport="true"
+					onfilesuccess="uploadSuccess" auto="true" duplicate="true"
+					showDefaultUI="false" style="margin-left: 1px;"></div>
+			</div>
+			<div id="plate" class="btn-group mr10" style="display: none;">
+				<a class="mini-button" iconCls="icon-addcircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要关联的记录!');} else {epoint.confirm('确认要关联吗?','',relate);}">关联选定
+				</a>
+			</div>
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-refresh"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要执行的记录!');} else {epoint.confirm('确认要执行吗?','',executeJob);}">立即执行
+				</a>
+			</div>
+		</div>
+
+		<!-- 新增搜索区域 -->
+		<!-- 条件区域 -->
+		<div class="fui-condition" opened="false"
+			primaryControl="search_NormName">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="指标名称">
+							<input id="search_NormName" class="mini-textbox"
+								bind="dataBean.normname" />
+						</div>
+						<div role="control" label="指标类型">
+							<input id="search_NormType" class="mini-combobox" valueField="id"
+								textField="text" action="getNormtypeList"
+								bind="dataBean.normtype" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="是否预警">
+							<input id="search_IsNeedWarning" class="mini-combobox"
+								valueField="id" textField="text"
+								data="[{id:'1',text:'是'},{id:'0',text:'否'}]"
+								bind="dataBean.isneedwarning" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+						<div role="control" label="是否启用">
+							<input id="search_Status" class="mini-combobox" valueField="id"
+								textField="text" data="[{id:'1',text:'启用'},{id:'0',text:'停用'}]"
+								bind="dataBean.status" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="normDomain"
+					bind="dataBean.normDomain" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="20"></div>
+					<div type="indexcolumn" width="30" headerAlign="center">序</div>
+					<div field="normname" headerAlign="center" width="200"
+						renderer="onNameRenderer">指标名称</div>
+					<div field="normdomain" headerAlign="center" align="center"
+						width="80">指标分类</div>
+					<div field="configtypeText" headerAlign="center" align="center"
+						width="60">配置类型</div>
+					<div field="normtypeText" headerAlign="center" align="center"
+						width="60">指标类型</div>
+					<div field="statusText" headerAlign="center" align="center"
+						width="40">状态</div>
+					<div field="isneedwarningText" headerAlign="center" align="center"
+						width="60">是否预警</div>
+					<div field="isopen" headerAlign="center" align="center" width="60"
+						renderer="changeOpen">是否公开</div>
+					<div field="lastupdatetime" name="lastupdatetime"
+						headerAlign="center" align="center"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+						dateFormat="yyyy-MM-dd HH:mm:ss" width="120">上次更新时间</div>
+					<div field="ordernum" headerAlign="center" align="center"
+						width="60">排序号</div>
+					<!-- 隐藏列 -->
+					<div field="status" visible="false"></div>
+					<div field="IsSubscribe" visible="false"></div>
+					<div field="IsCollect" visible="false"></div>
+					<div field="IsLike" visible="false"></div>
+					<div field="normtype" visible="false"></div>
+					<div width="100" align="center" headerAlign="center"
+						renderer="onActionRenderer">操作</div>
+					<!-- 操作列 -->
+					<!-- <div name="operate" type="actioncolumn" headerAlign="center"
+						align="center">
+						<span type="action" icon="icon-edit" onclick="openEdit">修改</span>
+						<span type="action" icon="icon-gear" onclick="openTaskTiming">配置指标任务</span>
+						<span type="action" icon="icon-warn" onclick="openWarning"
+							renderer="hideSub">配置预警规则</span> <span type="action"
+							icon="icon-search" onclick="openResult" renderer="hideResult">指标结果</span>
+						<span type="action" icon="icon-copy" onclick="openHistory">历史版本对比</span>
+					</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 版块指标关联
+		var catecode = Util.getUrlParams("catecode");
+
+		var grid = mini.get('datagrid');
+
+		// 初始化页面
+		epoint.initPage('cockpitnormlistaction', null, function(data) {
+			// 版块指标关联
+			if (catecode) {
+				grid.hideColumn('operate');
+				$('#operate').css("display", "none");
+				$('#operate1').css("display", "none");
+				$('#operate2').css("display", "none");
+				$('#operate3').css("display", "none");
+				//$('#upload').css("display", "none");
+				$('#plate').css("display", "block");
+			}
+			if (data.isShowModelSyncButton == 1) {
+				$('#updateHistory').removeClass('hidden');
+			}
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var normDomain = mini.get("normDomain").getValue();
+			if (!normDomain) {
+				epoint.alert("未选择指标分类！");
+				return;
+			}
+			if (normDomain == "f9root") {
+				epoint.alert("未选择指标分类！");
+				return;
+			}
+			epoint.openDialog('新增指标',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormadd?normDomain="
+							+ normDomain, searchData, {
+						'width' : 1280,
+						'height' : 800
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(rowguid) {
+			epoint.openDialog('修改指标',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormadd?guid="
+							+ rowguid, searchData, {
+						'width' : 1280,
+						'height' : 800
+					});
+		}
+
+		// 打开指标任务配置
+		function openTaskTiming(e) {
+			if (e.normtype == '5') {
+				epoint.alert("kylin指标不能配置指标任务！", '', '', 'info');
+				return;
+			}
+			epoint.openDialog('配置指标任务',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormjobedit?guid="
+							+ e, searchData, {
+						'width' : 1000,
+						'height' : 500
+					});
+		}
+
+		// 打开预警规则
+		function openWarning(rowguid, normtype) {
+			epoint
+					.openDialog(
+							'配置预警规则',
+							"frame/pages/eianalysemis/cockpit/cockpitwarningrule/cockpitwarningrulelist?guid="
+									+ rowguid + "&normtype=" + normtype,
+							searchData, {
+								'width' : 1440,
+								'height' : 960
+							});
+		}
+
+		// 打开结果
+		function openResult(e) {
+			if (e.normtype == '5') {
+				epoint.alert("kylin指标不能查看指标结果！", '', '', 'info');
+				return;
+			}
+			epoint.openDialog('指标结果',
+					"frame/pages/eianalysemis/cockpit/cockpitjoblog/cockpitnormjobloglist?guid="
+							+ e, null, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 版块指标关联
+		function relate() {
+			epoint.execute("relate", '', closeCallback);
+		}
+
+		// 批量执行
+		function executeJob() {
+			epoint.execute("executeJobs", '', callback);
+		}
+
+		// 批量停用指标
+		function stopSelect() {
+			epoint.execute("stopSelect", '', callback);
+		}
+
+		// 批量启用指标
+		function startSelect() {
+			epoint.execute("startSelect", '', callback);
+		}
+
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', '', '', 'info');
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function deleteData() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+
+		function stopNorm() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要停用的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要停用吗?', '', stopSelect);
+			}
+		}
+
+		function startNorm() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要启用的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要启用吗?', '', startSelect);
+			}
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('normDomain').setValue(id == 'root' ? "" : id);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		// 弹出明细窗口
+		function openDetail(guid) {
+			epoint.openDialog('详细信息',
+					"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormdetail?guid="
+							+ guid, searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function hideSub(e) {
+			if (e.record.normtype === '4' || e.record.status === '0') {
+				e.icon.visible = false;
+			}
+		}
+
+		function hideResult(e) {
+			if (e.record.status === '0') {
+				e.icon.visible = false;
+			}
+		}
+
+		function openType() {
+			epoint
+					.openDialog(
+							'指标分类管理',
+							"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormdomain",
+							updateTableTree, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		function updateTableTree() {
+			epoint.refresh([ 'tree' ]);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		//更新历史数据
+		function updateHistory() {
+			var DiyMessageBox = mini.MessageBox;
+			DiyMessageBox.buttonText.ok = "更新并同步";
+			DiyMessageBox.buttonText.cancel = "更新并停止";
+			DiyMessageBox
+					.show({
+						title : "请选择更新方式",
+						iconCls : "mini-messagebox-info",
+						message : "<em>更新并同步</em>更新历史数据，并同步状态<br /><em>更新并停止</em>更新历史数据，并停止所有任务<br />点击右上角×可以取消更新",
+						buttons : [ "ok", "cancel" ],
+						callback : function(action) {
+							if (action === "ok") {
+								updateHistoryData("1");
+								DiyMessageBox.buttonText.ok = "确定";
+								DiyMessageBox.buttonText.cancel = "取消";
+							} else if (action === "cancel") {
+								updateHistoryData("0");
+								DiyMessageBox.buttonText.ok = "确定";
+								DiyMessageBox.buttonText.cancel = "取消";
+							} else {
+								DiyMessageBox.buttonText.ok = "确定";
+								DiyMessageBox.buttonText.cancel = "取消";
+							}
+						}
+					});
+		}
+
+		function updateHistoryData(status) {
+			epoint.execute("updateHistoryData", null, [ status ],
+					function(data) {
+						if (data.msg) {
+							epoint.alert(data.msg);
+						}
+					});
+		}
+
+		//导入模板下载
+		function downloadImportModel() {
+			window.location.href = _rootPath
+					+ "/download/normImportTemplate.xlsx"
+		}
+		//导出指标
+		function exportModel() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				var data = {
+					allnormguid : ids.join(',')
+				};
+				var downloadurl = "cockpitnormlistaction.action?cmd=exportNormExcel";
+				var form = document.getElementById("download_form");
+				DownLoadFile({
+					url : downloadurl,
+					data : data
+				});
+
+				searchData();
+			} else {
+				epoint.alert("请选择要导出的指标!", null, null, 'warning');
+			}
+		}
+
+		var DownLoadFile = function(options) {
+			var config = $.extend(true, {
+				method : 'post'
+			}, options);
+			var $iframe = $('<iframe id="down-file-iframe" />');
+			var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+			$form.attr('action', config.url);
+			for ( var key in config.data) {
+				$form
+						.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+			}
+			$iframe.append($form);
+			$(document.body).append($form);
+			$form[0].submit();
+			$form.remove();
+		}
+
+		function uploadSuccess(data) {
+			if (data.data.extraDatas.message) {
+				epoint.alert(data.data.extraDatas.message);
+			} else {
+				epoint.alert(data.data.extraDatas.msg);
+			}
+			epoint.refresh();
+		}
+
+		function editcategory() {
+			epoint.execute('getCodeIDByName', null, null, function(ret) {
+				if (ret.codeid) {
+					epoint.openDialog('指标分类',
+							"framemanager/metadata/code/codeitemslist?codeID="
+									+ ret.codeid, searchData, {
+								'width' : 1000,
+								'height' : 500
+							});
+				} else {
+					epoint.alert("请配置代码项名字为:指标分类");
+				}
+			});
+		}
+		// 是否公开
+		var changeOpen = function(e) {
+			if (e.row.isopen === 'true') {
+				return "<img src='../../datasource/images/switch_true.png' title='点击不公开' style='cursor:pointer;' onclick='changeStatus(\""
+						+ e.row.rowguid + "\",\"" + e.row.isopen + "\");' />";
+			} else {
+				return "<img src='../../datasource/images/switch_false.png' title='点击公开' style='cursor:pointer;' onclick='changeStatus(\""
+						+ e.row.rowguid + "\",\"" + e.row.isopen + "\");' />";
+			}
+		};
+
+		function changeStatus(id, isopen) {
+			epoint.confirm('确认修改公开状态？', '确认', function() {
+				epoint.execute("changeStatus", "", [ id, isopen ], callback);
+			});
+		}
+
+		function openHistory(e) {
+			epoint.openDialog('历史版本对比',
+					"./cockpitnormversioncompare?guid=" + e, searchData, {
+						'width' : 1280,
+						'height' : 800
+					});
+		}
+
+		var onActionRenderer = function(e) {
+			return "<a id='moreOperation' class='action-icon icon-omit' style='cursor:pointer' role='fire' rowguid='" + e.row.rowguid + "' normtype='" + e.row.normtype + "' status='"+e.row.status+"' ></a>";
+		};
+
+		var isInMenu = false;
+		mini
+				.get('datagrid')
+				.on(
+						"update",
+						function(e) {
+							$("a[role='fire']")
+									.each(
+											function(i) {
+												var $eventNode = $(this)
+														.parent();
+
+												var rowguid = $(this).attr(
+														"rowguid");
+												var normtype = $(this).attr(
+														"normtype");
+												var status = $(this).attr(
+														"status");
+												console.log(status)
+												var buttonHtml = generateButtonHtml(
+														rowguid, normtype,
+														status);
+												var dropDownHtml = " <div id='dropdownwrapper'  class='content' id='contentWrapper'>"
+												dropDownHtml += "<ul class='dropdown'>";
+												dropDownHtml += "<li>";
+												dropDownHtml += buttonHtml;
+												dropDownHtml += "</li>"
+												dropDownHtml += "</ul></div>";
+												$eventNode
+														.on(
+																"click",
+																function(e) {
+																	var $cell = $eventNode
+																			.parent();
+																	$(
+																			"#dropdownwrapper")
+																			.remove();
+																	$(
+																			dropDownHtml)
+																			.appendTo(
+																					"body");
+																	$(
+																			"#dropdownwrapper")
+																			.show();
+																	var len = dropDownHtml
+																			.split('<li').length;
+																	$(
+																			"#dropdownwrapper")
+																			.css(
+																					"left",
+																					$cell
+																							.offset().left);
+																	if ($cell
+																			.offset().top
+																			+ len
+																			* 20 > $(
+																			"#datagrid")
+																			.height()) {
+																		$(
+																				"#dropdownwrapper")
+																				.css(
+																						"top",
+																						$cell
+																								.offset().top
+																								- len
+																								* 20
+																								+ $cell
+																										.height());
+																	} else {
+																		$(
+																				"#dropdownwrapper")
+																				.css(
+																						"top",
+																						$cell
+																								.offset().top
+																								+ $cell
+																										.height());
+																	}
+
+																	isInMenu = true;
+																	timedCheck();
+																});
+												$eventNode.on("mouseenter",
+														function(e) {
+															isInMenu = true;
+														})
+												$eventNode.on("mouseleave",
+														function(e) {
+															isInMenu = false;
+														})
+											});
+						});
+
+		function generateButtonHtml(rowguid, normtype, status) {
+			var buttonRowHtml = "";
+			buttonRowHtml += "<li><a class='action-icon icon-edit' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openEdit('"
+					+ rowguid + "')\">修改</a></li>";
+			buttonRowHtml += "<li><a class='action-icon icon-gear' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openTaskTiming('"
+					+ rowguid + "','" + normtype + "')\">配置指标任务</a></li>";
+			if (normtype === '4' || status === '0') {
+				buttonRowHtml += "";
+			} else {
+				buttonRowHtml += "<li><a class='action-icon icon-start' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openWarning('"
+						+ rowguid + "')\">配置预警规则</a></li>";
+			}
+			if (status === '0') {
+				buttonRowHtml += "";
+			} else {
+				buttonRowHtml += "<li><a class='action-icon icon-search' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openResult('"
+						+ rowguid + "','" + normtype + "')\">指标结果</a></li>";
+			}
+			buttonRowHtml += "<li><a class='action-icon icon-doc' style='cursor:pointer;font-size: .14rem;height: 20px' onclick=\"openHistory('"
+					+ rowguid + "')\">历史版本对比</a></li>";
+			return buttonRowHtml;
+		}
+
+		$('body').on("mouseenter", "#dropdownwrapper", function(e) {
+			isInMenu = true;
+		})
+
+		$('body').on("mouseleave", "#dropdownwrapper", function(e) {
+			isInMenu = false;
+		})
+
+		function timedCheck() {
+			if (!isInMenu) {
+				clearTimeout(t);
+				$("#dropdownwrapper").hide();
+				$("#dropdownwrapper").remove();
+			} else {
+				t = setTimeout("timedCheck()", 1000)
+			}
+		}
+	</script>
+</body>
+</html>

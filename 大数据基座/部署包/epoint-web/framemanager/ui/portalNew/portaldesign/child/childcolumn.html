@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>子标签设置</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    <style>
+        .content {
+            padding: 15px;
+        }
+
+        .mr-5 {
+            margin-right: 5px;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .lh-mid {
+            line-height: 24px;
+            margin-top: 5px;
+        }
+
+        .scroll {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .footer {
+            height: 50px;
+            line-height: 50px;
+            box-sizing: border-box;
+            padding: 12px 15px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .ml-30 {
+            margin-left: 30px;
+        }
+        .mt-15 {
+        	margin-top: 15px;
+        }
+
+    </style>
+</head>
+
+<body class="portal-child-page">
+    <div class="content">
+        <div class="clearfix lh-mid">
+            <div>标题</div>
+            <div>
+                <input id="title" name="title" class="mini-textbox w-full" />
+            </div>
+        </div>
+        <div class="clearfix lh-mid">
+            <div>数据来源</div>
+            <div>
+                <input id="column" name="column" data="" textField="name" emptyText="选择数据来源" valueField="id" value=""
+                    class="mini-combobox w-full" />
+                <input id="url" emptyText="输入链接地址" name="url" class="mini-textbox w-full" visible="false" />
+            </div>
+        </div>
+        <div class="clearfix lh-mid">
+            <div id="diy" name="diy" class="mini-checkbox" readOnly="false" text="自定义数据来源" onvaluechanged="onDiyChange">
+            </div>
+        </div>
+        <!-- <div class="clearfix lh-mid">
+            <div id="num" name="num" class="mini-checkbox" readOnly="false" text="显示信息数量"></div>
+        </div> -->
+        <div class="clearfix lh-mid mt-15">
+            <div class="l">功能</div>
+            <div class="l ml-30">
+                <div id="num" name="num" class="mini-checkbox" readOnly="false" text="消息数量"></div>
+                <div id="showRefreshBtn" name="showRefreshBtn" class="mini-checkbox" readOnly="false" text="刷新"></div>
+                <div id="showMoreBtn" name="showMoreBtn" class="mini-checkbox" readOnly="false" text="更多"
+                    onvaluechanged="moreChange"></div>
+                <div id="showAddBtn" name="showAddBtn" class="mini-checkbox" readOnly="false" text="新增"
+                    onvaluechanged="addChange"></div>
+            </div>
+        </div>
+        <div class="clearfix lh-mid hidden" id="attr-more">
+            <div class="l">更多</div>
+            <div class="l ml-30">
+                <input id="moreUrl" style="width: 200px" name="moreUrl" class="mini-textbox" />
+            </div>
+        </div>
+        <div class="clearfix lh-mid hidden" id="attr-add">
+            <div class="l">新增</div>
+            <div class="l ml-30">
+                <input id="addUrl" style="width: 200px" name="addUrl" class="mini-textbox" />
+            </div>
+        </div>
+    </div>
+
+    <div class="footer text-right clearfix">
+        <a class="mini-button r mr-5 portal-confirm" state="primary" onclick="save()">保存</a>
+
+        <a class="mini-button r mr-5 portal-cancel" onclick="cancel()">取消</a>
+    </div>
+
+    <script src="../../../../../rest/resource/jsboot"></script>
+
+    <script>
+        var portalConfig = {
+            getSubColumns: 'rest/portaldesignaction/getSubColumns?isCommondto=true' // 获取数据来源
+        };
+    </script>
+    <!--     <script src="./_test/mock_data.childcolumn.js"></script> -->
+    <script>
+        (function (win, $) {
+            var $column = mini.get('column'),
+                $url = mini.get('url'),
+                $name = mini.get('title'),
+                $diy = mini.get('diy'),
+                $num = mini.get('num'),
+                $showRefreshBtn = mini.get('showRefreshBtn'),
+                $showMoreBtn = mini.get('showMoreBtn'),
+                $showAddBtn = mini.get('showAddBtn'),
+                $moreUrl = mini.get('moreUrl'),
+                $addUrl = mini.get('addUrl'),
+                $attrAdd = $('#attr-add'),
+                $attrMore = $('#attr-more');
+
+            win.pageLoad = function (data) {
+                if (data) {
+                    $name.setValue(data.name);
+                    $diy.setValue(data.isDiy);
+                    if (data.isDiy) {
+                        $url.setValue(data.url);
+                        $url.setVisible(true);
+                        $column.setVisible(false);
+                    } else {
+                        $column.setValue(data.id);
+                        $url.setVisible(false);
+                        $column.setVisible(true);
+                    }
+                    $num.setValue(data.showNum);
+                    $showRefreshBtn.setValue(data.showRefreshBtn);
+               	 	$showMoreBtn.setValue(data.showMoreBtn);
+                	$showAddBtn.setValue(data.showAddBtn);
+                	$moreUrl.setValue(data.moreUrl);
+                	$addUrl.setValue(data.addUrl);
+                	if(data.showMoreBtn){
+                		$attrMore.removeClass('hidden');
+                	}else{
+                		$attrMore.addClass('hidden');
+                	}
+                	if(data.showAddBtn){
+                		$attrAdd.removeClass('hidden');
+                	}else{
+                		$attrAdd.addClass('hidden');
+                	}
+                    
+                }
+            }
+            $name.setValue(Util.getUrlParams('title'));
+
+            // 增加
+            win.save = function () {
+
+                var isDiy = $diy.checked;
+
+                if (!$name.value) {
+                    epoint.showTips('标题不能为空', {
+        				state : "warning"
+        			});
+                    return;
+                }
+                
+                if(!isDiy){
+                	 var selectColumn = $column.getSelected();
+                     var url = '',
+                         id = '',
+                         name = '';
+
+                     if (selectColumn && selectColumn.id) {
+                         url = selectColumn.url;
+                         id = selectColumn.id;
+                         name = selectColumn.name;
+                     }
+                } else {
+                    url = $url.value;
+                }
+
+                if (!url) {
+                	epoint.showTips('数据来源不能为空', {
+        				state : "warning"
+        			});
+                    return;
+                }
+
+                epoint.closeDialog({
+                    type: 'ok',
+                    options: {
+                        name: $name.value,
+                        id: id,
+                        url: url, // 数据来源地址
+                        isDiy: isDiy,
+                        showNum: $num.checked,
+                        showRefreshBtn: $showRefreshBtn.checked, // 是否显示刷新按钮
+                        showAddBtn: $showAddBtn.checked, // 是否显示新增
+                        showMoreBtn: $showMoreBtn.checked, // 显示显示更多
+                        moreUrl: $moreUrl.getValue(), // 更多的地址
+                        addUrl: $addUrl.getValue() // 新增的地址
+                    }
+                });
+            }
+
+            win.cancel = function () {
+                epoint.closeDialog({
+                    type: 'close'
+                });
+            }
+
+            // 功能选择-新增
+            win.addChange = function (e) {
+                var value = e.value;
+                if (value == 'true') {
+                    $attrAdd.removeClass('hidden');
+                } else {
+                    // mini.get('addUrl').setValue('');
+                    $attrAdd.addClass('hidden');
+                }
+            };
+
+            // 功能选择-更多
+            win.moreChange = function (e) {
+                var value = e.value;
+                if (value == 'true') {
+                    $attrMore.removeClass('hidden');
+                } else {
+                    // mini.get('moreUrl').setValue('');
+                    $attrMore.addClass('hidden');
+                }
+            };
+
+            // 自定义数据来源
+            win.onDiyChange = function (e) {
+                if (this.getChecked()) {
+                    $column.setVisible(false);
+                    $url.setVisible(true);
+                } else {
+                    $column.setVisible(true);
+                    $url.setVisible(false);
+                }
+            }
+
+            /* -------- 加载数据来源 ---------- */
+
+            function getColumns() {
+                Util.ajax({
+                    url: portalConfig.getSubColumns,
+                    data: {
+                        parentColumnguid: Util.getUrlParams('parentColumnguid')
+                    }
+                }).done(function (data) {
+                    $column.setData(data.columns);
+                });
+            }
+
+            getColumns();
+            
+            /* -------- 加载数据来源 end ---------- */
+        })(window, jQuery);
+    </script>
+</body>
+
+</html>

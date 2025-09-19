@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>过程管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style>
+.action-icon2 {
+	display: inline-block;
+	font-family: ActionIcon !important;
+	font-size: 16px;
+	font-style: normal;
+	line-height: 1;
+	color: #888;
+	-webkit-font-smoothing: antialiased
+}
+</style>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="租户列表"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%"
+				action="getTreeData"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar">
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" bind="searchString"
+					emptyText="请输入过程名称搜索" onenter="searchData" /> <input
+					class="mini-hidden" bind="leftNumber" id="leftNumber" /> <a
+					class="mini-button ml8" state="primary" iconCls="icon-search"
+					onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="processGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDefaultModel" showPager="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40">序</div>
+					<div field="processName" width="100%">名称</div>
+					<div field="processGuid" width="300" renderer="copy_btn">过程Guid</div>
+
+					<div width="100" renderer="version">版本</div>
+					<div field="status" visible="false"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("alllesseeprocessframelistaction");
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('leftNumber').setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.alert(msg, '', searchKeepPage(), 'info');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function version(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"OpenProcessVersion");
+		}
+
+		function OpenProcessVersion(data) {
+			epoint.openTopDialog('流程版本管理',
+					'framemanager/workflow/manage/lessee/alllesseeprocessversionlist?processGuid='
+							+ data + '&baseOuGuid='
+							+ mini.get('leftNumber').getValue());
+		}
+
+		function changeImageNoEdit(e) {
+			if (e.row.status == 10) {
+				return epoint.renderCell(e, "action-icon icon-start");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause");
+			}
+		}
+
+		function checkRefreshTree(result) {
+			if (result) {
+				updateTableTree();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 表格的搜索
+		function updateTableTree() {
+			epoint.refresh([ 'tree', 'fui-form' ]);
+		}
+		//]]>
+	</script>
+</body>
+</html>

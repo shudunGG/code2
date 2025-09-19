@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Rights management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<div class="fui-left">
+			<div role="head" title="The new module"></div>
+
+			<div role="body">
+				<ul id="tree" name="tree" class="mini-tree" style="width: 100%;height:100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"  action="getTreeModel"
+				resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right" id="fui-right">
+			<!-- toolbar area -->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" iconCls="icon-save" onclick="saveBtn()">Save Settings</a>
+				</div>
+			</div>
+
+			<!-- The form layout -->
+			<div class="fui-condition" opened="true">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="rolecolumntable">
+							<input id="roleType" autoLoad="false" bind="roleTypeGuid"
+							action="getFrameRoleType" textField="text" onvaluechanged="roleTypeChange"
+							valueField="id" class="mini-combobox mr10" />
+						</div>
+						<div role="control" label="Module display mode">
+							<input id="moduleDisplay" autoLoad="false" bind="moduledisplay"
+							textField="text" onvaluechanged="moduleDisplayChange"
+							action="getFrameModuleDisplay" valueField="id" class="mini-combobox mr10" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="role">
+							<div id="roleGroup" class="mini-checkboxlist" repeatItems="5" repeatLayout="table"
+							textField="text" valueField="id" bind="selectRoleGuids" onvaluechanged="roleGroupChange"
+							action="checkgroupModal" ></div>
+						</div>
+					</div>
+				</div>
+				<input bind="leftModuleCode" id="moduleCode" class="mini-hidden" />
+			</div>
+			</div>
+			<div id="fuiContent" class="fui-content">
+				<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="id" action="getDataGridData"
+				style="width: 100%; height: 100%;" showFooter="false" allowSortColumn="false"></div>
+			</div>
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			epoint.initPage("submodulerightmanagerlistaction", '', callbackinit);
+
+			// tableLattice object
+			var grid = mini.get("datagrid");
+			//The treejsobject
+			var tree = mini.get("tree");
+
+			// Initialize the back off, dynamically generatedcolumn
+			function callbackinit(data) {
+				adjustContentHeight();//hiddenconditionCome out To recount a height
+				if (data && data.columns) {
+					drawDynamicColumn(data);
+				}
+			}
+
+			// intableData loading after opentableGrid editor state
+			grid.on("load", function(e) {
+				var rows = e.sender.findRows();
+				for (var i = 0; i < rows.length; i++) {
+					grid.beginEditRow(rows[i]);
+				}
+			});
+
+			// Click on the left side of theThe treeThe refresh on the right sidetable"
+			tree.on("nodeselect", function(e) {
+				var id = e.node.objectcode;
+				//To the leftThe treeClick on the nodeidIn a hidden field
+				mini.get('moduleCode').setValue(id);
+				//The refreshtable"
+				updateTable();
+			});
+
+			// roleCategory change
+			function roleTypeChange() {
+				epoint.execute('roleTypeChange', '', function(data) {
+					drawDynamicColumn(data);
+					updateTable();
+				});
+			}
+
+			// Display mode change
+			function moduleDisplayChange() {
+				updateTable();
+			}
+
+			// chooserolechange
+			function roleGroupChange() {
+				epoint.execute("initDynamicRole", 'roleGroup', function(data) {
+					drawDynamicColumn(data);
+					updateTable();
+				});
+			}
+
+			// Draw the dynamiccolumn
+			function drawDynamicColumn(data) {
+				var tmp = data.columns;
+				var columns = eval('(' + tmp + ')');
+				grid.set(columns);
+			}
+
+			// Draw the advanced Settingscolumn
+			function onAdvancedSetting(e) {
+				return "<a style=\"cursor: pointer\" onclick=\"doSelectRightPage('" + e.record.object.moduleguid + "')\">Set up the</a>";
+			}
+
+			function doSelectRightPage(row) {
+				epoint.openDialog('Authorization of the module', "framemanager/orga/uiset/menu/module/sub/subsettingallowtoall?moduleGuid=" + row, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 680,
+					'height' : 500
+				});
+			}
+
+			// save
+			function saveBtn() {
+				epoint.execute('saveBtn', '', callback);
+			}
+
+			//callback
+			function callback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', function(){
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}, 'info');
+				}
+			}
+
+			function updateTable() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

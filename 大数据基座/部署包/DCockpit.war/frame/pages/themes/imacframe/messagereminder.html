@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>消息提醒</title>
+    <link rel="stylesheet" href="../css/msgreminder.min.css" />
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="main-wrap" id="msg-center-page">
+        <div class="msg-panel-wrap">
+            <!-- 信息列表 -->
+        </div>
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        //<![CDATA[
+        var msgListUrl = epoint.dealRestfulUrl('f8messagesaction');
+        var msgType;
+        var msgItemGuid;
+
+        (function (win, $) {
+            var $page = $('#msg-center-page');
+
+            if (!$page.length)
+                return;
+
+            var $win = $(win),
+                $wrap = $('.msg-panel-wrap', $page);
+
+            var M = Mustache,
+                template =
+                '{{#data}}<div class="msg-panel"><h3 class="msg-panel-title">{{title}}</h3><ul class="msg-items">{{#items}}<li><div class="msg-title">{{{title}}}</div><div class="msg-time">{{{date}}}</div><div class="msg-option">{{{option}}}</div></li>{{/items}}</ul></div>{{/data}}';
+
+            $win.on('resize', function () {
+                var win_h = $win.height();
+
+                $wrap.css('height', win_h - 30 - 1);
+            }).trigger('resize');
+
+            win.getMessage = function () {
+                return Util.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: msgListUrl,
+                    data: {
+                        query: 'get-msgRemind-data'
+                    },
+
+                    error: Util.noop,
+                    complate: Util.noop
+                }).done(function (data) {
+                    var htmlStr = M.render(template, {
+                        data: data
+                    });
+
+                    $wrap.html(htmlStr.replace(/★/g, '"'));
+                });
+            };
+
+        }(this, jQuery));
+
+        function RemindClick(messageType, ItmeGuid) {
+            msgType = messageType;
+            msgItemGuid = ItmeGuid;
+            epoint.confirm('是否确认忽略此条信息', '', confirmRemind);
+        }
+
+        function confirmRemind() {
+            epoint.execute('f8messagesaction.updateNoRemind', '', [msgType,
+                msgItemGuid
+            ], updateNoRemindCallback);
+        }
+
+        function updateNoRemindCallback(arReturn) {
+            if (arReturn == "1") {
+                //重新刷新消息列表
+                getMessage();
+            }
+        }
+
+        //该方法为通用的打开窗口方法，提供了根据不同type来使用不同的打开方式打开窗口的能力
+        function openWindowAuto(url, type, title, width, height) {
+            url = url.replace(/★/g, "\"\"");
+            //弹出一个div框
+            if ("popdiv" == type || "framediv" == type) {
+                if ("待办事宜" == title) {
+                    OpenWaitWindow(url);
+                } else {
+                    epoint.openTopDialog(title, url, '', {
+                        'width': width,
+                        'height': height
+                    });
+                }
+            }
+            //打开一个新的浏览器窗口
+            else if ("newwindow" == type) {
+                if (!url.startsWith('http') && !url.startsWith(Util.getRootPath())) {
+                    url = Util.getRootPath() + url;
+                }
+                window.open(url);
+            }
+        }
+
+        function OpenWaitWindow(url, title) {
+            if (title == undefined || title == "") {
+                title = '待办事宜处理';
+            }
+
+            top.epoint.openDialog(title, url, refreshWait);
+        }
+
+        function OpenWindow_Msg(url, type, title) {
+            //弹出一个div框
+            if ("popdiv" == type) {
+                if ("待办事宜" == title) {
+                    OpenWaitWindow(url);
+                } else {
+                    epoint.openDialog(title, url);
+                }
+            }
+            //在框架中打开一个tab
+            else if ("framediv" == type) {
+                top.TabsNav.addTab({
+                    'url': url,
+                    'name': title,
+                    'id': Math.round(Math.random() * 1000),
+                    'maxIcon': true,
+                    'closeIcon': true
+                });
+            }
+            //打开一个新的浏览器窗口
+            else if ("newwindow" == type) {
+                OpenMaxWindow(url);
+            }
+        }
+
+        function refreshWait() {
+            getMessage();
+        }
+
+        //加载数据
+        window.onload = getMessage;
+        //]]>
+    </script>
+</body>
+
+</html>

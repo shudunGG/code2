@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>code表单</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="参数名称" starred="true">
+						<input id="configname"
+							bind="frameconfigaction.frameConfig.configname"
+							class="mini-textbox" required="true" requiredErrorText="参数名称不能为空" maxLength="100"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="参数分类">
+						<input id="cateGoryGuid" class="mini-combobox"
+							bind="frameconfigaction.categoryguid" valueField="cateGoryGuid"
+							emptyText="" action="frameconfigaction.getCategoryList"
+							autoLoad="false" />
+					</div>
+				</div>
+				<div role="row">
+					<!-- 不需要验证，可为空 -->
+					<div role="control" label="参数值">
+						<input id="configValue"
+							bind="frameconfigaction.frameConfig.configvalue"
+							class="mini-textbox" maxLength="500"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="参数描述">
+						<input id="description"
+							bind="frameconfigaction.frameConfig.description"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row" id="noclickrestjs" style="word-break:keep-all">
+					<div role="control" label="是否接入js">
+						<input id="isrestjsboot" style="width: 30px;"
+							bind="frameconfigaction.frameConfig.isrestjsboot"
+							class="mini-checkbox" /><span style="width: 200px;"><font
+							color=red>(注意：开启关联jsboot时有效)</font></span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序">
+						<input id="orderNumber"
+							bind="frameconfigaction.frameConfig.ordernumber"
+							class="mini-textbox" value="0" vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew" style="display: none;" onclick="saveAndNew">保存并新建</a> 
+		<a class="mini-button" id="addClose" style="display: none;" onclick="saveAndClose">保存并关闭</a> 
+		<a class="mini-button" state="primary" id="save" style="display: none;" onclick="saveModify">保存修改</a>
+		<a class="mini-button" id="cancelBtn" style="display: none;" onclick="epoint.closeDialog('close')">取消</a>
+	</div>
+	
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//初始化请求
+		epoint.initPage('frameconfigaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			if (data.edit) {
+				//隐藏新增按钮
+				document.getElementById("addNew").style.display = "none";
+				document.getElementById("addClose").style.display = "none";
+				document.getElementById("save").style.display = "";
+				document.getElementById("cancelBtn").style.display = "";
+			} else {
+				//隐藏修改按钮
+				document.getElementById("addNew").style.display = "";
+				document.getElementById("addClose").style.display = "";
+				document.getElementById("save").style.display = "none";
+				document.getElementById("cancelBtn").style.display = "none";
+			}
+			
+			// 如果加载有categoryguid传递，新增和修改页面中参数分类是无法选择的
+			if (data.hid=='0') {
+				mini.get('cateGoryGuid').enable();
+			} else {
+				mini.get('cateGoryGuid').disable();
+			}
+
+			var configname = mini.get("configname").value;
+			var flag = "gridAllowUnselect" == configname
+					|| "EnableCustomSort" == configname
+					|| "noUseTabsNav" == configname
+					|| "adjustGridPageSize" == configname
+					|| "alertToTips" == configname
+					|| "fileSizeLimit" == configname
+					|| "fileLimitType" == configname
+					|| "editorModel" == configname
+					|| "uploadPreviewUrl" == configname
+					|| "uploadPreviewText" == configname
+					|| "gridPageSize" == configname
+			if (flag) {
+				$("#noclickrestjs").hide();
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				
+				if (data.success) {
+					epoint.showTips(data.msg,  {state : 'success'});
+					// 清空表单
+					epoint.clear('configname');
+					epoint.clear('configValue');
+					epoint.clear('description');
+					epoint.clear('isrestjsboot');
+					epoint.clear('orderNumber');
+				}else{
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+			}
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('frameconfigaction.addConfig', 'fui-form',
+						newCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+				    epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg, {state : 'danger'});
+				}
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('frameconfigaction.addConfig', 'fui-form',
+						closeCallback);
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('frameconfigaction.saveConfig', 'fui-form',
+						closeCallback);
+			}
+		}
+	</script>
+</body>
+
+</html>

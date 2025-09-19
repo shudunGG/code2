@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>指标定义表详情页面</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="申请理由">
+						<div class="mini-textarea" bind="reason" readOnly="true"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标标识">
+						<div class="mini-outputtext" bind="dataBean.rowguid"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标分类">
+						<div class="mini-outputtext" bind="dataBean.normdomain"></div>
+					</div>
+					<div role="control" label="apicode">
+						<div class="mini-outputtext" bind="dataBean.apicode"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="指标名称">
+						<div class="mini-outputtext" bind="dataBean.normname"></div>
+					</div>
+					<div role="control" label="指标类型" id="normtypetext">
+						<div class="mini-outputtext" bind="dataBean.normtype"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否预警">
+						<div bind="dataBean.isneedwarning" class="mini-outputtext"></div>
+					</div>
+					<div role="control" label="是否启用">
+						<div class="mini-outputtext" bind="dataBean.status"></div>
+					</div>
+				</div>
+				<div role="row" id="zblx">
+					<div role="control" label="配置类型">
+						<div bind="dataBean.configtype" class="mini-outputtext"></div>
+					</div>
+					<div id="groupTypeDiv" role="control" label="聚合方式">
+						<div class="mini-outputtext" bind="dataBean.groupbytype"></div>
+					</div>
+				</div>
+				<div role="row" id="datasource">
+					<div role="control" label="来源库">
+						<input class="mini-outputtext" bind="dataBean.datasourceid" />
+					</div>
+				</div>
+				<div class="commonType">
+					<div role="row">
+						<div role="control" label="数据来源表">
+							<div class="mini-outputtext" bind="dataBean.DataTableNameen"></div>
+						</div>
+						<div role="control" label="来源字段">
+							<div class="mini-outputtext" bind="dataBean.datafieldnameen"></div>
+						</div>
+					</div>
+					<div id="dimDiv">
+						<div role="row">
+							<div role="control" label="维度字段">
+								<div class="mini-outputtext" id="dimfields"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="维表来源表">
+								<div class="mini-outputtext" bind="dataBean.DimTableNameen"></div>
+							</div>
+							<div role="control" label="维度值字段">
+								<div class="mini-outputtext" id="dimvalue"></div>
+							</div>
+							<div role="control" label="维表显示字段">
+								<div class="mini-outputtext" bind="dataBean.dimfieldnameen"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="维度过滤条件">
+								<div style="border: 1px solid #ccc;">
+									<div id="datagrid2" action="getRelatelistModel"
+										class="mini-datagrid" allowResize="true" idField="id"
+										showPager="false">
+										<div property="columns">
+											<div field="DataFieldGuid" displayField="DataFieldNameEN"
+												width="100" align="center" headerAlign="center">
+												数据表字段 <input property="editor" class="mini-combobox"
+													valueField="value" textField="text" style="width: 100%;"
+													required="true" requiredErrorText="数据表字段不能为空"
+													emptyText="请选择...">
+											</div>
+											<div field="DimFilterFieldNameEN"
+												displayField="DimFilterFieldNameEN" width="100"
+												align="center" headerAlign="center">
+												维表过滤字段 <input property="editor" class="mini-combobox"
+													valueField="value" textField="text" style="width: 100%;"
+													emptyText="请选择" allowInput="true">
+											</div>
+											<div field="DimFilterRelateType" width="80" align="center"
+												headerAlign="center">
+												组合方式 <input property="editor" class="mini-outputtext"
+													name="DimFilterType" value="="
+													style="width: 100%; text-align: center;" />
+											</div>
+											<div field="DimFilterValue" width="100" align="center"
+												headerAlign="center">
+												维表过滤值 <input property="editor" class="mini-textbox"
+													valueField="value" textField="text" style="width: 100%;"
+													emptyText="请填写过滤值" allowInput="true">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div role="row" class="filterConfig">
+						<div role="control" label="过滤条件">
+							<div style="border: 1px solid #ccc;">
+								<div id="datagrid1" action="getFilterlistModel"
+									class="mini-datagrid" allowResize="true" idField="id"
+									showPager="false">
+									<div property="columns">
+										<div field="DataFieldGuid" displayField="DataFieldNameEN"
+											width="100" align="center" headerAlign="center">
+											数据表字段 <input property="editor" class="mini-combobox"
+												valueField="value" textField="text" style="width: 100%;"
+												required="true" requiredErrorText="数据表字段不能为空"
+												emptyText="请选择...">
+										</div>
+										<!--ComboBox：本地数据-->
+										<div field="FilterType" width="100" align="center"
+											headerAlign="center">
+											过滤条件 <input property="editor" class="mini-combobox"
+												style="width: 100%;" data="fConditonDatas" required="true"
+												requiredErrorText="过滤条件不能为空" emptyText="请选择..." />
+										</div>
+										<div field="FilterValue" width="120" align="center"
+											headerAlign="center">
+											过滤值 <input property="editor" class="mini-textbox"
+												style="width: 100%;" required="true"
+												requiredErrorText="过滤值不能为空" emptyText="请输入..." />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="row" id="timeDiv">
+						<div role="control" label="时间字段">
+							<div class="mini-outputtext" bind="dataBean.timefieldnameen"
+								id="timefieldguid"></div>
+						</div>
+						<div role="control" label="时间窗口" id="timewindowCon">
+							<div class="mini-outputtext" bind="dataBean.timewindow"
+								id="timewindow"></div>
+						</div>
+					</div>
+					<div role="row" id="timeDiv1">
+						<div role="control" label="统计周期">
+							<div class="mini-outputtext" bind="dataBean.statisticsCycle"
+								id="statisticsCycle"></div>
+						</div>
+						<div role="control" label="是否累加" id="isCumsumCon">
+							<div class="mini-outputtext" bind="dataBean.isCumsum"
+								id="isCumsum"></div>
+						</div>
+					</div>
+					<div role="row" class="resultCountConfig" id="resCountConfig">
+						<div role="control" label="结果数量" id="resCount">
+							<div class="mini-outputtext" bind="dataBean.resultCount"
+								id="resultCount"></div>
+						</div>
+						<div role="control" label="排序方式" id="sortOrderCon">
+							<div class="mini-outputtext" bind="dataBean.sortOrderText"
+								id="sortOrder"></div>
+						</div>
+					</div>
+					<div role="row" id="sortColumn">
+						<div role="control" label="排序字段">
+							<div class="mini-outputtext" bind="dataBean.sortColumn"></div>
+						</div>
+					</div>
+				</div>
+
+				<div role="row" id="generatesql">
+					<div role="control" label="SQL语句">
+						<div class="mini-outputtext" bind="dataBean.generatesql"></div>
+					</div>
+				</div>
+				<div class="api">
+					<div role="row">
+						<div role="control" label="api信息">
+							<div class="mini-outputtext" id="apiinfo"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="api参数">
+							<div class="mini-outputtext" bind="dataBean.apiparams"></div>
+						</div>
+						<div role="control" label="api过滤器">
+							<div class="mini-outputtext" bind="dataBean.apifilter"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="试调用结果">
+							<div class="mini-outputtext" bind="dataBean.apiresult"></div>
+						</div>
+					</div>
+				</div>
+
+				<!-- <div role="row">
+					<div role="control" label="指标服务">
+						<div class="mini-outputtext" bind="dataBean.normboid"></div>
+					</div>
+					<div role="control" label="图表类型">
+						<div class="mini-outputtext" bind="dataBean.normcharttype"></div>
+					</div>
+				</div> -->
+				<div role="row">
+					<div role="control" label="数据责任部门">
+						<input class="mini-outputtext" bind="dataBean.liableou"
+							id="liableOu" />
+					</div>
+					<div role="control" label="数据责任人">
+						<input class="mini-outputtext" bind="dataBean.liableperson"
+							id="liablePer" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="运营人员">
+						<input class="mini-outputtext" bind="dataBean.operationperson"
+							id="operationperson" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row">
+					<!-- <div role="control" label="检索地址">
+						<div class="mini-outputtext" bind="dataBean.normurl"></div>
+					</div> -->
+					<div role="control" label="单位">
+						<div class="mini-outputtext" bind="dataBean.unit"></div>
+					</div>
+					<div role="control" label="排序号">
+						<div class="mini-outputtext" bind="dataBean.ordernum"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<div class="mini-outputtext" bind="dataBean.remark"></div>
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="数据来源系统">
+						<input class="mini-outputtext" bind="dataBean.datasourcesys" />
+					</div>
+					<div role="control" label="指标锚点">
+						<div class="mini-outputtext" bind="dataBean.normanchor"></div>
+					</div>
+				</div> -->
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar-bottom text-center">
+		<div class="btn-group mr10"
+			style="float: none; display: inline-block;">
+			<a class="mini-button mini-btn-primary" id="approve"
+				onclick="approve">同意</a><a class="mini-button mini-btn-danger"
+				id="turnback" onclick="turnback">拒绝</a> <a
+				class="mini-button mini-btn-danger" id="delete" onclick="deleteNormSet">删除</a><a
+				class="mini-button" onclick="epoint.closeDialog">关闭</a>
+
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitnormapplydetailaction', null, function(data) {
+			var type = data.normtype;
+			var configtype = data.configtype;
+			$("#zblx").hide();
+			Util.form.hideField("#groupTypeDiv");
+			$("#datasource").hide();
+			$(".commonType").hide();
+			$("#generatesql").hide();
+			$("#dimDiv").hide();
+			$(".api").hide();
+
+			if ("5" == type) {//kylin没有配置
+				$("#datasource").show();
+				$("#generatesql").show();
+			} else if (configtype == "3") {//api
+				$("#zblx").show();
+				$(".api").show();
+				apiinfo = JSON.parse(data.apiinfo);
+				mini.get("apiinfo").setValue(
+						apiinfo.name + ", url: " + apiinfo.url);
+			} else if (configtype == "2") {//高级
+				$("#zblx").show();
+				$("#datasource").show();
+				$("#generatesql").show();
+			} else {
+				$("#zblx").show();
+				$("#datasource").show();
+				$(".commonType").show();
+				if ("1" == type) {
+					Util.form.showField("#groupTypeDiv");
+					$("#timeDiv").show();
+				} else if ("2" == type) {
+					Util.form.showField("#groupTypeDiv");
+					$("#datasource").show();
+					$("#commonType").show();
+					$("#dimDiv").show();
+					var dimfields = mini.get("datagrid2").getData();
+
+					var dimfieldname = "";
+					for (var i = 0; i < dimfields.length; i++) {
+						dimfieldname += ", " + dimfields[i].DataFieldNameEN;
+					}
+					if (dimfieldname.length > 2) {
+						mini.get("dimfields").setValue(
+								dimfieldname.substring(2));
+					}
+					if (dimfields.length > 0) {
+						mini.get("dimvalue").setValue(
+								dimfields[0].DimFieldNameEN);
+					}
+
+				}
+			}
+
+			var timefieldguid = mini.get("timefieldguid").getValue();
+			if (timefieldguid) {
+				Util.form.showField('#timewindowCon');
+				$('#timeDiv1').show();
+				var statisticsCycle = mini.get("statisticsCycle").getValue();
+				if (statisticsCycle) {
+					Util.form.showField('#isCumsumCon');
+				} else {
+					Util.form.hideField('#isCumsumCon');
+				}
+			} else {
+				$('#timeDiv1').hide();
+				// 默认隐藏时间窗口
+				Util.form.hideField('#timewindowCon');
+				Util.form.hideField('#isCumsumCon');
+			}
+			var resultCount = mini.get('resultCount').getValue();
+			if (resultCount) {
+				Util.form.showField('#sortOrderCon');
+				if (type == "4") {
+					$('#sortColumn').show();
+				} else {
+					$('#sortColumn').hide();
+				}
+			} else {
+				Util.form.hideField('#sortOrderCon');
+				$('#sortColumn').hide();
+			}
+			if (data.status) {
+				if (data.status == '1') {
+					mini.get('approve').hide();
+					mini.get('turnback').hide();
+					mini.get('delete').hide();
+				}
+				if (data.status == '0') {
+					mini.get('delete').hide();
+				}
+				if (data.status == '9') {
+					mini.get('approve').hide();
+					mini.get('turnback').hide();
+				}
+			}
+
+		});
+
+		function turnback() {
+			epoint.confirm('确认要拒绝吗?', '', function(data) {
+				epoint.execute("turnback", '', '', callback);
+			});
+		}
+
+		function approve(e) {
+			epoint.confirm('确认要同意吗?', '', function(data) {
+				epoint.execute("approve", '', '', callback);
+			});
+		}
+		
+		function deleteNormSet(e) {
+			epoint.confirm('确认要删除吗?', '', function(data) {
+				epoint.execute("deleteSet", '', e, callback);
+			});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+	</script>
+</body>
+</html>

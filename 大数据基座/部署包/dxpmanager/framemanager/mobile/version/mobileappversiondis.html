@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>版本发布</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="./appmenu/timeline.css">
+<style>
+.sidebar {
+	position: absolute;
+	width: 220px;
+	height: 100%;
+	overflow: auto;
+}
+
+.side-menu {
+	
+}
+
+.menu-item {
+	font-weight: 600;
+	padding: 14px 20px 14px 25px;
+	line-height: 16px;
+	color: #676a6c;
+	cursor: pointer;
+}
+
+.menu-item:hover {
+	color: #000;
+}
+
+.menu-item.active {
+	border-left: 4px solid #19aa8d;
+	background: #f8f8f9;
+	color: #000;
+}
+
+.menu-icon {
+	margin-right: 6px;
+	vertical-align: top;
+}
+
+.menu-label {
+	
+}
+
+.content {
+	padding: 5px;
+	height: 100%;
+	box-sizing: border-box;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- <div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconPosition="right" onclick="getQrCode()">通用二维码</a>
+		</div>
+	</div> -->
+	<div class="fui-content">
+		<div id="tabs1" activeIndex="0" style="width: 100%; height: 100%;"
+			plain="false" onactivechanged="activeChanged"></div>
+	</div>
+
+	<script type="text/x-tpl" id="platform-item-tpl">
+          <div id="{{platformname}}" name="{{platformname}}" title="{{platformname}}">
+				<a class="mini-button" iconCls="icon-addcircle"
+					onclick="addVersion('{{platformname}}');">新增版本</a> <a
+					class="mini-button" iconPosition="right" iconCls="icon-copy"
+					onclick="getDisUrl('{{platformname}}')">发布地址</a>
+				<hr />
+				<div id="fuiContent{{platformname}}">
+					<div id="content" class="content">
+						<ul id="timeline_{{platformname}}" class="timeline">
+						</ul>
+					</div>
+				</div>
+			</div>
+    </script>
+	<script type="text/x-tpl" id="timeline-item-tpl">
+        <li class="timeline-item" data-guid={{rowguid}}>
+            <div class="timeline-date">
+                <i class="item-type {{type}} {{#enable}}active{{/enable}}"></i>
+                <p class="item-date">{{date}}</p>
+                <p class="item-time">{{time}}</p>
+            </div>
+            <div class="timeline-content">
+                <div class="content-wrapper">
+                    <div class="item-dropdown">
+                        <i class="dropdown-toggle"></i>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown-item" data-action="download">下载版本</li>
+                            <li class="dropdown-item" data-action="modify">修改版本</li>
+                            <li class="dropdown-item" data-action="delete">删除版本</li>
+                            <li class="dropdown-item" data-action="{{#enable}}disable{{/enable}}{{^enable}}enable{{/enable}}">{{#enable}}取消激活{{/enable}}{{^enable}}激活版本{{/enable}}</li>
+                        </ul>
+                    </div>
+                    <p class="item-version">{{version}}</p>
+                    <p class="item-content">{{message}}</p>
+                </div>
+            </div>
+        </li>
+    </script>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		epoint.initPage('mobileappversiondisaction');
+
+		var appGuid = Util.getUrlParams('rowguid');
+
+		function addVersion(platform) {
+			epoint.openDialog('新增版本',
+					"framemanager/mobile/version/mobileappversionadd?appGuid="
+							+ appGuid + "&platform=" + platform,
+					function(data) {
+						if (data != 'close') {
+							mini.showTips({
+								content : data,
+								state : 'success',
+								x : 'center',
+								y : 'center'
+							});
+						}
+
+						getTimeline(platform);
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		function getDisUrl(platform) {
+			epoint.execute('getDisUrl', '@none', [ platform ], function(data) {
+				if (data.releaseUrl) {
+					var dialog = mini.create({
+						type : 'window',
+						title : "发布包下载地址",
+						body : Util.getRightUrl(data.releaseUrl),
+						width : '400px',
+						height : '150px'
+					});
+					dialog.show();
+				}
+			});
+		}
+
+		var platform = "AndroidPhone";
+		function activeChanged(e) {
+			platform = e.name;
+			getTimeline(e.name);
+		}
+
+		var timelineConfig = {
+			getUrl : epoint
+					.dealRestfulUrl('mobileappversiondisaction/getTimeLineData'),
+			onDownloadItem : function(guid) {
+				epoint.execute('getDownloadUrl', '@none', [ guid ], function(
+						data) {
+					if (data.url) {
+						window.open(Util.getRightUrl(data.url));
+					}
+					if (data.msg) {
+						epoint.alert(data.msg);
+					}
+				});
+			},
+			onModifyItem : function(guid) {
+				epoint.openDialog('修改版本',
+						"framemanager/mobile/version/mobileappversionadd?appGuid="
+								+ appGuid + "&platform=" + platform
+								+ "&rowguid=" + guid, function(data) {
+							if (data != 'close') {
+								mini.showTips({
+									content : data,
+									state : 'success',
+									x : 'center',
+									y : 'center'
+								});
+							}
+
+							getTimeline(platform);
+						}, {
+							'width' : 1000,
+							'height' : 550
+						});
+			},
+			onDeleteItem : function(guid) {
+				epoint.execute('deleteVersion', '@none', [ guid ], function(
+						data) {
+					if (data.msg) {
+						epoint.alert(data.msg);
+						// 刷新时间轴
+						getTimeline(platform);
+					}
+				});
+			},
+			onEnableItem : function(guid) {
+				epoint.execute('setEnableVersion', '@none', [ guid, platform,
+						'1' ], function(data) {
+					if (data.success) {
+						epoint.alert(data.msg);
+						// 刷新时间轴
+						getTimeline(platform);
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			},
+			onDisableItem : function(guid) {
+				epoint.execute('setEnableVersion', '@none', [ guid, platform,
+						'0' ], function(data) {
+					if (data.success) {
+						epoint.alert(data.msg);
+						// 刷新时间轴
+						getTimeline(platform);
+					} else {
+						epoint.alert(data.msg);
+					}
+				});
+			}
+		};
+
+		function getQrCode() {
+			epoint.openDialog('通用二维码',
+					"framemanager/mobile/version/qrcodedownload?appGuid="
+							+ appGuid, null, {
+						'width' : 500,
+						'height' : 400
+					});
+		}
+	</script>
+	<script src="./appmenu/timeline.js"></script>
+</body>
+</html>

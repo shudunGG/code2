@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>新增结构</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="当前数据表名称">
+						<input class="mini-outputtext"
+							bind="tablestructaddaction.tablename" />
+					</div>
+					<div role="control" label="SQL数据表名称">
+						<input class="mini-outputtext"
+							bind="tablestructaddaction.sqltablename" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="中文名称" starred="true">
+						<input class="mini-textbox"
+							bind="tablestructaddaction.tableStruct.fieldchinesename"
+							required="true" requiredErrorText="中文名称不能为空" vtype="maxLength:50">
+						</input>
+					</div>
+					<div role="control" label="英文名称" starred="true">
+						<input class="mini-textbox" id="fieldname"
+							bind="tablestructaddaction.tableStruct.fieldname" required="true"
+							requiredErrorText="英文名称不能为空" vtype="maxLength:50"> </input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段类型" starred="true">
+						<input id="fieldtype" autoLoad="false" action="dataType"
+							required="true" requiredErrorText="字段类型不能为空" textField="text"
+							valueField="id" bind="tableStruct.fieldtype"
+							class="mini-combobox" value="nvarchar" onvaluechanged="changType" />
+						<input id="fieldtypeOrg" class="mini-hidden" bind="fieldtypeOrg">
+						</input>
+					</div>
+					<div role="control" label="字段长度" id="fieldlengthDiv">
+						<input class="mini-textbox" id="fieldlength" bind="fieldlength"
+							onvalidation="onFieldLengthValidation" vtype="int;"
+							rangeErrorText="请输入正整数"> </input> <input id="fieldlengthOrg"
+							class="mini-hidden" bind="fieldlengthOrg"> </input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段精度" id="fieldjdDiv">
+						<input id="fieldjd" class="mini-textbox"
+							bind="tableStruct.fieldjd" vtype="int;range:0,9"
+							onvalidation="onFieldJDValidation"> </input> <input
+							id="fieldjdOrg" class="mini-hidden" bind="fieldjdOrg"> </input>
+					</div>
+					<div role="control" label="显示顺序">
+						<input id="ordernumingrid" class="mini-textbox"
+							bind="tableStruct.ordernumingrid" vtype="int;range:0,99999">
+						</input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="显示类型">
+						<input autoLoad="false" id="fielddisplaytype"
+							action="getDisplayType" textField="text" valueField="id"
+							showNullItem="true" emptyText="请选择数据显示类型..."
+							nullItemText="请选择数据显示类型..." bind="tableStruct.fielddisplaytype"
+							class="mini-combobox" />
+					</div>
+					<div role="control" label="数据代码">
+						<input autoLoad="false" id="codesource" action="codesource"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="请选择" nullItemText="请选择" allowInput="true"
+							onvalidation="onComboValidation"
+							bind="tableStruct.datasourceCodename" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="自动取值内容">
+						<input id="defaultvalue" autoLoad="false" action="autoSelect"
+							textField="text" allowInput="true" valueField="id"
+							bind="tableStruct.defaultvalue" value="无" class="mini-combobox" />
+					</div>
+					<div role="control" label="取值页面地址">
+						<input class="mini-textbox" bind="tableStruct.valueurl"
+							maxLength="1000" vtype="maxLength:1000;" id="valueurl"> </input>
+					</div>
+				</div>
+				<div role="row" id="dateFormatType">
+					<div role="control" label="日期显示格式">
+						<input class="mini-combobox" bind="tableStruct.dateformattype"
+							valueField="id" textField="text" action="dateFormatModel"
+							id="dateformattype" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="在列表中显示">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							id="todispingrid" bind="tableStruct.todispingrid"
+							textField="text" valueField="id" value="false"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+					<div role="control" label="是否查询条件">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.isquerycondition" textField="text"
+							valueField="id" value="false" id="isquerycondition"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="在页面中显示">
+						<div class="mini-radiobuttonlist" repeatItems="2" id="dispInadd"
+							bind="tableStruct.dispInadd" textField="text" valueField="id"
+							value="true" data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+					<div role="control" label="导出">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							id="isexportexcel" bind="tableStruct.isexportexcel"
+							textField="text" valueField="id" value="false"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主键字段">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							id="isforeignkey" bind="tableStruct.isforeignkey"
+							textField="text" valueField="id" value="false"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+					<div role="control" label="索引字段">
+						<div class="mini-radiobuttonlist" repeatItems="2" id="uniquefield"
+							bind="tableStruct.uniquefield" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序字段">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							id="isorderfield" bind="tableStruct.isorderfield"
+							textField="text" valueField="id" value="false"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+					<div role="control" label="排序方向">
+						<div id="orderdirection" class="mini-radiobuttonlist"
+							repeatItems="2" bind="tableStruct.orderdirection"
+							textField="text" valueField="id" value="asc"
+							data="[{id:'asc',text:'升'},{id:'desc',text:'降'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否部门字段">
+						<div class="mini-radiobuttonlist" repeatItems="2" textField="text"
+							valueField="id" value="false" bind="tableStruct.isframeou"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]" id="isframeou"
+							onvaluechanged="changOrganization('ou',this.value)"></div>
+					</div>
+					<div role="control" label="是否用户字段">
+						<div class="mini-radiobuttonlist" repeatItems="2" textField="text"
+							valueField="id" value="false" bind="tableStruct.isframeuser"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]" id="isframeuser"
+							onvaluechanged="changOrganization('user',this.value)"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="控件显示宽度">
+						<input autoLoad="false" id="controlwidth"
+							data="[{id:1,text:'单倍宽'},{id:2,text:'双倍宽'}]" textField="text"
+							valueField="id" bind="controlwidth" class="mini-combobox"
+							value="1" />
+					</div>
+					<div role="control" label="必填项">
+						<div class="mini-radiobuttonlist" repeatItems="2" id="mustfill"
+							bind="tableStruct.mustfill" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Grid列显示宽度">
+						<input id="gridwidth" class="mini-textbox" id="gridwidth"
+							bind="tableStruct.gridwidth" vType="int;range:0,999999999;">
+						</input>
+					</div>
+					<div role="control" label="Grid中允许折行">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							id="gridmultirows" bind="tableStruct.gridmultirows"
+							textField="text" valueField="id" value="false"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段说明">
+						<input class="mini-textbox" bind="tableStruct.fielddesc"
+							maxLength="500" vtype="maxLength:500;" id="fielddesc"> </input>
+					</div>
+					<div role="control" label="填报时显示说明">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							id="dispfielddesc" bind="tableStruct.dispfielddesc"
+							textField="text" valueField="id" value="false"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否自定义转换">
+						<div class="mini-radiobuttonlist" repeatItems="2" textField="text"
+							id="iscustom" valueField="id" value="false"
+							bind="tableStruct.iscustom"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]"
+							onvaluechanged="changcustom"></div>
+					</div>
+					<div role="control" label="自定义数据表" id="customtable">
+						<input autoLoad="false" id="tablesource" action="tablesource"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="请选择" nullItemText="请选择" allowInput="true"
+							bind="tableStruct.customtableid" class="mini-combobox"
+							onvaluechanged="changcustomtable" />
+					</div>
+				</div>
+				<div role="row" id="customname">
+					<div role="control" label="自定义英文名">
+						<input autoLoad="false" id="customfieldname"
+							name="customfieldname" action="coustomname" textField="text"
+							valueField="id" showNullItem="true" emptyText="请选择"
+							nullItemText="请选择" allowInput="true"
+							bind="tableStruct.customfieldname" class="mini-combobox" />
+					</div>
+					<div role="control" label="自定义中文名">
+						<input autoLoad="false" id="customchinesename"
+							name="customchinesename" action="chinesemname" textField="text"
+							valueField="id" showNullItem="true" emptyText="请选择"
+							nullItemText="请选择" allowInput="true"
+							bind="tableStruct.customchinesename" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否脱敏">
+						<div class="mini-radiobuttonlist" repeatItems="2" textField="text"
+							id="isDataMasking" valueField="id" value="false"
+							bind="isDataMasking" onvaluechanged="onTypeChanged"
+							data="[{id:true,text:'是'},{id:false,text:'否'}]" required="true"></div>
+					</div>
+					<div role="control" label="脱敏类型" id="dataMasking">
+						<input autoLoad="false" id="dataMaskingType"
+							action="getDataMaskingTypeList" textField="text" valueField="id"
+							showNullItem="false" nullItemText="请选择数据显示类型..."
+							bind="dataMaskingType" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否防篡改加密">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							id="isAntiTamperOrEncrypt" valueField="id" value="0"
+							bind="antiTamperOrEncrypt"
+							data="[{id:0,text:'无'},{id:1,text:'防篡改'},{id:2,text:'加密'}]"
+							required="true"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="初始化取值SQL">
+						<textarea class="mini-textarea" bind="tableStruct.initgetvaluesql"
+							maxLength="2000" id="initgetvaluesql"></textarea>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="有效性检查公式">
+						<textarea class="mini-textarea" id="validcheckformula"
+							bind="tableStruct.validcheckformula" maxLength="300"
+							vtype="maxLength:300;"></textarea>
+					</div>
+				</div>
+				<p>
+					<em>正则表达式举例：</em>
+				</p>
+				<p>
+					<em>URL地址：</em>http://([w-]+.)+[w-]+(/[w- ./?%&amp;=]*)?
+				</p>
+				<p>
+					<em>电子邮件：</em>w+([-+.]w+)*@w+([-.]w+)*.w+([-.]w+)*
+				</p>
+				<p>
+					<em>电话号码：</em>((d{3})|d{3}-)?d{8}
+				</p>
+				<p>
+					<em>身份证号码：</em>d{18}|d{15}
+				</p>
+				<p>
+					<em>邮政编码：</em>d{6
+				</p>
+
+				<div class="mini-hidden" bind="dataTypeSel" id="dataTypeSel"></div>
+				<div class="mini-hidden" bind="tableidsel" id="tableidsel"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addAndSync"
+			style="display: none;" onclick="add(2, 2);">保存并新建</a> <a
+			class="mini-button" id="add" style="display: none;"
+			onclick="add(2, 1);">保存并关闭</a> <a class="mini-button" state="primary"
+			id="updateAndSync" style="display: none;" onclick="update(2)">保存并关闭</a>
+		<a class="mini-button" id="updateCancel" style="display: none;"
+			onclick="epoint.closeDialog">取消修改</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('tablestructaddaction', '', callback);
+
+		// 初始化隐藏按钮
+		function callback(data) {
+			if (data.add) {
+				document.getElementById("add").style.display = "";
+				document.getElementById("addAndSync").style.display = "";
+				document.getElementById("updateAndSync").style.display = "none";
+				document.getElementById("updateCancel").style.display = "none";
+				$("#dataMasking").prev().hide();
+				$("#dataMaskingType").hide();
+				initComponent();
+			} else {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("addAndSync").style.display = "none";
+				document.getElementById("updateAndSync").style.display = "";
+				document.getElementById("updateCancel").style.display = "";
+				var typeValue = typeSelectItems.getValue();
+				if (typeValue != "DateTime") {
+					$('#dateFormatType').hide();
+				}
+				var customValue = mini.get("iscustom").getValue();
+				if (customValue == "true") {
+					$('#customtable').prev().show();
+					$("#tablesource").show();
+					$("#customname").show();
+
+				} else {
+					$('#customtable').prev().hide();
+					$("#tablesource").hide();
+					$("#customname").hide();
+				}
+				if (mini.get('isDataMasking').getValue() == "false") {
+					$("#dataMasking").prev().hide();
+					$("#dataMaskingType").hide();
+				}
+			}
+			var codeSource = mini.get('codesource').getValue();
+			var isframeou = mini.get('isframeou').getValue();
+			var isframeuser = mini.get('isframeuser').getValue();
+			var iscustom = mini.get('iscustom').getValue();
+
+			if (codeSource != "") {
+				mini.get('isframeou').setValue(false);
+				mini.get('isframeou').setEnabled(false);
+				mini.get('isframeuser').setValue(false);
+				mini.get('isframeuser').setEnabled(false);
+				mini.get('iscustom').setValue(false);
+				mini.get('iscustom').setEnabled(false);
+			} else if ("true" == isframeou || "true" == isframeuser
+					|| "true" == iscustom) {
+				mini.get('codesource').setValue("");
+				mini.get('codesource').setEnabled(false);
+
+			}
+
+			if (data.tableType && data.tableType == 99) {
+				mini.get('fieldname').setEnabled(false);
+				mini.get('fieldtype').setEnabled(false);
+				mini.get('fieldlength').setEnabled(false);
+				mini.get('fieldjd').setEnabled(false);
+				mini.get('ordernumingrid').setEnabled(false);
+				mini.get('fielddisplaytype').setEnabled(false);
+				mini.get('codesource').setEnabled(false);
+				mini.get('defaultvalue').setEnabled(false);
+				mini.get('valueurl').setEnabled(false);
+				mini.get('dateformattype').setEnabled(false);
+				mini.get('todispingrid').setEnabled(false);
+				mini.get('isquerycondition').setEnabled(false);
+				mini.get('dispInadd').setEnabled(false);
+				mini.get('isexportexcel').setEnabled(false);
+				mini.get('isforeignkey').setEnabled(false);
+				mini.get('uniquefield').setEnabled(false);
+				mini.get('isorderfield').setEnabled(false);
+				mini.get('orderdirection').setEnabled(false);
+				mini.get('isframeou').setEnabled(false);
+				mini.get('isframeuser').setEnabled(false);
+				mini.get('controlwidth').setEnabled(false);
+				mini.get('mustfill').setEnabled(false);
+				mini.get('gridwidth').setEnabled(false);
+				mini.get('gridmultirows').setEnabled(false);
+				mini.get('fielddesc').setEnabled(false);
+				mini.get('dispfielddesc').setEnabled(false);
+				mini.get('iscustom').setEnabled(false);
+				mini.get('tablesource').setEnabled(false);
+				mini.get('customfieldname').setEnabled(false);
+				mini.get('customchinesename').setEnabled(false);
+				mini.get('isDataMasking').setEnabled(false);
+				mini.get('dataMaskingType').setEnabled(false);
+				mini.get('isAntiTamperOrEncrypt').setEnabled(false);
+				mini.get('initgetvaluesql').setEnabled(false);
+				mini.get('validcheckformula').setEnabled(false);
+
+			}
+
+		}
+
+		var typeSelectItems = mini.get("fieldtype");
+
+		function changType(e) {
+			mini.get("dataTypeSel").setValue(typeSelectItems.getValue());
+			mini.get("fielddisplaytype").setValue("");
+
+			epoint.refresh(
+					[ 'dataTypeSel', 'fielddisplaytype', 'fieldlength' ],
+					function() {
+						initComponent();
+						mini.get("fieldlength").validate();
+					});
+		}
+
+		function add(type, isclose) {
+			var reg = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+			var str = mini.get("fieldname").getValue();
+			if (epoint.validate()) {
+				if (!reg.test(str)) {
+					epoint.showTips("英文名称只允许是以英文字母开头的英文、数字和下划线的组合", {
+						state : 'warning'
+					});
+				} else {
+					epoint.execute("add", '', [ type, isclose ], msgCallback);
+				}
+			}
+		}
+
+		function addAndNew(type) {
+			if (epoint.validate()) {
+				epoint.execute("add", '', [ type ], newCallback);
+			}
+		}
+
+		function newCallback(data) {
+			var msg = data.strScript;
+			if (msg) {
+				if (msg.indexOf('alertAndClose') > 0) {
+					msg = msg.replace('alertAndClose', 'showTips');
+					Util.safeEval(msg);
+					// 清空表单
+					epoint.clear('fui-form');
+					epoint.initPage('tablestructaddaction', '', callback);
+					mini.get("controlwidth").setValue("1");
+					mini.get("fieldtype").setValue("nvarchar");
+					mini.get("defaultvalue").setValue("无");
+					mini.get("orderdirection").setValue("asc");
+				} else {
+					Util.safeEval(msg);
+				}
+			}
+		}
+
+		function update(type) {
+			var reg = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+			var str = mini.get("fieldname").getValue();
+			if (!reg.test(str)) {
+				epoint.showTips("英文名称只允许是以英文字母开头的英文、数字和下划线的组合", {
+					state : 'warning'
+				});
+			} else {
+				if (epoint.validate()) {
+					epoint.execute("update", '', [ type ], msgCallback);
+				}
+			}
+		}
+
+		function onFieldJDValidation(e) {
+			if (e.value) {
+				var orgValue = mini.get("fieldjdOrg").getValue();
+				mini.get('fieldjd')
+				if (parseInt(e.value) < parseInt(orgValue)) {
+
+					e.isValid = false;
+					e.errorText = "字段精度不允许小于原有值！";
+				}
+			}
+		}
+
+		function onFieldLengthValidation(e) {
+			if (e.value) {
+				var orgValue = mini.get("fieldlengthOrg").getValue();
+				var orgfieldtype = mini.get("fieldtypeOrg").getValue();
+				var fieldtype = mini.get("fieldtype").getValue();
+				if (orgfieldtype == fieldtype
+						&& parseInt(e.value) < parseInt(orgValue)) {
+					e.isValid = false;
+					e.errorText = "字段长度不允许小于原有值！";
+				}
+
+				var fieldtype = mini.get("fieldtype").getValue();
+
+				if (fieldtype == "Numeric") {
+					if (mini.get("fieldlength").getValue() > 9999999) {
+						e.isValid = false;
+						e.errorText = "数字类型的字段长度不允许大于9999999！";
+					}
+				} else if (fieldtype == "nvarchar") {
+					if (mini.get("fieldlength").getValue() > 2000) {
+						e.isValid = false;
+						e.errorText = "字符串类型的字段长度不允许大于2000！";
+					}
+				}
+			}
+		}
+
+		function onComboValidation(e) {
+			if (e.value) {
+				var items = this.findItems(e.value);
+				if (!items || items.length == 0) {
+					e.isValid = false;
+					e.errorText = "输入值不在下拉数据中";
+				}
+				mini.get('isframeou').setValue(false);
+				mini.get('isframeou').setEnabled(false);
+				mini.get('isframeuser').setValue(false);
+				mini.get('isframeuser').setEnabled(false);
+				mini.get('iscustom').setValue(false);
+				mini.get('iscustom').setEnabled(false);
+			} else {
+				mini.get('isframeou').setEnabled(true);
+				mini.get('isframeuser').setEnabled(true);
+				mini.get('iscustom').setEnabled(true);
+
+			}
+
+		}
+
+		function msgCallback(data) {
+			var msg = data.strScript;
+			if (msg) {
+				if (msg.indexOf('location.href = location.href;') > 0) {
+					msg = msg.replace('location.href = location.href;', '');
+					Util.safeEval(msg);
+					// 清空表单
+					epoint.clear('fui-form');
+				} else {
+					if (data.flag && data.flag == "1") {
+
+						epoint.closeDialog("修改成功");
+					} else {
+
+						Util.safeEval(msg);
+					}
+				}
+			}
+		}
+
+		// 初始化控件
+		function initComponent() {
+			var typeValue = typeSelectItems.getValue();
+			typeValue = typeValue.toLowerCase();
+			$("#dateFormatType").hide();
+			if (typeValue == "numeric") {
+				Util.form.showField('#fieldjdDiv');
+				Util.form.showField('#fieldlengthDiv');
+
+				// 精度设置为2
+				mini.get('fieldjd').setValue('2');
+				mini.get("fielddisplaytype").setValue("textbox");
+			} else if (typeValue == "datetime" || typeValue == "ntext"
+					|| typeValue == "image" || typeValue == "integer") {
+				Util.form.hideField('#fieldjdDiv');
+				Util.form.hideField('#fieldlengthDiv');
+				mini.get("#fieldlength").setValue(
+						mini.get("fieldlengthOrg").getValue());
+				if (typeValue == "datetime") {
+					$("#dateFormatType").show();
+					mini.get("fielddisplaytype").setValue("datepicker");
+				}
+				if (typeValue == "ntext" || typeValue == "integer") {
+					mini.get("fielddisplaytype").setValue("textbox");
+				}
+			} else if (typeValue == "nvarchar") {
+				Util.form.hideField('#fieldjdDiv');
+				Util.form.showField('#fieldlengthDiv');
+				mini.get("fielddisplaytype").setValue("textbox");
+			}
+			var customValue = mini.get("iscustom").getValue();
+			if (customValue == "true") {
+				$('#customtable').prev().show();
+				$("#tablesource").show();
+				$("#customname").show();
+
+			} else {
+				$('#customtable').prev().hide();
+				$("#tablesource").hide();
+				$("#customname").hide();
+			}
+		}
+
+		//更改选择自定义转换按钮时显示和隐藏相关字段
+		function changcustom() {
+			var customValue = mini.get("iscustom").getValue();
+			if (customValue == "true") {
+				$('#customtable').prev().show();
+				$("#tablesource").show();
+				$("#customname").show();
+				mini.get('isframeou').setValue(false);
+				mini.get('isframeou').setEnabled(false);
+				mini.get('isframeuser').setValue(false);
+				mini.get('isframeuser').setEnabled(false);
+			} else {
+				$('#customtable').prev().hide();
+				$("#tablesource").hide();
+				$("#customname").hide();
+				mini.get('isframeou').setEnabled(true);
+				mini.get('isframeuser').setEnabled(true);
+
+			}
+
+		}
+
+		//选择自定义数据表的时候触发事件
+		function changcustomtable() {
+			mini.get("tableidsel").setValue(mini.get("tablesource").getValue());
+			epoint.refresh([ 'customchinesename', 'customfieldname',
+					'tableidsel' ], function() {
+				changcustom();
+
+			});
+		}
+
+		function changOrganization(types, value) {
+			//部门人员字段，只能选择一个，不能同时设置，否则后面做数据转换时会有问题
+			if ("ou" == types && "true" == value) {
+				mini.get('isframeuser').setValue(false);
+				mini.get('isframeuser').setEnabled(false);
+				mini.get('iscustom').setValue(false);
+				mini.get('iscustom').setEnabled(false);
+				mini.get('codesource').setValue("");
+				mini.get('codesource').setEnabled(false);
+			} else if ("user" == types && "true" == value) {
+				mini.get('isframeou').setValue(false);
+				mini.get('isframeou').setEnabled(false);
+				mini.get('iscustom').setValue(false);
+				mini.get('iscustom').setEnabled(false);
+				mini.get('codesource').setValue("");
+				mini.get('codesource').setEnabled(false);
+			} else {
+				mini.get('isframeuser').setEnabled(true);
+				mini.get('isframeou').setEnabled(true);
+				mini.get('iscustom').setEnabled(true);
+				mini.get('codesource').setEnabled(true);
+			}
+
+		}
+
+		// 脱敏字段类别变化
+		function onTypeChanged(e) {
+			// 脱敏控件需要展示表格
+			if ("true" == e.value) {
+				$("#dataMasking").prev().show();
+				$("#dataMaskingType").show();
+			} else {
+				$("#dataMasking").prev().hide();
+				$("#dataMaskingType").hide();
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

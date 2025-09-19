@@ -1,0 +1,266 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>IMAC主题-主界面</title>
+    <script src="../../../js/cssboot.js"></script>
+
+    <script>
+        SrcBoot.output([
+            'fui/js/lib/epdialog/epdialog.css',
+            'fui/js/lib/epcontextmenu/epcontextmenu.css'
+        ]);
+    </script>
+</head>
+
+<body>
+
+    <!-- 主题背景 -->
+    <img src="../../../../rest/imacdataaction/getSkinBg?isCommondto=true" alt="" class="imac-skin-bg" id="imac-skin-bg" />
+    <!-- 顶部 -->
+    <div class="imac-top-bar clearfix" id="imac-top-bar">
+        <!-- 系统logo -->
+        <img src="images/epoint-logo.png" alt="" class="sys-logo l" />
+        <!-- 分屏页码 -->
+        <div class="l imac-screen-pages clearfix trans" id="imac-screen-pages">
+            <a href="javascript:void(0);" class="scroll-l invisible trans l mr10"></a>
+            <div class="pages-wrap l mr10">
+                <div class="page-list clearfix">
+                    <!--
+                    <a href="javascript:void(0);" data-page="1" class="page-item active l mr10">
+                        <span>1</span>
+                    </a>
+                    -->
+                </div>
+            </div>
+            <a href="javascript:void(0);" class="scroll-r invisible trans l"></a>
+        </div>
+        <div class="clearfix r mr10">
+            <!-- 当前用户 -->
+            <p class="sys-user l">
+                当前用户：
+                <a id="user-info" href="javascript:void(0);" title="切换登录身份">系统管理员（系统管理部）</a>
+            </p>
+        </div>
+    </div>
+    <!-- 分屏 -->
+    <div class="imac-screens-container" id="imac-screens-container">
+        <div class="screen-list clearfix">
+            <!-- <div class="imac-screen l"></div> -->
+        </div>
+    </div>
+    <!-- 底部任务栏 -->
+    <div class="imac-taskbar" id="imac-taskbar">
+        <div class="scroll-wrap l hidden">
+            <a href="javascript:void(0);" class="scroll-l"></a>
+        </div>
+        <div class="tasks-wrap l">
+            <div class="task-list clearfix">
+                <!--
+                <a href="javascript:void(0);" class="task-item l clearfix" title="信息投稿">
+                    <img src="images/imac/app/app1-taskbar.png" alt="" class="l task-icon">
+                    <p class="task-name l">信息投稿</p>
+                </a>
+                -->
+            </div>
+        </div>
+        <div class="scroll-wrap l hidden">
+            <a href="javascript:void(0);" class="scroll-r"></a>
+        </div>
+    </div>
+    <!-- 侧边工具栏  -->
+    <div class="imac-right-bar" id="imac-right-bar">
+        <!-- 应用仓库 -->
+        <div class="dock-app default-app-btn" data-id="sys-app-store" title="应用仓库">
+            <img src="images/appstore.png" alt="" />
+            <p class="name">应 用</p>
+        </div>
+        <!-- 快速应用列表 -->
+        <div class="quick-apps">
+            <a href="javascript:void(0);" class="scroll-up trans hidden"></a>
+            <div class="list-wrap">
+                <div class="app-list">
+                    <!--
+                    <div class="dock-app" title="系统管理">
+                        <span class="unread">12</span>
+                        <img src="images/imac/app/app1-toolbar.png" alt="" >
+                        <p class="name">系&nbsp;统</p>
+                    </div>
+                    -->
+                </div>
+            </div>
+            <a href="javascript:void(0);" class="scroll-dw trans hidden"></a>
+        </div>
+        <!-- 快捷按钮 -->
+        <div class="quick-btns">
+            <a href="javascript:void(0);" class="emsg-chat" id="msgTrigger" title="E讯提醒"></a>
+            <a href="javascript:void(0);" class="online default-app-btn" data-id="sys-online-user" title="在线沟通">
+                <span class="online-user-count" id="online-user-count">(0)</span>
+            </a>
+            <a href="javascript:void(0);" class="theme default-app-btn" data-id="sys-theme-setting" title="背景设置"></a>
+            <a href="javascript:void(0);" id="theme-btn" class="theme-switch" title="主题切换"></a>
+            <a href="javascript:void(0);" class="setting default-app-btn" data-id="sys-user-setting" title="个人配置"></a>
+            <a href="javascript:void(0);" class="refresh default-app-btn" data-id="sys-screen-restore" title="桌面还原"></a>
+            <a href="javascript:void(0);" class="message default-app-btn" data-id="sys-msg-reminder" title="信息提醒"></a>
+            <a href="javascript:void(0);" class="logout" title="退出系统"></a>
+        </div>
+    </div>
+    <div id="msgEMsg" class="msg-panel-detail">
+			<h2 class="msg-panel-head">
+				E讯提醒 <i class="msg-panel-hide"></i>
+			</h2>
+			<div class="msg-panel-content">
+				<ul class="emsg-recent-list empty"></ul>
+			</div>
+		</div>
+	</div>
+    <!-- 声音提示 js动态添加IE加载iframe 非IE使用audio -->
+    <div id="msg-sound"></div>
+
+    <script src="../../../../rest/resource/jsboot"></script>
+
+    <!-- 配置变量 -->
+    <script>
+        // 获取用户信息
+        var userInfoUrl = epoint.dealRestfulUrl('imacdataaction/initData'),
+            // 获取消息提醒数
+            msgCountUrl = epoint.dealRestfulUrl('themedataaction/getMsgCount'),
+            // 获取在线人数
+            onlineUserCountUrl = userInfoUrl,
+            // 请求屏幕上的应用信息
+            screenAppsUrl = userInfoUrl,
+            // 请求工具栏上的应用信息
+            toolbarAppsUrl = userInfoUrl,
+            // 更新应用信息请求：移动、卸载、安装
+            updateAppUrl = userInfoUrl,
+            // 请求页面元件信息
+            elementsUrl = userInfoUrl,
+            // 更新元件信息：移动、卸载、安装
+            updateElemUrl = userInfoUrl,
+            // 默认应用配置，如主题设置、应用商店等
+            // 默认应用中消息提醒应用的url需用从后端取值，获取此url的请求地址
+            getMsgAppUrl = epoint.dealRestfulUrl('imacdataaction/getSoaRemindUrl'),
+            defaultApps = [{
+                // 在线沟通
+                name: '在线沟通',
+                icon: 'fui/pages/themes/imac/images/app/online-user.png',
+                // id与对应元素data-id属性相匹配
+                id: 'sys-online-user',
+                url: 'frame/communication/exun/exunmsg'
+            }, {
+                // 主题设置
+                name: '主题设置',
+                icon: 'fui/pages/themes/imac/images/app/theme-setting.png',
+                id: 'sys-theme-setting',
+                url: 'frame/uiset/menu/app/skinset'
+            }, {
+                // 个人设置
+                name: '个人设置',
+                icon: 'fui/pages/themes/imac/images/app/user-setting.png',
+                id: 'sys-user-setting',
+                url: 'frame/dreamframe/f9settingscenter'
+            }, {
+                // 桌面还原
+                name: '桌面还原',
+                icon: 'fui/pages/themes/imac/images/app/screen-restore.png',
+                id: 'sys-screen-restore',
+                url: 'frame/uiset/menu/app/appmarketrestore?type=imac'
+            }, {
+                // 信息提醒
+                name: '消息提醒',
+                icon: 'fui/pages/themes/imac/images/app/msg-reminder.png',
+                id: 'sys-msg-reminder',
+                url: 'frame/imacframe/messagereminder'
+            }, {
+                // 应用仓库
+                name: '应用仓库',
+                icon: 'fui/pages/themes/imac/images/app/app-store.png',
+                id: 'sys-app-store',
+                url: 'frame/uiset/menu/app/appmarket?type=imac'
+            }],
+            // 注销账户的回调方法
+            onLogout = function () {
+                window.location.href = Util.getRootPath() + "rest/logout?isCommondto=true";
+                //没有logout方法
+                //epoint.execute('loginaction.logout');
+            };
+
+        // 获取数据的通用请求地址，后面直接+/方法名即可
+        var getDataUrl = 'themedataaction';
+        // 主题获取
+        var getThemesUrl = epoint.dealRestfulUrl(getDataUrl + '/getThemes');
+        // 主题保存
+        var saveThemeUrl = epoint.dealRestfulUrl(getDataUrl + '/saveTheme');
+
+
+        // 默认显示的分屏页，从1开始
+        var DEFAULT_ACTIVE_PAGE = 1;
+
+        // 每列的应用数目
+        var APP_COUNT_PER_COLUMN = 5;
+
+        // 右侧工具栏停靠应用的最多数目
+        var MAX_DOCK_APP_NUM = 8;
+
+        // [x, y] dialog打开时 宽高相对于视窗大小的比列
+        var DIALOG_SIZE_RATIO = [0.6, 0.6];
+        var EmsgConfig = {
+            baseUrl: epoint.dealRestfulUrl('exundataaction/eXun'),
+            treeUrl: epoint.dealRestfulUrl("exundataaction/getTree"),
+            websocketUrl: "../../../../websocket/eXun",
+            historyUrl: "frame/communication/exun/exunmsg",
+            groupImg: "../../emsg/images/emsg-group-bg.png",
+            userImg: "../../emsg/images/emsg-user-error.jpg",
+            // 发送邮件的地址，如果配置了将显示E讯窗口上方显示发送邮件 经在URL后自动拼接收件人guid，多个以“;”分隔
+            // 约定 如果有多人，参数名为ToUserGuidList 一个人则参数名为ToUserGuid
+            sendEmailUrl: 'oa/epointdbmail/InnerEmailLeftMenuTree.jspx?moduleCode=00690002',
+        };
+    </script>
+
+    <script>
+        SrcBoot.output(['fui/js/lib/epdialog/epdialog.js',
+            'fui/js/lib/epcontextmenu/epcontextmenu.js'
+        ]);
+    </script>
+    <script>
+        var path = 'fui/pages/themes/imac/imac' + (SrcBoot.debug ? '' : '.min') + '.js';
+        SrcBoot.output([path]);
+    </script>
+
+    <!---
+    <script>
+        /* IMac Elem */
+        var iMacElem = new IMacElem({
+            title: '测试元件',
+            url: 'test/pages/module_one.html',
+            btns: [{
+                role: 'refresh',
+                title: '刷新'
+            }, {
+                role: 'config',
+                title: '打开配置',
+                click: function(options) {
+
+                }
+            }, {
+                role: 'close',
+                title: '移除元件',
+                click: function(options) {
+                    console.log(options.guid);
+                    this.destroy();
+                }
+            }],
+            height: 450,
+            width: 450,
+            page: 0,
+            noBorder: false,
+            top: 80,
+            left: 200
+        });
+    </script>
+    -->
+</body>
+
+</html>

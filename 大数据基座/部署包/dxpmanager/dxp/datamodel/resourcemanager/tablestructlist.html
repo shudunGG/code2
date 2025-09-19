@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>数据表结构</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<div class="page-loading"></div>
+<div class="fui-toolbar">
+    <div class="btn-group mr10">
+        <a class="mini-button" iconCls="icon-save" onclick="saveAll()">保存数据</a>
+    </div>
+</div>
+
+<div class="fui-condition" opened="true">
+    <!-- 表单布局 -->
+    <div class="fui-form" id="fui-form" >
+        <div role="form">
+             <div role="row">
+                <div role="control" label="当前数据表名称">
+                    <input bind="tableInfo.tableName" class="mini-outputtext"/>
+
+                </div>
+                <div role="control" label="SQL数据表名称">
+                    <input bind="tableInfo.sqlTableName" class="mini-outputtext"/>
+                </div>
+            </div>
+            <!-- 2列 -->
+            <div role="row">
+                <div role="control" label="字段中文名">
+                    <input bind="fieldChineseName" class="mini-textbox" showClose="true" autoClear="true"/>
+
+                </div>
+                <div role="control" label="字段名">
+                    <input bind="fieldName" class="mini-textbox" showClose="true" autoClear="true"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索按钮 -->
+    <a role="searcher" callback="searchData"></a>
+
+    <div id="tableid" class="mini-hidden" bind="tableInfo.tableid"></div>
+
+</div>
+<div class="fui-content">
+    <div id="datagrid" class="mini-datagrid" sortOrder="desc"
+         idField="fieldid" multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+         style="width: 100%; height: 100%;" allowCellValid="true"
+         action="dxpmodeltablestructlistaction.getDataGridData"
+         showFooter="false" allowSortColumn="false">
+        <div property="columns">
+            <div type="indexcolumn" headerAlign="center" width="50">序</div>
+
+            <div field="fieldchinesename" headerAlign="center" width="80" vtype="required;maxLength:100">
+                字段中文名 <input property="editor" class="mini-textbox"
+                             style="width: 99%"/></div>
+            <div field="fieldname" width="100" headerAlign="center">字段名</div>
+            <div field="fieldtype" width="120" headerAlign="center">数据类型</div>
+            <div width="60" align="center" headerAlign="center"
+                 renderer="onDetailRenderer">查看
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../../frame/fui/js/jsboot.js"></script>
+
+<!-- 配置变量 -->
+<script>
+		//<![CDATA[
+		//初始化页面
+		var tableID=Util.getUrlParams('tableID');
+		epoint.initPage("dxpmodeltablestructlistaction");
+
+		var grid = mini.get("datagrid");
+
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "opendetail");
+		};
+
+		function opendetail(fieldid) {
+			epoint.openDialog('查看结构', './tablestructdetail?fieldID=' + fieldid+'&tableID='+tableID,
+					function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+		
+		// 保存信息
+		function saveAll() {
+			if (mini.get('datagrid').isValid()) {
+				epoint.execute('saveAll', [ 'datagrid', 'fui-form' ],
+						msgCallBack);
+			}else {
+			    var error = mini.get('datagrid').getCellErrors()[0];
+			    grid.beginEditCell(error.record, error.column);
+				if(error.column.field=='fieldchinesename'){
+				   epoint.alert('字段中文名称'+error.errorText, '', null, 'warning');
+				}
+			}
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (msg.indexOf("成功") == -1) {
+					epoint.alert(msg, '', '', 'warning');
+					searchData();
+				} else {
+					epoint.alert(msg);
+					searchData();
+				}
+			}
+		}
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//]]>
+
+</script>
+</body>
+
+</html>

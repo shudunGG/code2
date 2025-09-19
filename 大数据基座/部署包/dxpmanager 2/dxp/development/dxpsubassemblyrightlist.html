@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>组件授权管理</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择部门"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%"
+				textField="text" idField="id" parentField="pid"
+				action="frameoulistaction.getTreeModel" filterMode="server" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar">
+			
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-search" primaryControl="ouName" opened="false">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="部门名称">
+							<input bind="ouName" id="ouName"
+								class="mini-textbox" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 表格区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="ouguid" multiSelect="true" allowCellSelect="true"
+				allowCellValid="true" allowCellEdit="true" editNextOnEnterKey="true"
+				style="width: 100%; height: 100%;" showPager="true"
+				action="getDataGridData">
+				<div property="columns">
+					<div type="checkcolumn" width="35"></div>
+					<div type="indexcolumn" width="45" headerAlign="center">序</div>
+					<div field="ouname" width="100" align="center" headerAlign="center"
+						align="left">部门名称</div>
+					<div field="oushortName" width="90" align="center" headerAlign="center">部门简称</div>
+					<div width="50" headerAlign="center" align="center" renderer="onRightRenderer">etl开发组件授权</div>
+					<div width="50" headerAlign="center" align="center" renderer="onHiveRightRenderer">数据建模组件授权</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxpsubassemblyrightlistaction', '', function(data) {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+			}
+		});
+
+		var tree = mini.get('tree');
+
+		var grid = mini.get('datagrid');
+
+		grid.on('selectionchanged', function(e) {
+		});
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		var onRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"editRight", "ouguid");
+		};
+
+		function editRight(ouguid) {
+			epoint.openDialog('etl组件授权', "./dxpsubassemblyrightsetting?ouguid="
+					+ ouguid, searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		
+		var onHiveRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"editHiveRight", "ouguid");
+		};
+
+		function editHiveRight(ouguid) {
+			epoint.openDialog('hive组件授权', "./dxphivesubassemblyrightsetting?ouguid="
+					+ ouguid, searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		
+	</script>
+</body>
+</html>

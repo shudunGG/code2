@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>动态生成表格</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form" id="formColumn"></div>
+			<input class="mini-hidden" bind="pageRefresh" id="pageRefresh" />
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../../../../../frame/fui/js/epoint/epoint.controlconfig.js"></script>
+	<script src="../../../../../frame/fui/js/epoint/epoint.form.js"></script>
+	<script src="../search/js/eputil.js"></script>
+
+	<script type="text/javascript">
+		//<![CDATA[
+		epoint.initPage("commonformtabledetailaction", '', initCallBack);
+		
+		function initCallBack(data) {
+			var pageRefresh = data.pageRefresh || '0';
+			//加载控件
+			if (data.controls) {
+				var html = epoint.parseForm(data.controls);
+				$('#formColumn').prepend(html);
+				//initCondition();
+				mini.parse();
+			}
+
+			if (!data.add && pageRefresh == '0') {
+				mini.get('pageRefresh').setValue('1');
+				epoint.refresh([ 'fui-form' ], '', true);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

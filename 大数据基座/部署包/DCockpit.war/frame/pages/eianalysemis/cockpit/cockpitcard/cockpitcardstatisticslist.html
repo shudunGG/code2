@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>卡片统计列表</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <!-- 请修改相对路径 -->
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+
+<div class="fui-left" id="fui-left">
+    <div role="head" title="指标分类"></div>
+    <div role="body">
+        <div class="mini-tree" id="tree" action="getNormDomainTreeModel"></div>
+    </div>
+</div>
+
+<div class="fui-right">
+    <div class="fui-toolbar">
+        <a class="mini-dataexport" id="dataexport" gridId="datagrid" fileName="卡片统计" action="getExportModel" extraId="fui-form"></a>
+    </div>
+    <div class="fui-condition">
+        <div class="fui-form" id="fui-form">
+            <div id="cform" role="form">
+                <div role="row">
+                    <div role="control" label="卡片名称">
+                        <input class="mini-textbox" bind="dataBean.cardName"/>
+                    </div>
+                </div>
+                <input class="mini-hidden" id="normDomain" bind="dataBean.normDomain"/>
+            </div>
+        </div>
+        <a role="searcher" callback="searchData"></a>
+    </div>
+
+    <div id="fuiContent" class="fui-content">
+        <div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc"
+             showPager="true" style="height: 100%;" allowResize="true" multiSelect="true" allowCellEdit="true"
+             allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+            <div property="columns">
+                <div type="indexcolumn" width="40" headerAlign="center">序</div>
+                <div field="cardName" headerAlign="center">卡片名称</div>
+                <div field="subscribeCount" headerAlign="center" align="center" allowSort="true">订阅量</div>
+                <div field="forwardCount" headerAlign="center" align="center" allowSort="true">转发量</div>
+                <div field="searchCount" headerAlign="center" align="center" allowSort="true">搜索次数</div>
+                <div field="accessCount" headerAlign="center" align="center" allowSort="true">访问次数</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 请修改相对路径 -->
+<script src="../../../../../rest/resource/jsboot"></script>
+<script>
+    // 版块卡片关联
+    var categuid = Util.getUrlParams("categuid");
+
+    var grid = mini.get('datagrid');
+
+    // 初始化页面
+    epoint.initPage('cockpitcardlistaction', null, function (data) {
+        // 版块卡片关联
+        if (categuid) {
+            grid.hideColumn('operate');
+            $('#operate').css("display", "none");
+            $('#plate').css("display", "block");
+        }
+    });
+
+    // 弹出新增窗口
+    function openAdd() {
+        var normDomain = mini.get("normDomain").getValue();
+        if (!normDomain) {
+            epoint.alert("未选择指标分类！");
+            return;
+        }
+        if (normDomain == "f9root") {
+            epoint.alert("未选择指标分类！");
+            return;
+        }
+        epoint.openDialog('新增卡片', "frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardadd?normDomain=" + normDomain, searchData, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    // 弹出修改窗口
+    function openEdit(e) {
+        epoint.openDialog('修改卡片', "frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardadd?guid=" + e.rowguid, searchData, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    // 弹出关联指标窗口
+    function openNormRelate(e) {
+        epoint.openDialog('已关联的指标', "frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardnormlist?cardguid=" + e.rowguid + "&normDomain=" + e.normdomain, searchData, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    // 删除数据
+    function deleteSelect() {
+        epoint.execute("deleteSelect", '', callback);
+    }
+
+    // 版块卡片关联
+    function relate() {
+        epoint.execute("relate", '', closeCallback);
+    }
+
+    function generateCode(e) {
+        epoint.execute("generateCode", '', e.rowguid, closeCallback);
+    }
+
+    function previewCode(e) {
+        epoint.openDialog('预览返回代码', "frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcarddetail?guid=" + e.rowguid, searchData, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    function closeCallback(data) {
+        if (data.msg) {
+            epoint.alertAndClose(data.msg, '', '', '', 'info');
+        }
+    }
+
+    function callback(data) {
+        if (data.msg) {
+            epoint.alert(data.msg, '', searchData, 'info');
+        }
+    }
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid', 'fui-form'], '', true);
+    }
+
+    function deleteData() {
+        if (mini.get('datagrid').getSelecteds().length == 0) {
+            epoint.alert('请选择要删除的记录!', '', null, 'warning');
+        } else {
+            epoint.confirm('确认要删除吗?', '', deleteSelect);
+        }
+    }
+
+    //树js对象
+    var tree = mini.get("tree");
+    // 点击左侧树刷新右侧表格
+    tree.on("nodeselect", function (e) {
+        var id = e.node.id;
+        // 将左侧树点击的节点id放到隐藏域中
+        // 在表格发二次请求时，会自动带上条件区域中的内容
+        mini.get('normDomain').setValue(id == 'f9root' ? "" : id);
+        //刷新表格
+        epoint.refresh(['datagrid', 'fui-form']);
+    });
+
+    // 卡片授权
+    function cardAuthorize(e) {
+        epoint.openDialog("卡片授权", 'frame/pages/eianalysemis/cockpit/cockpitcard/cockpitcardauthorize?guid=' + e.rowguid, authorizeCallBack, {
+            'width': 1000,
+            'height': 800
+        });
+    }
+
+    function authorizeCallBack() {
+        epoint.refresh(['datagrid', 'fui-form'], '', true);
+    }
+
+    function onCloseClick(e) {
+        var obj = e.sender;
+        obj.setText("");
+        obj.setValue("");
+    }
+</script>
+</body>
+</html>

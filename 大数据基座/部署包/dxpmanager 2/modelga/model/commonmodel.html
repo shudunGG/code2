@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+<title>模型中心-我的模型</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/mymodel.css', '../style/globalresource.css' ]);
+</script>
+<style type="text/css">
+</style>
+</head>																																														
+
+<body>
+	<div class="fui-toolbar my-model fui-condition" id="condition">
+		<div class="l" style="color: #dfe2e3; font-size: 15px; font-weight: 200;">模型状态:</div>
+		<span class="mini-combobox" style="margin-left: 10px;" textField="text" valueField="id" id="moduleState" bind="publishStatus"
+			data="[{text:'所有',id:'9'},{text:'已发布',id:'1'},{text:'草稿',id:'0'}]" onvaluechanged="searchData"></span>
+		<!--<div class="l" style="color: #dfe2e3; font-size: 15px; font-weight: 200; margin-left: 10px;">模型类型:</div>
+		<span class="mini-combobox" style="margin-left: 10px;" textField="text" id="moduleType" valueField="id" bind="dataBean.flowtype"
+			data="[{text:'所有',id:'9'},{text:'图形建模',id:'1'},{text:'向导式建模',id:'2'}]" onvaluechanged="searchData"></span>-->
+
+		<div class="r">
+			<span class="mini-buttonedit fui-primary-search r" bind="dataBean.flowName" onbuttonclick="searchData"></span>
+		</div>
+	</div>
+	<div class="page-toolbar clearfix" style="padding-left: 30px; padding-top: 5px; margin-bottom: -30px; position: absolute;">
+		<span class="toolbar-button" onclick="importModel()">导入模型</span>
+	</div>
+	<!-- action="getFileUploadModel" -->
+	<div class="fui-content my-model">
+		<div id="grid-wrap" style="height: 100%;"></div>
+	</div>
+<!-- action="getDataGridData" -->
+	<script type="x/html" id="list-view-tpl">
+        <div class="mini-datagrid" id="datagrid" style="height: 100%;" allowCellEdit="false" action="getDataGridData" autoload="true" pagerType="pagination" pagesize="20" multiSelect="true" idField="rowguid">
+            <div property="columns">
+                <div type="indexcolumn"></div>
+                <div field="flowname"  headeralign="center" width="200">模型名称</div>
+                <div field="generatedate" align="center"  headeralign="center" width="90" allowsort="true" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" dateFormat="yyyy-MM-dd HH:mm:ss">创建时间</div>
+                <div field="createusername" align="center"  headeralign="center" width="90">创建用户</div>
+                <div field="publishstatusname" align="center"  headeralign="center" width="80">模型状态</div>
+                <div align="center"  headeralign="center" width="60"  renderer="editRender">编辑</div>
+                <div field="isuse" align="center"  headeralign="center" width="60" >启用
+                      <input property="editor" class="mini-checkbox switch" maxLength="50" width="100%" required="true" allowInput="faslse"
+						onvaluechanged="onsfqy" trueValue="1" falseValue="0" />
+				</div>
+				<div field="nodeguid" visible="false"></div>
+                <div field="flowtype" visible="false"></div>
+                <div align="center"  headeralign="center" width="60"  renderer="deleteRender">删除</div>
+				<div align="center"  headeralign="center"  width="80"  renderer="configRender">运行策略配置</div>
+            </div>
+        </div>
+    </script>
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		// 默认为卡片视图
+		$($('#list-view-tpl').html()).appendTo($('#grid-wrap').empty());
+		mini.parse();
+		DtoUtils.bindBeforeLoad();
+		epoint.initPage("dxpmodeldatadeveloplistaction", '', function(data) {
+			initEditTable('datagrid');
+		}); 
+
+		function initEditTable(grid) {
+			if (typeof grid == 'string') {
+				grid = mini.get(grid);
+			}
+			if (!grid) {
+				return;
+			}
+
+			var list = grid.getList();
+			for (var i = 0, length = list.length; i < length; i++) {
+				if (!grid.isEditingRow(list[i])) {
+					grid.beginEditRow(list[i]);
+				}
+			}
+		}
+
+		function onsfqy(data) {
+			epoint.execute('setIsuse', 'datagrid', function(data) {
+				searchData();
+			});
+		}
+		function editRender(e) {
+			return epoint.renderCell(e, "diy-grid-icon icon-edit", "onEditClick1", "rowguid,nodeguid,flowtype");
+		}
+
+		function configRender(e) {
+			return epoint.renderCell(e, "diy-grid-icon icon-config", "onConfigClick", "rowguid");
+		}
+
+		function deleteRender(e) {
+			return epoint.renderCell(e, "diy-grid-icon icon-trash", "onRemoveClick", "rowguid");
+		}
+
+
+		function onEditClick1(e) {
+			if (e.flowtype == '2') {
+				window.open(Util
+						.getRightUrl("modelga/guidemodel/choose?rowguid="
+								+ e.rowguid));
+			} else {
+				window.open(Util
+						.getRightUrl("dxp/datamodel/modelflow/model?flowGuid="
+								+ e.rowguid + "&nodeGuid=" + e.nodeguid
+								+ "&flowtype=" + e.flowtype));
+			}
+		}
+
+		function onConfigClick(id) {
+			epoint.openDialog("运行策略配置",
+					'dxp/datamodel/modelflow/taskconfigNew?modelguid=' + id
+							+ '&isshow=0', null, {
+						'width' : 1500,
+						'height' : 750
+					});
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'condition' ]);
+		}
+
+		function onRemoveClick(e) {
+			epoint.confirm('确定删除？', '系统提醒', function() {
+				epoint.execute('deleteFlow1', '', e, function(data) {
+					if (data.msg.indexOf('成功') != -1) {
+						epoint.alertAndRefresh(data.msg, null, 'success');
+					} else {
+						epoint.alert(data.msg, null, null, 'error');
+					}
+				});
+			});
+		}
+
+		//导入
+
+		function importModel() {
+			epoint.openDialog('导入模型', 'dxp/datamodel/modelflow/uploadflow',
+					function(data) {
+						epoint.execute('checkFile', '', data, function(data) {
+							searchData();
+						});
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+	</script>
+	<script>
+		SrcBoot.output([ './js/mymodel.js' ]);
+	</script>
+</body>
+
+</html>

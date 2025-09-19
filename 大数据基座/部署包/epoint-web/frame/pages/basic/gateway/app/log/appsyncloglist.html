@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOA增量日志</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<a id="btnDel" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选定 </a>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="flag" opened="false">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form" style="margin-right: 100px">
+				<div role="row">
+					<div role="control" label="时间">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" width="39.7%"
+							dateFormat="yyyy-MM-dd" align="center" bind="beginTime" /> 
+					<div style="margin-left: 120px;margin-right: 120px">至</div>
+						<input
+							class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" width="39.9%"
+							dateFormat="yyyy-MM-dd" align="center" bind="endTime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="同步标识">
+						<input class="mini-textbox" bind="appSyncFlag" id="flag" />
+					</div>
+					<div role="control" label="应用名称">
+						<input class="mini-combobox" bind="appKey" action="getSelectApps"
+							id="appKey" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="reset" callback="resetCallback"> <a role="searcher"
+			callback="searchData"></a><a role="close" callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="updatetime" width="150"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">更新时间</div>
+				<div field="appname" name="appname" width="150">应用名称</div>
+				<div field="appsyncflag" width="150">同步标识</div>
+				<div field="statustext" width="100" validateLevel="1">状态</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appsyncloglistaction', '', function(e) {
+			if (e.isSOAClient && e.isSOAClient == "1") {
+				$('#btnDel').hide();
+				var grid = mini.get("datagrid");
+				grid.hideColumn("appname");
+				mini.get("appKey").hide();
+			}
+		});
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		function callback(data) {
+			if (data.success) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				searchData();
+			} else {
+				if (data.msg) {
+					epoint.showTips(data.msg,  {state : 'danger'});
+					searchData();
+				}
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!", {state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!",  {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+	</script>
+</body>
+</html>

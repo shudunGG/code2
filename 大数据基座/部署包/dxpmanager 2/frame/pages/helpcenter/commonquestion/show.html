@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>帮助中心</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            "./css/common.css",
+            "./css/show.css"
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <div class="content-wrap">
+            <div class="l logo-wrap clearfix">
+                <img src="./images/top/help-logo.png" alt="" class="logo">
+            </div>
+            <div class="r header-nav">
+                <ul class="nav-list clearfix">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./handbook">使用手册</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./tool">常用工具</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./show">常见问题</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./notice">维护公告</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="top">
+        <div class="content-wrap">
+            <div class="search-box">
+                <div id="feedbackBtn" class="feedback-btn" >
+                    <a onclick="epoint.openDialog('问题反馈','frame/pages/helpcenter/commonquestion/input',null,{
+                        'width' : 1200,
+                        'height' : 700})" target="_blank" class="question-feedback">问题反馈</a>
+                </div>
+                <div class="search-input-wrap" id="top-question-search">
+                    <input class="top-search-input" type="text" placeholder="查找问题">
+                    <span class="search-btn"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="content-wrap">
+            <div class="content-block browse">
+                <div class="left" id="left">
+                    <div class="left-header">问题分类</div>
+                    <div class="question-type-container" id="question-type-container">
+                         <div class="question-type-list">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="right" id="right" >
+                    <div class="question-container hidden right-main-content" id="question-container">
+                        <div class="question-header" id="question-type"></div>
+                        <div class="question-list" id="question-list"></div>
+                        <div class="mini-pagination" id="question-list-pagination"></div>
+                    </div>
+                    <div class="search-container  hidden right-main-content" id="search-container">
+                        <div class="question-header">搜索结果
+                            <span class="go-back">返回</span>
+                        </div>
+                        <div class="question-list" id="search-list"></div>
+                        <div class="mini-pagination" id="search-list-pagination"></div>
+                    </div>
+                    <div class="detail-container  hidden right-main-content" id="question-detail">
+                        <div class="question-header">
+                            <span class="detail-title"></span>
+                            <span class="go-back">返回</span>
+                        </div>
+                        <div class="question-detail-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- div class="footer">
+                <p>服务热线：0518-58188000</p>
+            </div-->
+        </div>
+
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        var $topSearchBox = $('#top-question-search'),
+            $searchInput = $('.top-search-input', $topSearchBox);
+        
+        // 获取问题分类的请求
+        var getQuestionSortUrl = 'rest/feedbackdatademoaction/getAllCommCategoryList?isCommondto=true';
+        // 获取问题列表的请求
+        var getQuestionListUrl = 'rest/feedbackdatademoaction/getCommMessageReleaseListByCategoryNum?isCommondto=true';
+        // 问题类型文字到颜色的转化
+        var getColorByTypeText = function (text) {
+            text = $.trim(text || '');
+            if (text == '问') {
+                return '#fd965d';
+            }
+            // return o[text] || '#fd965d';
+        };
+        // 获取问题列表的请求
+        var getQuestionSearchListUrl = 'rest/feedbackdatademoaction/getCommMessageReleaseListByCategoryNum?isCommondto=true';
+        var getQuestionDatailUrl = 'rest/feedbackdatademoaction/getMessageReleaseDetail?isCommondto=true'
+        		
+        var checkSystemParamForProcess = function () {
+            return Util.ajax({
+                url: Util.getRightUrl("rest/feedbackdatademoaction/getProcessGuidFromSystemParam?isCommondto=true",""),
+            }).done(function (data) {
+            	if(data && data.processGuid){
+                    document.getElementById("feedbackBtn").style.display = "block";
+            	}
+            });
+        };
+        checkSystemParamForProcess();
+    </script>
+    <script>
+        SrcBoot.output([
+            "./js/show.js"
+        ]);
+    </script>
+</body>
+
+</html>

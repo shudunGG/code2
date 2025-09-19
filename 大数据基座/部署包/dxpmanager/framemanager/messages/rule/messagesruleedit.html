@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>消息类型表修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog">取消修改</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			<em>消息规则作为消息发送的第二步,记录消息类型和消息渠道的关系</em><br> <em>消息类型传递过来之后通过规则来查出最终需要发送的渠道</em><br>
+			<em>常用消息模板:{@targetusername}:您收到一条来自{@fromusername}在{@sendtime}时间发送的标题为{@title}的消息,内容为{@subcontent}</em><br>
+			<em>移动端配置项:配置与移动端相关的规则时需要的配置</em><br> <em>1.ios证书,为消息渠道配置页面移动端特殊配置里面上传的ios证书</em><br>
+			<em>2.安卓推送方式:联系具体的app开发确定</em><br> <em>3.H5和原生地址,标准版只需要配置一个H5地址</em><br>
+			<em>邮件的H5为:{@mobilepageurl}/H5/ejs.m7.mobileframe.oa/pages/mail/mail_detail.html?mailguid={@clientidentifier}&boxtype=100000</em><br>
+			<em>待办的H5为:{@mobilepageurl}/H5/ejs.m7.mobileframe.oa/pages/todo/todo_detail_text.html?messageitemguid={@clientidentifier3}&canhandle={@clientidentifier4}&type=1&filetype=null&flag={@clientidentifier2</em><br>
+			<em style="color: red">{@mobilepageurl}参数会自动替换成支撑平台应用注册中的移动跳转地址,非支撑平台模式下该参数无效,直接配置成实际的这个H5页面地址即可如:http://127.0.0.1:8080/oarest/H5/ejs.m7.mobileframe.oa/...</em><br>
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="基本配置"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="消息类别" starred="true">
+									<input id="typeGuid" bind="dataBean.typeGuid"
+										style="width: 90%" class="mini-combobox"
+										action="selectTypeModel" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="消息渠道" starred="true">
+									<input id="channelGuid" bind="dataBean.channelGuid"
+										style="width: 90%" class="mini-combobox"
+										action="selectChannelModel" />
+								</div>
+							</div>
+
+							<div role="row">
+								<div role="control" label="是否启用">
+									<input id="isEnable" bind="dataBean.isEnable"
+										class="mini-radiobuttonlist" action="selectEnableModel" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="消息模板" starred="true">
+									<input id="displayName" bind="dataBean.messageTemplate"
+										style="width: 90%" class="mini-textarea" required="true"
+										requiredErrorText="消息模板不能为空" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="内容长度限制" class="form-control span2">
+									<input id="contentLength" bind="dataBean.contentLength"
+										style="width: 90%" class="mini-textbox"
+										vtype="maxLength:9;int" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="PC端地址模板">
+									<input id="pcurltemplate" bind="dataBean.pcurltemplate"
+										style="width: 90%" class="mini-textarea" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="移动地址模板">
+									<input id="mobileurltemplate" bind="dataBean.mobileurltemplate"
+										style="width: 90%" class="mini-textarea" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="地址相关"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control">
+									<span class="text-assist">注:每个消息类型都有不同的跳转地址,所以需要在规则中配置</span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="PC端地址模板">
+									<input id="pcurltemplate" bind="dataBean.pcurltemplate"
+										style="width: 90%" class="mini-textarea" /><span
+										class="text-assist">通用地址模板,如果在发送消息时设置了linkurl字段,会优先读取linkurl</span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="移动地址模板">
+									<input id="mobileurltemplate" bind="dataBean.mobileurltemplate"
+										style="width: 90%" class="mini-textarea" /><span
+										class="text-assist">通用地址模板,如果在发送消息时设置了mobilelinkurl字段,会优先读取mobilelinkurl</span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="个性化参数">
+									<div id="customParams" class="form-control span2"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<input id="mobileitem" bind="dataBean.mobileitem"
+						class="mini-hidden" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/x-tpl" id="params-item-tpl">
+	<div role="control" style="line-height: 35px; width: 800px">
+		   <input id="{{paramnameid}}" style='width: 320px' class="mini-textbox" />=
+           <input id="{{paramvalueid}}" style='width: 300px' class="mini-textbox" />
+           <a id="{{paramdelid}}" onclick="delVariable(this.id)" class="action-icon icon-minuscircle"></a>
+           <a id="{{paramaddid}}" onclick="addVariable(this.id)" class="action-icon icon-addcircle"></a>
+	</div>
+    </script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesruleeditaction', '', function() {
+			if (mini.get('mobileitem').getValue()) {
+				var jsonStr = JSON.parse(mini.get('mobileitem').getValue());
+				var i = 0;
+				for (key in jsonStr) {
+					if (i == 0) {
+						var html = [];
+						var newnameid = "paramnameid" + maxnum;
+						var newvalueid = "paramvalueid" + maxnum;
+						var newaddid = 'paramaddid' + maxnum;
+						var newdelid = 'paramdelid' + maxnum;
+						var data = {
+							"paramnameid" : newnameid,
+							"paramvalueid" : newvalueid,
+							"paramaddid" : newaddid,
+							"paramdelid" : newdelid
+						};
+						html.push(Mustache.render(paramsTpl, data));
+						$('#customParams').append(html.join(''));
+						mini.parse();
+					} else {
+						addVariable('paramaddid' + maxnum);
+					}
+					mini.get('paramnameid' + maxnum).setValue(key);
+					var value = jsonStr[key];
+					if (isJsonString(value)) {
+						value = JSON.stringify(value);
+					}
+					mini.get('paramvalueid' + maxnum).setValue(value);
+					i++;
+				}
+				if (i == 0) {
+					var html = [];
+					var data = [ {
+						"paramnameid" : "paramnameid" + maxnum,
+						"paramvalueid" : "paramvalueid" + maxnum,
+						"paramaddid" : "paramaddid" + maxnum,
+						"paramdelid" : "paramdelid" + maxnum
+					} ];
+					html.push(Mustache.render(paramsTpl, data[0]));
+					$('#customParams').html(html.join(''));
+					mini.parse();
+				}
+			}
+
+		});
+
+		var numlist = [ 1 ];
+		var maxnum = 1;
+		var paramsTpl = $('#params-item-tpl').html();
+
+		function saveModify() {
+			setParams();
+			if (epoint.validate()) {
+				var displayName = mini.get("displayName").getValue();
+				mini.get("displayName").setValue(epoint.encode(displayName));
+				epoint.execute('save', '', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'success');
+			}
+		}
+
+		function addVariable(id) {
+			$('#' + id).remove();
+			var html = [];
+			maxnum++;
+			numlist.add(maxnum);
+			var newnameid = "paramnameid" + maxnum;
+			var newvalueid = "paramvalueid" + maxnum;
+			var newaddid = 'paramaddid' + maxnum;
+			var newdelid = 'paramdelid' + maxnum;
+			var data = {
+				"paramnameid" : newnameid,
+				"paramvalueid" : newvalueid,
+				"paramaddid" : newaddid,
+				"paramdelid" : newdelid
+			};
+			html.push(Mustache.render(paramsTpl, data));
+			$('#customParams').append(html.join(''));
+			mini.parse();
+		}
+
+		function delVariable(id) {
+			if (numlist.length == 1) {
+				mini.get('paramnameid' + maxnum).setValue('');
+				mini.get('paramvalueid' + maxnum).setValue('');
+			} else {
+				var num = parseInt(id.charAt(id.length - 1));
+				$('#' + id).parent().remove();
+				numlist.remove(num);
+				if (num == maxnum) {
+					//删除的如果是最后一行,需要在上一行补个加号
+					maxnum = numlist[numlist.length - 1];
+					$('#paramdelid' + maxnum)
+							.parent()
+							.append(
+									"<a id=\"paramaddid"
+											+ maxnum
+											+ "\" onclick=\"addVariable(this.id)\" class=\"action-icon icon-addcircle\"></a>");
+				}
+			}
+		}
+
+		function setParams() {
+			var params = {};
+			for (var i = 0; i < numlist.length; i++) {
+				if (mini.get('paramvalueid' + numlist[i]).getValue()
+						&& mini.get('paramnameid' + numlist[i]).getValue()) {
+					var value = mini.get('paramvalueid' + numlist[i])
+							.getValue();
+					if (isJsonString(value)) {
+						params[mini.get('paramnameid' + numlist[i]).getValue()] = JSON
+								.parse(value);
+					} else {
+						params[mini.get('paramnameid' + numlist[i]).getValue()] = value;
+					}
+				}
+			}
+			mini.get('mobileitem').setValue(JSON.stringify(params));
+		}
+
+		function isJsonString(str) {
+			try {
+				if (typeof JSON.parse(str) == "object") {
+					return true;
+				}
+			} catch (e) {
+			}
+			return false;
+		}
+
+		var tip = new mini.ToolTip();
+		tip.set({
+			target : document,
+			selector : '[data-tooltip], [title]'
+		});
+
+		$(document)
+				.ready(
+						function() {
+							// 为数据结构label添加注释
+							var labelEle = $("#customParams").parent().prev();
+							var labelText = labelEle.text();
+							var labelValue = labelText.substring(0,
+									labelText.length - 1);
+							var labelSymbol = labelText.substring(
+									labelText.length - 1, labelText.length);
+							var tipValue = "移动端如有个性化需求,可以在此填写移动端需要的参数</br>在推送时和获取消息列表时,这些字段会在消息体的params字段中</br>常用原生场景可以配置2个原生地址(iosenter和androidenter)以及一个H5地址(url)在下方3个字段中</br>url字段通常和移动地址模板相同";
+							var helpText = '<a class="action-icon icon-askcircle" data-tooltip="' + tipValue + '" data-placement="top" style="padding-left: 3px;padding-right:2px"/>';
+							labelEle.text("");
+							labelEle.append(labelValue);
+							labelEle.append(helpText);
+							labelEle.append(labelSymbol);
+						});
+	</script>
+</body>
+</html>

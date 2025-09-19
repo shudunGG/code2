@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>个人桌面元件管理</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet"
+	href="../../../framemanager/orga/uiset/deskmanagement/userdeskmanagement.css">
+
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div id="fuiContent" class="fui-content">
+		<div class="elem-container" id="elem-container">
+			<ul>
+
+			</ul>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 配置变量 -->
+	<script>
+		epoint.initPage('personalelementmanageaction');
+		// 元件基本高度
+		var BASE_HEIGHT = 150,
+		// 元件间隙[上下,左右] 尽可能配置成偶数
+		GAPS = [ 10, 10 ];
+		// 点击从禁用元件的处理地址 参数 {id:'元件guid',query:'desabled-elem'}
+		var disabledUrl = "../../../"
+				+ epoint
+						.dealRestfulUrl("personalelementmanageaction/forbidElement");
+		var useUrl = "../../../"
+				+ epoint
+						.dealRestfulUrl("personalelementmanageaction/useElement");
+		// 元件禁用的 回调
+		// var disableCb = function () {
+		//     var id = this.getAttribute('data-id'),
+		//         name = this.getAttribute('data-name');
+		//     console && console.log('id:%s,name:%s 禁用', id, name);
+		// }
+		// // 启用回调
+		// var reStartCb = function () {
+		//     var id = this.getAttribute('data-id'),
+		//         name = this.getAttribute('data-name');
+		//     console && console.log('id:%s,name:%s 启用', id, name);
+		// }
+		// 点击事件
+		$('#elem-container').on('click', '.elem-item-btn', function() {
+			var $this = $(this), $elem = $this.closest('.elem-item');
+
+			// 元件id
+			var id = $elem.data('id'),
+			// 元件是否禁用
+			isDisabled = $elem.hasClass('disabled');
+
+			if ($elem.hasClass('disabled')) {
+				// 启用
+				epoint.execute('useElement', '@none', id, function(data) {
+					try {
+						data = JSON.parse(data);
+					} catch (err) {
+						throw err;
+					}
+
+					if (data.status == 1) {
+						reStartCb($elem, $this);
+					} else {
+						epoint.alert(data.description, '', null, 'info');
+					}
+				});
+
+			} else {
+				// 禁用
+				epoint.execute('forbidElement', '@none', id, function(data) {
+					try {
+						data = JSON.parse(data);
+					} catch (err) {
+						throw err;
+					}
+
+					if (data.status == 1) {
+						disableCb($elem, $this);
+					} else {
+						epoint.alert(data.description, '', null, 'info');
+					}
+				});
+			}
+		});
+		// 要等请求完成后再改变状态
+		// 元件禁用的 回调
+		var disableCb = function($elem, $this) {
+			epoint.alert('禁用成功！<br />元件将不会显示在您的桌面上，该行其他应用自动按比例占据此元件空出来的位置！', '', null, 'warning');
+			$elem.addClass('disabled');
+			$this.attr('title', '启用');
+		}
+		// 启用回调
+		var reStartCb = function($elem, $this) {
+			epoint.alert('启用成功', '', null, 'info');
+			$elem.removeClass('disabled');
+			$this.attr('title', '禁用');
+		}
+	</script>
+
+	<script>
+		SrcBoot
+				.output([ 'frame/fui/js/widgets/gridster/jquery.gridster.min.js',
+						'../../../framemanager/orga/uiset/deskmanagement/userdeskmanagement.js' ]);
+	</script>
+
+
+
+	<script>
+		//<![CDATA[  
+
+		epoint.initPage('personalelementmanageaction');
+		var guid = Util.getUrlParams('portalGuid');
+		Util
+				.ajax(
+						{
+							url : "../../../"
+									+ epoint
+											.dealRestfulUrl("personalelementmanageaction/initUserElementWithDisabled?portalGuid="
+													+ guid)
+						}).done(function(data) {
+					window.ElementManage.init(data);
+				});
+		//]]>
+	</script>
+</body>
+
+</html>

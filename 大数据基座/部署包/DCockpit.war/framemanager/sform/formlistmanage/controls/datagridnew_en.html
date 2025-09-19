@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link rel="stylesheet" href="../css/common.css" />
+<style>
+.layout td {
+	padding: 5px 0;
+}
+
+.cke_dialog_ui_input_text {
+	height: 25px;
+	box-sizing: border-box;
+	padding: 0 6px;
+	border-radius: 3px;
+	outline: 0;
+	border: 1px solid #aeb3b9;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+}
+
+.cke_dialog_ui_input_select {
+	height: 24px;
+	line-height: 24px;
+	background-color: #fff;
+	border: 1px solid #c9cccf;
+	padding: 2px 6px;
+	outline: 0;
+	border-radius: 3px;
+	box-shadow: 0 1px rgba(0, 0, 0, .15);
+}
+
+.cke_dialog_ui_button {
+	display: inline-block;
+	padding: 3px 0;
+	text-align: center;
+	color: #333;
+	vertical-align: middle;
+	cursor: pointer;
+	border: 1px solid #b6b6b6;
+	border-radius: 3px;
+	box-shadow: 0 1px 0 rgba(255, 255, 255, .5), 0 0 2px
+		rgba(255, 255, 255, .15) inset, 0 1px 0 rgba(255, 255, 255, .15) inset;
+	background: #e4e4e4;
+}
+
+.cke_dialog_ui_button span {
+	padding: 0 12px;
+}
+</style>
+<title>列表属性</title>
+</head>
+
+<body>
+    <input type="hidden" id="DataFieldCn"/>
+	<input type="hidden" id="CurTime"/>
+	<table width="100%">
+		<tr>
+			<td noWrap="" style="line-height: 30px;color: #333;font-size:13px;">子表选择：</td>
+			<td width="100%"><select class="cke_dialog_ui_input_select"  id="DataField" style="width:220px" onchange="showData(this)"></select></td>
+		</tr>
+		<tr><td colSpan="2">&nbsp;</td></tr>
+		<tr><td colSpan="2"><hr/></td></tr>
+	</table>
+
+	<table width="100%" id="col_def_table" class="layout">
+		<tbody>
+			<tr id="tr_header">
+				<td nowrap="" align="center" title="Tab键切换输入框"></td>
+				<td nowrap="" align="center">order</td>
+				<td nowrap="" align="center" title="Tab键切换输入框">table headname&nbsp;&nbsp;</td>
+				<td style="display:none" nowrap="" align="center" id="selectName" title="Tab键切换输入框">field name</td>
+				<td nowrap="" align="center" title="Tab键切换输入框">cell width</td>
+				<td nowrap="" align="center" title="Tab键切换输入框">js function name of cell</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<!-- 控件模板 -->
+	<script type="text/x-template" id="ctrl-templ">
+        <input type="text" class="datagridnew"
+        id="{{id}}" 
+        subfields="{{subfields}}"
+        tableid="{{tableid}}"
+        data-ctrl="datagridnew"
+        title="{{title}}"
+        datafield="{{dataField}}"
+        datafieldcn="{{dataFieldCn}}" 
+        readonly
+        value ="{{value}}"/>
+    </script>
+
+	<!-- 编辑列模板 -->
+	<script type="text/x-template" id="tr-templ">
+        {{#items}}<tr id="tr_{{order}}">
+                <td nowrap="" align="center"><input id="check_{{order}}" name="selectItem" {{#selectItem}}checked{{/selectItem}} type="checkbox" class="cke_dialog_ui_checkbox_input"></td>
+				<td nowrap="" align="center"><span id="no_{{order}}">{{order}}</span></td>
+	   			<td nowrap="" align="center" title="不能包含特殊字符"><input id="item_{{order}}" name="headername" type="text" size="18" style="width:90%;" value="{{headername}}" class="cke_dialog_ui_input_text"></td>
+				<td style="display:none;" nowrap="" id="tdId_{{order}}" align="center" title="不能包含特殊字符"><input id="field_{{order}}" name="fieldname" type="text" size="5" value="{{fieldname}}" style="width:70%" class="cke_dialog_ui_input_text"></td>
+				<td nowrap="" align="center" title="不能包含特殊字符"><input id="size_{{order}}" type="text" name="cellwidth" size="5" style="width:70%" value="{{cellwidth}}" class="cke_dialog_ui_input_text"> px</td>
+                <td nowrap="" align="center" title="不能包含特殊字符"><input id="js_{{order}}" type="text" name="cellJsName" size="5" style="width:70%" value="{{cellJsName}}" class="cke_dialog_ui_input_text"></td>
+          </tr>{{/items}}
+    </script>
+	<script type="text/javascript">
+		var tableId = parent.tableId;
+	</script>
+	<script type="text/javascript" src="../js/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="../js/mustache.js"></script>
+	<script type="text/javascript" src="../js/controls/control.js"></script>
+	<script type="text/javascript" src="../js/controls/DataGridNew.js"></script>
+</body>
+
+</html>

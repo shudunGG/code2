@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The new fast</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew" iconCls="icon-save">save and new</a> 
+			<a class="mini-button" id="addClose" onclick="saveAndClose" iconCls="icon-save">save and close</a> 
+			<a class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">shut down</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="shortcut name" starred="true">
+					    <input bind="dataBean.linkName" class="mini-textbox" required="true" requiredErrorText="Please enter theThe name of the shortcut" vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="correspondence add" starred="true">
+					    <input bind="dataBean.linkUrl" class="mini-textbox" required="true" requiredErrorText="Please enter theCorrespondence address" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+					    <input bind="dataBean.orderNumber" class="mini-textbox" vType="int" value="0"/>
+					</div>
+				</div>
+				
+				<div role="row">
+					<div role="control" label="pop-up window">
+					    <div name="tcck" bind="isBlank" class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="small pictures">
+					    <input id="smallRefresh" bind="dataBean.iconAddress"
+							class="mini-buttonedit" emptyText="" allowInput="false"
+							onbuttonclick="openicon"  selectOnFocus="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage("quicklinkaddaction");
+		
+		// New correction operation
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// emptyThe form
+					epoint.clear('fui-form');
+				}
+			}
+		}
+
+		//save and new
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form',newCallback);
+			}
+		}
+		
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+
+		// Shut downOperation of the callback
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		//save and new
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+		
+		//Open theSmall pictures
+		function openicon(e) {
+			epoint.openDialog('Choose the icon',
+					'framemanager/orga/uiset/menu/module/selectoa8icon?type=small',
+					function(param) {
+						if (param && param!='close') {
+							mini.get("smallRefresh").setText(param);
+							mini.get("smallRefresh").setValue(param);
+						}
+					}, {
+						width : 1000,
+						height : 400
+					});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

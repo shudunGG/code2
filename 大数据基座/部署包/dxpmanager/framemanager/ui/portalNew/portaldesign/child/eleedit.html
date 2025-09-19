@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>元件设置</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="css/eleEdit.css">
+    <style>
+        .scroll {
+            height: 100%;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title active" id="title-header">
+        <span id="ele-name"></span>
+        <i class="icon-eye"></i>
+    </div>
+    <div class="tabs relative">
+        <ul class="clearfix">
+            <li class="tab-item tab-column w-half l" data-ref="column">栏目</li>
+            <li class="tab-item w-half active l" data-ref="attr">属性</li>
+        </ul>
+        <ul class="tab-detail-container">
+            <li class="hidden" id="column-container">
+                <div class="clearfix lh-mid mt-20">
+                    <div class="l bold ">栏目设置</div>
+                </div>
+                <input id="column" name="column"
+                    data="" textField="name"
+                    valueField="id" value="" class="mini-combobox w-full" />
+
+                <input id="columnUrl" name="columnUrl" class="mini-textbox w-full" visible="false" />
+                <div id="diy" name="diy" class="mini-checkbox" readOnly="false" text="自定义链接"
+                    onvaluechanged="onDiyChange"></div>
+                <div class="child-columns">
+                    <div class="clearfix lh-mid mt-20">
+                        <div class="l bold ">子栏目</div>
+                    </div>
+                    <ul id="sort-list">
+                        <!-- <li class="column-item">待办 <span class="column-default">(默认)</span>
+                            <div class="r lib-more"></div>
+                        </li>
+                        <li class="column-item">待办<div class="r lib-more"></div>
+                        </li>
+                        <li class="column-item">待办<div class="r lib-more"></div>
+                        </li> -->
+                    </ul>
+                    <div class="add-child-column">+添加子栏目</div>
+                </div>
+                
+            </li>
+            <li class="" id="attr-container">
+                <div class="clearfix lh-mid">
+                    <div class="l">最大尺寸</div>
+                    <div class="r">
+                        <input id="maxStart" enabled="false" bind="element.maxStart" style="width: 50px;margin-top: 5px;"
+                            name="maxStart" class="mini-textbox l mr-5" /><span class="l mr-5">x </span>
+                        <input id="maxEnd" enabled="false" bind="element.maxEnd" style="width: 50px;margin-top: 5px;"
+                            name="maxEnd" class="mini-textbox l mr-5" />
+                    </div>
+                </div>
+                <div class="clearfix lh-mid">
+                    <div class="l">最小尺寸</div>
+                    <div class="r">
+                        <input id="minStart" enabled="false" style="width: 50px;margin-top: 5px;" bind="element.minStart"
+                            name="minStart" class="mini-textbox l mr-5" /><span class="l mr-5">x </span>
+                        <input id="minEnd" enabled="false" style="width: 50px;margin-top: 5px;" bind="element.minEnd"
+                            name="minEnd" class="mini-textbox l mr-5" />
+                    </div>
+                </div>
+                <div class="clearfix lh-mid">
+                    <div class="l">详情打开方式</div>
+                    <div class="r">
+                        <input id="linkOpenType" bind="element.openwith" name="linkOpenType"
+                            data="[{text:'弹窗',id:'dialog'},{text:'内部跳转',id:'tabsNav'},{text:'新窗口',id:'blank'}]"
+                            textField="text" valueField="id" value="dialog" class="mini-combobox"
+                            style="width: 100px" />
+                    </div>
+                </div>
+                <div class="clearfix lh-mid">
+                    <div class="l">随主题换肤(推荐开启)</div>
+                    <div class="r">
+                        <div id="themeCheck" bind="element.themeCheck" name="themeCheck" class="mini-checkbox switch"
+                            checked="true" readOnly="false" onvaluechanged="themeChange">
+                        </div>
+                    </div>
+                </div>
+                <div id="ele-style" class="hidden">
+                    <div class="clearfix lh-mid mt-20">
+                        <div class="l bold ">元件样式</div>
+                    </div>
+
+                    <div class="clearfix lh-mid">
+                        <div class="l">边框</div>
+                        <div class="r">
+                            <input id="border" name="border" bind="element.framesize" style="width: 50px;" class="mini-spinner r "
+                                value="0" minValue="0" />
+                            <input id="borderColor" bind="element.framecolor" class="mini-colorpicker r mr-5"
+                                style="width: 100px;" format="hex" allowInput="true" />
+                        </div>
+                    </div>
+
+                    <div class="clearfix lh-mid">
+                        <div class="l">背景</div>
+                        <div class="r">
+                            <input id="bg" bind="element.backgroundcolor" class="mini-colorpicker r mr-5" style="width: 100px;" format="hex"
+                                allowInput="true" />
+                        </div>
+                    </div>
+
+                    <div class="clearfix lh-mid">
+                        <div class="l">阴影</div>
+                        <div class="r">
+                            <input id="shadow" bind="element.shadow" class="mini-colorpicker r mr-5" style="width: 100px;"
+                                format="hex" allowInput="true" />
+                        </div>
+                    </div>
+
+                    <div class="clearfix lh-mid">
+                        <div class="l">圆角</div>
+                        <div class="r">
+                            <input name="radius" bind="element.radius" style="width: 50px;" class="mini-spinner r " value="0"
+                                minValue="0" />
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="clearfix lh-mid mt-20">
+                    <div class="l bold">标题区</div>
+                    <div class="r">
+                        <div id="showHeader" bind="element.isshowtitle" name="showHeader" class="mini-checkbox switch"
+                            checked="true" readOnly="false">
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix lh-mid">
+                    <div class="l">标题</div>
+                    <div class="l ml-30">
+                        <input id="title" bind="element.title" style="width: 160px;margin-top: 7px;" name="title"
+                            class="mini-textbox l mr-5" />
+
+                        <input id="titleColor" bind="element.fontcolor" class="mini-colorpicker l mr-5"
+                            style="width: 27px;margin-top: 7px;" format="hex" allowInput="true" />
+                        <input id="titleBgColor" bind="element.titlebackgroundcolor" class="mini-colorpicker l mr-5"
+                            style="width: 27px;margin-top: 7px;" format="hex" allowInput="true" />
+                    </div>
+                </div>
+                <div class="clearfix lh-mid">
+                    <div class="l">图标</div>
+                    <div class="l ml-30">
+                        <div class="l icon-set mr-5" id="icon-set"></div>
+                        <input id="icon" style="width: 50px;margin-top: 5px;" bind="element.icon"
+                            name="icon" class="mini-textbox l mr-5 hidden"  />
+                        <input id="iconColor" bind="element.iconColor" class="mini-colorpicker r mr-5"
+                            style="width: 100px;margin-top: 5px;" format="hex" allowInput="true" />
+                    </div>
+                </div>
+                <div class="clearfix lh-mid">
+                    <div class="l">功能</div>
+                    <div class="l ml-30">
+                        <div id="showRefreshBtn" name="showRefreshBtn" class="mini-checkbox" bind="element.isshowrefresh"
+                            readOnly="false" text="刷新"></div>
+                        <div id="showMoreBtn" name="showMoreBtn" class="mini-checkbox" bind="element.isshowmorebutton"
+                            readOnly="false" text="更多" onvaluechanged="moreChange"></div>
+                        <div id="showAddBtn" name="showAddBtn" class="mini-checkbox" bind="element.isshownewbutton" readOnly="false"
+                            text="新增" onvaluechanged="addChange"></div>
+                    </div>
+                </div>
+                <div class="clearfix lh-mid hidden" id="attr-more">
+                    <div class="l">更多</div>
+                    <div class="l ml-30">
+                        <input id="moreUrl" style="width: 200px" bind="element.moreUrl" name="moreUrl" class="mini-textbox" />
+                    </div>
+                </div>
+                <div class="clearfix lh-mid hidden" id="attr-add">
+                    <div class="l">新增</div>
+                    <div class="l ml-30">
+                        <input id="addUrl" style="width: 200px" bind="element.newurl" name="addUrl" class="mini-textbox" />
+                    </div>
+                </div>
+                <div id="visible" bind="element.visible" name="visible" class="mini-checkbox switch hidden"
+                            checked="true" readOnly="false">
+                        </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 子栏目更多-->
+    <ul id="column-more-menu" class="more-menu">
+        <li class="menu-item" data-ref="default">设为默认</li>
+        <li class="menu-item" data-ref="edit">编辑</li>
+        <li class="menu-item text-red" data-ref="delete">删除</li>
+    </ul>
+
+    <div class="footer text-right clearfix">
+        <a class="mini-button r mr-5 portal-confirm" onclick="save()">保存</a>
+
+        <a class="mini-button r mr-5 portal-cancel" onclick="cancle()">取消</a>
+    </div>
+
+    <script type="x-tmpl-mustache" id="column-element-tpl">  
+        <li class="column-item {{#default}}default{{/default}}" 
+            data-show-num="{{showNum}}"
+            data-id="{{id}}"
+            data-url="{{url}}"
+            data-is-diy="{{isDiy}}"
+            data-name="{{name}}"
+            data-default="{{default}}"
+            >
+            <span class="column-item-name">{{name}}</span>    
+            <span class="column-default">(默认)</span>
+            <div class="r lib-more"></div>
+        </li>
+    </script>
+    
+
+    <script src="../../../../../rest/resource/jsboot"></script>
+    <script>
+        var portalConfig = {
+            getColumns: 'rest/elementeditaction/getColumns?isCommondto=true' // 获取主栏目数据
+        };
+    </script>
+    <script>
+        (function (win, $) {
+            var COLUMN_TPL = $.trim($("#column-element-tpl").html())
+
+            var $column = mini.get('column'),
+                $url = mini.get('columnUrl'),
+                $diy = mini.get('diy'),
+                $columnContainer = $('#column-container'),
+                $columnMoreMenu = $('#column-more-menu'),
+                $titleHeader = $('#title-header'),
+                $eleName = $('#ele-name'),
+                $eleStyle = $('#ele-style'),
+                $attrAdd = $('#attr-add'),
+                $attrMore = $('#attr-more'),
+                $visible = mini.get('visible'),
+                $cacheLi = '',
+                query = Util.getUrlParams(),
+                eleTitle = query.title,
+                eleId = query.id,
+                iconNum = '',
+                $sortList = $('#sort-list');
+
+            $eleName.text(eleTitle);
+
+            epoint.initPage('elementeditaction', '', function (data) {
+                // 初始化控件
+                mini.get('title').setValue(eleTitle);
+
+                $('.tab-column')[data.column.columnUrl? 'removeClass': 'addClass']('new')
+
+                $diy.setValue(data.column.isDiy);
+                if(data.column.isDiy) {
+                    $url.setVisible(true);
+                    $column.setVisible(false);
+                    $url.setValue(data.column.columnUrl);
+                    $columnContainer.addClass('hide-column');
+                } else {
+                    $url.setVisible(false);
+                    $column.setVisible(true);
+                    $column.setValue(data.column.columnId);
+                    $columnContainer.removeClass('hide-column');
+                }
+
+                if(mini.get('themeCheck').checked) {
+                    $eleStyle.addClass('hidden');
+                } else {
+                    $eleStyle.removeClass('hidden');
+                }
+
+                var iconValue = mini.get('icon').value;
+                if(iconValue) {
+                    var iconUrl = '';
+                    if(isNaN(+iconValue)) {
+                        iconUrl = Util.getRightUrl(iconValue);
+                    } else {
+                        iconUrl = '../../../elements/icons/f9mod-' + iconValue +'.svg';
+                    }
+
+                    $('#icon-set').css({ "background": "url("+Util.getRightUrl(iconUrl)+") no-repeat center" });
+                } else {
+                    $('#icon-set').css({ "background": "none" });
+                }
+                
+
+                if(mini.get('showAddBtn').checked) {
+                    $attrAdd.removeClass('hidden');
+                }
+
+                if(mini.get('showMoreBtn').checked) {
+                    $attrMore.removeClass('hidden');
+                }
+                renderChildColumn(data.column.columnItems);
+            });
+
+            /* -------- 加载栏目 ---------- */
+
+            function getColumns() {
+                Util.ajax({
+                    url: portalConfig.getColumns
+                }).done(function (data) {
+                    $column.setData(data.columns);
+                });
+            }
+
+            getColumns();
+
+            /* -------- 加载栏目 end ---------- */
+
+            // 隧主题换肤
+            win.themeChange = function (e) {
+                var value = e.value;
+                if (value == 'true') {
+                    $eleStyle.addClass('hidden');
+                } else {
+                    $eleStyle.removeClass('hidden');
+                }
+            };
+
+            // 功能选择-新增
+            win.addChange = function (e) {
+                var value = e.value;
+                if (value == 'true') {
+                    $attrAdd.removeClass('hidden');
+                } else {
+                    // mini.get('addUrl').setValue('');
+                    $attrAdd.addClass('hidden');
+                }
+            };
+
+             // 功能选择-更多
+             win.moreChange = function (e) {
+                var value = e.value;
+                if (value == 'true') {
+                    $attrMore.removeClass('hidden');
+                } else {
+                    // mini.get('moreUrl').setValue('');
+                    $attrMore.addClass('hidden');
+                }
+            };
+
+            // 自定义链接
+            win.onDiyChange = function (e) {
+                if (this.getChecked()) {
+                    $columnContainer.addClass('hide-column');
+                    $column.setVisible(false);
+                    $url.setVisible(true);
+                } else {
+                    $columnContainer.removeClass('hide-column')
+                    $column.setVisible(true);
+                    $url.setVisible(false);
+                }
+            }
+
+            win.save = function () {
+                /* var url = ''; // 栏目url
+                var selectColumn = $column.getSelected(); */
+                // var columnValue =  selectColumn.url;
+                // var columnUrl =  $url.value;
+                var isDiy = $diy.checked;
+
+                var childUrl = "";
+
+                // 获取主栏目的信息
+                var selectColumn = $column.getSelected();
+                var url = '', // 栏目地址
+                    id = '',
+                    name = '',
+                    countUrl = '';
+                
+
+                if(selectColumn && selectColumn.id) {
+                    url = selectColumn.url;
+                    id = selectColumn.id;
+                    name = selectColumn.name;
+                    countUrl = selectColumn.countUrl;
+                } else {
+                    url = $url.value;
+                };
+                // 获取主栏目的信息 end
+
+                if(!url) {
+                    epoint.alert('栏目设置不能为空');
+                    return;
+                }
+
+                var columnItems = [];
+
+                if($sortList.html()) {
+                    var childColumnData = getChildColumnData();
+                    
+                    columnItems = childColumnData.columnItems;
+
+                    childUrl = childColumnData.defaultUrl;
+                    
+                }
+
+                if(childUrl) {
+                    url = childUrl;
+                }
+
+                var otherData = JSON.stringify({
+                    columnItems:columnItems,
+                    columnId: id,
+                    columnName: name,
+                    columnUrl: url,
+                    countUrl: countUrl,
+                    isDiy: isDiy
+                    // visible: $eleName.hasClass('active') // 元件-仓库是否可见
+                });
+
+                var bindData = JSON.parse(epoint.getCommonDtoData().commonDto),
+                    attrData = {
+                        titleIcon: iconNum
+                    };
+
+
+                var convertArr = ['showRefreshBtn', 'showAddBtn', 'showHeader', 'showMoreBtn', 'themeCheck', 'visible'];
+
+                $(bindData).each(function (index, item) {
+                    if (convertArr.indexOf(item.id) > -1) {
+                        item.value = item.value == 'true' ? true : false;
+                    }
+                    attrData[item.id] = item.value;
+                });
+
+                
+
+                // attrData['url'] = otherData.url;
+                attrData['visible'] = $titleHeader.hasClass('active');
+                attrData['column'] = JSON.parse(otherData);
+                // var = $.extend({}, attrData, otherData);
+                epoint.execute('elementSave', '@all', [otherData], function (data) {
+                    // if (data.msg) {
+                    //     epoint.alert(data.msg);
+                    // }
+
+                    attrData.countUrl = countUrl;
+                    epoint.closeDialog({
+                        type: 'ok',
+                        options: {
+                            attr: attrData
+                        }
+                    });
+
+                    
+                });
+            }
+
+            win.cancle = function () {
+                epoint.closeDialog({
+                    type: 'close'
+                });
+                
+            }
+
+            // 渲染子栏目
+            function renderChildColumn(list) {
+                var str = '';
+                $(list).each(function (index, item) {
+                    var defaultStr = item.default ? 'default' : '';
+                    str += Mustache.render(COLUMN_TPL, item);
+                    // str += '<li class="column-item ' + defaultStr + '" data-show-num="'+item.showNum+'" data-name="'+item.name+'" data-is-diy="'+item.isDiy+'" data-url="'+item.url+'" data-default="'+item.default+'" data-id="' + item.id + '">' + item
+                    //     .name + ' <span class="column-default">(默认)</span>' +
+                    //     '<div class="r lib-more"></div>' +
+                    //     '</li>'
+                });
+
+                $sortList.html(str);
+            }
+
+            $('body')
+                .on('click', '.change-confirm', function () {
+                    var type = $('.type-business').hasClass('hidden') ? '1' : '2';
+                    if (type == 1) {
+                        // 选项
+                        var optionName = mini.get('optionName').value;
+
+                        epoint.closeDialog({
+                            type: 'ok',
+                            options: {
+                                name: optionName
+                            }
+                        });
+                    } else {
+
+                        // 业务
+                        var businessName = mini.get('businessName').value;
+
+                        epoint.closeDialog({
+                            type: 'ok',
+                            options: {
+                                name: businessName
+                            }
+                        });
+
+                    }
+                })
+                .on('click', '.tab-item', function () {
+                    var $this = $(this),
+                        ref = $this.data('ref');
+                    $this.addClass('active').siblings('.active').removeClass('active');
+                    $('#' + ref + '-container').removeClass('hidden').siblings().addClass('hidden');
+                })
+                .on('click', '.lib-more', function () {
+                    var $this = $(this),
+                        $li = $this.parent();
+
+                    $cacheLi = $li;
+
+                    // 缓存仓库的数据
+                    $columnMoreMenu.data('info', $li.data())
+
+                    menuPosition($this, $columnMoreMenu);
+                })
+                .on('click', '#icon-set', function () {
+                    var $this = $(this);
+                    var currentIcon = mini.get('icon').value;
+
+                    epoint.openTopDialog('图标设置', './icons?icon=' + currentIcon +'&elementGuid=' + eleId, function (param) {
+                        if (param.type == 'ok') {
+                            iconNum = param.options.num;
+                            // $this.removeClass().addClass('l icon-set mr-5 modicon-' + iconNum)
+                            if(typeof iconNum == 'string') {
+                                $this.css({
+                                    "background": "url("+ Util.getRightUrl(iconNum) +") #f5f6f9 no-repeat"
+                                });
+                            } else {
+                                if(!iconNum) {
+                                    $this.css({
+                                        "background": "transparent"
+                                    }); 
+                                } else {
+                                    $this.css({
+                                        "background": "url('../../../elements/icons/f9mod-" + iconNum +".svg') #f5f6f9 no-repeat"
+                                    });
+                                }
+                            }
+
+                            mini.get('icon').setValue(iconNum);
+                            /* if(iconNum) {
+                                $this.css({
+                                    "background": "url('../../../elements/icons/f9mod-" + iconNum +".svg')"
+                                });
+                            } else {
+                                $this.css({
+                                    "background": "transparent"
+                                });
+                            }
+                             */
+                        } else if (param == 'close') {
+                            // TODO
+                        }
+                    }, {
+                        width: "500",
+                        height: "494",
+                        param: {
+
+                        }
+                    });
+                })
+                .on('click', '.add-child-column', function () {
+                    var selectColumn = $column.getSelected();
+
+                    if(!selectColumn) {
+                        epoint.alert('请先选择主栏目');
+                        return;
+                    }
+                    epoint.openTopDialog('子栏目设置', './childcolumn?parentColumnguid=' + selectColumn.id, function (param) {
+                        if (param.type == 'ok') {
+                            addChildColumn(param.options);
+
+                        } else if (param == 'close') {
+                            // TODO
+                        }
+                    }, {
+                        width: "415",
+                        height: "394",
+                        param: {
+
+
+                        }
+                    });
+                })
+                .on('click', '.icon-eye', function () {
+                    var $this = $(this),
+                        $title = $this.parent();
+
+                    $title.toggleClass('active');
+
+                    if($title.hasClass('active')) {
+                        $visible.setValue(true);
+                    } else {
+                        $visible.setValue(false);
+                    }
+                });
+
+            $sortList.sortable();
+
+            
+
+            // 添加子栏目
+            function addChildColumn(data) {
+                $sortList.append(Mustache.render(COLUMN_TPL, data));
+            }
+
+            // 获取子栏目数据
+            function getChildColumnData() {
+                var columnData = [];
+                var defaultUrl = "";
+                var $columnItems = $('.column-item', $sortList);
+                var length = $columnItems.length;
+                $columnItems.each(function(index, item) {
+                    var data = $(item).data();
+                    var hasDefault = $(item).hasClass('default');
+                    columnData.push($.extend({}, {
+                        sort: length - index,
+                        default: hasDefault
+                    }, {
+                        id: data.id,
+                        isDiy: data.isDiy,
+                        name: data.name,
+                        showNum: data.showNum,
+                        url: data.url
+                    }));
+
+                    if(hasDefault) {
+                        defaultUrl = data.url
+                    }
+
+                });
+
+                return {
+                    columnItems: columnData,
+                    defaultUrl: defaultUrl
+                };
+            }
+
+            // 更多菜单位置
+            function menuPosition($btn, $menu) {
+                var pos = $btn.offset(),
+                    toCalcPos = { // 用于计算的位置
+                        left: pos.left - 80,
+                        top: pos.top + 28
+                    },
+                    docHeight = $(window).height(),
+                    libHeight = $menu.outerHeight(),
+                    toUsePos = { // 最后使用的位置
+                        left: toCalcPos.left,
+                        top: toCalcPos.top
+                    };
+
+                // 常量 5 表示与底部的间距
+                if (toUsePos.top + libHeight + 5 > docHeight) {
+                    toUsePos.top = docHeight - libHeight - 5;
+                }
+
+                $menu.css({
+                    left: toUsePos.left,
+                    top: toUsePos.top
+                }).fadeIn(200);
+            }
+
+            $columnMoreMenu.on('click', '.menu-item', function () {
+                var $this = $(this),
+                    ref = $this.data('ref');
+
+                if (ref == 'edit') {
+                    var selectColumn = $column.getSelected();
+
+                    if(!selectColumn) {
+                        epoint.alert('请先选择主栏目');
+                        return;
+                    }
+
+                    epoint.openTopDialog('子栏目设置', './childcolumn?parentColumnguid=' + selectColumn.id, function (param) {
+                        if (param.type == 'ok') {
+                            var childData = param.options;
+                            $cacheLi.attr({
+                                "data-show-num": childData.showNum,
+                                'data-name': childData.name,
+                                'data-is-diy': childData.isDiy,
+                                'data-url': childData.url,
+                                'data-id': childData.id
+                            });
+                            $cacheLi.find('.column-item-name').text(childData.name);
+                            $cacheLi.data({
+                                isDiy: childData.isDiy,
+                                name: childData.name,
+                                showNum: childData.showNum,
+                                url: childData.url,
+                                id: childData.id
+                            })
+
+                        } else if (param == 'close') {
+                            // TODO
+                        }
+                    }, {
+                        width: "415",
+                        height: "394",
+                        param: $columnMoreMenu.data('info')
+                    });
+                } else if (ref == 'default') {
+                    $cacheLi.addClass('default').siblings('.default').removeClass('default');
+
+                } else if(ref == 'delete') {
+                    $cacheLi.remove();
+                }
+                $columnMoreMenu.hide();
+            });
+
+            // 点击其他地方隐藏更多菜单
+            $('body').on('click', function (e) {
+                if (!$(e.target).closest('.menu-item, .lib-more, .more-menu').length) {
+                    $columnMoreMenu.hide();
+                }
+            });
+
+
+        })(window, jQuery);
+    </script>
+</body>
+
+</html>

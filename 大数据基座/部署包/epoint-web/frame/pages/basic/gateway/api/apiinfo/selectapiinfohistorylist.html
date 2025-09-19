@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>API历史版本列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的右侧内容 -->
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="服务名称">
+						<input class="mini-textbox" bind="apiName" />
+					</div>
+					<div role="control" label="版本号">
+						<input class="mini-textbox" bind="apiVersionNumber" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="更新时间">
+						<span style="width: 100%"> <input name="" id="start-time"
+							class="mini-datepicker" format="yyyy-MM-dd"
+							bind="searchStartTime" style="width: 47.5%"
+							onvaluechanged="startTimeChanged" /> <span>至</span> <input
+							name="" id="finsh-time" class="mini-datepicker"
+							format="yyyy-MM-dd" bind="searchFinshTime" style="width: 46.8%"
+							onvaluechanged="finshTimeChanged" />
+						</span>
+					</div>
+					<div role="control" label="服务源地址">
+						<input class="mini-textbox" bind="apiRealUrl" />
+					</div>
+					<input id="apiguid" class="mini-hidden" bind="apiguid" />
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div width="100" field="apiname">名称</div>
+				<div width="100" field="version_number">版本号</div>
+				<div width="100" field="apirealurl">源地址</div>
+				<div width="150" field="updatedate"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">更新时间</div>
+				<div width="60" renderer="onSelectRenderer">恢复</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('selectapiinfohistorylistaction', '', function(data) {
+			if (data && data.apiguid) {
+				var apiguid = data.apiguid;
+				mini.get('apiguid').setValue(apiguid);
+			} else {
+				epoint.showTips(data.error,{state : 'danger'});
+			}
+		});
+
+		// 绘制行选择按钮
+		var onSelectRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-recover",
+					"selectApi", "rowguid");
+		};
+
+		// 选中历史版本
+		function selectApi(e) {
+			epoint.closeDialog(e);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function startTimeChanged() {
+			// 获取时间
+			var time = mini.get('start-time').getValue();
+			mini.get('finsh-time').minDate = time;
+		}
+
+		function finshTimeChanged() {
+			// 获取时间
+			var time = mini.get('finsh-time').getValue();
+			mini.get('start-time').maxDate = time;
+		}
+	</script>
+</body>
+</html>

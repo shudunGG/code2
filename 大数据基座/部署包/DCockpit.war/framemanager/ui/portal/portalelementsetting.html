@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>门户元件关系</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+
+<style>
+.search-btn .mini-buttonedit-icon {
+	background-position: -109px -154px;
+	background-image: url(../../image/home/icon-13x13.png);
+	background-repeat: no-repeat;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存设置</a>
+			<a class="mini-button" id="btnClose" onclick="epoint.closeDialog">取消设置</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="配置元件"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div id="tabstreeselect2" class="mini-tabstreeselect"
+							selectedPanelTitle="已选择记录" style="width: 99%; height: 400px"
+							action="getElementTreeData" loadWhenChecked="true"
+							filterMode="server" showBorder="true">
+							<div tabText="选择元件" tabKey="element"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('portalelementsettingaction');
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") != -1) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', null, 'warning');
+				}
+			}
+		}
+
+		//保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('saveUserSetting', '', closeCallback);
+			}
+		}
+		
+		//]]>
+	</script>
+
+</body>
+</html>

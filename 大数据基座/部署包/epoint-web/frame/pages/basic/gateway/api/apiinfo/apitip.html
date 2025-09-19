@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>请求响应格式说明</title>
+<!-- 请修改相对路径 -->
+<!-- 引入 cssboot.js会影响markedjs的渲染效果，所以不使用 -->
+<!-- <script src="../../../../../../frame/fui/js/cssboot.js"></script> -->
+<script src="../../../../../../frame/fui/js/libs/jquery-1.12.4.min.js"></script>
+<script src="../../../../../../frame/fui/js/libs/jquery.cookie.min.js"></script>
+
+<style>
+table {
+     border-spacing: 0;
+     border-collapse: collapse;
+     border: 1px solid #ddd;
+}
+td, th {
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+</style>
+</head>
+
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+
+	<div class="fui-content">
+		<div id="content"></div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="lib/marked.min.js"></script>
+	<!-- 不引入 cssboot.js，jsboot也无效，所以不使用  -->
+	<!-- <script src="../../../../../../rest/resource/jsboot"></script> -->
+	<script>
+	
+		$(document).ready(function () {
+			// tip类型
+			var tipType = getUrlParam("tipType");
+			if (!tipType) {
+				tipType = $.cookie("tipType");
+			}
+			
+			var md= "";
+			if (tipType == "ftpapi") {
+				md = "ftp_api.md";
+			} else if (tipType == "dataapi") {
+				md = "data_api.md";
+			} else if (tipType == "funcapi") {
+				md = "func_api.md";
+			}
+			
+			$.ajax({ 
+			    type: "GET", 
+			    url: "apitipcontent/" + md + "?time=" + new Date().getTime(),
+			    success: function(data){
+			    	$('#content').html(marked(data));
+			   }
+			});
+			
+		})
+		
+		// 获取URL中的请求参数
+		function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r != null) return unescape(r[2]); return null; //返回参数值
+        }
+		
+	</script>
+</body>
+</html>

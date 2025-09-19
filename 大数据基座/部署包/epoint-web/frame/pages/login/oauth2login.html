@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<title>新点统一认证平台</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="sso/css/login.css">
+<link rel="stylesheet" href="sso/css/common.css">
+
+<link rel="stylesheet" href="securityverification/css/content.css">
+<link rel="stylesheet" href="securityverification/css/common.css">
+<script src="securityverification/js/jquery-1.12.min.js"></script>
+
+</head>
+
+<body>
+	<!-- 背景 -->
+	<div class="bg">
+		<img style="" src="sso/images/bg.jpg" />
+	</div>
+	<div class="content">
+		<!-- 登录页标题 -->
+		<div class="login-tt">
+			<img id="logo-img" src="sso/images/title.png" alt="" />
+		</div>
+		<!-- 登录框 -->
+		<div class="login-wrap">
+			<div class="login-tab-head clearfix" data-role="head">
+				<h5 id="ID" class="login-tab-head-item l act" data-role="tab"
+					data-target="user" onclick="">用户登录</h5>
+				<h5 id="KEY" class="login-tab-head-item l" data-role="tab"
+					data-target="ca" onclick="">CA登录</h5>
+				<h5 id="EWM" class="login-tab-head-item l" data-role="tab"
+					data-target="ewm" onclick="">二维码</h5>
+			</div>
+			<div class="login-tabcontent" data-role="body">
+				<div class="login-tabcontent-item" data-role="tab-content"
+					data-id="user">
+					<div class="login-row">
+						<label for="username" class="icon-user"></label> <input
+							type="text" placeholder="请输入用户名" class="login-input"
+							id="username" name="username" /> <i class="icon-erwm"></i>
+					</div>
+					<div class="login-row">
+						<label for="psd" class="icon-psd"></label> <input type="password"
+							autocomplete="off" placeholder="请输入密码" class="login-input"
+							id="password" name="password" /> <i class="icon-keyboard"></i>
+					</div>
+					<!-- 如果需要验证码，则打开下面这段注释 -->
+					<!-- begin -->
+					<div class="clearfix hidden verifycode-box" id="verifycode-box">
+						<input class="l validate codeinput" autocomplete="off"
+							id="code-input" type="text" placeholder="请输入验证码" style="height: 36px;width:160px"/>
+						<div class="mini-verifycode l codeimg" id="verifyCode"
+							bind="" style="width:45% ; height: 36px;margin-left:20px"></div>
+					</div>
+					<!-- end -->
+					<div class="login-btn-row">
+						<button class="btn-login" onclick="check('0');" type="button">登
+							录</button>
+					</div>
+				</div>
+				<div class="login-tabcontent-item hidden" data-role="tab-content"
+					data-id="ca">
+					<div class="login-row">
+						<label for="psd" class="icon-psd"></label> <input type="password"
+							placeholder="请输入密码" class="login-input" id="passwordca"
+							name="passwordca" /> <i class="icon-keyboard"></i>
+					</div>
+					<div class="login-btn-row">
+						<button class="btn-login" onclick="check('1');" type="button">登
+							录</button>
+					</div>
+				</div>
+
+				<div class="login-tabcontent-item hidden" data-role="tab-content"
+					data-id="ewm">
+					<div id="qrcode"
+						style="width: 150px; height: 150px; margin: 0 auto;"></div>
+				</div>
+				
+				<div id="securityverificationwin" class="mini-window" title="安全验证"
+				style="width:370px; height: 380px;display: none;" showMaxButton="false"
+				showCollapseButton="false" showShadow="false" showToolbar="false"
+				showFooter="false" showModal="false" allowResize="false"
+				allowDrag="false">
+				<div class="box" id="securityverificationbox">
+					<p class="remind-line">该账号长期未登录，为保护账号完全，请进行验证</p>
+					<!-- 错误信息 -->
+					<p class="wrong-remind hidden"></p>
+					<div class="option-area">
+						<span class="send-text">验证码将发送至手机 <a id="mobile"></a></span>
+						<div class="securityverificationcode clearfix">
+							<input type="text" vtype="int;" placeholder="验证码" id="securityverificationcode" />
+							<div class="send-area r">
+								<a href="javascript:;" class="send-code" id="send-code">获取验证码</a>
+								<span class="second hidden">59s</span>
+							</div>
+						</div>
+						<a href="javascript:;" class="phone-change"
+							onclick="$('#showchangemsg').text('请联系管理员更改！')">号码已更换？</a> <a
+							id="showchangemsg" style="color: #ea644a;font-size: 12px;"></a>
+					</div>
+					<button class="submit2 unable">确定</button>
+				</div>
+			</div>
+			</div>
+		</div>
+
+	</div>
+
+	<object classid='clsid:4391DCDD-5FB4-462F-9308-70A195937DAE' height='0'
+		width='0' id='EliteIVGetSerialNumber'></object>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="sso/js/tabview.js"></script>
+	<script src="sso/js/jquery.placeholder.min.js"></script>
+	<script src="sso/js/login.js"></script>
+	<script src="js/jquery.qrcode.min.js"></script>
+	
+	<script src="securityverification/js/content.js"></script>
+		
+	<script>
+		// 用户名密码SM2加密引入js文件
+		SrcBoot.output([
+			'frame/fui/js/libs/sm2security.js'
+		]);
+	</script>
+
+	<script>
+	epoint.initPage('loginaction');
+	var loginType;
+	// 初始化时获取title和logo的请求地址
+	// 判断是否登录失败的标志，有则显示验证码
+	epoint.execute("loginaction.getLoginData","", function(data){
+		var t = Util.safeEval('(' + data + ')');
+		var dataFail = JSON.parse(t);
+		if (dataFail && dataFail.isFailureLogin) {
+			showVerifyCode();
+		}
+	});
+	
+		//<![CDATA[
+		var userName_securityverification;
+	    var passWord_securityverification;
+	    var verifycode_securityverification;
+	    var rememberMe_securityverification;
+	    var loginType_securityverification;
+	    var mobile_securityverification;
+	
+		// *********************************登录相关********************************************//
+		//再次访问可以自动登录
+		var sm2PubKey;
+		epoint.execute("loginaction.autoLoad","", function(data){
+			sm2PubKey = data.sm2PubKey;
+		
+		});
+
+		if (Util.getUrlParams()) {
+			if (Util.getUrlParams().session_control_kickout_key == "1") {
+				alert("您的账号在另一地点登录，已被迫下线。");
+			}
+		}
+
+		<!-- 如果需要验证码，则打开下面这段注释 -->
+		<!-- begin -->
+		var $codeinput = $("#code-input");
+		<!-- end -->
+
+		function checkReset() {
+			document.getElementById("username").value = "";
+			document.getElementById("password").value = "";
+			return false;
+		}
+
+		function check(loadtype) {
+			loginType=loadtype;
+			var username = document.getElementById("username").value;
+			var password = document.getElementById("password").value;
+			if (1 == loadtype) {
+				username = checkUsbKey();
+				password = document.getElementById("passwordca").value;
+				if (password == "") {
+					epoint.alert("CA密码不能为空");
+					return false;
+				}
+			} else {
+				if (username == "") {
+					epoint.alert("用户名不能为空");
+					return false;
+				}
+				if (password == "") {
+					epoint.alert("密码不能为空");
+					return false;
+				}
+			}
+
+			username = epoint.encodeUtf8(username);
+			username = sm2Encrypt(username, sm2PubKey, 0);
+
+			password = epoint.encodeUtf8(password);
+			password = sm2Encrypt(password, sm2PubKey, 0);
+			var verifycode = "";
+			
+			<!-- 如果需要验证码，则打开下面这段注释 -->
+			<!-- begin -->
+			 var codeinput = $.trim($codeinput.val());
+			/* if (!codeinput) {
+				result = false;
+				epoint.alert('验证码不能为空!');
+				return false;
+			} */
+			
+			if (!$("#verifycode-box").is(":hidden")) {
+				if (!codeinput) {
+					result = false;
+					epoint.showTips('验证码不能为空!', {
+						state : 'warning'
+					});
+					return false;
+				}
+			}
+			var codedata =  mini.get("verifyCode").getValue();
+
+			verifycode = codeinput + '#' + codedata + " #verifyCode";
+			<!-- end -->
+			
+			userName_securityverification=username;
+		    passWord_securityverification=password;
+			verifycode_securityverification=verifycode;
+		    rememberMe_securityverification='';
+		    loginType_securityverification=loadtype;
+			
+			// 登录
+			epoint.execute('loginaction.login', '', [ username, password,
+					loadtype, '', verifycode ], checkMultipleLogin);
+			return true;
+		}
+
+		function checkUsbKey() {
+			var str;
+			try {
+				str = document.all('EliteIVGetSerialNumber').SERIAL_NUMBER();
+			} catch (e) {
+				epoint.alert("当前浏览器不支持");
+				return false;
+			}
+			return str;
+		}
+
+		function callback(data) {
+			epoint.alert(data.systemMessages);
+		}
+		
+		var $verityCode = $('#verifycode-box');
+		function showVerifyCode() {
+		
+			if (!$('#verifycode-box').hasClass('hidden')) {
+				// 改变验证码
+				// todo
+				// 清空输入框值
+				$('input', $verityCode).val('');
+			} else {
+				$verityCode.removeClass('hidden');
+				mini.get('verifyCode').action='loginaction.pageLoad';
+				epoint.initPage('loginaction');
+				$(".login-wrap").css('background-size','402px 380px');
+			}
+		}
+		
+		function checkMultipleLogin(data) {
+			if (data.systemMessages.indexOf('IsSecurityVerification') != -1) {
+				var sysMsg= data.systemMessages.split('?')[1];
+				var userguid = sysMsg.split('&')[0];
+				var mobile =sysMsg.split('&')[1];
+				$("#mobile").text(mobile);
+				
+				epoint.openDiv('securityverificationwin','securityverificationbox');
+			} 
+			else if (data.systemMessages.indexOf('IsDefaultOU') != -1) {
+				var userguid = data.systemMessages.split('?')[1];
+				var url = "frame/pages/login/switchparttime?userguid="
+						+ userguid + "&isLoginPage=true";
+				epoint.openDialog("账号选择", url, secondLogin, {
+					'width' : 850,
+					'height' : 350
+				});
+			} 
+			else{
+			epoint.showTips(data.systemMessages, {
+				state : 'warning'
+			});
+			if (data.showVerifyCode) {
+				// 刷新验证码
+					if (!$("#verifycode-box").is(":hidden")) {
+						epoint.refresh([ 'verifyCode' ]);
+					}
+					showVerifyCode();
+				} 
+			}
+		}
+		function secondLogin(result) {
+			var $name = $('#username'), $pwd = $('#password'),$codeinput = $("#code-input");
+
+			if (result && result != 'success' && result != 'close') {
+				var msgs = result.split(";");
+				// TODO 下面这段逻辑需要重新考虑实现,后台的
+				var userName;
+				var passWord;
+				if ('0' == loginType) {
+					userName = $.trim($name.val());
+					passWord = $.trim($pwd.val());
+					var codeinput = $.trim($codeinput.val());
+					var codedata = mini.get("verifyCode").getValue();
+					verifycode = codeinput + '#' + codedata + '#verifyCode';
+				}                
+				epoint.execute('loginaction.userLogin', '', [ loginType, msgs[1],
+						msgs[2], epoint.encode(userName), epoint.encode(passWord), '', verifycode],
+						userLoginCallBack);
+			} else if(result == 'success' && result != 'close') {
+				win.location.reload();
+			} else if (result != 'success' && result == 'close') {
+				// 直接关闭窗口时，执行一下登出请求，防止多账号模式下重复登录问题
+				$.get(Util.getRootPath() + "rest/logout?isCommondto=true");
+			}
+		}
+		
+		
+		function userLoginCallBack(args) {
+			if (args.systemMessages) {
+				epoint.showTips(args.systemMessages, {
+					state : 'warning'
+				});
+			}
+		}
+		// *********************************二维码相关********************************************//
+		function uuid() {
+			var s = [];
+			var hexDigits = "0123456789abcdef";
+			for (var i = 0; i < 36; i++) {
+				s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			}
+			s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+			s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+			s[8] = s[13] = s[18] = s[23] = "-";
+
+			var uuid = s.join("");
+
+			return uuid;
+		}
+
+		var code = uuid();
+
+		function createqr() {
+			$('#qrcode')
+					.qrcode(
+							{
+								width : 150,//设置宽高 
+								height : 150,
+								render : "table",
+								text : "http://192.168.201.30:8090/EpointSSO/rest/oauth2/qrloginconfirm?code="
+										+ code
+							});
+		}
+
+		// *********************************长轮询相关********************************************//
+		// 是否点击了二维码登录
+		var alreadyQr = 0;
+
+		function longPolling() {
+			$.ajax({
+				url : Util.getRightUrl("rest/oauth2/qrlongpolling"),
+				data : {
+					"code" : code
+				},
+				dataType : "text",
+				timeout : 6000,
+				error : function(XMLHttpRequest, textStatus, errorThrown) {
+					if (textStatus == "timeout") { // 请求超时
+						if (alreadyQr == 1) {
+							longPolling(); // 递归调用
+						}
+						// 其他错误，如网络错误等
+					} else {
+						if (alreadyQr == 1) {
+							longPolling(); // 递归调用
+						}
+					}
+				},
+				success : function(data, textStatus) {
+					if (textStatus == "success") { // 请求成功
+						if (data) {
+							var json = Util.safeEval('(' + data + ')');
+							var loginid = json.loginid;
+							var validateCode = json.qrcredentials;
+							epoint.execute('loginaction.loginbyqr', '', [
+									loginid, validateCode ], callback);
+						} else {
+							if (alreadyQr == 1) {
+								longPolling(); // 递归调用
+							}
+						}
+					}
+				}
+			});
+		}
+
+		$(".login-tab-head").click(function(event) {
+			if (event.target.id == 'EWM') {
+				if (alreadyQr == 1) {
+					return;
+				}
+				alreadyQr = 1;
+				longPolling();
+			} else {
+				alreadyQr = 0;
+			}
+		});
+
+		// 初始化二维码
+		createqr();
+		$('#qrcode table').css("margin", 0);
+		$('#qrcode table').css("margin-top", 25);
+
+		var $input = $('.login-input'), $loginBtn = $('.btn-login');
+
+		$('body').on('keypress', function(event) {
+			if (event.which == 13) {
+				$loginBtn.filter(":visible").trigger('click');
+			}
+		});
+		//]]>
+	</script>
+</body>
+
+</html>

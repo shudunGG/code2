@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>数据同步</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', ]);
+</script>
+</head>
+
+<body style="overflow: auto;">
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"onclick="save1" >保存并关闭</a>
+			<a class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<!-- 页面内容区域 -->
+		<div id="form" class="fui-form" style="padding-top: 1px">
+			<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false">
+				<div name="tabs1" title="一般" id="ttttt">
+					<div role="row">
+						<div role="control" label="步骤名称" starred="true">
+							<input id="stepName" name="stepName" class="mini-textbox"
+								required="true" emptyText="请输入步骤名称" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="选择监听数据库" starred="true">
+							<input class="mini-combobox" name="cdcDataSource" id="cdcDataSource"
+								showClose="true" allowInput="true" bind="cdcDataSource"
+								showNullItem="false" action="getDataSourceList" required="true" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="ES地址" starred="true">
+							<input class="mini-textbox" required="true" id="esAddress" bind="esAddress"
+								name="esAddress"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="ES用户名" >
+							<input class="mini-textbox"  id="esUsername" bind="esUsername"
+								name="esUsername" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="ES密码">
+							<input class="mini-textbox" id="esPassword" bind="esPassword"
+								name="esPassword" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="表名字段" starred="true">
+							<input class="mini-combobox" id="tableNameField" name="tableNameField" bind="tableNameField"
+								action="getOperateFields" showClose="true" required="true"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="提交数量">
+							<input class="mini-textbox" required="true" id="commitSize"
+								name="commitSize" vtype="int;range:0,99999999;" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="定时提交时间">
+							<input class="mini-textbox" required="true" id="commitInterval"
+								name="commitInterval" vtype="int;range:0,99999999;" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="操作字段名" field="sourcefieldname" starred="true">
+							<input class="mini-combobox" id="operateField" name="operateField" bind="operateField"
+								action="getOperateFields" showClose="true" required="true"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="当值相等时插入" starred="true">
+							<input class="mini-textbox" id="insertField" name="insertField" required="true">
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="当值相等时更新" starred="true">
+							<input class="mini-textbox" id="updateField" name="updateField" required="true">
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="当值相等时删除" starred="true">
+							<input class="mini-textbox" id="deleteField"
+								name="deleteField" required="true">
+						</div>
+					</div>
+					<input id="tableLinkData" name="tableLinkData" bind="tableLinkData" class="mini-hidden"> 
+					<input id="keyTableData" name="keyTableData" class="mini-hidden"> 
+					<input id="columnTableData" name="columnTableData" class="mini-hidden">
+				<HR>
+	<!-- 	 		<div class="fui-condition" style="width: 75%;">
+					<div class="fui-form" id="fui-form">
+						<div id="cform" role="form">
+							<div role="row">
+								<div role="control" label="源字段" style="width: 30%;">
+									<input id="sourceField" class="mini-textbox" style="margin-left: -10px;"/>
+								</div>
+								<div role="control" label="目标字段" style="width: 35%;padding-lefte:20px">
+									<input id="targetField" class="mini-textbox" style="margin-left: -10px;"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<a role="searcher" callback="searchPrimaryKey"></a>
+				</div> -->
+				<div class="fui-toolbar" id="btns"
+					style="padding-top: 1px; border-bottom: none;">
+					<div class="btn-group mr10" style="width: 50%;">
+						<a class="mini-button mini-btn-primary" onclick="getESIndex">刷新es索引</a>
+					</div>
+				</div>
+				<table style="height: 40%;margin-top:20px">
+					<tr>
+						<td>
+							<div id="grid1" class="mini-datagrid"
+								style="width: 100%; height: 100%; margin-top: 0px; margin-left: 15px;"
+								multiSelect="false" resultAsData="true" showPager="false"
+								action="getFromTableGridData">
+								<div property="columns">
+									<div type="checkcolumn"></div>
+									<div header="监听来源表" field="fromTable"></div>
+								</div>
+							</div>
+						</td>
+						<td>
+							<div id="grid11" class="mini-datagrid"
+								style="width: 100%; height: 100%; margin-left: 25px; margin-top: 0px"
+								multiSelect="false" resultAsData="true" showPager="false"
+								showPager="false" action="getIndexGridData">
+								<div property="columns">
+									<div type="checkcolumn"></div>
+									<div header="目标索引" field="targetTable"></div>
+								</div>
+							</div>
+						</td>
+			
+						<td style="width: 60px; margin-left: 10px; text-align: center;">
+							<input type="button" value=">" onclick="adds()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+							type="button" value=">>" onclick="addAll()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+							type="button" value="&lt;&lt;" onclick="removeAll()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br /> <input
+							type="button" value="&lt;" onclick="removes()"
+							style="width: 50px; height: 30px; margin-left: 50px;" /><br />
+						</td>
+						<td>
+							<div id="grid2" class="mini-datagrid"
+								style="width: 100%; height: 361px; margin-left: 30px; margin-top: 0px"
+								multiSelect="true" showPager="false" allowCellEdit="true"
+								allowCellSelect="true">
+								<div property="columns">
+									<div type="checkcolumn"></div>
+									<div header="来源表" field="fromTable">
+										<input id="fromTable" name="fromTable" class="mini-textbox"
+											bind="fromTable" />
+									</div>
+									<div header="目标索引" field="targetTable">
+										<input id="targetTable" name="targetTable" class="mini-textbox"
+											bind="targetTable" />
+									</div>
+								</div>
+							</div> <input type="button" value="Up" onclick="upItem()"
+							style="width: 55px; margin-left: 30px; margin-top: 30px;" /> <input
+							type="button" value="Down" onclick="downItem()" style="width: 55px;" />
+						</td>
+						<td style="width: 50px; text-align: center; vertical-align: bottom">
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div name="tabs2" title="表映射关系">
+				<div id="tablelinkDatagrid" name="tablelinkDatagrid" class="mini-datagrid"
+						idField="id" multiSelect="false" allowCellValid="true"
+						allowCellEdit="true"
+						style="width: 100%; height: 300px; margin-left: 10px;"
+						allowResize="true" showPager="false" allowCellSelect="true"
+						editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+						<div type="checkcolumn" width="20"></div>
+						<div type="indexcolumn" width="20" headerAlign="center">序</div>
+						<div header="来源表" field="fromTable">
+							<input id="fromTable" name="fromTable" class="mini-textbox"
+								bind="fromTable" />
+						</div>
+						<div header="目标索引" field="targetTable">
+							<input id="targetTable" name="targetTable" class="mini-textbox"
+								bind="targetTable" />
+						</div>
+					</div>
+				</div>
+				<input id="tblink" name="tblink" bind="tblink" class="mini-hidden"> 
+						
+				<div class="fui-toolbar" id="btns"
+					style="padding-top: 1px; border-bottom: none;">
+					<div class="btn-group mr10" style="width: 50%;">
+						<a class="mini-button mini-btn-primary" onclick="add">添加条件</a> <a
+							class="mini-button mini-btn-danger"
+							onclick="if(mini.get('key-datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+					</div>
+					<div class="btn-group mr10">
+						<a class="mini-button mini-btn-primary" onclick="addField">添加映射</a> <a
+							class="mini-button mini-btn-danger"
+							onclick="if(mini.get('field-datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelectedField);}">删除选中</a>
+						<a class="mini-button mini-btn-primary" onclick="updateFieldMap">编辑更新字段</a>
+					</div>
+				</div>
+	
+				<!-- 内容区域 -->
+				<div class="fui-content" style="padding-top: 1px">
+					<table style="height: 100%;">
+						<tr>
+							<td>
+								<div id="key-datagrid" name="key-datagrid" class="mini-datagrid"
+									idField="id" multiSelect="true" allowCellValid="true"
+									allowCellEdit="true" style="width: 100%; height: 100%;"
+									allowResize="true" showPager="false" allowCellSelect="true"
+									editNextOnEnterKey="true" editNextRowCell="true"
+									action="getDataGridModel">
+									<div property="columns">
+										<div type="checkcolumn" width="30"></div>
+										<div type="indexcolumn" width="40" headerAlign="center">序</div>
+										<div field="fromkey" headerAlign="center" align="center"
+											vtype="required" type="comboboxcolumn">
+											来源表字段<input id="fromkeyList" name="test" property="editor" class="mini-combobox"
+												emptyText="请选择来源表字段..." textField="text" data="fromfieldList"
+												valueField="id" style="width: 100%" />
+										</div>
+										<div field="condition" headerAlign="center" vtype="required"
+											align="center" type="comboboxcolumn">
+											比较符<input property="editor" class="mini-combobox"
+												emptyText="请选择比较符..." textField="text" data="compareTypeList"
+												valueField="id" style="width: 100%" />
+										</div>
+										<div field="targetkey" headerAlign="center" align="center"
+											vtype="required" type="comboboxcolumn">
+											目标表字段<input id="targetkeyList" property="editor" class="mini-combobox"
+												emptyText="请选则目标表字段..." textField="text" data="targetfieldList"
+												valueField="id" style="width: 100%" />
+										</div>
+									</div>
+								</div>
+							</td>
+			
+							<td>
+								<div id="field-datagrid" name="field-datagrid" class="mini-datagrid"
+									idField="id" multiSelect="true" allowCellValid="true"
+									allowCellEdit="true" action="getDataGridColumnModel"
+									style="width: 100%; height: 100%; margin-left: 10px;"
+									allowResize="true" showPager="false" allowCellSelect="true"
+									editNextOnEnterKey="true" editNextRowCell="true">
+									<div property="columns">
+										<div type="checkcolumn" width="30"></div>
+										<div type="indexcolumn" width="40" headerAlign="center">序</div>
+										<div field="fromfield" headerAlign="center" vtype="required"
+											align="center" type="comboboxcolumn">
+											来源表字段<input id="fromfieldList" property="editor" class="mini-combobox"
+												emptyText="请选择来源表字段..." textField="text" data="fromfieldList"
+												valueField="id" style="width: 100%" />
+										</div>
+										<div field="targetfield" headerAlign="center" align="center"
+											vtype="required" type="comboboxcolumn">
+											目标表字段<input id="targetfieldList" property="editor" class="mini-combobox"
+												emptyText="请选择目标表字段..." textField="text" data="targetfieldList"
+												valueField="id" style="width: 100%" />
+										</div>
+										<div field="isupdate" align="center" type="checkboxcolumn" 
+											value="1" truevalue="1" falsevalue="0" headerAlign="center" >是否更新</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		var form = new mini.Form("#form");
+		var tableList = mini.get('tableName');
+		var stepNameForm = mini.get('stepName');
+		var nodeData;
+		var nodeInfo;
+		var compareTypeList;
+		var sourceFieldList;
+		var fieldList;
+		
+		var grid1 = mini.get("grid1");
+		var grid11 = mini.get("grid11");
+		var grid2 = mini.get("grid2");
+		var keygrid = mini.get("key-datagrid");
+		var fieldgrid = mini.get("field-datagrid");
+		var isShowFields = false;
+		var tablelinkDatagrid = mini.get('tablelinkDatagrid');
+		var tableLinkData = mini.get('tableLinkData');
+		var tableLinkDataValue;
+		var fromfieldList;
+		var targetfieldList;
+		var tblinkVal = "";
+		var cdcDataSource = mini.get('cdcDataSource');
+		
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('epointwritetoesforcdcaction?stepId=' + data.key,
+				{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+				initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			var cdcDatas = cdcDataSource.getValue();
+			if(e.tabkeLinkData){
+ 				form.setData(nodeData);
+			}
+ 			if(!nodeData.commitSize){
+				mini.get('commitSize').setValue(100);
+			}
+ 			if(!nodeData.commitInterval){
+				mini.get('commitInterval').setValue(60000);
+			}
+ 			if(!nodeData.tableNameField){
+				mini.get('tableNameField').setValue('tablename');
+			}
+ 			if(!nodeData.operateField){
+				mini.get('operateField').setValue('opcode');
+			}
+ 			if(!nodeData.insertField){
+				mini.get('insertField').setValue('I');
+			}
+ 			if(!nodeData.updateField){
+				mini.get('updateField').setValue('U');
+			}
+ 			if(!nodeData.deleteField){
+				mini.get('deleteField').setValue('D');
+			}
+			if (e.compareTypeList) {
+				compareTypeList = e.compareTypeList;
+			}
+			if (e.sourceFieldList) {
+				sourceFieldList = e.sourceFieldList;
+			}
+			if (e.fieldList) {
+				fieldList = e.fieldList;
+			}
+			var nodeName = nodeData.stepname;
+			if(!nodeName){
+				
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			cdcDataSource.setValue(cdcDatas);
+			if(e.tabkeLinkData){
+				tableLinkData.setValue(e.tabkeLinkData);
+				tableLinkDataValue = e.tabkeLinkData;
+				var tbList = JSON.parse(e.tabkeLinkData);
+				for(var i=0;i<tbList.length;i++){
+					var items = grid1.findRow(function(row){
+					    if(row.fromTable == tbList[i].fromtable) return true;
+					});
+					var items2 = grid11.findRow(function(row){
+					    if(row.targettable == tbList[i].targettable) return true;
+					});
+					var items3 = {
+						"fromTable" : tbList[i].fromtable,
+						"targetTable" : tbList[i].targettable
+					};
+					if(!isShowFields){
+						grid1.removeRow(items);
+						grid11.removeRow(items2);
+					}
+					var items4 = clone(items3);
+					grid2.addRow(items3, 0);
+					tablelinkDatagrid.addRow(items4,0);
+				}
+			}
+			console.log('tablelinkDataValue:'+tableLinkDataValue);
+		}
+
+		var operateField = mini.get('operateField');
+
+		operateField.on('closeclick', function(e) {
+			operateField.setValue("");
+		});
+		
+		function clearGrid() {
+			grid.clearRows();
+			grid2.clearRows();
+		}
+
+		//选择数据来源
+		cdcDataSource.on('valuechanged', function(e) {
+			cdcDataSource.setValue(e.value);
+			epoint.refresh([ 'grid1', 'form' ], '', true);
+		}).on('closeclick', function(e) {
+			e.sender.setText('');
+			e.sender.setValue('');
+			clearGrid();
+		});
+		
+		function setGridData() {
+			//[{"fromtable":"","targettable":"","keyLink":[{"fromkey":"","targetkey":""}],"fieldLink":[{"fromfield":"","targetfield":""}]}]
+			var lastFromTable = tblinkVal.split(';')[0];
+			var	lastTargetTable = tblinkVal.split(';')[1];
+			var keyData = keygrid.getData();
+			var fieldData = fieldgrid.getData();
+			if(keyData.length == [] || fieldData == []){
+				return;
+			}
+			var tblinkdata = tableLinkData.getValue();
+			var array = [];
+			if(tblinkdata != '[]' && tblinkdata != ''){
+				array = JSON.parse(tblinkdata);
+				for(var i=0;i<array.length;i++){
+					if(array[i].fromtable == lastFromTable){
+						array.splice(i, 1);
+						break;
+					}
+				}
+			}
+			var keyLink = [];
+			for(var i=0;i<keyData.length;i++){
+				keyLink.push({
+					"fromkey":keyData[i].fromkey,
+					"targetkey":keyData[i].targetkey,
+					"condition":keyData[i].condition,
+				});	
+			}
+			var fieldLink = [];
+			for(var i=0;i<fieldData.length;i++){
+				fieldLink.push({
+					"fromfield":fieldData[i].fromfield,
+					"targetfield":fieldData[i].targetfield,
+					"isupdate":fieldData[i].isupdate==1?1:0
+				});	
+			}
+			array.push({
+				"fromtable" : lastFromTable,
+				"targettable" : lastTargetTable,
+				"keyLink": keyLink,
+				"fieldLink": fieldLink
+			});
+			tableLinkData.setValue(JSON.stringify(array));
+			tableLinkDataValue=JSON.stringify(array);
+		}
+		
+		function add() {
+			var newRow = {};
+			keygrid.addRow(newRow, 0);
+			mini.get("fromkeyList").setData(fromfieldList);
+			mini.get("targetkeyList").setData(targetfieldList);
+			//keygrid.getCellEditor(2, 0).setData(fieldList);
+		}
+
+		//删除选中
+		function deleteSelected() {
+			keygrid.removeRows(keygrid.getSelecteds(), false);
+			//setGridData();
+		}
+		
+		function addField() {
+			var newRow = {};
+			fieldgrid.addRow(newRow, 0);
+			mini.get("fromfieldList").setData(fromfieldList);
+			mini.get("targetfieldList").setData(targetfieldList);
+			//grid2.getCellEditor(2, 0).setData(fieldList);
+		}
+
+		//删除选中
+		function deleteSelectedField() {
+			fieldgrid.removeRows(fieldgrid.getSelecteds(), false);
+			//setGridData2();
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function save1() {
+			nodeInfo.name = mini.get("stepName").getValue();
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+  				epoint.execute('save', '@none', [ nodeInfo,nodeForm ], function(data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				}); 
+			}
+		}
+		
+		function updateFieldMap(sysGuid) {
+			var esAddress = mini.get("esAddress").value;
+			var esUsername = mini.get("esUsername").value;
+			var esPassword = mini.get("esPassword").value;
+			var cdcDataSource = mini.get("cdcDataSource").value;
+			localStorage.setItem("cloumnlink",mini.get('columnTableData').getValue());
+			var tableName = null;
+			epoint.openDialog('字段映射',
+					'dxp/development/transassembly/epointwritetoesforcdcfieldmap?nodeInfoKey='
+							+ nodeInfo.key + "&transGuid="
+							+ Util.getUrlParams('transGuid') 
+							+ "&esAddress=" + esAddress
+							+ "&esUsername=" + esUsername
+							+ "&esPassword=" + esPassword
+							+ "&cdcDataSource=" + cdcDataSource 
+							+ "&tableName=" + tblinkVal, function(data) {
+						if (data != 'close') {
+							fieldgrid.load({
+								'columnTableData' : data
+							});
+						}
+					}, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+		
+
+		function adds() {
+			//获取源字段中数据并解析
+			var items = grid1.getSelecteds();
+			var items2 = grid11.getSelecteds();
+			if (items.length == 1 && items2.length == 1) {
+				var items3 = {
+					"fromTable" : items[0].fromTable,
+					"targetTable" : items2[0].targetTable
+				};
+				if(!isShowFields){
+					grid1.removeRows(items);
+					grid11.removeRows(items2);
+				}
+				var items4 = clone(items3);
+				grid2.addRow(items3, 0);
+				tablelinkDatagrid.addRow(items4,0);
+			} else {
+				epoint.alert("请选择来源表或目标表", '', null, 'warning');
+			}
+		}
+
+		function removeAll() {
+			var items3 = grid2.getData();
+			var items4 = tablelinkDatagrid.getData();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			tablelinkDatagrid.removeRows(items4);
+			grid1.load();
+			keygrid.load();
+			fieldgrid.load();
+			epoint.refresh(['grid11','form'], '', true);
+			tableLinkDataValue = '';
+		}
+
+		function addAll() {
+			var items = grid1.getData();
+			var items2 = grid11.getData();
+			var length1 = Object.keys(items).length;
+			var length2 = Object.keys(items2).length;
+			var count = 0;
+			for (var i = 0; i < length1; i++) {
+				for (var j = 0; j < length2; j++) {
+					if ((items[i].fromTable.toLowerCase()) == (items2[j].targetTable.toLowerCase())) {
+						count++;
+						var res1 = [];
+						res1.push(items[i]);
+						var res2 = [];
+						res2.push(items2[j]);
+						var items3 = {
+							"fromTable" : res1[0].fromTable,
+							"targetTable" : res2[0].targetTable
+						}
+						if(!isShowFields){
+							grid1.removeRows(res1);
+							grid11.removeRows(res2);
+						}
+						var items4 = clone(items3);
+						grid2.addRow(items3, 0);
+						tablelinkDatagrid.addRow(items4,0);
+						break;
+					}
+
+				}
+			}
+			if (count == 0) {
+				epoint.alert("没有匹配的表", '', null, 'warning');
+			}
+		}
+
+		function removes() {
+			var items3 = grid2.getSelecteds();
+			var length = Object.keys(items3).length
+			grid2.removeRows(items3);
+			
+			for (var i = 0; i < length; i++) {
+				var items = grid1.getData();
+				var items2 = grid11.getData();
+				var length1 = Object.keys(items).length;
+				var length2 = Object.keys(items2).length;
+				var flag1 = true;
+				var flag2 = true;
+				for (var j = 0; j < length1; j++) {
+					if(items[j].fromTable.toLowerCase() == items3[i].fromTable.toLowerCase()){
+						flag1 = false;
+					}
+				}
+				for (var j = 0; j < length2; j++) {
+					if(items2[j].targetTable.toLowerCase() == items3[i].targetTable.toLowerCase()){
+						flag2 = false;
+					}
+				}
+				if(flag1){
+					grid1.addRow(items3[i]);
+				}
+				if(flag2){
+					grid11.addRow(items3[i]);
+				}
+				// 移除表关联信息
+				var items4 = tablelinkDatagrid.findRows(function(row){
+				    if(row.fromTable == items3[i].fromTable) return true;
+				});
+				tablelinkDatagrid.removeRow(items4[0]);
+				var array = JSON.parse(tableLinkDataValue);
+				for(var i=0;i<array.length;i++){
+					if(array[i].fromtable == items4[0].fromTable){
+						array.splice(i, 1);
+						break;
+					}
+				}
+				tableLinkDataValue = JSON.stringify(array);
+			}
+		}
+
+		function upItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveUp(items);
+		}
+		function downItem() {
+			var items = grid2.getSelecteds();
+			grid2.moveDown(items);
+		}
+		
+		//搜索源，目标
+		/* function searchPrimaryKey() {
+			var sourceField = mini.get("sourceField").getValue();
+			if (sourceField != "") {
+				var items = grid1.getData();
+				var j = 0;
+				for (var i = 0; i < items.length; i++) {
+					var fromField = items[i].sourceField;
+					var sourceFieldReg = null;
+					sourceFieldReg = new RegExp(sourceField, "i");
+					if (sourceFieldReg.test(fromField)) {
+						grid1.moveRow(
+								grid1.getRow(i), j);
+						j++;
+					}
+				}
+			}
+			var targetField = mini.get("targetField").getValue();
+			if (targetField != "") {
+				var items2 = grid11.getData();
+				var j = 0;
+				for (var i = 0; i < items2.length; i++) {
+					var toField = items2[i].targetField;
+					var targetFieldReg = null;
+					targetFieldReg = new RegExp(targetField, "i");
+					if (targetFieldReg.test(toField)) {
+						grid11.moveRow(
+								grid11.getRow(i), j);
+						j++;
+					}
+				}
+			}
+		} */
+		
+
+		function clone(Obj){
+			var buf;
+			if(Obj instanceof Array){
+				buf=[];
+				var i=Obj.length;
+				while(i--){
+					buf[i]=clone(Obj[i]);
+				}
+				return buf;
+			}
+			else if(Obj instanceof Object){
+				buf={};
+				for(var k in Obj){
+					buf[k]=clone(Obj[k]);
+				}
+				return buf;
+			}else{
+				return Obj;
+			}
+		}
+		
+		tablelinkDatagrid.on('rowclick', function(e) {
+			//[{"fromtable":"","targettable":"","keyLink":[{"fromkey":"","targetkey":"","condition":""}],"fieldLink":[{"fromfield":"","targetfield":"","isupdate":""}]}]
+			var fromTable = e.record.fromTable;
+			var targetTable = e.record.targetTable;
+			//缓存选中字段
+			var array = [];
+			var tblinkdata = tableLinkDataValue;
+			if(tblinkdata != '[]' && tblinkdata!='' && tblinkdata!=null){
+				array = JSON.parse(tblinkdata);
+			}
+			if(tblinkVal != '' ){
+				var lastFromTable = tblinkVal.split(';')[0];
+				var	lastTargetTable = tblinkVal.split(';')[1];
+				var keyData = keygrid.getData();
+				var fieldData = fieldgrid.getData();
+				if(tblinkdata != '[]' && tblinkdata!=''){
+					array = JSON.parse(tblinkdata);
+					for(var i=0;i<array.length;i++){
+						if(array[i].fromtable == lastFromTable){
+							array.splice(i, 1);
+							break;
+						}
+					}
+				}
+				var keyLink = [];
+				for(var i=0;i<keyData.length;i++){
+					keyLink.push({
+						"fromkey":keyData[i].fromkey,
+						"targetkey":keyData[i].targetkey,
+						"condition":keyData[i].condition,
+					});	
+				}
+				var fieldLink = [];
+				for(var i=0;i<fieldData.length;i++){
+					fieldLink.push({
+						"fromfield":fieldData[i].fromfield,
+						"targetfield":fieldData[i].targetfield,
+						"isupdate":fieldData[i].isupdate==1?1:0
+					});	
+				}
+				array.push({
+					"fromtable" : lastFromTable,
+					"targettable" : lastTargetTable,
+					"keyLink": keyLink,
+					"fieldLink": fieldLink
+				});
+			}
+			tableLinkData.setValue(JSON.stringify(array));
+			tableLinkDataValue = JSON.stringify(array);
+			
+			tblinkVal = fromTable+';'+targetTable;
+			mini.get('tblink').setValue(tblinkVal);
+			epoint.execute('getOwnFields',['tblink','key-datagrid','field-datagrid','cdcDataSource','esAddress','esUsername','esPassword'], '' ,function(data){
+				fromfieldList = data.fromField;
+				targetfieldList = data.targetField;
+				keygrid.setData(null);
+				fieldgrid.setData(null);
+ 				//渲染选中字段
+				if(array != '[]'){
+					for(var i=0;i<array.length;i++){
+						if(array[i].fromtable == fromTable){
+							if(mini.get("fromkeyList") != undefined){
+								mini.get("fromkeyList").setData(fromfieldList);
+								mini.get("targetkeyList").setData(targetfieldList);
+								mini.get("fromfieldList").setData(fromfieldList);
+								mini.get("targetfieldList").setData(targetfieldList);
+							}
+							var keyList = JSON.parse(array[i].keyLink);
+							var fieldList = JSON.parse(array[i].fieldLink);
+  							for(var j=0;j<keyList.length;j++){
+								var newRow = {
+									"fromkey":keyList[j].fromkey,
+									"targetkey":keyList[j].targetkey,
+									"condition":keyList[j].condition
+								};
+								keygrid.addRow(newRow, 0);
+							}
+  							for(var j=0;j<fieldList.length;j++){
+								var newRow = {
+									"fromfield":fieldList[j].fromfield,
+									"targetfield":fieldList[j].targetfield,
+									"isupdate":fieldList[j].isupdate==1?1:0
+								};
+								fieldgrid.addRow(newRow, 0);
+							}
+  							mini.get("fromkeyList").setData(fromfieldList);
+							mini.get("targetkeyList").setData(targetfieldList);
+							mini.get("fromfieldList").setData(fromfieldList);
+							mini.get("targetfieldList").setData(targetfieldList);
+							break;
+						}
+					}	
+				} 
+			});
+		});
+		
+		function getESIndex(){
+			removeAll();
+		}
+		
+	</script>
+</body>
+
+</html>

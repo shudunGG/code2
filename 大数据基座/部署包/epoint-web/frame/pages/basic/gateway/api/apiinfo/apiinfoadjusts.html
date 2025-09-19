@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>批量调整</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body style="overflow: auto;">
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="add" onclick="saveAndClose">批量修改</a>
+		<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="调整类别">
+						<input class="mini-treeselect" id="categoryname"
+							action="getApiClassModel" bind="categoryname" style="width: 50%;"
+							showClose="true" oncloseclick="clearCategory"
+							showFolderCheckBox="true" showRadioButton="false"
+							filterMode="server" showFilter="true" showTreeIcon="true"
+							textField="text" idField="id" expandOnLoad="true"
+							onvaluechanged="categoryValueChanged" />
+					</div>
+					<input bind="categoryid" id="categoryid" class="mini-hidden" />
+				</div>
+
+			</div>
+		</div>
+
+
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="tabs1" class="mini-tabs" activeIndex="0"
+				style="width: 100%; height: 100%;" plain="false">
+				<div name="tabs1" title="基础信息">
+					<div class="fui-accordions">
+
+						<div role="accordion" opened="true" id="gatewayinfo">
+							<div role="head" title="网关信息"></div>
+							<div role="body">
+								<!-- 内容区域 -->
+								<div id="fui-form" class="fui-form">
+									<div role="form">
+										<div role="row">
+											<div role="control" label="baseUrl"">
+												<input class="mini-textbox" style="width: 50%" id="baseurl"
+													bind="baseurl" onvalidation="apibaseurlvalid" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">例：http://localhost:8080/epoint-web</div>
+										</div>
+										<div role="row">
+											<div role="control" label="重试次数"">
+												<input class="mini-textbox" style="width: 50%" id="retries"
+													vType="int" bind="dataBean.retries" />（次）
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">上游代理失败的重试次数</div>
+										</div>
+										<div role="row">
+											<div role="control" label="连接超时时间">
+												<input class="mini-textbox" style="width: 50%"
+													id="upstreamconnecttimeout" vType="int"
+													bind="dataBean.upstreamconnecttimeout" />（ms）
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">同上游服务建立连接的超时时间，若定义为1000ms，retries定义为5次，则6秒后会提示连接超时</div>
+										</div>
+										<div id="upstreamsendtimeout_div">
+											<div role="row">
+												<div role="control" label="写入超时时间">
+													<input class="mini-textbox" style="width: 50%" vType="int"
+														id="upstreamsendtimeout"
+														bind="dataBean.upstreamsendtimeout" />（ms）
+												</div>
+											</div>
+											<div role="row">
+												<div role="control">两个连续向上游服务发送写入操作的超时时间</div>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="读取超时时间"
+												id="upstreamreadtimeout_label">
+												<input class="mini-textbox" style="width: 50%" vType="int"
+													id="upstreamreadtimeout"
+													bind="dataBean.upstreamreadtimeout" />（ms）
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">两个连续向上游服务发送读取操作的超时时间</div>
+										</div>
+										<div id="circuit_breaker">
+											<div role="row">
+												<div role="control" label="熔断器开启阀值">
+													<input id="circuit_breaker_request_times"
+														class="mini-textbox"
+														bind="dataBean.requestVolumeThreshold" style="width: 50%"
+														vtype="int;range:0,2147483647" emptyText="熔断器开启阀值" />（次）
+
+												</div>
+											</div>
+											<div role="row">
+												<div role="control">熔断开启的阀值（达到一定http请求后允许开启熔断，防止因为少数几个请求造成错误熔断的可能）。</div>
+											</div>
+											<div role="row">
+												<div role="control" label="出错百分比阀值">
+													<input id="circuit_breaker_error_percent"
+														class="mini-textbox"
+														bind="dataBean.errorThresholdPercentage"
+														style="width: 50%" vtype="int;range:0,100"
+														emptyText="出错百分比阀值" />（%）
+												</div>
+											</div>
+											<div role="row">
+												<div role="control">出错百分比阀值（http请求失败数达到一定百分比时熔断器启动）。</div>
+											</div>
+											<div role="row">
+												<div role="control" label="熔断器工作时间">
+													<input id="circuit_breaker_sleepWindow_in_milliseconds"
+														class="mini-textbox"
+														bind="dataBean.sleepWindowInMilliseconds"
+														style="width: 50%" vtype="int" emptyText="熔断器工作时间" />（ms）
+												</div>
+											</div>
+											<div role="row">
+												<div role="control">熔断器中断一定时间后进入半打开状态，部分流量可通过重试。</div>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="限定为HTTPS">
+												<input class="mini-combobox" style="width: 125px"
+													action="getTrueOrFalse" id="httpsonly"
+													bind="dataBean.httpsonly" />
+												<p style="width: 20px; padding-top: 2px"
+													onclick="javascript:imgeClick('only')">
+													<img src="photo/wenhao.png" width="16" height="16" />
+												</p>
+
+											</div>
+											<div role="control" label="允许跳过HTTPS">
+												<input class="mini-combobox" style="width: 125px"
+													action="getTrueOrFalse" id="httpifterminated"
+													bind="dataBean.httpifterminated" />
+												<p style="width: 20px; padding-top: 2px"
+													onclick="javascript:imgeClick('terminated')">
+													<img src="photo/wenhao.png" width="16" height="16" />
+												</p>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="忽略前缀">
+												<input class="mini-combobox" style="width: 125px"
+													action="getTrueOrFalse" id="stripuri"
+													bind="dataBean.stripuri" />
+												<p style="width: 20px; padding-top: 2px"
+													onclick="javascript:imgeClick('uri')">
+													<img src="photo/wenhao.png" width="16" height="16" />
+												</p>
+											</div>
+											<div role="control" label="主机地址透传">
+												<input class="mini-combobox" style="width: 125px"
+													action="getTrueOrFalse" id="preservehost"
+													bind="dataBean.preservehost" />
+												<p style="width: 20px; padding-top: 2px"
+													onclick="javascript:imgeClick('host')">
+													<img src="photo/wenhao.png" width="16" height="16" />
+												</p>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="记录运行日志">
+												<input class="mini-combobox" style="width: 125px"
+													action="getTrueOrFalse" id="enableruntimelog"
+													bind="dataBean.enableruntimelog" />
+											</div>
+											<div role="control" label="运行日志记录响应信息">
+												<input class="mini-combobox" style="width: 125px"
+													action="getTrueOrFalse" id="enableresponse"
+													bind="dataBean.enableresponse" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div name="tabs2" title="访问控制">
+					<div class="fui-accordions">
+						<div role="accordion">
+							<div role="head" title="服务订阅"></div>
+							<div role="body">
+								<!-- 内容区域 -->
+								<div id="fui-form" class="fui-form">
+									<div role="form">
+										<div role="row">
+											<div role="control" label="是否需要登录">
+												<input class="mini-checkbox" id="userauth"
+													onValuechanged="userauthChanged" bind="dataBean.userauth" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">推荐用户相关资源接口勾选此项，比如获取用户照片</div>
+										</div>
+										<div role="row">
+											<div role="control" label="是否需要订阅">
+												<input class="mini-checkbox" id="clientauth"
+													onvaluechanged="clientauthChanged"
+													bind="dataBean.clientauth" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">推荐应用相关资源接口勾选此项，比如同步组织架构接口</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div role="accordion" opened="true">
+							<div role="head" title="跨域控制"></div>
+							<div role="body">
+								<!-- 内容区域 -->
+								<div id="fui-form" class="fui-form">
+									<div role="form">
+										<div role="row">
+											<div role="control" label="允许的方法">
+												<input class="mini-combobox" action="getAllowSelectItem"
+													multiSelect="true" id="methods" bind="dataBean.methods" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												Access-Control-Allow-Methods的值，多个用逗号隔开，如GET,POST。1)
+												HEAD,GET,POST请求默认被允许跨域 2)
+												PUT,PATCH,DELETE请求跨域需要经过预检请求，然后通过配置允许才能进行跨域</div>
+										</div>
+										<div role="row">
+											<div role="control" label="允许返回的头信息字段">
+												<input class="mini-textbox" id="exposedheaders"
+													bind="dataBean.exposedheaders" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												Access-Control-Expose-Headers的值，即允许客户端浏览器读取哪些头信息。多个用逗号隔开，如FooBar
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="预检请求的缓存时间">
+												<input class="mini-textbox" id="maxage" vType="int"
+													bind="dataBean.maxage" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												指明预检请求结果能被缓存多久（秒）。设置预请求缓存1天，1天内再次请求，可以跳过预请求。
+												此功能需要客户端缓存支持，如果客户端禁用缓存，那么每次都会预请求</div>
+										</div>
+										<div role="row">
+											<div role="control" label="允许的源">
+												<input class="mini-textbox" id="origins"
+													bind="dataBean.origins" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												Access-Control-Allow-Origin的值，如果允许所有域名，则设置为*。
+												正则表达式和简单字符串都可以接受,多个逗号隔开</div>
+										</div>
+										<div role="row">
+											<div role="control" label="允许的头信息字段">
+												<input class="mini-textbox" id="headers"
+													bind="dataBean.headers" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												Access-Control-Allow-Headers的值，多个用逗号隔开，如Origin,
+												Authorization允许自定义的header头部来通过预检请求</div>
+										</div>
+										<div role="row">
+											<div role="control" label="允许Cookie和认证信息">
+												<input class="mini-combobox" id="credentials"
+													action="getTrueOrFalse" bind="dataBean.credentials" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												Access-Control-Allow-Credentials为true或者false</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div role="accordion" opened="true">
+							<div role="head" title="ip控制"></div>
+							<div role="body">
+								<!-- 内容区域 -->
+								<div id="fui-form" class="fui-form">
+									<div role="form">
+										<div role="row">
+											<div role="control" label="白名单">
+												<input id="whitelist" class="mini-textbox"
+													bind="dataBean.whitelist" style="width: 50%"
+													onvalidation="whitevalid" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												<span>(ip或者cidr范围（192.168.0.0/24），多个用逗号隔开。)</span>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="黑名单">
+												<input id="blacklist" class="mini-textbox"
+													bind="dataBean.blacklist" style="width: 50%"
+													onvalidation="blackvalid" />
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												<span>(ip或者cidr范围（192.168.0.0/24），多个用逗号隔开。)</span>
+											</div>
+										</div>
+										<div role="row">
+											<div role="control">
+												<span style="color: red">黑名单与白名单互斥，请保证IP不重叠，如若重叠了，则黑名单优先</span>
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 请修改相对路径 -->
+		<script src="../../../../../../rest/resource/jsboot"></script>
+		<script>
+
+			// 初始化页面
+			epoint.initPage('apiinfoadjustsaction', '', function(data) {
+
+			});
+
+			function categoryValueChanged(e) {
+				mini.get("categoryid").setValue(e.value);
+
+				epoint
+						.execute(
+								'getUpdateRecord',
+								'',
+								e.value,
+								function(e) {
+									if (e.apiinfo) {
+										console.log(e.apiinfo);
+										if (e.apiinfo.baseurl) {
+											mini.get("baseurl").setValue(
+													e.apiinfo.baseurl);
+										}
+										if (e.apiinfo.retries) {
+											mini.get("retries").setValue(
+													e.apiinfo.retries);
+										}
+										if (e.apiinfo.upstreamconnecttimeout) {
+											mini
+													.get(
+															"upstreamconnecttimeout")
+													.setValue(
+															e.apiinfo.upstreamconnecttimeout);
+										}
+										if (e.apiinfo.upstreamsendtimeout) {
+											mini
+													.get("upstreamsendtimeout")
+													.setValue(
+															e.apiinfo.upstreamsendtimeout);
+										}
+										if (e.apiinfo.upstreamreadtimeout) {
+											mini
+													.get("upstreamreadtimeout")
+													.setValue(
+															e.apiinfo.upstreamreadtimeout);
+										}
+										if (e.apiinfo.requestVolumeThreshold) {
+											mini
+													.get(
+															"requestVolumeThreshold")
+													.setValue(
+															e.apiinfo.requestVolumeThreshold);
+										}
+										if (e.apiinfo.errorThresholdPercentage) {
+											mini
+													.get(
+															"errorThresholdPercentage")
+													.setValue(
+															e.apiinfo.errorThresholdPercentage);
+										}
+										if (e.apiinfo.sleepWindowInMilliseconds) {
+											mini
+													.get(
+															"sleepWindowInMilliseconds")
+													.setValue(
+															e.apiinfo.sleepWindowInMilliseconds);
+										}
+										//
+										if (e.apiinfo.httpsonly) {
+											mini.get("httpsonly").setValue(
+													e.apiinfo.httpsonly);
+										}
+										if (e.apiinfo.httpifterminated) {
+											mini
+													.get("httpifterminated")
+													.setValue(
+															e.apiinfo.httpifterminated);
+										}
+										if (e.apiinfo.stripuri) {
+											mini.get("stripuri").setValue(
+													e.apiinfo.stripuri);
+										}
+										if (e.apiinfo.preservehost) {
+											mini.get("preservehost").setValue(
+													e.apiinfo.preservehost);
+										}
+										if (e.apiinfo.enableruntimelog) {
+											mini
+													.get("enableruntimelog")
+													.setValue(
+															e.apiinfo.enableruntimelog);
+										}
+										if (e.apiinfo.enableresponse) {
+											mini
+													.get("enableresponse")
+													.setValue(
+															e.apiinfo.enableresponse);
+										}
+										//
+										if (e.apiinfo.methods) {
+											mini.get("methods").setValue(
+													e.apiinfo.methods);
+										}
+										if (e.apiinfo.exposedheaders) {
+											mini
+													.get("exposedheaders")
+													.setValue(
+															e.apiinfo.exposedheaders);
+										}
+										if (e.apiinfo.maxage) {
+											mini.get("maxage").setValue(
+													e.apiinfo.maxage);
+										}
+										if (e.apiinfo.origins) {
+											mini.get("origins").setValue(
+													e.apiinfo.origins);
+										}
+										if (e.apiinfo.headers) {
+											mini.get("headers").setValue(
+													e.apiinfo.headers);
+										}
+										if (e.apiinfo.credentials) {
+											mini.get("credentials").setValue(
+													e.apiinfo.credentials);
+										}
+										//
+										if (e.apiinfo.whitelist) {
+											mini.get("whitelist").setValue(
+													e.apiinfo.whitelist);
+										}
+										if (e.apiinfo.blacklist) {
+											mini.get("blacklist").setValue(
+													e.apiinfo.blacklist);
+										}
+
+									}
+									//console.log(e);
+								});
+			}
+			function clearCategory(e) {
+				var obj = e.sender;
+				obj.setText("");
+				obj.setValue("");
+				mini.get("categoryid").setValue("");
+			}
+
+			function apibaseurlvalid(e) {
+				var re = new RegExp(
+						"^([hH][tT]{2}[pP]://|[hH][tT]{2}[pP][sS]://)[^\s]+");
+				if (!re.test(e.value)) {
+					e.errorText = "服务源地址有误，请重新填写！";
+					e.isValid = false;
+				}
+			}
+
+			//服务权限不能全部选中
+			function userauthChanged(e) {
+				if (e.value == "true") {
+					mini.get("clientauth").setChecked(false);
+				}
+			}
+
+			function clientauthChanged(e) {
+				if (e.value == "true") {
+					mini.get("userauth").setChecked(false);
+				}
+			}
+
+			function blackvalid(e) {
+				ipIsRepeat(e);
+				if (e.value != '' && e.value == mini.get("whitelist").value) {
+					e.errorText = "该ip与白名单的ip重复！";
+					e.isValid = false;
+				}
+			}
+
+			function whitevalid(e) {
+				ipIsRepeat(e);
+				if (e.value != '' && e.value == mini.get("blacklist").value) {
+					e.errorText = "该ip与黑名单的ip重复！";
+					e.isValid = false;
+				}
+			}
+			//校验同个名单中是否存在相同的ip
+			function ipIsRepeat(e) {
+				if (e.value != '') {
+					var array = e.value.split(',');
+					var nary = array.sort();
+					for (var i = 0; i < array.length; i++) {
+						if (nary[i] == nary[i + 1]) {
+							e.errorText = "该名单中有重复ip";
+							e.isValid = false;
+						}
+					}
+				}
+			}
+
+			function imgeClick(val) {
+				var img = new Image();
+				if (val == "only") {
+					img.src = Util
+							.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/httpsonly.png');
+				} else if (val == "terminated") {
+					img.src = Util
+							.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/httpifterminated.png');
+				} else if (val == "uri") {
+					img.src = Util
+							.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/stripuri.png');
+				} else if (val == "host") {
+					img.src = Util
+							.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/preserverhost.png');
+				}
+				img.onload = function() {
+					if (img.fileSize > 0 || (img.width > 0 && img.height > 0)) {
+						var wid = img.width + 25;
+						var hei = img.height + 55;
+						epoint.openTopDialog("详细信息", img.src, '', {
+							'width' : wid,
+							'height' : hei
+						});
+					} else {
+						epoint.alert("暂无详细信息！");
+					}
+				};
+				img.onerror = function() {
+					epoint.alert("暂无详细信息！")
+				};
+
+			}
+
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('save', '@all', closeCallback);
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				if (data.msg) {
+					if (data.msg == "请选择分类！") {
+						epoint.alert(data.msg);
+					} else {
+						epoint.closeDialog(data.msg);
+					}
+
+				}
+			}
+		</script>
+</body>
+</html>

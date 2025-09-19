@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>消息渠道添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style>
+.form-row.bottom-space {
+	margin-bottom: 20px
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveAndNew">保存并新建</a> <a
+				class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a> <a
+				class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			<em>消息渠道作为消息发送的最后一步,记录消息具体的发送实现</em><br> <em>固定的渠道编号有:1.gateway(门户渠道,进行入库操作);2.mobile(移动端渠道,推送手机顶部通知);3.weixin(企业微信渠道,推送微信消息);4.msg(推送公司msg通知);5.sms(发送短信)</em><br>
+			<em>用户来源表和选取用户字段,除了短信是frameuser表mobile字段,常用的都是frameuser表EMPTY字段</em><br>
+			<em>渠道发送接口及渠道发送实现类选其一,优先会走实现类</em><br> <em>1.接口配置方式:渠道发送接口地址=http://127.0.0.1:8080/epoint-web/rest/smsservicerestimpl/sendsms,渠道发送接口参数:{“tel”:”{@userChannelData}”,”content”:”{@remindContent}”}</em><br>
+			<em>2.常用实现类:门户(com.epoint.frame.service.message.remind.channel.service.RemindChannelGatewayService)</em><br>
+			<em>移动(com.epoint.frame.service.message.remind.channel.service.MessagesMobileImpl)</em><br>
+			<em>微信(com.epoint.frame.service.message.remind.channel.service.MessagesMobileWeiXinImpl)</em><br>
+			<em>msg(com.epoint.frame.service.message.remind.channel.service.RemindChannelMsgImpl)</em><br>
+		</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="渠道编号" starred="true">
+						<input bind="dataBean.channelID" class="mini-textbox"
+							required="true" requiredErrorText="渠道编号不能为空" vtype="maxLength:50" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="渠道名称" starred="true">
+						<input bind="dataBean.channelName" class="mini-textbox"
+							required="true" requiredErrorText="渠道名称不能为空" vtype="maxLength:10" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否支持消息撤回">
+						<input id="isEnableTableBack" bind="dataBean.isEnableTableBack"
+							class="mini-radiobuttonlist" action="selectModel" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="用户来源表">
+						<input id="initUserTable" bind="dataBean.initUserTable"
+							onvaluechanged="dataSourceChange" class="mini-combobox"
+							action="selectUserTableModel" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="选取用户字段">
+						<input id="initUserField" bind="dataBean.initUserField"
+							class="mini-combobox" action="selectFieldModel" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input bind="dataBean.orderNumber" class="mini-textbox"
+							vtype="int;range:0,99999999" allowSort="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="渠道处理实现类">
+						<input id="channelImplCls" bind="dataBean.channelImpClass"
+							class="mini-combobox" action="selectChannelImpl" />
+					</div>
+				</div>
+				<div role="row" class="bottom-space">
+					<div role="control" label="渠道额外信息配置页">
+						<input id="extendconfigpage" bind="dataBean.extendconfigpage"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="渠道发送接口地址">
+						<input bind="dataBean.channelAPIUrl" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="渠道发送接口参数">
+						<input bind="dataBean.channelAPIParam" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="消息撤回地址">
+						<input bind="dataBean.backapiurl" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="消息撤回参数">
+						<input bind="dataBean.backapiparam" class="mini-textarea" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="用户渠道信息获取实现类">
+						<input bind="dataBean.userchannelimplclass" class="mini-textarea" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messageschanneladdaction');
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					mini.get("isEnableTableBack").setValue(0);
+					mini.get("initUserTable").setValue("frameuser");
+					mini.get("initUserField").setValue("EMPTY");
+					mini
+							.get("extendconfigpage")
+							.setValue(
+									"framemanager/messages/channel/channeldefaultconfig");
+				}
+				epoint.alert(data.msg, '', null, 'info');
+
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'info');
+				}
+			}
+		}
+		// 角色类别变更
+		function dataSourceChange() {
+			updateTable();
+		}
+
+		function updateTable() {
+			epoint.refresh([ 'fui-form' ]);
+		}
+
+		var tip = new mini.ToolTip();
+		tip.set({
+			target : document,
+			selector : '[data-tooltip], [title]'
+		});
+
+		$(document)
+				.ready(
+						function() {
+							// 为channelImplCls添加注释
+							var labelEle = $("#channelImplCls").parent().prev();
+							var labelText = labelEle.text();
+							var labelValue = labelText.substring(0,
+									labelText.length - 1);
+							var labelSymbol = labelText.substring(
+									labelText.length - 1, labelText.length);
+							var tipValue = "消息发送的最终处理类<br>继承IRemindChannelService接口<br>添加@RemindChanneImpl注解";
+							var helpText = '<a class="action-icon icon-askcircle" data-tooltip="' + tipValue + '" data-placement="top" style="padding-left: 3px;padding-right:2px"/>';
+							labelEle.text("");
+							labelEle.append(labelValue);
+							labelEle.append(helpText);
+							labelEle.append(labelSymbol);
+							// 为extendconfigpage添加注释
+							var labelEle2 = $("#extendconfigpage").parent()
+									.prev();
+							var labelText2 = labelEle2.text();
+							var labelValue2 = labelText2.substring(0,
+									labelText2.length - 1);
+							var labelSymbol2 = labelText2.substring(
+									labelText2.length - 1, labelText2.length);
+							var tipValue2 = "每个渠道都有可能有一些额外的配置信息,开发人员可以开发个性化的配置页面配置在此处,<br>通过渠道列表上的额外配置按钮就可以打开相应页面进行配置,页面会传递channelguid字段,<br>后台根据主键查得channel对象进行extendAttr赋值";
+							var helpText2 = '<a class="action-icon icon-askcircle" data-tooltip="' + tipValue2 + '" data-placement="top" style="padding-left: 3px;padding-right:2px"/>';
+							labelEle2.text("");
+							labelEle2.append(labelValue2);
+							labelEle2.append(helpText2);
+							labelEle2.append(labelSymbol2);
+						});
+	</script>
+</body>
+</html>

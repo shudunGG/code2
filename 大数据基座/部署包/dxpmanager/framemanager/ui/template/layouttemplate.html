@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>布局模板</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-addcircle" onclick="saveAndNew">保存并新建</a> 
+			<a class="mini-button" id="addClose" iconCls="icon-save" onclick="saveAndClose">保存并关闭</a> 
+			<a class="mini-button" id="updateClose" iconCls="icon-save" onclick="updateAndClose" style="display: none">修改并关闭</a> 
+			<a class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="模板名称" starred="true">
+						<input id="templatename" class="mini-textbox" style="width: 90%"
+							bind="dataBean.templatename" required="true"
+							requiredErrorText="模板名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="列宽自定义">
+						<input id="customwidth" class="mini-textbox"
+							bind="dataBean.customwidth" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">列宽自定义：多个布局块的比例,例[[1,1,1],[1]]就是3+1,必须是数组嵌套型格式[[],[],[]]</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序">
+						<input id="ordernumber" class="mini-textbox"
+							vtype="int;range:0,99999999" bind="dataBean.ordernumber"
+							style="width: 90%">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="缩略图">
+
+						<div class="btn-group mr10">
+							<a class="mini-button" onclick="chooseTemplate">选择模板</a>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<div class="img-view" id="preview">
+							<img id="lblPicture" src="" width="300px" height="150px" /> <i
+								class="action-icon icon-removecirclefilled" id="closeicon"
+								style="position: absolute; left: 300px; top: -8px;"
+								onclick="delPhoto();"></i>
+						</div>
+					</div>
+				</div>
+				<input class="mini-hidden" bind="dataBean.thumbnail" id="thumbnail" />
+			</div>
+		</div>
+
+
+		<!-- 请修改相对路径 -->
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			// 初始化页面
+			epoint.initPage('layouttemplateaction', null, initPage);
+
+			function initPage(data) {
+				//隐藏关闭按钮
+				$("#closeicon").hide();
+				$("#lblPicture").hide();
+				if (data.msg) {
+					if ("update" == data.msg) {
+						mini.get("addNew").hide();
+						mini.get("addClose").hide();
+						mini.get("updateClose").show();
+					}
+				}
+
+				if (data.thumbnail) {
+					var url = Util.getRightUrl(data.thumbnail);
+					$("#lblPicture").attr("src", url);
+					$("#closeicon").show();
+					$("#lblPicture").show();
+				}
+			}
+
+			function saveAndNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				}
+			}
+
+			function updateAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('update', 'fui-form', closeCallback);
+				}
+			}
+
+			// 新增操作的回调
+			function newCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						// 清空表单
+						epoint.clear('fui-form');
+						epoint.alert(data.msg, '', null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+					$("#lblPicture").attr("src", "");
+					$("#lblPicture").hide();
+					$("#closeicon").hide();
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null,
+								'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				}
+			}
+
+			//选择模板
+			function chooseTemplate() {
+				var url = 'framemanager/ui/template/thumbnail';
+				epoint.openDialog("选择模板", url, openiconOperJS, {
+					'width' : 1100,
+					'height' : 500
+				});
+			}
+
+			//回调
+			function openiconOperJS(rtnValue) {
+				//console.log(rtnValue);
+				if (rtnValue != "" && rtnValue != 'close') {
+					$("#closeicon").show();
+					$("#lblPicture").show();
+					var url = Util.getRightUrl(rtnValue);
+					$("#lblPicture").attr("src", url);
+					mini.get("thumbnail").setValue(rtnValue);
+				}
+			}
+
+			//删除图片
+			function delPhoto() {
+				$("#lblPicture").attr("src", "");
+				$("#lblPicture").hide();
+				$("#closeicon").hide();
+			}
+		</script>
+</body>
+</html>

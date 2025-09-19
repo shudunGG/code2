@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>活动模板处理事件</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar">
+		<a class="mini-button" state="primary" onclick="openAdd();"
+			id="btnAddRecord"> 新增记录 </a> <a id="btnDel" class="mini-button"
+			state="danger" 
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!',  {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+			删除选中 </a>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition" id="condition">
+		<div class="fui-form" id="fui-form">
+			<div id="sj" bind="activitycommontempleteeventaction.rdoEventSource"
+				class="mini-radiobuttonlist" repeatItems="2" value="10"
+				textField="text" valueField="id" onvaluechanged="searchData"
+				data="[{text:'活动实例事件',id:'10'}]"></div>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="eventguid"
+			action="getResultListModel" sortOrder="desc" showPager="false"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="sjly">事件来源</div>
+				<div field="eventname">事件名称</div>
+				<div field="eventtypename">事件类型</div>
+				<div field="eventmethodname">事件处理办法</div>
+				<div field="ordernumber">排序值</div>
+				<div id="edit" width="40" renderer="onEditRenderer">修改</div>
+				修改
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="activityGuid" bind="activityGuid" />
+	<input class="mini-hidden" id="processVersionGuid"
+		bind="processVersionGuid" />
+	<input class="mini-hidden" id="byTempleteActGuid"
+		bind="byTempleteActGuid" />
+	<input class="mini-hidden" id="rdoEventSource" bind="rdoEventSource" />
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activitycommontempleteeventaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			var byTempleteActGuid = mini.get("byTempleteActGuid").getValue();
+			if (byTempleteActGuid != null && byTempleteActGuid != "") {
+				document.getElementById("toolbar").style.display = "none";
+				document.getElementById("condition").style.display = "none";
+			}
+		}
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			var byTempleteActGuid = mini.get("byTempleteActGuid").getValue();
+			if (byTempleteActGuid == null || byTempleteActGuid == "") {
+				return epoint.renderCell(e, "action-icon icon-edit",
+						"openEdit", "eventguid");
+			}
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			var activityGuid = mini.get("activityGuid").getValue();
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			var rdoEventSource = mini.get("rdoEventSource").getValue();
+			epoint.openDialog('新增数据',
+					"framemanager/workflow/design/activitymanualeventadd?sourceGuid="
+							+ activityGuid + "&processVersionGuid="
+							+ processVersionGuid + "&roEventSource="
+							+ rdoEventSource, searchKeepPage, {
+						'width' : 550,
+						'height' : 500
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(eventguid) {
+			var activityGuid = mini.get("activityGuid").getValue();
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('修改记录',
+					"framemanager/workflow/design/activitymanualeventedit?activityGuid="
+							+ activityGuid + "&eventGuid=" + eventguid
+							+ "&processVersionGuid=" + processVersionGuid,
+					searchKeepPage, {
+						'width' : 550,
+						'height' : 500
+					});
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'success'});
+				searchKeepPage();
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			mini.get("rdoEventSource").setValue(mini.get("sj").getValue());
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		function searchKeepPage() {
+			mini.get("rdoEventSource").setValue(mini.get("sj").getValue());
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Device management</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addPortal" iconCls="icon-addcircle">new element</a>
+			<a class="mini-button" onclick="savePortal" iconCls="icon-save">save the components</a>
+			<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm the deletion?','',deleteSelected);}" iconCls="icon-minuscircle">delete the element</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="false" action="getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">
+					order
+				</div>
+				<div field="portaletname" headerAlign="center" width="100%" >
+					name of the element
+				</div>
+				<div field="categoryName" headerAlign="center" width="150" >
+					desktop
+				</div>
+				<div field="heigth" headerAlign="center" width="80"  align="center">
+					height
+				</div>
+				<div field="width" headerAlign="center" width="80"  align="center">
+					width
+				</div>
+				<div field="position_left" headerAlign="center" width="80"  align="center" >
+					left
+				</div>
+				<div field="position_top" headerAlign="center" width="80" align="center">
+					top
+				</div>
+				<div field="ordernum" headerAlign="center" align="right" width="120">
+					roworder
+				</div>
+				<div field="isenable" type="checkboxcolumn" headerAlign="center" width="120"  align="center" >
+					start using
+				</div>
+				<div field="wqgk" type="checkboxcolumn" headerAlign="center" width="80"  align="center" >
+					public
+				</div>
+				<div field="nobk" type="checkboxcolumn" headerAlign="center" width="80"  align="center" >
+					no border
+				</div>
+				<div name="pedit" width="50" headerAlign="center" align="center" renderer="onEditRenderer">
+					edit
+				</div>
+				<div name="pright" width="120" headerAlign="center" align="center" renderer="onRightRenderer" >
+					permissions
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage('appmanagepublicelementlistaction');
+		
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid'],'',true);
+		}
+		
+		//new editcallback
+	    function addEditCallBack(param) {
+	        if (param) {
+	            searchData(); 
+	        }
+	    }
+		//edit
+		function savePortal(){
+			epoint.execute('save','datagrid', msgCallBack);
+		}
+		
+		//The new element
+		function addPortal(){
+			var settings = {
+					'width' : 1000,
+					'height' : 500
+				};
+			epoint.openDialog('new element',
+						'framemanager/orga/uiset/menu/app/appmanagepublicelementadd', addEditCallBack,
+						settings);
+		}
+		
+		
+		// Back to thediaoremind
+		function msgCallBack(data) {
+			var msg =data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//delete selected
+		function deleteSelected() {
+			epoint.execute('deleteSelect', 'datagrid', msgCallBack);
+		}
+		
+		function editItems(rowguid) {
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint.openDialog('editelement',
+					'framemanager/orga/uiset/menu/app/appmanagepublicelementedit?guid='+rowguid, addEditCallBack,
+					settings);
+		}
+		
+		// Draw Edit Columns button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit" ,"editItems","rowguid")
+		};
+		
+		function openRight(rowguid) {
+			var settings = {
+				'width' : 680,
+				'height' : 550
+			};
+			epoint.openDialog('configurationelementpermissions',
+					'framemanager/orga/uiset/menu/app/appmanagerightset?portaletguid='+rowguid, searchData,
+					settings);
+		}
+		
+		// Draw the linepermissionsbutton
+		var onRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear" ,"openRight","rowguid")
+		};
+		//]]>
+	</script>
+
+
+</body>
+</html>

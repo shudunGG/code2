@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>系统保留字段设置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="add()">配置</a>
+			<a class="mini-button mini-btn-danger" iconCls="icon-removecircle"
+				id="delMessage"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录！', '', null, 'warning');} else {epoint.confirm('删除该系统字段,确定要删除吗?','',function(){deleteSelected();});}">删除选中</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="fieldid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDataGridData" showPager="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">序</div>
+				<div field="fieldid" width="150" headerAlign="center">字段Id</div>
+				<div field="fieldname" width="100%" headerAlign="center">字段英文名称
+				</div>
+				<div field="fieldchinesename" width="250" headerAlign="center">字段中文名称</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="tableId" bind="tableId" />
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+		epoint.initPage("systemstructconfiglistaction");
+
+		// 新增
+		function add() {
+			epoint.openDialog('表系统字段管理',
+					'framemanager/metadata/mis/tableinfo/systemstructconfigedit?tableId='
+							+ mini.get("tableId").getValue()+ "&isSub=" + isSub, searchKeepPage, {
+						'width' : 1000,
+						'height' : 500
+					});
+		}
+
+		// 删除结构
+		function deleteSelected() {
+			epoint.execute('deleteSelected', [ 'datagrid' ], msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchKeepPage(), 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh();
+		}
+
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>变迁线条件设置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="条件名称" starred="true">
+						<input class="mini-textbox" required="true"
+							requiredErrorText="条件名称不能为空!"
+							bind="workflowTransitionCondition.conditionName" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="比较方法">
+						<input id="methodName"
+							bind="workflowTransitionCondition.methodGuid"
+							class="mini-buttonedit" onbuttonclick="selectMethod"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input class="mini-textbox"
+							bind="workflowTransitionCondition.orderNum"
+							vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textbox" 
+							bind="workflowTransitionCondition.remark" />
+					</div>
+				</div>
+			</div>
+			<input class="mini-hidden" id="processVersionGuid"
+				bind="processVersionGuid" />
+		</div>
+	</div>
+
+    <!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="add" onclick="addTransition" style="display: none;">确定新增</a>
+		<a class="mini-button" state="primary" id="save" onclick="saveTransition" style="display: none;">保存修改</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activitytransitionconditionfunaction', null,
+				initCallBack);
+
+		//初始化回调事件
+		function initCallBack(data) {
+			buttonShow(data.type);
+			if (data.methodName) {
+				mini.get("methodName").setText(data.methodName);
+			}
+		}
+		//控制显隐
+		function buttonShow(type) {
+			if (type == "add") {
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+			} else if (type == "edit") {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("save").style.display = "";
+			}
+		}
+		//选择方法
+		function selectMethod() {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint.openDialog('选择外部方法',
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid, selectCallBack, {
+						width : 480,
+						height : 300
+					});
+		}
+		//选择外部方法后CallBack
+		function selectCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("methodName").setValue(datas[1]);
+				mini.get("methodName").setText(datas[0]);
+			}
+		}
+		//保存
+		function saveTransition() {
+			if (epoint.validate()) {
+				epoint.execute('saveTransition', 'fui-form', function(data) {
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alertAndClose(data.message, '', null, null,
+								'info');
+					} else {
+						epoint.alert(data.message, '', null, 'info');
+					}
+				});
+			}
+		}
+		//新增
+		function addTransition() {
+			if (epoint.validate()) {
+				epoint.execute('addTransition', 'fui-form', function(data) {
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alertAndClose(data.message, '', null, null,
+								'info');
+					} else {
+						epoint.alert(data.message, '', null, 'info');
+					}
+					buttonShow("edit");
+				});
+			}
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

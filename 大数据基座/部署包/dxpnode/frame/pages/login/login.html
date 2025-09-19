@@ -1,0 +1,618 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="css/cube.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/login.css">
+    <script src="js/jquery-1.11.0.min.js"></script>
+    <title>数据集成开发登录页</title>
+</head>
+
+<body>
+    <!-- <div class="loginbg" id="loginbg">
+        <img src="images/bg.jpg" />
+    </div> -->
+    <!-- 背景 -->
+    <div class="bg">
+        <video id="background_video" loop muted></video>
+    </div>
+    <div class="dot-bg-wrap">
+        <div class="dot"></div>
+    </div>
+    <div class="container login">
+        <div class="title-wrap">
+           <!--  <img class="title-img" src="images/title.png"> -->
+           <h1 class="login-title">
+				新点数据集成开发平台&nbsp;<span class="versionnum"></span>
+			</h1>
+			<p class="title-tip">
+				<span>Epoint</span>&nbsp;&nbsp;&nbsp;Data&nbsp;&nbsp;&nbsp;Exchange&nbsp;&nbsp;&nbsp;Development&nbsp;&nbsp;&nbsp;Platform
+			</p>
+        </div>
+
+        <div class="loginbox r NOIE" id="cubeTransition">
+            <!-- 账号登录 -->
+            <div class="example">
+                <div class="inner" id="brainLogin">
+                    <div class="code" id="code" onclick="createqr()"></div>
+                    <div class="keepOut"></div>
+                    <div class="login-tab-hd">
+                        <h2>账号登录</h2>
+                    </div>
+                    <div class="login-form">
+                        <div class="form-row" style="padding:0;">
+                            <p class="user-name icon-user">用户名</p>
+                            <input type="text" placeholder="请输入用户名" class="txt"  id="username" />
+                        </div>
+                        <div class="form-row" style="padding:0;">
+                            <p class="user-name icon-local">密码</p>
+                            <input type="password" placeholder="请输入密码" class="txt"  id="psd" />
+                        </div>
+                        <div class="clearfix hidden verifycode-box" id="verifycode-box"
+							style="padding-top: 20px;">
+							<input class="l validate codeinput" autocomplete="off"
+								id="code-input" type="text" placeholder="请输入验证码"
+								style="height: 30px;" />
+							<div class="mini-verifycode l codeimg" id="verifyCode"
+								action="loginaction.pageLoad" bind="" style="width: 45%;"></div>
+						</div>
+                        <div class="btnbar">
+                            <input type="button" value="登录" class="btnlogin" onclick="encryUserMsg()" />
+                        </div>
+                        <div class="btn-wrap clearfix">
+                        	<input class="mini-checkbox hidden" id="check" value="1" />
+                            <a class="rem-btn" href="javascript:js_method();">我已阅读《<a href="privacy_statement.html" target="_blank">新点数据集成开发平台隐私保密申明》</a></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 扫码登录 -->
+            <div class="example hidden">
+                <div class="inner" id="codeLogin">
+                    <div class="brain" id="brain"></div>
+                    <div class="keepOut"></div>
+                    <div class="sweepcode">
+                        <div class="renovate">
+                            <img src="images/sweepcode.jpg" alt="" />
+                            <div class="reinner">
+                                <div>二维码已失效</div>
+                                <span class="fresh">点击刷新</span>
+                            </div>
+                        </div>
+                        <p>打开<em>新点移动办公</em>，扫一扫登录</p>
+                    </div>
+                    <div class="success hidden">
+                        <p class="green">扫描成功</p>
+                        <p>请在手机上确认登录</p>
+                        <p class="mt10"><a href="javascript:;" class="blue">重新扫描</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bideo.js"></script>
+    <script src="js/jquery.placeholder.min.js"></script>
+    <script src="./js/jquery.cookie.js"></script>
+    <script src="js/login.js"></script>
+    
+    <script src="../../../rest/resource/jsboot"></script>
+	<script src="js/jquery-tab.js"></script>
+	<script src="../../fui/js/widgets/jquery.nicescroll.min.js"></script>
+	<script src="js/jquery.validate/jquery.validate.min.js"></script>
+	<script src="js/jquery.validate/additional-methods.js"></script>
+	<script src="js/jquery.qrcode.min.js"></script>
+	<script src="js/layer/layer.js"></script>
+	<script src="../../fui/js/widgets/jquery.placeholder.min.js"></script>
+	<script src="js/index.js"></script>
+
+	<script>
+		// sm2加密引入js文件
+		SrcBoot.output([
+			'../../fui/js/libs/sm2security.js'
+		]);
+	</script>
+
+	<script>
+    	Util.ajax({
+    	 	type: "POST", 
+         	contentType:"application/json;charset=utf-8", 
+         	url: "getversion.action?cmd=getVersion", 
+         	dataType: "text", 
+         	success: function(res) {
+         		var data = JSON.parse(res);
+        	 	if (data.custom) {
+             		$(".versionnum").text(data.custom);
+             	}
+        	}
+    	});
+    
+		epoint.initPage('loginaction');
+		// 初始化时获取title和logo的请求地址
+		var initUrl = epoint.dealRestfulUrl("loginaction/getLoginData");
+
+		//再次访问可以自动登录
+		epoint.execute("loginaction.autoLoad", "", function(data) {
+			Util.hidePageLoading();
+
+		}, true);
+		
+	</script>
+	<script>
+		// 生成code
+		function uuid() {
+			var s = [];
+			var hexDigits = "0123456789abcdef";
+			for (var i = 0; i < 36; i++) {
+				s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+			}
+			s[14] = "4";
+			s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
+			s[8] = s[13] = s[18] = s[23] = "-";
+
+			var uuid = s.join("");
+
+			return uuid;
+		}
+
+		var code;
+		var qrcreatetime;
+		var orderStr;
+
+		function clearQRStatus() {
+			$('#reinner').removeClass("hidden");
+			$('#success').addClass("hidden");
+			qrcreatetime = null;
+			code = null;
+			orderStr = null;
+		}
+
+		var isIE = false;
+		var browser = navigator.appName
+		var b_version = navigator.appVersion
+		var version = b_version.split(";");
+		var trim_Version = version[1].replace(/[ ]/g, "");
+		if ((browser == "Microsoft Internet Explorer")
+				&& (trim_Version == "MSIE6.0" || trim_Version == "MSIE7.0" || trim_Version == "MSIE8.0")) {
+			isIE = true;
+		}
+
+		// 创建二维码
+		function createqr() {
+			$('#reinner').addClass("hidden");
+			$('#success').addClass("hidden");
+			$('#sweepcode').removeClass('hidden');
+			code = uuid();
+			qrcreatetime = new Date().Format("yyyy-MM-dd HH:mm:ss");
+			$('#qrcode').empty();
+			// 这个可以是一个div的id，就是展示二维码的地方
+			var renderType = "canvas";
+			if (isIE) {
+				var renderType = "table";
+			}
+			console
+					.log(Util
+							.getRightUrl("frame/pages/login/mobile/mobileconfirmlogin.html?code="
+									+ code));
+			$('#qrcode')
+					.qrcode(
+							{
+								width : 193,//设置宽高 
+								height : 193,
+								render : renderType,
+								//这个地址是后台的扫码确认接口地址，结合实际代码修改
+								text : Util
+										.getRightUrl("frame/pages/login/mobile/mobileconfirmlogin.html?code="
+												+ code)
+							});
+			longPolling();
+		}
+
+		// 长轮训，检查扫码状态
+		function longPolling() {
+			if (($('#success').hasClass("hidden"))
+					&& ($('#reinner').hasClass("hidden"))
+					&& qrcreatetime != undefined && code != undefined) {
+				orderStr = "query";
+			} else if (!($('#success').hasClass("hidden"))
+					&& ($('#reinner').hasClass("hidden"))) {
+				orderStr = "login";
+			}
+			if (orderStr != null) {
+				Util.ajax({
+					url : epoint.dealRestfulUrl("qrloginaction/qrLoginQuery"),
+					data : {
+						"code" : code,
+						"time" : qrcreatetime,
+						"order" : orderStr
+					},
+					timeout : 6000,
+					//dataType : "text",
+					type : "POST",
+					success : function(data, textStatus) {
+						if (textStatus == "success") { // 请求成功
+							if (data) {
+								//var data1 = eval('(' + data + ')');
+								//var json = eval('(' + data1.custom + ')');
+								var invalid = data.invalid;
+								var scanned = data.scanned;
+								var code = data.code;
+								if (invalid === true && scanned === false) {
+									$('#reinner').removeClass("hidden");
+									clearQRStatus();
+								} else if (invalid === false
+										&& scanned === true) {
+									$('#success').removeClass("hidden");
+									$('#sweepcode').addClass('hidden');
+									qrcreatetime = null;
+									setTimeout(longPolling, 1000);
+								} else if (invalid === false
+										&& scanned === false && code != null) {
+									$('#reinner').removeClass("hidden")
+									username = code;
+									password = "qrcodelogin"
+									//登录
+									epoint
+											.execute('loginaction.login', '', [
+													username, password, '3' ],
+													callback);
+								} else {
+									setTimeout(longPolling, 1000);
+								}
+							} else {
+								setTimeout(longPolling, 1000);
+							}
+						} else {
+							setTimeout(longPolling, 1000);
+						}
+					}
+				});
+			} else {
+				setTimeout(longPolling, 1000);
+			}
+		}
+
+		longPolling();
+
+		// 日期格式化
+		Date.prototype.Format = function(fmt) { //author: meizz   
+			var o = {
+				"M+" : this.getMonth() + 1, //月份   
+				"d+" : this.getDate(), //日   
+				"H+" : this.getHours(), //小时   
+				"m+" : this.getMinutes(), //分   
+				"s+" : this.getSeconds(), //秒   
+				"q+" : Math.floor((this.getMonth() + 3) / 3),
+				"S" : this.getMilliseconds()
+			//毫秒   
+			};
+			if (/(y+)/.test(fmt))
+				fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "")
+						.substr(4 - RegExp.$1.length));
+			for ( var k in o)
+				if (new RegExp("(" + k + ")").test(fmt))
+					fmt = fmt.replace(RegExp.$1,
+							(RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k])
+									.substr(("" + o[k]).length)));
+			return fmt;
+		}
+
+		//***********************************证书登录*********************************
+		function checkUsbKey() {
+			var SignCert = EpCaObj.SignCert();
+			var NeedSignStr = EpCaObj.ClientSignCertSN();
+			var SignedRtn = EpCaObj.SignData(NeedSignStr);
+			var VerRtn = EpCaObj.VerifyData(NeedSignStr, SignCert, SignedRtn);
+
+			if (!VerRtn) {
+				openalert("参数异常，验签未通过，请检查证书是否正确！");
+				return false;
+			}
+
+			var username = NeedSignStr;
+			var password = "usbkeylogin";
+			username = epoint.encode(username);
+			password = epoint.encode(password);
+
+			// 登录
+			epoint.execute('loginaction.login', '', [ username, password,
+					loadtype ], callback);
+			return false;
+		}
+
+		function callback(data) {
+			openalert(data.systemMessages);
+		}
+
+		// 打开一个提醒窗口
+		function openalert(msg) {
+			alert(msg);
+			var template = "<div class=\"prompt\"><p class=\"warn pt35\">"
+					+ msg + "</p></div>";
+			layer.open({
+				type : 1,
+				title : '提醒',
+				area : [ '400px', 'auto' ],
+				skin : 'layer-confirm',
+				btn : [ '关闭' ],
+				//	 		    anim: 4,
+				//	 		    shade: 0,
+				content : template,
+				yes : function(index, layero) {
+					layer.close(index);
+					return;
+					//	 		    	window.location.replace(location.href);
+				}
+			});
+		}
+
+		var CAPICOM_CURRENT_USER_STORE = 2;
+		var CAPICOM_ENCODE_BASE64 = 0;
+		var CAPICOM_INFO_SUBJECT_SIMPLE_NAME = 0;
+		var CAPICOM_CERTIFICATE_FIND_ISSUER_NAME = 2;
+		var CAPICOM_STORE_OPEN_READ_ONLY = 0;
+		var CAPICOM_AUTHENTICATED_ATTRIBUTE_SIGNING_TIME = 0;
+		var CAPICOM_E_CANCELLED = -2138568446;
+		var CAPICOM_VERIFY_SIGNATURE_AND_CERTIFICATE = 0;
+		var CAPICOM_CERTIFICATE_FIND_TIME_VALID = 9;
+		var CAPICOM_CERTIFICATE_FIND_SHA1_HASH = 0;
+		var CAPICOM_CERTIFICATE_FIND_EXTENDED_PROPERTY = 6;
+		var CERT_KEY_SPEC_PROP_ID = 6;
+		var CAPICOM_CERTIFICATE_FIND_KEY_USAGE = 12;
+		var CAPICOM_DIGITAL_SIGNATURE_KEY_USAGE = 0x00000080;
+		var CAPICOM_DATA_ENCIPHERMENT_KEY_USAGE = 16;
+		var CAPICOM_HASH_ALGORITHM_SHA1 = 0;
+		var Thumbprint;
+		var DigitalCert;
+		var KeyCert;
+		var EpontIss = 'CN=CA, DC=gtignew';
+
+		function ThrowEx(Msg) {
+			openalert(Msg);
+			throw (new Error(-1, Msg));
+		}
+
+		function GetEpCert() {
+			var ks = [];
+			var szStore = 'my';
+			if (typeof (MyStore) != 'object') {
+				var MyStore = new ActiveXObject('CAPICOM.Store');
+			}
+			try {
+				MyStore.Open(CAPICOM_CURRENT_USER_STORE, szStore,
+						CAPICOM_STORE_OPEN_READ_ONLY);
+			} catch (e) {
+				if (e.number != CAPICOM_E_CANCELLED) {
+					openalert('选择的证书有问题，请确认USBkey是否正确插入!');
+				}
+			}
+			var Certificates = MyStore.Certificates.Find(
+					CAPICOM_CERTIFICATE_FIND_KEY_USAGE,
+					CAPICOM_DIGITAL_SIGNATURE_KEY_USAGE).Find(
+					CAPICOM_CERTIFICATE_FIND_TIME_VALID);
+			for (i = 1; i <= Certificates.Count; i++) {
+				if (Certificates.Item(i).IssuerName != EpontIss)
+					continue;
+				else
+					ks.push(Certificates.Item(i));
+			}
+			if (ks.length == 1) {
+				return ks[0];
+			} else {
+				if (ks.length == 0)
+					ThrowEx('未发现ca锁，请插入ca锁');
+				else
+					ThrowEx('系统发现您插入了多把白锁，请检查，如果排查后还有请手动清理IE证书残留!');
+			}
+		}
+
+		function getDigitalCert() {
+			DigitalCert = GetEpCert();
+			return DigitalCert;
+		}
+
+		function getKeyCert() {
+			KeyCert = GetEpCert();
+			return KeyCert;
+		}
+		function GetHash(OrgData) {
+			try {
+				var HashedData = new ActiveXObject('CAPICOM.HashedData');
+				HashedData.Algorithm = CAPICOM_HASH_ALGORITHM_SHA1;
+				HashedData.Hash(OrgData);
+				return HashedData.Value;
+			} catch (e) {
+				openalert('获取hash失败：' + e.description);
+				return false;
+			}
+		}
+
+		var EpCaObj = {
+			InitClientCert : function() {
+				return true;
+			},
+
+			ClientSignCertSN : function() {
+				if (DigitalCert == null)
+					DigitalCert = getDigitalCert();
+				var Certificates = DigitalCert;
+				return Certificates.SerialNumber;
+			},
+			ClientSignCertCN : function() {
+				if (DigitalCert == null)
+					DigitalCert = getDigitalCert();
+				var Certificates = DigitalCert;
+				return Certificates.GetInfo(CAPICOM_INFO_SUBJECT_SIMPLE_NAME);
+			},
+			SignCert : function() {
+				if (DigitalCert == null)
+					DigitalCert = getDigitalCert();
+				var Certificates = DigitalCert;
+				return Certificates.Export(CAPICOM_ENCODE_BASE64);
+			},
+			EncCert : function() {
+				if (KeyCert == null)
+					KeyCert = getKeyCert();
+				var Certificates = KeyCert;
+				return Certificates.Export(CAPICOM_ENCODE_BASE64);
+			},
+
+			CertSubjectKeyID : function() {
+				var szResult = '';
+				var isResult = true;
+				if (KeyCert == null)
+					KeyCert = getKeyCert();
+				var Certificates = KeyCert;
+				if (Certificates.Extensions() == null) {
+					openalert('获取使用者密钥标识符失败！');
+				} else {
+					for (var i = 1; i <= Certificates.Extensions().Count; i++) {
+						if (Certificates.Extensions(i).OID.FriendlyName == '使用者密钥标识符') {
+							szTmp = Certificates.Extensions(i).EncodedData
+									.Format(isResult);
+							for (var j = 0; j <= szTmp.length; j++) {
+								szResult = szResult + szTmp.substr(j, 1);
+							}
+						}
+					}
+					return szResult.replace(/[ ]/g, '').replace('\\r', '')
+							.replace('\\n', '');
+				}
+			},
+
+			CertYouXiaoQi : function() {
+				try {
+					var Certificates = getDigitalCert();
+					var d = new Date(Certificates.ValidToDate);
+					return d.getFullYear() + '-' + (d.getMonth() + 1) + '-'
+							+ d.getDate() + ' ' + d.getHours() + ':'
+							+ d.getMinutes() + ':' + d.getSeconds();
+				} catch (ex) {
+					ThrowEx('读取有效期信息出现异常，请检查锁是否插好!');
+				}
+			},
+			SignData : function(OrgData) {
+				try {
+					var SignedData = new ActiveXObject('CAPICOM.SignedData');
+					var Signer = new ActiveXObject('CAPICOM.Signer');
+					//var TimeAttribute = new ActiveXObject('CAPICOM.Attribute');
+					SignedData.Content = GetHash(OrgData);
+					if (DigitalCert == null)
+						DigitalCert = getDigitalCert();
+					Signer.Certificate = DigitalCert;
+					//var Today = new Date();
+					//TimeAttribute.Name = CAPICOM_AUTHENTICATED_ATTRIBUTE_SIGNING_TIME;
+					//TimeAttribute.Value = Today.getVarDate();
+					//Today = null;
+					// Signer.AuthenticatedAttributes.Add(TimeAttribute);
+					return SignedData
+							.Sign(Signer, false, CAPICOM_ENCODE_BASE64);
+				} catch (e) {
+					if (e.number != -2146893792) {
+						openalert('请确认USBkey是否正确插入或者IE安全设置是否正确。'
+								+ e.description);
+					}
+					return false;
+				}
+			},
+
+			VerifyData : function(OrgData, SignCerInfo, SignInfo) {
+				var SignedData = new ActiveXObject('CAPICOM.SignedData');
+				try {
+					SignedData.Verify(SignInfo, false,
+							CAPICOM_VERIFY_SIGNATURE_AND_CERTIFICATE);
+					return (SignedData.Content == GetHash(OrgData));
+				} catch (e) {
+					openalert('数字签名验证失败！' + e.description);
+					return false;
+				}
+				return true;
+			},
+			SignFile : function(FilePath) {
+				try {
+					return this.SignData($$('iWebOA').HashFile(FilePath));
+				} catch (ex) {
+					ThrowEx('文件签名出现异常，请检查锁是否插好!');
+				}
+			},
+			VerifyFile : function(FilePath, SignCerInfo, SignInfo) {
+				try {
+					return this.VerifyData($$('iWebOA').HashFile(FilePath),
+							SignCerInfo, SignInfo);
+				} catch (ex) {
+					ThrowEx('文件验签出现异常!');
+				}
+			},
+			Encrypt : function(OrgData) {
+				if (OrgData != '') {
+					if (KeyCert == null)
+						KeyCert = getKeyCert();
+					var Certificates = KeyCert;
+					var EnvelopedData = new ActiveXObject(
+							'CAPICOM.EnvelopedData');
+					try {
+						EnvelopedData.Recipients.Add(Certificates);
+						EnvelopedData.Content = OrgData;
+						var szEnvelopedData = EnvelopedData
+								.Encrypt(CAPICOM_ENCODE_BASE64);
+					} catch (e) {
+						if (e.number != -2146893792) {
+							openalert('请确认USBkey是否正确插入或者IE安全设置是否正确。'
+									+ e.description);
+						}
+						return '';
+					}
+					return szEnvelopedData;
+					;
+				} else {
+					openalert('加密明文不能为空！');
+				}
+			},
+			Decrypt : function(JiaMiData) {
+				if (JiaMiData != '') {
+					if (KeyCert == null)
+						KeyCert = getKeyCert();
+					var Certificates = KeyCert;
+					var EnvelopedData = new ActiveXObject(
+							'CAPICOM.EnvelopedData');
+					EnvelopedData.Recipients.Add(Certificates);
+					try {
+						EnvelopedData.Decrypt(JiaMiData);
+						var szEnvelopedData = EnvelopedData.Content;
+					} catch (e) {
+						if (e.number != -2146893792) {
+							openalert('请确认USBkey是否正确插入或者IE安全设置是否正确。'
+									+ e.description);
+						}
+						return '';
+					}
+					return szEnvelopedData;
+				} else {
+					openalert('加密密文不能为空！');
+				}
+			},
+			Bfjg : function() {
+				if (DigitalCert == null)
+					DigitalCert = getDigitalCert();
+				var Certificates = DigitalCert;
+				return Certificates.IssuerName;
+			}
+		}
+		
+		function js_method(){
+			var isCheck = mini.get('check').getValue();
+			if(isCheck == true){
+				mini.get('check').setValue(false);
+			}else{
+				mini.get('check').setValue(true);
+			}
+		}
+	</script>
+</body>
+
+</html>

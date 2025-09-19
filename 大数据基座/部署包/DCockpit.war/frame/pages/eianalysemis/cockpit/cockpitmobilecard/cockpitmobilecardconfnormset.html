@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标分类列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left" id="left">
+		<div role="head" title="选择部门"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree"
+				style="width: 100%; height: 100%" filterMode="server"
+				textField="text" idField="id" parentField="pid"
+				action="getSetTreeModel" resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right" id="fui-right">
+
+		<!-- 新增搜索区域 -->
+		<!-- 条件区域 -->
+		<div class="fui-condition" opened="false"
+			primaryControl="search_NormSetName">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="指标分类名称">
+							<input id="search_NormSetName" class="mini-textbox"
+								bind="dataBean.normsetname" />
+						</div>
+						<div role="control" label="公开状态">
+							<input id="search_Isopen" class="mini-combobox" valueField="id"
+								textField="text" data="[{id:'1',text:'公开'},{id:'0',text:'私有'}]"
+								bind="dataBean.isopen" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+					</div>
+					<input class="mini-hidden" bind="dataBean.belongouguid"
+						id="belongouguid" /> <input class="mini-hidden"
+						bind="dataBean.type" id="type" />
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="normsetname" headerAlign="center"
+						renderer="onNameRenderer">指标分类名称</div>
+					<div field="apicode" headerAlign="center" align="center"
+						width="150">ApiCode</div>
+					<div field="setsource" headerAlign="center" align="center"
+						width="60">来源</div>
+					<div field="openstatus" headerAlign="center" align="center"
+						width="60">开放状态</div>
+					<div width="80" name="check" align="center" headerAlign="center"
+						renderer="onCheckRenderer">授权</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get('datagrid');
+
+		// 初始化页面
+		epoint.initPage('cockpitmobilecardconfnormsetaction', null, function(data) {
+		});
+		
+		var onCheckRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-check", "conf");
+		};
+
+		// 授权
+		function conf(id) {
+			epoint.execute('conf', '', [ id ], function(data) {
+				if (data.msg) {
+					epoint.alertAndClose(data.msg);
+				}
+			});
+		}
+
+		
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'tree' ], '', true);
+		}
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		// 弹出明细窗口
+		function openDetail(guid) {
+			epoint.openDialog('详细信息', "../cockpitnormset/cockpitnormsetdetail?guid=" + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function deleteset() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			var type = e.node.type;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('belongouguid').setValue(id == 'f9root' ? "" : id);
+			mini.get('type').setValue(type);
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>应用角色列表</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a id="addrole" class="mini-button" state="primary" onclick="add">新增角色</a>
+		<a id="saverole" class="mini-button" onclick="saveModify">保存修改</a> <a
+			id="deleterole" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!',  {state : 'warning'});} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="roleGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellValid="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="roleName" name="roleName" renderer="onRoleNameRender"
+					vtype="required;maxLength:15" width="100">
+					角色名称<input property="editor" class="mini-textbox" maxLength="15"
+						width="100" />
+				</div>
+				<div field="orderNumber" width="200" allowSort="true"
+					vtype="int;range:0,99999999">
+					排序号<input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%" />
+				</div>
+				<div name="shezhi" renderer="onUserRoleRender" width="90">设置</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		//初始化页面
+		epoint.initPage('approlelistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+		//在初始编辑的时候，如果是保留角色，不能修改名称
+		grid.on("cellbeginedit", function(e) {
+			if (e.field == "roleName") {
+				var row = e.record;
+				var editor = e.editor;
+				var enabled = row.isreserved == "1" ? false : true;
+				editor.setEnabled(enabled);
+			}
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		//绘制角色名称列
+		function onRoleNameRender(e) {
+			var text = e.value;
+			if (e.record.isreserved == "1") {
+				text = "<span class=\"text-assist\">" + e.value + "</span>";
+			}
+			return text;
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditCell(newRow, "roleName");
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg, {
+						state : 'success'
+					});
+				} else {
+					epoint.showTips(msg, {
+						state : 'warning'
+					});
+				}
+				epoint.refresh([ 'datagrid', ], '', true);
+			} else {
+				epoint.refresh([ 'datagrid', ], '', true);
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', [ 'datagrid' ], msgCallBack);
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', [ 'datagrid' ], msgCallBack);
+		}
+
+		function openRoleUser(roleGuid) {
+			epoint.openDialog("用户角色关系设置",
+					'framemanager/orga/orga/role/roleuserset?roleGuid='
+							+ roleGuid, function(param) {
+						if (param && param != "close") {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+					}, {
+						'width' : 820,
+						'height' : 650
+					});
+		}
+		function openRoleModule(roleGuid) {
+			epoint
+					.openDialog(
+							"订阅模块",
+							'framemanager/orga/uiset/menu/module/subscribemodule/subscribemoduletree?roleGuid='
+									+ roleGuid, "", {
+								'width' : 1000,
+								'height' : 800
+							});
+		}
+
+		//绘制设置按钮
+		function onUserRoleRender(e) {
+			if (e.record.roleGuid) {
+				return epoint.renderCell(e, "action-icon icon-gear",
+						"openRoleUser", "roleGuid");
+			}
+		}
+		//绘制设置按钮
+		function onSelectModuleRender(e) {
+			if (e.record.roleGuid) {
+				return epoint.renderCell(e, "action-icon icon-gear",
+						"openRoleModule", "roleGuid");
+			}
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

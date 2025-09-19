@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-scheduling-data
+	xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
+	version="1.8">
+
+	<!-- 建议保留 -->
+	<pre-processing-commands>
+		<delete-jobs-in-group>*</delete-jobs-in-group>  <!-- clear all jobs in scheduler -->
+		<delete-triggers-in-group>*</delete-triggers-in-group> <!-- clear all triggers in scheduler -->
+	</pre-processing-commands>
+
+	<!-- 建议保留 -->
+	<processing-directives>
+		<!-- if there are any jobs/trigger in scheduler of same name (as in this 
+			file), overwrite them -->
+		<overwrite-existing-data>true</overwrite-existing-data>
+		<!-- if there are any jobs/trigger in scheduler of same name (as in this 
+			file), and over-write is false, ignore them rather then generating an error -->
+		<ignore-duplicates>false</ignore-duplicates>
+	</processing-directives>
+
+	<!-- 智库信息截止日期任务 -->	
+	<schedule>
+		<job>
+			<name>WebinfoInfomationCheckJob</name>
+			<job-class>com.epoint.cockpit.webinfo.WebinfoInfomationCheckJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>WebinfoInfomationCheckJobTrigger</name>
+				<job-name>WebinfoInfomationCheckJob</job-name>
+				<cron-expression>0 0/1 * * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+	<!-- 指标红灯超期任务 -->
+	<schedule>
+		<job>
+			<name>CockpitRedlightOverdueJob</name>
+			<job-class>com.epoint.cockpit.cockpitredlight.CockpitRedlightOverdueJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>CockpitRedlightOverdueJobTrigger</name>
+				<job-name>CockpitRedlightOverdueJob</job-name>
+				<cron-expression>0 0 0/4 * * ?</cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+	<!-- 指标评分 -->	
+	<schedule>
+		<job>
+			<name>CockpitNormScoreJob</name>
+			<job-class>com.epoint.cockpit.cockpitnorm.CockpitNormScoreJob</job-class>
+		</job>
+		<trigger>
+			<cron>
+				<name>CockpitNormScoreJobTrigger</name>
+				<job-name>CockpitNormScoreJob</job-name>
+				<cron-expression>0 0 0 * * ? </cron-expression>
+			</cron>
+		</trigger>
+	</schedule>
+	
+</job-scheduling-data>

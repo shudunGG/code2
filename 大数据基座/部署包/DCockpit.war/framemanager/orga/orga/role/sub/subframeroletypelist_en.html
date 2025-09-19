@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Role of category management</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add">sure add</a>
+			<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm the deletion?','',deleteSelected);}">delete selected</a>
+			<a class="mini-button" onclick="saveModify">save changes</a>
+		</div>
+	</div>
+	<!-- conditions area -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="Role category name" starred="true" >
+						<input id="rtname" bind="frameRoleType.roleTypeName" class="mini-textbox"
+							required="true" requiredErrorText="Role category nameCan't be empty"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="order no">
+						<input id="oNumber" bind="frameRoleType.orderNumber" class="mini-textbox" maxLength="8" vtype="int" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>		
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="roleTypeGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true" allowCellValid="true" allowCellEdit="true"
+			showPager="true" action="getDataGridData"  ondrawcell="onCheckRender" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="10"></div>
+				<div type="indexcolumn" width="10" headerAlign="center">
+					order
+				</div>
+				<div field="roleTypeName" headerAlign="center" vtype="required;maxLength:50">
+					Role category name<input property="editor" class="mini-textbox" maxLength="50" style="width: 100%" />
+				</div>
+				<div field="orderNumber" headerAlign="center" align="right" vtype="int">
+					order no<input property="editor" class="mini-textbox" maxLength="8" inputStyle="text-align:right" style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage('subframeroletypelistaction');
+		
+		
+		var grid = mini.get("datagrid");
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+		
+		grid.on("beforeselect", function (e) {
+			var belongBaseOuGuid=e.record.belongbaseouguid;
+            if (!belongBaseOuGuid){
+            	e.cancel = true;
+            }
+        });
+		
+		//At the time of initial edit, if is the administrator granted, can't modify the name
+        grid.on("cellbeginedit", function (e) {
+            if (e.field == "roleTypeName") {
+                var row = e.record;
+                var editor = e.editor;
+                var enabled = row.belongbaseouguid ? true : false;
+                editor.setEnabled(enabled);
+            }
+        });
+		
+		function onCheckRender(e){
+			//This function is only hidden selection box, but still can be selected to attention!!!!!!!!!! To cooperate withbeforeselectuse
+			var belongBaseOuGuid=e.record.belongbaseouguid;
+			if( !belongBaseOuGuid && e.cellCls === "mini-checkcolumn"){
+				e.cellHtml = "";
+			}
+		}
+		
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid'],'',true);
+		}
+		
+		//The new category
+		function add(){
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form',msgCallBack);
+			}
+		}
+		
+		
+		// Back to thediaoremind
+		function msgCallBack(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("successful") == -1) {
+				//epoint.alert(msg, '', '', 'warning');
+				//} else {
+				//epoint.alert(msg, '', searchData());
+				//
+				if(data.success){
+					epoint.alert(msg, '', searchData(), 'success');
+				}else{
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//delete selected
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+		
+		//save changes
+		function saveModify(){
+			grid.validate();
+            if (grid.isValid() == false) {
+                //alert("Please check the input cellscontent");
+                var error = grid.getCellErrors()[0];
+                grid.beginEditCell(error.record, error.column);
+                return;
+            }
+			epoint.execute('saveAll', 'datagrid',msgCallBack);
+		}
+		
+		//]]>
+	</script>
+
+
+</body>
+</html>

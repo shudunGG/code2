@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="renderer" content="webkit" />
+    <title>css编辑器</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    <link rel="stylesheet" href="../js/codemirror/codemirror.css" />
+    <link rel="stylesheet" href="./csseditor.css" />
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <!-- toolbar区域 -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="saveData">保存</a>
+            <a class="mini-button" onclick="epoint.closeDialog">取消</a>
+        </div>
+        <a role="helper" showtype="tooltip"> </a>
+    </div>
+    <!-- 帮助信息区域 默认隐藏-->
+    <div class="fui-notice hidden">
+        <p><em>注意：</em>此css编辑器是面向有一定开发经验的程序员,参考如下范例。</p>
+    </div>
+    <!-- 内容区域 -->
+    <div class="fui-content">
+        <div class="edit-content">
+            <div class="edit-content-border">
+                <h3 class="edit-content-hd">CSS</h3>
+                <div class="edit-content-bd" id="cssEditor"></div>
+            </div>
+        </div>
+    </div>
+    <script src="../../../../../rest/resource/jsboot"></script>
+    <script>
+    	SrcBoot.output([
+    		'../js/codemirror/codemirror.js',
+    		'../js/codemirror/mode/css/css.js',
+    		'./csseditor.js'
+    	]);
+    </script>
+    <script>
+        //如果有已保存的cssContent内容则加载，如果无则初始化显示一段固定js
+        var htm = epoint.decodeUtf8(window.parent.document.getElementById('cssContent').value);
+        if(htm == null || htm == ""){
+    	    htm = '.body {font-size: 12px; color: #666;}\n';
+        }
+        
+    	var data = {
+    		css: htm
+    	};
+
+    	initPage(data);
+
+    	function saveData() {
+    		var value = getEditorValue();
+    		window.parent.document.getElementById('cssContent').value= epoint.encodeUtf8(value);
+    		
+    		//css编辑内容保存，判断id为cssEditor的元素内是否有样式内容，有的话替换，没有的话在编辑html前添加一段。
+    		var editorHtml = epoint.decodeUtf8(window.parent.mini.get("editor1").getValue());
+    		var $html = $('<div></div>').html(editorHtml);
+    		var $style = $html.find('#cssEditor');
+    		if($style.length>0){
+    			$style.text(value);
+    			window.parent.mini.get("editor1").setValue(epoint.encodeUtf8($html.html()));
+    			window.parent.mini.get("content").setValue(epoint.encodeUtf8(editorHtml));
+    			window.parent.ReplaceEditorHtml($html.html(), "1");
+    		}else{
+    			var editorHtml = "<style id=\"cssEditor\">"+value+"</style>"+window.parent.mini.get("editor1").getValue();
+    			window.parent.mini.get("editor1").setValue(epoint.encodeUtf8(editorHtml));
+        		window.parent.mini.get("content").setValue(epoint.encodeUtf8(editorHtml));
+        		window.parent.ReplaceEditorHtml(editorHtml, "1");
+    		}
+    		epoint.closeDialog();
+    	}
+    	
+    	Util.hidePageLoading();
+    </script>
+</body>
+
+</html>

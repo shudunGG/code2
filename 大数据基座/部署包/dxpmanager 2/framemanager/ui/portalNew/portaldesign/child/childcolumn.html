@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>子栏目设置</title>
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+    <style>
+        .content {
+            padding: 15px;
+        }
+
+        .mr-5 {
+            margin-right: 5px;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .lh-mid {
+            line-height: 24px;
+            margin-top: 5px;
+        }
+
+        .scroll {
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .footer {
+            height: 50px;
+            line-height: 50px;
+            box-sizing: border-box;
+            padding: 12px 15px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+        a.mini-button.portal-confirm {
+            background-color: #3d9df2;
+            border-radius: 0;
+            border: 1px solid #3d9df2;
+            height: 24px;
+            line-height: 24px;
+            padding: 0 12px;
+            min-width: auto;
+        }
+
+        a.mini-button.portal-confirm:hover {
+            background-color: #50acfd;
+            border-radius: 0;
+            border: 1px solid #50acfd;
+            height: 24px;
+            line-height: 24px;
+            padding: 0 12px;
+            min-width: auto;
+        }
+
+        a.mini-button.portal-cancel {
+            background-color: #fff;
+            border: 1px solid #bdbec1;
+            color: #666;
+            border-radius: 0;
+            height: 24px;
+            line-height: 24px;
+            padding: 0 12px;
+            min-width: auto;
+        }
+
+        a.mini-button.portal-cancel:hover {
+            border: 1px solid #3d9df2;
+            color: #3d9df2;
+            background-color: #fff;
+            border-radius: 0;
+            height: 24px;
+            line-height: 24px;
+            padding: 0 12px;
+            min-width: auto;
+        
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="clearfix lh-mid">
+            <div>标题</div>
+            <div>
+                <input id="title" name="title" class="mini-textbox w-full" />
+            </div>
+        </div>
+        <div class="clearfix lh-mid">
+            <div>栏目设置</div>
+            <div>
+                <input id="column" name="column"
+                    data="" textField="name"
+                    valueField="id" value="" class="mini-combobox w-full" />
+                <input id="url" name="url" class="mini-textbox w-full" visible="false" />
+            </div>
+        </div>
+        <div class="clearfix lh-mid">
+            <div id="diy" name="diy" class="mini-checkbox" readOnly="false" text="自定义链接" onvaluechanged="onDiyChange"></div>
+        </div>
+        <div class="clearfix lh-mid">
+            <div id="num" name="num" class="mini-checkbox" readOnly="false" text="显示信息数量"></div>
+        </div>
+    </div>
+
+    <div class="footer text-right clearfix">
+        <a class="mini-button r mr-5 portal-confirm" onclick="save()">保存</a>
+
+        <a class="mini-button r mr-5 portal-cancel" onclick="cancel()">取消</a>
+    </div>
+
+    <script src="../../../../../rest/resource/jsboot"></script>
+
+    <script>
+        var portalConfig = {
+            getSubColumns: 'rest/portaldesignaction/getSubColumns?isCommondto=true' // 获取主栏目数据
+        };
+    </script>
+<!--     <script src="./_test/mock_data.childcolumn.js"></script> -->
+    <script>
+        (function (win, $) {
+            var $column = mini.get('column'),
+                $url = mini.get('url'),
+                $name = mini.get('title'),
+                $diy = mini.get('diy'),
+                $num = mini.get('num');
+
+            win.pageLoad = function (data) {
+                // $name.setValue(data.title);
+                if(data) {
+                    $name.setValue(data.name);
+                    $diy.setValue(data.isDiy);
+                    if(data.isDiy) {
+                        $url.setValue(data.url);
+                        $url.setVisible(true);
+                        $column.setVisible(false);
+                    } else {
+                        $column.setValue(data.id);
+                        $url.setVisible(false);
+                        $column.setVisible(true);
+                    }
+
+                    $num.setValue(data.showNum);
+
+                }
+            }
+            $name.setValue(Util.getUrlParams('title'));
+
+
+            // 增加
+            win.save = function () {
+                
+                var isDiy = $diy.checked;
+                
+                if(!$name.value) {
+                    epoint.alert('栏目标题不能为空');
+                    return;
+                }
+
+                var selectColumn = $column.getSelected();
+                var url = '',
+                    id = '',
+                    name = '';
+
+                if(selectColumn && selectColumn.id) {
+                    url = selectColumn.url;
+                    id = selectColumn.id;
+                    name = selectColumn.name;
+                } else {
+                    url = $url.value;
+                }
+
+                if(!url) {
+                    epoint.alert('栏目设置不能为空');
+                    return;
+                }
+
+                epoint.closeDialog({
+                    type: 'ok',
+                    options: {
+                        name: $name.value,
+                        id: id,
+                        url: url, // 栏目地址
+                        isDiy: isDiy,
+                        showNum: $num.checked
+                    }
+                });
+            }
+
+            win.cancel = function () {
+                epoint.closeDialog({
+                    type: 'close'
+                });
+            }
+
+            // 自定义链接
+            win.onDiyChange = function (e) {
+                if (this.getChecked()) {
+                    $column.setVisible(false);
+                    $url.setVisible(true);
+                } else {
+                    $column.setVisible(true);
+                    $url.setVisible(false);
+                }
+            }
+
+            /* -------- 加载栏目 ---------- */
+
+            function getColumns() {
+                Util.ajax({
+                    url: portalConfig.getSubColumns,
+                    data: {
+                        parentColumnguid: Util.getUrlParams('parentColumnguid')
+                    }
+                }).done(function (data) {
+                    
+                    $column.setData(data.columns);
+                });
+            }
+
+            getColumns();
+
+            /* -------- 加载栏目 end ---------- */
+        })(window, jQuery);
+    </script>
+</body>
+
+</html>

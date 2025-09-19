@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>服务基本信息</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" onclick="saveAndClose">新增服务</a> <a
+				class="mini-button" id="edit" onclick="editAndClose">保存服务</a> <a
+				class="mini-button" id="copy" onclick="copyAndClose">复制服务</a> <a
+				class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+
+	<div class="fui-content">
+		<div id="tabs1" class="mini-tabs" activeIndex="0"
+			style="width: 100%; height: 100%;" plain="false">
+			<div name="tabs1" title="基础信息">
+				<div class="fui-accordions">
+					<div role="accordion">
+						<div role="head" title="基础信息"></div>
+						<div role="body">
+							<!-- 内容区域 -->
+							<div id="fui-form" class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="服务名称" starred="true">
+											<input id="apiname" class="mini-textbox" style="width: 50%"
+												bind="dataBean.apiname" required="true"
+												vtype="rangeLength:2,18" requiredErrorText="服务名称不能为空!" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">2-18个字符，可使用中文、字母、数字、破折号（-）和下划线（_）</div>
+									</div>
+									<div role="row">
+										<div role="control" label="服务类别">
+											<input id="categoryname" bind="categoryname"
+												style="width: 50%" allowInput="false"
+												class="mini-buttonedit" onbuttonclick="selectApiClass"
+												selectOnFocus="true" />
+										</div>
+										<input bind="dataBean.categoryid" id="categoryid"
+											class="mini-hidden" />
+									</div>
+									
+									<div role="row">
+										<div role="control" label="上传图标">
+											<div style="position: relative; float: left;">
+												<span class="text-minor" id="sign1">暂无图标， </span>
+												<div id="uploader2" class="mini-webuploader"
+													action="apiinfoaction.getFileUploadModel2"
+													fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp"
+													mimeTypes="image/*" showDefaultse" auto="true"
+													pickerText="请上传" onfilesuccess="OnSignFileSuccess"></div>
+											</div>
+											<span class="text-minor" id="sign3">（最佳图片尺寸：120px<em>*</em>180px）
+											</span>
+											<div class="img-view" id="picture" style="display: none;">
+												<img id="userSign" src="" width="120px" height="180px"
+													alt="api图标" /> <i
+													class="action-icon icon-removecirclefilled"
+													style="position: absolute; left: 110px; top: 0px;"
+													onclick="delUserSign();"></i>
+											</div>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="服务源类型" starred="true">
+											<input id="type" class="mini-combobox" style="width: 50%"
+												bind="dataBean.type" onvaluechanged="typeValueChanged"
+												action="getTypeSelectItem" required="true"
+												requiredErrorText="服务源类型不能为空!" />
+											<p style="width: 20px; padding-top: 2px"
+												class="funcopt dataopt ftpopt" onclick="openApiTipDialog()">
+												<img src="photo/wenhao.png" width="16" height="16" />
+											</p>
+										</div>
+									</div>
+									<div role="row" class="dataopt ftpopt" style="display: none">
+										<div role="control" label="数据源" starred="true">
+											<input id="datasource" class="mini-combobox" 
+											style="width: 50%" required="true" valueField="value"
+											bind="dataBean.datasourceid" />
+										</div>
+									</div>
+									<div role="row" class="httpopt">
+										<div role="control" label="服务源地址" starred="true">
+											<input id="apirealurl" class="mini-textbox"
+												onvaluechanged="realUrlValueChanged" style="width: 50%"
+												bind="dataBean.apirealurl" required="true"
+												onvalidation="apirealurlvalid"
+												requiredErrorText="服务源地址不能为空!" />
+											<div id="gatway" style="width: 50%; dispaly:block;font-size:0px">
+												<input id="httpitem" class="mini-combobox" action="getHttpItemList" style="width:15%" bind="httpItem" required="true"/>
+												<span style="width: 5%; display: inline-block; font-size: 14px; line-height: 26px; vertical-align: middle; text-align: center;">://</span> <input id="gatchannel" style="width: 60%"
+													allowInput="false" class="mini-buttonedit"
+													onbuttonclick="selectChannel" selectOnFocus="true" bind="gatChannel" required="true"/> <span
+													style="width: 5%; display: inline-block; font-size: 14px; line-height: 26px; vertical-align: middle; text-align: center;">/</span>
+												<input id="gatwaymethod" class="mini-textbox" style="width:15%" bind="gatWayMethod" required="true"/>
+											</div>
+											<p
+												style="width: 75px; margin-left: 10px; background-color: #60b5fe; color: white; cursor: pointer ;text-align: center;"
+												onclick="gatWayList(0)" class="pzgky">
+												<span width="16" height="15">配置高可用</span>
+											</p>
+											<p
+												style="width: 75px;  margin-right: 10px; margin-left:10px;margin-top:1px; background-color: #60b5fe; color: white; cursor: pointer;  text-align: center;"
+												onclick="gatWayList(1)" class="fhgky hidden" >
+												<span width="16" height="15">取消高可用</span>
+											</p>
+										</div>
+
+									</div>
+									<div role="row" class="ftpopt">
+										<div role="control" label="FTP源路径" starred="true">
+											<input id="apirealurlftp" class="mini-textbox" required="true"
+												onvaluechanged="realUrlValueChanged" style="width: 50%;" />
+										</div>
+									</div>
+									<div role="row" class="dataopt">
+										<div role="control" label="SQL" starred="true">
+											<input id="datasql" class="mini-textarea" required="true"
+												style="width: 50%;height: 200px;" 
+												onblur="dataSqlValueChanged"/>
+										</div>
+										<input id="apidata" class="mini-hidden" bind="apidataencode" />
+									</div>
+									<div role="row" class="funcopt">
+										<input id="funcnamespace" class="mini-hidden" bind="dataBean.funcNameSpace" />
+									</div>
+									<div role="row" class="funcopt">
+										<div role="control" label="函数包名" starred="true">
+											<input id="funcpackagename" class="mini-textbox" style="width: 50%;"
+												required="true" bind="dataBean.funcPackageName"
+												requiredErrorText="包名不能为空!" emptyText="请填写包名" />
+										</div>
+									</div>
+									<div role="row" class="funcopt">
+										<div role="control" label="函数类名" starred="true">
+											<input id="funcclassname" class="mini-textbox" style="width: 50%;"
+												required="true" bind="dataBean.funcClassName"
+												requiredErrorText="类名不能为空!" emptyText="请填写类名" />
+										</div>
+									</div>
+									<div role="row" class="funcopt">
+										<div role="control" label="函数代码" starred="true">
+											<div id="editor" style="width: 60%;height: 300px;margin-left:10px;"></div>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<div class="httpopt">
+												示例：<br />
+												Rest API（http://192.168.112.44:8080/epoint-web/rest/organization/getAllOu）
+												<br />
+												WebService（http://192.168.112.44:8080/epoint-web/services/HellowWorlds?wsdl）
+											</div>
+											<div class="ftpopt">
+												示例：<br />
+												1.文件夹路径（例：/folder1/folder2）</br>
+												2.文件路径（例：/folder1/file.txt）
+											</div>
+											<div class="dataopt">
+												示例：<br />
+												select * from tablename where column1='[param1]'</br>
+												请求接口时，请填写表单字段名为param1，系统将自动替换sql中[param1]为对应参数值</br>
+											</div>
+											<div class="funcopt">
+												<a class="mini-button" style="width: 100px" onclick="onlineCompile">在线编译</a>
+												<p class="compileSuccess" style="color:#40BA76;display: none;">编译通过</p>
+												<p class="compileFail" style="color:#FF4500;display: none;">未编译或编译未通过</p>
+												<p class="compileFail" id="compileErrMsg" style="color:#FF4500;display: none;"></p>
+											</div>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="方法">
+											<div id="method" class="mini-combobox"
+												onvaluechanged="methodValueChanged" bind="dataBean.method" action="getMethod"
+												style="width: 50%" ></div>
+										</div>
+									</div>
+									<div role="row" class="httpopt"> 
+										<div role="control">Rest API：为空默认支持GET</div>
+									</div>
+									<div role="row">
+										<div role="control" label="支持格式">
+											<input id="supportcontenttype" action="getSupportFormat"
+												bind="dataBean.supportcontenttype" class="mini-combobox"
+												style="width: 50%" onValuechanged="changedType" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="服务描述">
+											<input id="description" class="mini-textarea"
+												style="width: 50%" bind="dataBean.description" maxLength="200"/>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="注意事项">
+											<div class="mini-textarea" style="width: 50%" id="attention"
+												bind="dataBean.attention" maxLength="200"></div>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="响应信息">
+											<input class="mini-textarea" style="width: 50%"
+												id="responsesample" bind="dataBean.responsesample" maxLength="2000"/>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="健康监控接口">
+											<input class="mini-textbox" style="width: 50%"
+												id="monitorurl" bind="dataBean.monitorurl" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">约定接口规范：HTTP
+											GET请求，不需传参数，返回状态200和响应体"success"即为服务运行正常，否则为不正常</div>
+									</div>
+
+									<div role="row">
+										<div role="control" label="附件">
+											<div id="uploader1" class="mini-webuploader"
+												action="apiinfoaction.getFileUploadModel" fileNumLimit="1"
+												fileSingleSizeLimit="5120" auto="true"  
+												onuploadfinished="OnUploadFinished" 
+												onfilesuccess="OnFileSuccess"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div role="accordion" opened="true">
+						<div role="head" title="参数列表"></div>
+						<div id="paramGrid">
+							<div role="body">
+								<!-- toolbar区域 -->
+								<div class="fui-toolbar">
+									<div class="btn-group mr10">
+										<a class="mini-button" onclick="openAdd();" id="btnAddRecord">新增参数
+										</a> <a id="btnDel" class="mini-button mini-btn-danger"
+											onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">删除参数
+										</a>
+									</div>
+									<a role="helper" class="mr10"></a>
+								</div>
+								<!-- 内容区域 -->
+								<div id="datagrid" class="mini-datagrid" idField="rowguid"
+									action="getDataGridData" sortOrder="desc" showPager="false"
+									allowResize="false" multiSelect="true" allowCellEdit="true"
+									allowCellSelect="true" editNextOnEnterKey="true"
+									editNextRowCell="true">
+									<div property="columns">
+										<div type="checkcolumn"></div>
+										<div type="indexcolumn" headerAlign="center">序</div>
+										<div field="name" headerAlign="center" align="center">参数名称</div>
+										<div field="type" headerAlign="center" align="center">参数数据类型</div>
+										<div field="ismust" headerAlign="center" align="center">是否必须</div>
+										<div align="center" field="paramstype" headerAlign="center">参数类型</div>
+										<div align="right" headerAlign="center" field="ordernumber">排序值</div>
+										<div width="60" align="center" headerAlign="center"
+											renderer="onEditRenderer">修改</div>
+										<div width="60" align="center" headerAlign="center"
+											renderer="onDetailRenderer">查看</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="jsonParam" style="display: none">
+							<div role="body">
+								<!-- 内容区域 -->
+								<div id="fui-form" class="fui-form">
+									<div role="form">
+										<div role="row">
+											<div role="control" label="json参数示例">
+												<input id="jsoncontent" class="mini-textarea"
+													style="width: 50%" bind="dataBean.jsoncontent" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<input class="mini-hidden" id="apiguid" bind="apiguid">
+					</div>
+					<div role="accordion" opened="true" id="gatewayinfo">
+						<div role="head" title="网关信息"></div>
+						<div role="body">
+							<!-- 内容区域 -->
+							<div id="fui-form" class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="前缀（uris）">
+											<input class="mini-textbox" style="width: 50%"
+												id="urlpattern" bind="dataBean.urlpattern" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">如果启用了服务网关，该值为必填项。
+											指向你API的URI前缀，例如/example 以后接口调用地址就是http://服务网关调用地址/example</div>
+									</div>
+									<div role="row">
+										<div role="control" label="重试次数"">
+											<input class="mini-textbox" style="width: 50%" id="retries"
+												vType="int" bind="dataBean.retries" />（次）
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">上游代理失败的重试次数，默认5次</div>
+									</div>
+									<div role="row">
+										<div role="control" label="超时时间">
+											<input class="mini-textbox" style="width: 50%"
+												id="upstreamconnecttimeout" vType="int"
+												bind="dataBean.upstreamconnecttimeout" />（ms）
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">同上游服务建立连接的超时时间，若定义为1000ms，retries定义为5次，则6秒后会提示连接超时</div>
+									</div>
+									<div role="row">
+										<div role="control" label="写入超时时间">
+											<input class="mini-textbox" style="width: 50%" vType="int"
+												id="upstreamsendtimeout" bind="dataBean.upstreamsendtimeout" />（ms）
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">两个连续向上游服务发送写入操作的超时时间</div>
+									</div>
+									<div role="row">
+										<div role="control" label="读取超时时间">
+											<input class="mini-textbox" style="width: 50%" vType="int"
+												id="upstreamreadtimeout" bind="dataBean.upstreamreadtimeout" />（ms）
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">两个连续向上游服务发送读取操作的超时时间</div>
+									</div>
+									<div id="circuit_breaker">
+										<div role="row">
+											<div role="control" label="熔断请求次数">
+												<input id="circuit_breaker_request_times" class="mini-textbox"
+													bind="dataBean.requestVolumeThreshold" style="width: 50%"
+													vtype="int;range:0,2147483647" emptyText="请输请求次数"/>（次）
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="熔断错误率">
+												<input id="circuit_breaker_error_percent" class="mini-textbox"
+													bind="dataBean.errorThresholdPercentage" style="width: 50%"
+													vtype="int;range:0,100" emptyText="请输入错误率"/>（%）
+											</div>
+										</div>
+										<div role="row">
+											<div role="control" label="熔断休眠时间">
+												<input id="circuit_breaker_sleepWindow_in_milliseconds" class="mini-textbox"
+													bind="dataBean.sleepWindowInMilliseconds" style="width: 50%"
+													vtype="int" emptyText="请输入休眠时间"/>（ms）
+											</div>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="限定为HTTPS">
+											<input class="mini-checkbox" style="width: 25px"
+												id="httpsonly" bind="dataBean.httpsonly" />
+											<p style="width: 20px; padding-top: 2px"
+												onclick="javascript:imgeClick('only')">
+												<img src="photo/wenhao.png" width="16" height="16" />
+											</p>
+
+										</div>
+										<div role="control" label="允许跳过HTTPS">
+											<input class="mini-checkbox" style="width: 25px"
+												id="httpifterminated" bind="dataBean.httpifterminated" />
+											<p style="width: 20px; padding-top: 2px"
+												onclick="javascript:imgeClick('terminated')">
+												<img src="photo/wenhao.png" width="16" height="16" />
+											</p>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="忽略前缀">
+											<input class="mini-checkbox" style="width: 25px"
+												id="stripuri" bind="dataBean.stripuri" />
+											<p style="width: 20px; padding-top: 2px"
+												onclick="javascript:imgeClick('uri')">
+												<img src="photo/wenhao.png" width="16" height="16" />
+											</p>
+										</div>
+										<div role="control" label="主机地址透传">
+											<input class="mini-checkbox" style="width: 25px"
+												id="preservehost" bind="dataBean.preservehost" />
+											<p style="width: 20px; padding-top: 2px"
+												onclick="javascript:imgeClick('host')">
+												<img src="photo/wenhao.png" width="16" height="16" />
+											</p>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="是否记录响应">
+											<input class="mini-checkbox" style="width: 25px"
+												id="enableresponse" bind="dataBean.enableresponse" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div name="tabs2" title="访问控制">
+				<div class="fui-accordions">
+					<div role="accordion">
+						<div role="head" title="服务订阅"></div>
+						<div role="body">
+							<!-- 内容区域 -->
+							<div id="fui-form" class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="是否需要登录">
+											<input class="mini-checkbox" id="userauth"
+												onValuechanged="userauthChanged" bind="dataBean.userauth" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">推荐用户相关资源接口勾选此项，比如获取用户照片</div>
+									</div>
+									<div role="row">
+										<div role="control" label="授权范围" style="width: 400px">
+											<input class="mini-combobox" multiSelect="true"
+												id="authscope" bind="scopeGuid" action="getAuthScope" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="是否需要订阅">
+											<input class="mini-checkbox" id="clientauth"
+												onvaluechanged="clientauthChanged"
+												bind="dataBean.clientauth" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">推荐应用相关资源接口勾选此项，比如同步组织架构接口</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<a class="mini-button" onclick="onSubscribe"
+												style="width: 200px">为应用订阅此服务</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true">
+						<div role="head" title="跨域控制"></div>
+						<div role="body">
+							<!-- 内容区域 -->
+							<div id="fui-form" class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="允许的方法">
+											<input class="mini-combobox" action="getAllowSelectItem"
+												multiSelect="true" id="methods" bind="dataBean.methods" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											Access-Control-Allow-Methods的值，多个用逗号隔开，如GET,POST。1)
+											HEAD,GET,POST请求默认被允许跨域 2)
+											PUT,PATCH,DELETE请求跨域需要经过预检请求，然后通过配置允许才能进行跨域</div>
+									</div>
+									<div role="row">
+										<div role="control" label="允许返回的头信息字段">
+											<input class="mini-textbox" id="exposedheaders"
+												bind="dataBean.exposedheaders" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											Access-Control-Expose-Headers的值，即允许客户端浏览器读取哪些头信息。多个用逗号隔开，如FooBar
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="预检请求的缓存时间">
+											<input class="mini-textbox" id="maxage" vType="int"
+												bind="dataBean.maxage" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											指明预检请求结果能被缓存多久（秒）。设置预请求缓存1天，1天内再次请求，可以跳过预请求。
+											此功能需要客户端缓存支持，如果客户端禁用缓存，那么每次都会预请求</div>
+									</div>
+									<div role="row">
+										<div role="control" label="允许的源">
+											<input class="mini-textbox" id="origins"
+												bind="dataBean.origins" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											Access-Control-Allow-Origin的值，如果允许所有域名，则设置为*。
+											正则表达式和简单字符串都可以接受,多个逗号隔开</div>
+									</div>
+									<div role="row">
+										<div role="control" label="允许的头信息字段">
+											<input class="mini-textbox" id="headers"
+												bind="dataBean.headers" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											Access-Control-Allow-Headers的值，多个用逗号隔开，如Origin,
+											Authorization允许自定义的header头部来通过预检请求</div>
+									</div>
+									<div role="row">
+										<div role="control" label="允许Cookie和认证信息">
+											<input class="mini-checkbox" id="credentials"
+												bind="dataBean.credentials" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											Access-Control-Allow-Credentials为true或者false</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true">
+						<div role="head" title="ip控制"></div>
+						<div role="body">
+							<!-- 内容区域 -->
+							<div id="fui-form" class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="白名单">
+											<input id="whitelist" class="mini-textbox"
+												bind="dataBean.whitelist" style="width: 50%"
+												onvalidation="whitevalid" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<span>(ip或者cidr范围（192.168.0.0/24），多个用逗号隔开。)</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="黑名单">
+											<input id="blacklist" class="mini-textbox"
+												bind="dataBean.blacklist" style="width: 50%"
+												onvalidation="blackvalid" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<span>(ip或者cidr范围（192.168.0.0/24），多个用逗号隔开。)</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<span style="color: red">黑名单与白名单互斥，请保证IP不重叠</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div name="tabs3" title="流量控制">
+				<div class="fui-accordions">
+					<div role="accordion">
+						<div role="head" title="请求次数控制"></div>
+						<div role="body">
+						<!-- toolbar区域 -->
+							<div class="fui-toolbar">
+								<div class="btn-group mr10">
+									<a class="mini-button" onclick="openAddReqRateLimit();">新增控制策略 </a>
+								</div>
+								<a role="helper" class="mr10"></a>
+							</div>
+							<!-- 内容区域 -->
+							<div id="datagr_req_rate_limit" class="mini-datagrid" idField="rowguid"
+								sortOrder="desc" showPager="false" allowResize="false"
+								multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+								editNextOnEnterKey="true" editNextRowCell="true">
+								<div property="columns">
+									<div type="indexcolumn" headerAlign="center" width="20">序</div>
+									<div field="consumerName" headerAlign="center" align="left">应用</div>
+									<div field="consumerId" name="consumerId"></div>
+									<div field="config" name="config"></div>
+									<div field="status" headerAlign="center" align="center"
+										width="30" renderer="onRenderer">状态</div>
+									<div width="30" align="center" headerAlign="center"
+										field="status" type="checkboxcolumn" truevalue="1"
+										falsevalue="0">是否启用</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqRateLimitEditRenderer">修改</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqRateLimitDelRenderer">删除</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqRateLimitDetailRenderer">查看</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion" opened="true">
+						<div role="head" title="请求大小控制"></div>
+						<div role="body">
+							<!-- toolbar区域 -->
+							<div class="fui-toolbar">
+								<div class="btn-group mr10">
+									<a class="mini-button" onclick="openAddReqSizeLimit();">新增控制策略 </a>
+								</div>
+								<a role="helper" class="mr10"></a>
+							</div>
+							<!-- 内容区域 -->
+							<div id="datagr_req_size_limit" class="mini-datagrid" idField="rowguid"
+								sortOrder="desc" showPager="false" allowResize="false"
+								multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+								editNextOnEnterKey="true" editNextRowCell="true">
+								<div property="columns">
+									<div type="indexcolumn" headerAlign="center" width="20">序</div>
+									<div field="consumerName" headerAlign="center" align="left">应用</div>
+									<div field="consumerId" name="consumerId"></div>
+									<div field="config" name="config"></div>
+									<div field="status" headerAlign="center" align="center"
+										width="30" renderer="onRenderer">状态</div>
+									<div width="30" align="center" headerAlign="center"
+										field="status" type="checkboxcolumn" truevalue="1"
+										falsevalue="0">是否启用</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqSizeLimitEditRenderer">修改</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqSizeLimitDelRenderer">删除</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqSizeLimitDetailRenderer">查看</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div name="tabs4" title="请求转换">
+				<div class="fui-accordions">
+					<div role="accordion">
+						<div role="head" title="请求转换"></div>
+						<div role="body">
+							<!-- toolbar区域 -->
+							<div class="fui-toolbar">
+								<div class="btn-group mr10">
+									<a class="mini-button" onclick="openAddReq();">新增请求转换策略 </a>
+								</div>
+								<a role="helper" class="mr10"></a>
+							</div>
+							<!-- 内容区域 -->
+							<div id="datagrid1" class="mini-datagrid" idField="rowguid"
+								sortOrder="desc" showPager="false" allowResize="false"
+								multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+								editNextOnEnterKey="true" editNextRowCell="true">
+								<div property="columns">
+									<div type="indexcolumn" headerAlign="center" width="20">序</div>
+									<div headerAlign="center" align="left"
+										renderer="onReqNameRenderer">应用</div>
+									<div field="consumerId" name="consumerId"></div>
+									<div field="config" name="config"></div>
+									<!-- 										<div field="createtime" headerAlign="center" align="center" -->
+									<!-- 											width="50">创建时间</div> -->
+									<div field="status" headerAlign="center" align="center"
+										width="30" renderer="onRenderer">状态</div>
+									<div width="30" align="center" headerAlign="center"
+										field="status" type="checkboxcolumn" truevalue="1"
+										falsevalue="0">是否启用</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqEditRenderer">修改</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqDelRenderer">删除</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onReqDetailRenderer">查看</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div role="accordion">
+						<div role="head" title="响应转换"></div>
+						<div role="body">
+							<!-- toolbar区域 -->
+							<div class="fui-toolbar">
+								<div class="btn-group mr10">
+									<a class="mini-button" onclick="openAddResp();">新增响应转换策略 </a>
+								</div>
+								<a role="helper" class="mr10"></a>
+							</div>
+							<!-- 内容区域 -->
+							<div id="datagrid2" class="mini-datagrid" idField="rowguid"
+								sortOrder="desc" showPager="false" allowResize="false"
+								multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+								editNextOnEnterKey="true" editNextRowCell="true">
+								<div property="columns">
+									<div type="indexcolumn" headerAlign="center" width="20">序</div>
+									<div headerAlign="center" align="left" 
+										renderer="onRespNameRenderer">应用</div>
+									<div field="consumerId" name="consumerId"></div>
+									<div field="config" name="config"></div>
+									<!-- 										<div field="createtime" headerAlign="center" align="center" -->
+									<!-- 											width="50">创建时间</div> -->
+									<div field="status" headerAlign="center" align="center"
+										renderer="onRenderer" width="30">状态</div>
+									<div width="30" align="center" headerAlign="center"
+										field="status" type="checkboxcolumn" truevalue="1"
+										falsevalue="0">是否启用</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onRespEditRenderer">修改</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onRespDelRenderer">删除</div>
+									<div width="30" align="center" headerAlign="center"
+										renderer="onRespDetailRenderer">查看</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		<div name="tabs5" title="正向代理">
+				<div class="fui-accordions">
+					<div role="accordion" opened="true">
+						<div role="head" title="代理设置"></div>
+						<div role="body">
+							<!-- 内容区域 -->
+							<div id="fui-form" class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="代理服务器地址">
+											<input id="proxy_host" class="mini-textbox"
+												bind="dataBean.proxyhost" style="width: 300px"
+												vtype="url" emptyText="输入域名或IP"/>
+											<input id="proxy_port" class="mini-textbox"
+												bind="dataBean.proxyport" style="width: 100px;margin-left: 20px;"
+												vtype="range:1,65535" emptyText="输入端口号" rangeErrorText="请输入正确端口号，端口号范围1~65535"/>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control">
+											<span>代理服务器域名（或IP）以及端口号，例：192.168.109.188:8081</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" bind="reqCountValid" id="reqCountValid">
+	<input class="mini-hidden" bind="reqTransformation"
+		id="reqTransformation">
+	<input class="mini-hidden" bind="respTransformation"
+		id="respTransformation">
+	<input class="mini-hidden" bind="reqRateLimit" id="reqRateLimit">
+	<input class="mini-hidden" bind="reqSizeLimit" id="reqSizeLimit">
+	<input class="mini-hidden"  bind="dataBean.gkyUrl" id="gkyUrl">
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script src="src-noconflict/ace.js" type="text/javascript"></script>
+	<script src="src-noconflict/ext-language_tools.js"></script>
+	<script src="lib/base64.min.js"></script>
+	<script>
+	
+		// 自定义示例代码编辑器
+		ace.require("ace/ext/language_tools");
+		var editor = ace.edit("editor");
+		editor.setTheme("ace/theme/eclipse");
+		editor.session.setMode("ace/mode/java");
+		// 开启自动补全
+		editor.setOptions({
+			enableBasicAutocompletion : true,
+			enableSnippets : true,
+			enableLiveAutocompletion : true
+		});
+
+		// 编译标识
+		var isCompiled = true;
+
+		editor.on("change", function() {
+
+			// 获取代码内容
+			var content = editor.getValue();
+			// 对内容进行编码
+			var encodeContent = Base64.encode(content);
+			// 设置编码后的值
+			mini.get("apidata").setValue(encodeContent);
+
+			// 标记编译标识为未编译
+			showCompileFail();
+		})
+
+		// 初始化页面
+		epoint.initPage('apiinfoaction', '', initCallBack);
+
+		//由list页面传参时进行触发
+		function initCallBack(param) {
+			$('#gatway').hide();
+			if (param.gkyurl) {
+				gatWayList(param.gkyurl);
+				if ('0' == param.gkyurl) {
+					mini.get('httpitem').setValue(param.httpitem);
+					mini.get('gatchannel').setText(param.name);
+					mini.get('gatwaymethod').setValue(param.gatwaymethod);
+				}
+			}
+			if (param.categoryid) {
+				mini.get("categoryname").setText(param.categoryname);
+				mini.get("categoryid").setValue(param.categoryid);
+			}
+			if (param.apiguid) {
+				mini.get("apiguid").setValue(param.apiguid);
+			}
+
+			if (param.categoryname) {
+				mini.get("categoryname").setText(param.categoryname);
+			} else {
+				mini.get("categoryname").setText("所有类别");
+			}
+
+			if (param.add) {
+				mini.get("edit").hide();
+				mini.get("copy").hide();
+			} else if (param.copy) {
+				mini.get("edit").hide();
+				mini.get("add").hide();
+			} else {
+				if (param.signPicture) {
+					showSignPicture(param.signPicture);
+				}
+				if (param.iconurl) {
+					mini.get("iconurl").setValue(param.iconurl);
+					mini.get("iconurl").setText(param.iconurl);
+				}
+				mini.get("add").hide();
+				mini.get("copy").hide();
+			}
+
+			// 如果是kong，则隐藏熔断配置
+			if (param.gatewayType && param.gatewayType.toUpperCase() == "KONG") {
+				$("#circuit_breaker").hide();
+			}
+			
+			if (!param.isOpenGateway) {
+				$("#gatewayinfo").hide();
+				mini.get("tabs1").removeTab("tabs3");
+				mini.get("tabs1").removeTab("tabs4");
+				mini.get("tabs1").removeTab("tabs5");
+			} else {
+				$(".form-label").each(function(i) {
+					if ($(this).html() && $(this).html() == "前缀（uris）：") {
+						$(this).addClass("required");
+					}
+				});
+				mini.get("urlpattern").set({
+					required : true,
+					requiredErrorText : "前缀（uris）不能为空!"
+				});
+			}
+
+			mini.get("method").on("load", listenerLoad);
+
+			mini.get("method").on("click", listenerClick);
+
+			mini.get("method").on("itemclick", listenerItemClick);
+			
+			// 隐藏FTP相关选项
+			hideFtpOpt(true);
+			// 隐藏数据API相关选项
+			hideDataApiOpt(true);
+			// 隐藏函数API相关选项
+			hideFuncApiOpt(true);
+
+			if (mini.get("type").value == 1) {
+				// web service
+				mini.get("btnAddRecord").disable();
+				mini.get("btnDel").disable();
+				mini.get("datagrid").hideColumn(0);
+				mini.get("datagrid").hideColumn(7);
+			}else if (mini.get("type").value == 2) {
+				// FTP
+				var datasourceid = mini.get("datasource").getValue();
+				// 显示FTP相关选项
+				showFtpOpt();
+				
+				// FTP地址
+				mini.get("apirealurlftp").setValue(param.apirealurlftp);
+				mini.get("apirealurl").setValue(param.apirealurlftp);
+				// 加载数据源选项
+				loadDataSource();
+				// 由于FTP与数据API共用“数据源datasource标签”
+				// 所以在清理数据API相关配置的同时会将datasource清空
+				// 需要再次渲染
+				mini.get("datasource").setValue(datasourceid)
+			} else if (mini.get("type").value == 3) {
+				// 数据API
+				var datasourceid = mini.get("datasource").getValue();
+				// 显示数据API相关选项
+				showDataApiOpt();
+				
+				// 加载数据源选项
+				loadDataSource();
+				
+				// 解码
+				mini.get("datasql").setValue(param.apidata);
+				var encodeDataSql = Base64.encode(param.apidata);
+				// 设置编码后的值
+				mini.get("apidata").setValue(encodeDataSql);
+				// 由于FTP与数据API共用“数据源datasource标签”
+				// 所以在清理FTP API相关配置的同时会将datasource清空
+				// 需要再次渲染
+				mini.get("datasource").setValue(datasourceid)
+			} else if (mini.get("type").value == 4) {
+				// 函数API
+				// 显示函数API相关选项
+				showFuncApiOpt();
+				
+				// 解码
+				editor.setValue(param.apidata);
+				var encodeContent = Base64.encode(param.apidata);
+				// 设置编码后的值
+				mini.get("apidata").setValue(encodeContent);
+			}
+			mini.get("datagrid1").hideColumn("consumerId");
+			mini.get("datagrid1").hideColumn("config");
+			mini.get("datagrid2").hideColumn("consumerId");
+			mini.get("datagrid2").hideColumn("config");
+			mini.get("datagr_req_rate_limit").hideColumn("consumerId");
+			mini.get("datagr_req_rate_limit").hideColumn("config");
+			mini.get("datagr_req_size_limit").hideColumn("consumerId");
+			mini.get("datagr_req_size_limit").hideColumn("config");
+            if (param.ispostback) {
+			if (param.reqtransformation) {
+				arr.push(param.reqtransformation);
+				var json = JSON.parse("[" + arr + "]");
+				mini.get("datagrid1").setData(json);
+			}
+
+			if (param.resptransformation) {
+				arr1.push(param.resptransformation);
+				var json = JSON.parse("[" + arr1 + "]");
+				mini.get("datagrid2").setData(json);
+			}
+
+			//console.log(mini.get("supportcontenttype").value);
+
+			if (mini.get("supportcontenttype").value == 1) {
+				$("#paramGrid").hide();
+				$("#jsonParam").show();
+			}
+			
+			if (param.reqRateLimit) {
+				reqRateLimitArr.push(param.reqRateLimit);
+				var json = JSON.parse("[" + reqRateLimitArr + "]");
+				mini.get("datagr_req_rate_limit").setData(json);
+			}
+
+			if (param.reqSizeLimit) {
+				reqSizeLimitArr.push(param.reqSizeLimit);
+				var json = JSON.parse("[" + reqSizeLimitArr + "]");
+				mini.get("datagr_req_size_limit").setData(json);
+			}
+            }
+		}
+
+		function listenerLoad(e) {
+			var value = mini.get("type").value;
+		}
+
+		function listenerClick(e) {
+			// 判断是否已经加载
+			if (mini.get("method").getData().length == 0) {
+				epoint.execute('getMethod', '@all', loadMethod);
+			}
+		}
+
+		function loadMethod(e) {
+			if (e.length == 0) {
+				epoint.alert("获取方法失败，请尝试设置代理！");
+			} else {
+				mini.get("method").setData(e);
+			}
+		}
+
+		function listenerItemClick(e) {
+			if (mini.get("type").value != 1) {
+				mini.get("method").setValue(mini.get("method").text);
+			}
+		}
+		
+		function saveAndClose() {
+			var data = mini.get("datagrid1").getData();
+			mini.get("reqTransformation").setValue(JSON.stringify(data));
+
+			var data = mini.get("datagrid2").getData();
+			mini.get("respTransformation").setValue(JSON.stringify(data));
+			
+			var reqRateLimitData = mini.get("datagr_req_rate_limit").getData();
+			mini.get("reqRateLimit").setValue(JSON.stringify(reqRateLimitData));
+			
+			var reqSizeLimitData = mini.get("datagr_req_size_limit").getData();
+			mini.get("reqSizeLimit").setValue(JSON.stringify(reqSizeLimitData));
+			
+			if (epoint.validate() && validCompile()) {
+				epoint.execute('add', '@all', closeCallback);
+			}
+		}
+
+		function editAndClose() {
+			var data = mini.get("datagrid1").getData();
+			mini.get("reqTransformation").setValue(JSON.stringify(data));
+
+			var data = mini.get("datagrid2").getData();
+			mini.get("respTransformation").setValue(JSON.stringify(data));
+			
+			var reqRateLimitData = mini.get("datagr_req_rate_limit").getData();
+			mini.get("reqRateLimit").setValue(JSON.stringify(reqRateLimitData));
+
+			var reqSizeLimitData = mini.get("datagr_req_size_limit").getData();
+			mini.get("reqSizeLimit").setValue(JSON.stringify(reqSizeLimitData));
+		
+			if (epoint.validate() && validCompile()) {
+				epoint.execute('update', '@all', closeCallback);
+			}
+		}
+
+		function copyAndClose() {
+			var data = mini.get("datagrid1").getData();
+			mini.get("reqTransformation").setValue(JSON.stringify(data));
+
+			var data = mini.get("datagrid2").getData();
+			mini.get("respTransformation").setValue(JSON.stringify(data));
+			
+			var reqRateLimitData = mini.get("datagr_req_rate_limit").getData();
+			mini.get("reqRateLimit").setValue(JSON.stringify(reqRateLimitData));
+
+			var reqSizeLimitData = mini.get("datagr_req_size_limit").getData();
+			mini.get("reqSizeLimit").setValue(JSON.stringify(reqSizeLimitData));
+			
+			if (epoint.validate() && validCompile()) {
+				epoint.execute('copy', '@all', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg);
+				// 清空表单
+				epoint.clear('fui-form');
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+			if (data.apiname) {
+				epoint.alert(data.apiname);
+				mini.get("apiname").setValue("");
+			}
+			if (data.urlpattern) {
+				epoint.alert(data.urlpattern);
+				mini.get("urlpattern").setValue("");
+			}
+			if (data.reqcountvalid) {
+				epoint.alert(data.reqcountvalid);
+			}
+			if (data.proxyhostaddressvalid) {
+				epoint.alert(data.proxyhostaddressvalid);
+			}
+			if (data.funcisexisted) {
+				epoint.alert(data.funcisexisted);
+			}
+			if (data.funchotloadererror) {
+				epoint.alert(data.funchotloadererror);
+			}
+			if (data.wshandleerror) {
+				epoint.alert(data.wshandleerror);
+			}
+		}
+		function selectApiClass(e) {
+			epoint.openDialog('选择服务类别',
+					"frame/pages/basic/gateway/api/apiinfo/selectapiclass",
+					selectApiClassOperJS, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		function selectApiClassOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split(";");
+				if (s[0] != "") {
+					mini.get("categoryname").setText(s[0]);
+					mini.get("categoryname").setValue(s[1]);
+					mini.get("categoryid").setValue(s[1]);
+				}
+			}
+		}
+
+		 function typeValueChanged(e) {
+			mini.get("method").setData([]);
+			//当类型变的时候，服务源地址变回普通形式
+			mini.get('gkyUrl').setValue('1');
+			gatWayList(mini.get('gkyUrl').getValue());
+			if (e.value == 0) {
+				// REST API
+				mini.get("btnAddRecord").enable();
+				mini.get("btnDel").enable();
+				mini.get("datagrid").showColumn(0);
+				mini.get("datagrid").showColumn(7);
+			// 显示HTTP相关选择
+			showHttpOpt();
+			
+		} else if (e.value == 2) {
+			
+			// FTP API
+			// 显示FTP相关选项
+			showFtpOpt();
+			// 加载数据源选项
+			loadDataSource();
+			
+		} else if (e.value == 3) {
+			// 数据API
+			// 显示数据API相关选项
+			showDataApiOpt();
+			// 加载数据源选项
+			loadDataSource();
+			
+		} else if (e.value == 4) {
+			// 函数API
+			// 显示函数API相关选项
+			showFuncApiOpt();
+			
+		} else {
+			mini.get("btnAddRecord").disable();
+			mini.get("btnDel").disable();
+			mini.get("datagrid").hideColumn(0);
+			mini.get("datagrid").hideColumn(7);
+			
+			// 显示HTTP相关选择
+			showHttpOpt();
+			
+		}
+			epoint.refresh([ "type", "method", "apirealurl","gkyUrl" ], clearCallBack);
+		} 
+		
+		// 加载数据源选项
+		function loadDataSource() {
+			epoint.execute('getSourceSelectItem', '@all', function(e) {
+				mini.get("datasource").load(e);
+			});
+		}
+
+		function realUrlValueChanged(e) {
+			var apirealurl = mini.get("apirealurl").getValue();
+			var type = mini.get("type").getValue();
+			if (type == 2) {
+				// FTP地址
+				apirealurl = mini.get("apirealurlftp").getValue();
+				
+				if (apirealurl && apirealurl.indexOf("/") != 0) {
+					apirealurl = "/" + apirealurl;
+				}
+				
+			}
+			mini.get("apirealurl").setValue(apirealurl);
+			if (mini.get("type").value == 1) {
+				epoint.refresh([ "type", "method", "apirealurl" ],
+						clearCallBack);
+			}
+		}
+
+		function methodValueChanged(e) {
+			if (mini.get("type").value == 1) {
+				epoint.execute('resolveParamter', [ 'apirealurl', 'type', 'method', 'proxy_host', 'proxy_port' ],
+						refreshParamter);
+			}
+		}
+		
+		function refreshParamter(e) {
+			epoint.refresh([ "datagrid" ], resetState);
+			mini.get("attention").setValue(e.wstemplate);
+		}
+
+		function resetState() {
+			var value = mini.get("type").value;
+		}
+
+		function clearCallBack(e) {
+			mini.get("method").setValue("");
+		}
+
+		function imgeClick(val) {
+			var img = new Image();
+			if (val == "only") {
+				img.src = Util
+						.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/httpsonly.png');
+			} else if (val == "terminated") {
+				img.src = Util
+						.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/httpifterminated.png');
+			} else if (val == "uri") {
+				img.src = Util
+						.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/stripuri.png');
+			} else if (val == "host") {
+				img.src = Util
+						.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/preserverhost.png');
+			}
+			img.onload = function() {
+				if (img.fileSize > 0 || (img.width > 0 && img.height > 0)) {
+					var wid = img.width + 25;
+					var hei = img.height + 55;
+					epoint.openTopDialog("详细信息", img.src, '', {
+						'width' : wid,
+						'height' : hei
+					});
+				} else {
+					epoint.alert("暂无详细信息！");
+				}
+			};
+			img.onerror = function() {
+				epoint.alert("暂无详细信息！")
+			};
+
+		}
+
+		function onSubscribe() {
+			var apiguid = mini.get("apiguid").value;
+			epoint.openTopDialog('为应用订阅此服务',
+					"frame/pages/basic/gateway/api/apiinfo/apiauth?apiguid="
+							+ apiguid, '', {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var apiguid = mini.get("apiguid").value;
+			epoint.openDialog('新增参数',
+					"frame/pages/basic/gateway/api/apiinfo/apirequestparams?apiguid="
+							+ apiguid, searchData, {
+						'width' : 700,
+						'height' : 350
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 表格的刷新
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			}
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		function openEdit(id) {
+			epoint.openDialog('修改参数',
+					"frame/pages/basic/gateway/api/apiinfo/apirequestparams?paramguid="
+							+ id, searchData, {
+						'width' : 700,
+						'height' : 350
+					});
+		}
+
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+
+		function openDetail(id) {
+			epoint.openDialog('查看详情',
+					"frame/pages/basic/gateway/api/apiinfo/apirequestparamsdetail?paramguid="
+							+ id, '', {
+						'width' : 700,
+						'height' : 350
+					});
+		}
+
+		function blackvalid(e) {
+			if (e.value != '' && e.value == mini.get("whitelist").value) {
+				e.errorText = "该ip与白名单的ip重复！";
+				e.isValid = false;
+			}
+		}
+
+		function whitevalid(e) {
+			if (e.value != '' && e.value == mini.get("blacklist").value) {
+				e.errorText = "该ip与黑名单的ip重复！";
+				e.isValid = false;
+			}
+		}
+
+		function apirealurlvalid(e) {
+			var re = new RegExp(
+					"^([hH][tT]{2}[pP]://|[hH][tT]{2}[pP][sS]://)[^\s]+");
+			if (!re.test(e.value)) {
+				e.errorText = "服务源地址有误，请重新填写！";
+				e.isValid = false;
+			}
+		}
+
+		//服务权限不能全部选中
+		function userauthChanged(e) {
+			if (e.value == "true") {
+				mini.get("clientauth").setChecked(false);
+			}
+		}
+
+		function clientauthChanged(e) {
+			if (e.value == "true") {
+				mini.get("userauth").setChecked(false);
+			}
+		}
+
+		
+		var arr = new Array();
+
+		//请求转换添加
+		function openAddReq() {
+			var apiguid = mini.get("apiguid").value;
+			var datagrid1 = mini.get("datagrid1").getData();
+			epoint.openDialog('添加请求转换',
+					"frame/pages/basic/gateway/api/apiinfo/reqtransformation?method=add&guid="
+							+ apiguid, function(data) {
+						//console.log(data.param);
+						arr.push(data.param);
+						var json = JSON.parse("[" + arr + "]");
+						mini.get("datagrid1").setData(json);
+					}, {
+						'width' : 1200,
+						'height' : 800,
+						param : {
+							datagrid : datagrid1
+						}
+					});
+		}
+
+		// 绘制行编辑按钮
+		var onReqEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openReqEdit",
+					"epoint_total");
+		};
+
+		function openReqEdit(data) {
+			epoint
+					.openDialog(
+							'修改参数',
+							"frame/pages/basic/gateway/api/apiinfo/reqtransformation?method=edit",
+							function(data) {
+								var param = data.param;
+								if (param) {
+									epoint.execute('editData', '', [
+											data.param,
+											mini.get("datagrid1").data ],
+											function(data) {
+												//console.log(data);
+												var json = JSON.parse(data);
+												mini.get("datagrid1").setData(
+														json);
+
+											});
+								}
+							}, {
+								'width' : 1200,
+								'height' : 800,
+								param : {
+									value : data
+								}
+							});
+
+		}
+
+		// 绘制行删除按钮
+		var onReqDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"openReqDel", "epoint_total");
+		};
+
+		function openReqDel(data) {
+			epoint.execute('delete', '', [ data, mini.get("datagrid1").data ],
+					function(data) {
+						arr.splice(0, arr.length);//清空数组
+						if(data != ""){
+							arr.push(data);
+						}
+						var json = JSON.parse("[" + data + "]");
+						mini.get("datagrid1").setData(json);
+					});
+		}
+
+		// 绘制行查看按钮
+		var onReqDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openReqDetail", "epoint_total");
+		};
+
+		function openReqDetail(data) {
+			epoint
+					.openDialog(
+							'查看详情',
+							"frame/pages/basic/gateway/api/apiinfo/transformationdetail?transformation=req",
+							'', {
+								'width' : 1200,
+								'height' : 800,
+								param : {
+									value : data
+								}
+							});
+		}
+
+		var arr1 = new Array();
+		function openAddResp() {
+			var apiguid = mini.get("apiguid").value;
+			var datagrid2 = mini.get("datagrid2").getData();
+			var responsesample = mini.get("responsesample");
+			epoint.openDialog('新增响应转换',
+					"frame/pages/basic/gateway/api/apiinfo/resptransformation?method=add&guid="
+							+ apiguid, function(data) {
+						//console.log(data.param);
+						arr1.push(data.param);
+						var json = JSON.parse("[" + arr1 + "]");
+						mini.get("datagrid2").setData(json);
+					}, {
+						'width' : 1200,
+						'height' : 800,
+						param : {
+							datagrid : datagrid2,
+							responsesample : responsesample
+						}
+					});
+		}
+
+		// 绘制行编辑按钮
+		var onRespEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"openRespEdit", "epoint_total");
+		};
+
+		function openRespEdit(data) {
+			var responsesample = mini.get("responsesample");
+			epoint
+					.openDialog(
+							'修改参数',
+							"frame/pages/basic/gateway/api/apiinfo/resptransformation?method=edit",
+							function(data) {
+								var param = data.param;
+								//console.log(param)
+								if (param) {
+									epoint.execute('editData', '', [
+											data.param,
+											mini.get("datagrid2").data ],
+											function(data) {
+												//console.log(data);
+												var json = JSON.parse(data);
+												mini.get("datagrid2").setData(
+														json);
+
+											});
+								}
+							}, {
+								'width' : 1200,
+								'height' : 800,
+								param : {
+									value : data,
+									responsesample : responsesample
+								}
+							});
+
+		}
+
+		// 绘制行删除按钮
+		var onRespDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"openRespDel", "epoint_total");
+		};
+
+		function openRespDel(data) {
+			epoint.execute('delete', '', [ data, mini.get("datagrid2").data ],
+					function(data) {
+						arr1.splice(0, arr1.length);//清空数组
+						if(data != ""){
+							arr1.push(data);
+						}
+						var json = JSON.parse("[" + data + "]");
+						mini.get("datagrid2").setData(json);
+					});
+		}
+
+		// 绘制请求转换策略应用名称列
+		var onReqNameRenderer = function(e) {
+			var appName = e.record.consumerName;
+			if (e.record.appIsDel) {
+				return "<font color='red'>该应用已被删除</font>";
+			}
+			return appName;
+		}
+
+		var onRespNameRenderer = function(e) {
+			var appName = e.record.consumerName;
+			if (e.record.appIsDel) {
+				return "<font color='red'>该应用已被删除</font>";
+			}
+			return appName;
+		}
+
+		// 绘制行查看按钮
+		var onRespDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openRespDetail", "epoint_total");
+		};
+
+		function openRespDetail(data) {
+			epoint
+					.openDialog(
+							'查看详情',
+							"frame/pages/basic/gateway/api/apiinfo/transformationdetail?transformation=resp",
+							'', {
+								'width' : 1200,
+								'height' : 800,
+								param : {
+									value1 : data
+								}
+							});
+		}
+
+		function onRenderer(e) {
+			if ("0" == e.value) {
+				return "禁用";
+			}
+			if ("1" == e.value) {
+				return "启用";
+			}
+		}
+
+		//个性签名图片上传成功
+		function OnSignFileSuccess(args) {
+			if (args.data.extraDatas.signPicture) {
+				showSignPicture(args.data.extraDatas.signPicture);
+			}
+		}
+
+		//删除个性签名图片
+		function delUserSign() {
+			epoint.execute("delUserSign", "",
+					function delUserSignCallback(data) {
+						if (data.msg) {
+							mini.get("uploader2").clearFile();
+							showSignPicture();
+						}
+					});
+		}
+
+		//控制图片显隐
+		function showSignPicture(url) {
+			if (url) {
+				$("#userSign").attr("src", url);
+				mini.get("uploader2").setVisible(false);
+				$("#sign1").hide();
+				$("#sign3").hide();
+				$("#picture").show();
+			} else {
+				$("#picture").hide();
+				$("#userSign").attr("src", "");
+				mini.get("uploader2").setVisible(true);
+				$("#sign1").show();
+				$("#sign3").show();
+			}
+		}
+
+		function changedType(e) {
+			if (e.value == 1) {
+				$("#paramGrid").hide();
+				$("#jsonParam").show();
+			} else {
+				$("#jsonParam").hide();
+				$("#paramGrid").show();
+			}
+		}
+		
+		// 显示HTTP相关选项
+		function showHttpOpt() {
+			
+			// 隐藏FTP相关选项
+			hideFtpOpt();
+			// 隐藏数据API相关选项
+			hideDataApiOpt();
+			// 隐藏函数API
+			hideFuncApiOpt();
+			
+			// 显示API源地址
+			$(".httpopt").show();
+		}
+
+		// 隐藏HTTP相关选项
+		function hideHttpOpt(notCleanData) {
+			if (!notCleanData) {
+				// 将服务源地址清空，并置为验证通过
+				mini.get("apirealurl").setValue("");
+				mini.get("apirealurl").setIsValid(true);
+			}
+			
+			// API源地址
+			$(".httpopt").hide();
+			
+		}
+		
+		// 显示FTP相关选项
+		function showFtpOpt() {
+			
+			mini.get("btnAddRecord").disable();
+			mini.get("btnDel").disable();
+			mini.get("datagrid").hideColumn(0);
+			mini.get("datagrid").hideColumn(7);
+			// 隐藏HTTP相关选项
+			hideHttpOpt();
+			// 隐藏数据API相关选项
+			hideDataApiOpt();
+			// 隐藏函数API
+			hideFuncApiOpt();
+			
+			// FTP数据源选项
+			// FTP path
+			$(".ftpopt").show();
+		}
+
+		// 隐藏FTP相关选项
+		function hideFtpOpt(notCleanData) {
+			if (!notCleanData) {
+				// 将FTP数据源清空，并置为验证通过
+				mini.get("datasource").setValue("");
+				mini.get("datasource").setIsValid(true);
+				
+				// 将FTP源路径清空，并置为验证通过
+				mini.get("apirealurlftp").setValue("");
+				mini.get("apirealurlftp").setIsValid(true);
+				mini.get("apirealurl").setValue("");
+			}
+			
+			// FTP数据源选项
+			// FTP path
+			$(".ftpopt").hide();
+			
+		}
+		
+		// 显示数据API相关选项
+		function showDataApiOpt() {
+			
+			// 隐藏FTP API相关选项
+			hideFtpOpt();
+			// 隐藏HTTP API相关选项
+			hideHttpOpt()
+			// 隐藏函数API
+			hideFuncApiOpt();
+			
+			// 显示数据API相关选项
+			$(".dataopt").show();
+		}
+		
+
+		// 隐藏数据API相关选项
+		function hideDataApiOpt(notCleanData) {
+			if (!notCleanData) {
+				// 将数据源清空，并置为验证通过
+				mini.get("datasource").setValue("");
+				mini.get("datasource").setIsValid(true);
+				
+				// 将SQL清空，并置为验证通过
+				mini.get("datasql").setValue("");
+				mini.get("datasql").setIsValid(true);
+			}
+			
+			$(".dataopt").hide();
+		}
+		
+		// 显示函数API相关选项
+		function showFuncApiOpt() {
+			// 隐藏HTTP API相关选项
+			hideHttpOpt()
+			// 隐藏FTP API相关选项
+			hideFtpOpt();
+			// 隐藏数据API相关选项
+			hideDataApiOpt();
+			
+			mini.get("btnAddRecord").disable();
+			mini.get("btnDel").disable();
+			mini.get("datagrid").hideColumn(0);
+			mini.get("datagrid").hideColumn(7);
+			
+			// 显示在线编辑器
+			$(".funcopt").show();
+			// 标记编译标识为未编译
+			showCompileFail();
+		}
+		
+		// 隐藏函数API相关选项
+		function hideFuncApiOpt(notCleanData) {
+			if (!notCleanData) {
+				// 将命名空间清空，并置为验证通过
+				mini.get("funcnamespace").setValue("");
+				
+				// 将函数包名清空，并置为验证通过
+				mini.get("funcpackagename").setValue("");
+				mini.get("funcpackagename").setIsValid(true);
+				
+				// 将函数类名清空，并置为验证通过
+				mini.get("funcclassname").setValue("");
+				mini.get("funcclassname").setIsValid(true);
+				
+				// 将函数代码清空
+				mini.get("apidata").setValue("");
+			}
+			
+			$(".funcopt").hide();
+			// 标记编译标识为true
+			showCompileSuccess();
+		}
+		function dataSqlValueChanged(e) {
+			// 获取输入的SQL
+			var dataSql = mini.get("datasql").getValue();
+			var encodeDataSql = Base64.encode(dataSql);
+			// 设置编码后的值
+			mini.get("apidata").setValue(encodeDataSql);
+		}
+		
+		// 在线编译
+		function onlineCompile() {
+			if (epoint.validate(['funcpackagename', 'funcclassname'])) {
+				epoint.execute('onlineCompile', '@all', function (e) {
+					if (e.result == "success") {
+						// 编译成功
+						showCompileSuccess();
+					} else {
+						// 编译失败
+						// 标记编译不通过
+						showCompileFail(e.msg);
+					}
+				});
+			}
+		}
+		
+		// 显示编译通过
+		function showCompileSuccess() {
+			// 标记编译通过
+			isCompiled = true;
+			// 显示编译通过结果
+			$(".compileSuccess").show();
+			// 隐藏编译未通过结果
+			$(".compileFail").hide();
+			// 清空编译错误信息
+			$("#compileErrMsg").text("");
+		}
+		
+		// 显示编译未通过
+		function showCompileFail(msg) {
+			// 标记编译未通过
+			isCompiled = false;
+			if (msg) {
+				// 显示编译错误信息
+				$("#compileErrMsg").text(msg);
+			} else {
+				$("#compileErrMsg").text("");
+			}
+			// 显示编译未通过结果
+			$(".compileFail").show();
+			// 隐藏编译通过结果
+			$(".compileSuccess").hide();
+		}
+		
+		// 校验编译状态
+		function validCompile() {
+			// 是否是函数API
+			var type = mini.get("type").getValue();
+			if (type == 4 && isCompiled == false) {
+				// 编译未通过或未编译
+				epoint.alert("需函数编译通过才能创建API")
+				return false;
+			} else {
+				return true;
+			}
+		}
+		
+		var reqRateLimitArr = new Array();
+		//添加请求次数控制策略
+		function openAddReqRateLimit() {
+			var apiguid = mini.get("apiguid").value;
+			var datagrid = mini.get("datagr_req_rate_limit").getData();
+			epoint.openDialog('添加请求次数控制策略',
+					"frame/pages/basic/gateway/api/apiinfo/reqratelimitaction?method=add&guid="
+							+ apiguid, function(data) {
+						reqRateLimitArr.push(data.param);
+						var json = JSON.parse("[" + reqRateLimitArr + "]");
+						mini.get("datagr_req_rate_limit").setData(json);
+					}, {
+						'width' : 900,
+						'height' : 500,
+						param : {
+							datagrid : datagrid
+						}
+					});
+		}
+		
+		// 绘制请求次数控制策略行编辑按钮
+		var onReqRateLimitEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openReqRateLimitEdit",
+					"epoint_total");
+		};
+
+		function openReqRateLimitEdit(data) {
+			epoint.openDialog(
+							'修改请求次数控制策略',
+							"frame/pages/basic/gateway/api/apiinfo/reqratelimitaction?method=edit",
+							function(data) {
+								var param = data.param;
+								if (param) {
+									epoint.execute('editData', '', [
+											data.param,
+											mini.get("datagr_req_rate_limit").data ],
+											function(data) {
+												var json = JSON.parse(data);
+												mini.get("datagr_req_rate_limit").setData(
+														json);
+
+											});
+								}
+							}, {
+								'width' : 900,
+								'height' : 500,
+								param : {
+									value : data
+								}
+							});
+
+		}
+
+		// 绘制请求次数控制策略行删除按钮
+		var onReqRateLimitDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"openReqRateLimitDel", "epoint_total");
+		};
+
+		function openReqRateLimitDel(data) {
+			epoint.execute('delete', '', [ data, mini.get("datagr_req_rate_limit").data ],
+					function(data) {
+					reqRateLimitArr.splice(0, reqRateLimitArr.length);//清空数组
+					if(data != ""){
+						reqRateLimitArr.push(data);
+					}
+						var json = JSON.parse("[" + data + "]");
+						mini.get("datagr_req_rate_limit").setData(json);
+					});
+		}
+
+		// 绘制请求次数控制策略行查看按钮
+		var onReqRateLimitDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openReqRateLimitDetail", "epoint_total");
+		};
+
+		function openReqRateLimitDetail(data) {
+			epoint.openDialog(
+							'查看详情',
+							"frame/pages/basic/gateway/api/apiinfo/reqratelimitdetail",
+							'', {
+								'width' : 900,
+								'height' : 500,
+								param : {
+									value : data
+								}
+							});
+		}
+		
+		function openApiTipDialog() {
+			// 获取当前选择的API类型
+			var type = mini.get("type").value;
+			
+			var tipType = "";
+			if (type == 2) {
+				// FTP
+				tipType = "ftpapi"
+			} else if (type == 3) {
+				// 数据API
+				tipType = "dataapi"
+			} else if (type == 4) {
+				// 函数API
+				tipType = "funcapi"
+			}
+			
+			epoint.openDialog(
+					'说明',
+					"frame/pages/basic/gateway/api/apiinfo/apitip?tipType=" + tipType,
+					'', {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+		
+		
+		var reqSizeLimitArr = new Array();
+		//添加请求大小控制策略
+		function openAddReqSizeLimit() {
+			var apiguid = mini.get("apiguid").value;
+			var datagrid = mini.get("datagr_req_size_limit").getData();
+			epoint.openDialog('添加请求大小控制策略',
+					"frame/pages/basic/gateway/api/apiinfo/reqsizelimitaction?method=add&guid="
+							+ apiguid, function(data) {
+						reqSizeLimitArr.push(data.param);
+						var json = JSON.parse("[" + reqSizeLimitArr + "]");
+						mini.get("datagr_req_size_limit").setData(json);
+					}, {
+						'width' : 900,
+						'height' : 500,
+						param : {
+							datagrid : datagrid
+						}
+					});
+		}
+		
+		// 绘制请求大小控制策略行编辑按钮
+		var onReqSizeLimitEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openReqSizeLimitEdit",
+					"epoint_total");
+		};
+
+		function openReqSizeLimitEdit(data) {
+			epoint.openDialog(
+							'修改请求大小控制策略',
+							"frame/pages/basic/gateway/api/apiinfo/reqsizelimitaction?method=edit",
+							function(data) {
+								var param = data.param;
+								if (param) {
+									epoint.execute('editData', '', [
+											data.param,
+											mini.get("datagr_req_size_limit").data ],
+											function(data) {
+												var json = JSON.parse(data);
+												mini.get("datagr_req_size_limit").setData(
+														json);
+
+											});
+								}
+							}, {
+								'width' : 900,
+								'height' : 500,
+								param : {
+									value : data
+								}
+							});
+
+		}
+
+		// 绘制请求大小控制策略行删除按钮
+		var onReqSizeLimitDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"openReqSizeLimitDel", "epoint_total");
+		};
+
+		function openReqSizeLimitDel(data) {
+			epoint.execute('delete', '', [ data, mini.get("datagr_req_size_limit").data ],
+					function(data) {
+					reqSizeLimitArr.splice(0, reqSizeLimitArr.length);//清空数组
+					if(data != ""){
+						reqSizeLimitArr.push(data);
+					}
+						var json = JSON.parse("[" + data + "]");
+						mini.get("datagr_req_size_limit").setData(json);
+					});
+		}
+
+		// 绘制请求大小控制策略行查看按钮
+		var onReqSizeLimitDetailRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openReqSizeLimitDetail", "epoint_total");
+		};
+
+		function openReqSizeLimitDetail(data) {
+			epoint.openDialog(
+							'查看详情',
+							"frame/pages/basic/gateway/api/apiinfo/reqsizelimitdetail",
+							'', {
+								'width' : 900,
+								'height' : 500,
+								param : {
+									value : data
+								}
+							});
+		}
+		
+		function gatWayList(e) {
+			if ('0'== e) {
+				$('.pzgky').hide();
+				$('.fhgky').removeClass('hidden');
+				$('#gatway').show();
+				$('#apirealurl').hide();
+				//0代表是高可用阶段
+				mini.get("apirealurl").setValue('');
+				mini.get('gkyUrl').setValue('0');
+			}
+			else if ('1' == e) {
+				$('.pzgky').show();
+				$('#gatway').hide();
+				$('#apirealurl').show();
+				$('.fhgky').addClass('hidden');
+				//1代表是普通阶段
+				mini.get('gkyUrl').setValue('1');
+				mini.get("gatchannel").setText('');
+				mini.get("gatwaymethod").setValue('');
+				mini.get("httpitem").setValue('');
+			}
+			
+		}
+		function selectChannel(e) {
+			epoint.openDialog('选择高可用',
+					"frame/pages/basic/gateway/api/apichannel/apichanneselect",
+					selectChannelJS, {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+		function selectChannelJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split(";");
+				if (s[0] != "") {
+					mini.get("gatchannel").setText(s[1]);
+					mini.get("gatchannel").setValue(s[3]);
+					
+				}
+			}
+		}
+
+	
+	</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>结果显示字段配置</title>
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            './css/common.css',
+            './css/view.css'
+        ]);
+    </script>
+</head>
+
+<body>
+
+    <div class="view">
+        <div class="steps">
+            <div class="step active">
+                <p class="step-num">1</p>
+                <p class="step-tt">比对源选择</p>
+            </div>
+            <p class="step-line active"></p>
+            <div class="step active">
+                <p class="step-num">2</p>
+                <p class="step-tt">字段关联配置</p>
+            </div>
+            <p class="step-line active"></p>
+            <div class="step active">
+                <p class="step-num">3</p>
+                <p class="step-tt">结果显示字段配置</p>
+            </div>
+            <p class="step-line active"></p>
+            <div class="step active">
+                <p class="step-num">4</p>
+                <p class="step-tt">查看结果</p>
+            </div>
+        </div>
+        <div class="view-ct">
+            <div class="view-ct-inner">
+                <p class="view-ct-tt">结果列表</p>
+                <div class="view-tb-outer">
+                 <a class="mini-dataexport" visible="false"  id="dataexport"
+				gridId="datagrid" fileName="导出结果" action="getExportModel"
+				position="left" collapseText="导出excel"></a>
+                    <div id="datagrid" class="mini-datagrid" style="width:100%;height:100%" action="getGridModelData" showPager="true" allowCellSelect="false" pagerType="pagination" cellEditAction="false">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="view-btns">
+            <p class="view-btn view-save">保 存</p>
+            <p class="view-btn view-pre">上一步</p>
+            <p class="view-btn view-export">导出数据</p> 
+        </div>
+    </div>
+
+    <script src="../../../rest/resource/jsboot"></script>
+    <script type="text/javascript">
+		//<![CDATA[
+		epoint.initPage("dxpguidemodeldatapreviewaction", '', callbackinit);
+		var grid = mini.get("datagrid");
+		// 初始化回掉，动态生成列
+		function callbackinit(data) {
+
+			//adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+			if (data) {
+				drawDynamicColumn(data);
+				grid.reload();
+			}
+		}
+
+		// 绘制动态列
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			console.log(tmp);
+			var columns = eval('(' + tmp + ')');
+			grid.set(columns);
+		   // grid.frozenColumns(0, 3);
+		}
+		$('.view-export').on('click', function() {
+	    	mini.get('mini-2').doClick();
+			$('.right-all').click();
+	    	mini.get('mini-1-action').doClick();
+	    });
+		
+		
+		
+		//]]>
+	</script>
+    <script>
+        SrcBoot.output([
+            './js/view.js'
+        ]);
+    </script>
+</body>
+
+</html>

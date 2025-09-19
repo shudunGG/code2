@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Configuration process activity materials</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addMaterial" iconCls="icon-addcircle">Select material</a>
+			<a class="mini-button" onclick="saveOrder" iconCls="icon-save">Modify the sort</a>
+			<a class="mini-button" onclick="deleteMaterial"
+				iconCls="icon-minuscircle">delete selected</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<!-- Add a hidden field -->
+		<input bind="processVersionGuid" id="processVersionGuid"
+			class="mini-hidden" /> <input bind="activityGuid" id="activityGuid"
+			class="mini-hidden" /><input bind="mainPVActivityGuid"
+			id="mainPVActivityGuid" class="mini-hidden" />
+		<!-- The form area -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="activitymaterialguid" multiSelect="true"
+			style="height: 100%;" allowResize="true" action="getDataGridData"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">order</div>
+				<div field="materialName" headerAlign="center" align="center">The name of the</div>
+				<div field="materialType" headerAlign="center" align="center">type</div>
+				<div field="ismSubmit" headerAlign="center" align="center">Must submit</div>
+				<div field="submitTypeName" headerAlign="center" align="center">submission</div>
+				<div field="OrderNum" headerAlign="center">
+					order no<input property="editor" class="mini-textbox" vtype="int" />
+				</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">edit</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitymaterialaction');
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//callback
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ],'',true);
+		}
+
+		//delete selectedline
+		function deleteMaterial() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.confirm("determinedelete selectedRecord?", "", function(action) {
+					epoint.execute("deleteSelect", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, '', null, 'info');
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("Please choose to delete records!", '', null, 'warning');
+			}
+		}
+		//Select material
+		function addMaterial() {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			var mainPVActivityGuid = mini.get('mainPVActivityGuid').getValue();
+			epoint.openDialog("Select material",
+					'framemanager/workflow/design/selectmaterial?processVersionGuid='
+							+ processVersionGuid + '&activityGuid='
+							+ activityGuid + '&mainPVActivityGuid='
+							+ mainPVActivityGuid, addCallBack, {
+						'width' : 800,
+						'height' : 500
+					});
+		}
+		// drawlineEdit button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"editMaterial", "activitymaterialguid");
+		};
+		// The pop-upeditwindow
+		function editMaterial(activitymaterialguid) {
+			epoint.openDialog("editmaterial",
+					'framemanager/workflow/design/activitymanualmaterialedit?activityMaterialGuid='
+							+ activitymaterialguid, callback, {
+						'width' : 800,
+						'height' : 500
+					});
+		}
+		// saveroworder
+		function saveOrder() {
+			epoint.execute('saveOrder', 'datagrid', callback);
+		}
+		//]]>
+	</script>
+</body>
+
+
+</html>

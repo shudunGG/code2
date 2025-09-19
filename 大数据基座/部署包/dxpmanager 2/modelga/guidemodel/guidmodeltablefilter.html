@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>表筛选个性化页面2</title>
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="./css/tablefilter.css" />
+<style>
+.nonebd {
+	border-right: 0;
+	border-bottom: 0;
+}
+
+#pwhereFilter {
+	margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="confirmadd">确定添加</a>
+			<a class="mini-button" id="cancleadd" onclick="epoint.closeDialog">取消添加</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="筛选条件" starred="true"></div>
+				</div>
+
+				<div class="filter-data" id="filter-data"></div>
+				<!-- 		<div>
+					<a class="mini-button" onclick="confirm()">确定</a> <a class="mini-button mini-btn-warning" onclick="cancel()">取消</a>
+				</div>
+ -->
+				<!-- 				<div role="row">
+					<div role="control" label="筛选条件">
+						<input class="mini-combobox" id="pinputds" onvaluechanged="changeCondition('')" width="30%" />
+						<div class="fuhao" onclick="changeCondition('add')">add</div>
+						<div class="fuhao" onclick="changeCondition('(')">(</div>
+						<div class="fuhao" onclick="changeCondition(')')">)</div>
+						<div class="fuhao" onclick="changeCondition('=')">=</div>
+						<div class="fuhao" onclick="changeCondition('>')">></div>
+						<div class="fuhao" onclick="changeCondition('<')"><</div>
+						<div class="fuhao" onclick="changeCondition('and')">and</div>
+						<div class="fuhao" onclick="changeCondition('or')">or</div>
+						<div class="fuhao" onclick="changeCondition('clearall')">清空</div>
+						<div style="clear: both;"></div>
+						<input class="mini-textarea" id="pwhereFilter" style="height: 250px" />
+					</div>
+				</div> -->
+
+
+			</div>
+			<input class="mini-hidden" id="parameter" />
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script type="x-tmpl-mustache" id="filter-template">
+        <li class="filter-item">
+            {{^first}}
+            <div class="ext_select">
+                <input class="mini-combobox filter-relate-select" showNullItem="false"
+                    data="[{id: 1,name: '并'},{id: 2,name: '或'}]"
+                    valueFromSelect value="{{relateVal}}"
+                    textField="name" valueField="id" allowInput="true" />
+            </div>
+            {{/first}}
+
+            <div class="clearfix">
+                <div class="l mr-10 filter-category">
+                    <input width="200px" name="category" id="pinputds" class="mini-combobox filter-category-select" showNullItem="false"
+                        valueFromSelect value="{{categoryVal}}" onvaluechanged="fieldchange" requiredErrorText="条件字段不能为空"
+                        textField="text" valueField="id" allowInput="false" required="true" />
+                </div>
+                <div class="l mr-10 filter-operate">
+                    <input width="130px" onvaluechanged="valueChange" class="mini-combobox filter-operate-select" showNullItem="false"
+                        data="[{id: 1,name: '日期范围'},{id: 2,name: '包含'},{id: 3,name: '不包含'},{id: 4,name: '起始包含'},{id: 5,name: '结尾包含'},{id: 6,name: '起始不包含'},{id: 7,name: '结尾不包含'},{id: 8,name: '空值'},{id: 9,name: '非空值'},{id: 10,name: '等于'},{id: 11,name: '小于'},{id: 12,name: '大于'},{id: 13,name: '小于等于'},{id: 14,name: '大于等于'},{id: 15,name: '不等于'},{id: 16,name: '包含(字段)'},{id: 17,name: '不包含(字段)'},{id: 18,name: '起始包含(字段)'},{id: 19,name: '结尾包含(字段)'},{id: 20,name: '起始不包含(字段)'},{id: 21,name: '结尾不包含(字段)'},{id: 22,name: '等于(字段)'},{id: 26,name: '小于(字段)'},{id: 27,name: '大于(字段)'},{id: 25,name: '小于等于(字段)'},{id: 24,name: '大于等于(字段)'},{id: 23,name: '不等于(字段)'}]"
+                        valueFromSelect value="{{operateVal}}"
+                        textField="name" valueField="id" allowInput="true" required="true" requiredErrorText="条件类型不能为空"/>
+                </div>
+                <div class="l mr-10 filter-time {{^showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{#showFilterField}}hidden{{/showFilterField}}">
+                        <input width="200px" name="time" class="mini-datepicker mr-10 begin-time" format="yyyy-MM-dd H:mm:ss" showTime="true" timeFormat="H:mm:ss" showOkButton="true"  showTodayButton="false" value="{{beginTime}}" allowInput="false" />
+                        <input  width="200px" name="time" class="mini-datepicker end-time" format="yyyy-MM-dd H:mm:ss" showTime="true" timeFormat="H:mm:ss" value="{{endTime}}" showOkButton="true" showTodayButton="false" allowInput="false" />
+                    
+                </div>
+				
+                <div class=" mr-10 filter-value {{#showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{#showFilterField}}hidden{{/showFilterField}} l">
+                    <input name="" class="mini-textbox filter-value-input" value="{{filterVal}}" />
+                </div>
+				<div class="l mr-10 filter-dropdown {{#showTime}}hidden{{/showTime}} {{#hideAll}}hidden{{/hideAll}} {{^showFilterField}}hidden{{/showFilterField}}" >
+                    <input width="200px" name="filterField" id="pinputds1" class="mini-combobox filter-dropdown-select" showNullItem="false"  allowInput="false"
+                        valueFromSelect value="{{filterField}}" requiredErrorText="条件字段不能为空"
+                        textField="text" valueField="id" allowInput="false" required="true" />
+                </div>
+                <div class="filter-icon l">
+                    <a class="action-icon  {{#first}}filter-item-add icon-addcircle{{/first}} {{^first}}filter-item-min icon-minuscircle{{/first}}"></a>
+                </div>
+            </div>
+        </li>
+    </script>
+
+	<script type="x-tmpl-mustache" id="filter-ul-template">
+        <ul class="filter-box">
+            {{^first}}
+            <li class="filter-box-relate">
+                <div class="box_ext_select">
+                    <input class="mini-combobox filter-relate-select" showNullItem="false"
+                        data="[{id: 1,name: '并'},{id: 2,name: '或'}]"
+                        valueFromSelect value="{{relate}}"
+                        textField="name" valueField="id" allowInput="true" />
+                    
+                </div>
+            </li>
+            {{/first}}
+
+            {{{filterItem}}}
+            
+            
+            <li class="filter-add">
+                <div class="filter-icon l">
+                    <a class="action-icon {{#first}}filter-box-add icon-addcircle{{/first}} {{^first}}filter-box-min icon-minuscircle{{/first}}"></a>
+                </div>
+            </li>
+            
+        </ul>
+           
+    </script>
+
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script src="./js/tablefilterindex.js"></script>
+
+	<script>
+		// 初始化页面
+		var grid = mini.get('defaultModel');
+
+		function pageLoad(data) {
+			var condition = {
+				'condition' : data.condition
+			}
+			epoint.initPage('dxpguidemodeltablefilteraction', condition, function(data) {
+				if (data.rowguid != "") {
+					mini.get('addNew').setText("确定修改");
+					mini.get('cancleadd').setText("取消修改");
+				}
+				loadParam();
+			});
+		}
+
+		var selectData = "";
+		//加载参数列表
+		function loadParam() {
+			epoint.execute("getModelTableFilter", '', '', function(data) {
+				mini.get('parameter').setValue(data);
+				if (data) {
+					data = JSON.parse(data);
+				}
+				mini.parse();
+
+				for (var i = 0; i < data.length; i++) {
+					if (data[i].hide) {
+						continue;
+					} else if (data[i].parameterName == 'inputds') {
+						selectData = data[i].data;
+						// 						var dateFields = eval("(" + selectData + ")");
+						var dateFields = selectData;
+						for (var j = 0, len = dateFields.length; j < len; j++) {
+							dateFields[j]["text"] = dateFields[j]["text"] + "(" + dateFields[j]["id"] + ")";
+						}
+
+						mini.get("p" + data[i].parameterName).setData(dateFields);
+						mini.get("p" + data[i].parameterName + "1").setData(dateFields);
+						//mini.get("pinputds").select(0);
+					} else if (data[i].parameterName == 'tableWhereFilter') {
+						//喧染所有表格
+						if (data[i].value) {
+							// 							var value = eval('(' + data[i].value + ')');
+							initHtml(eval('(' + data[i].value + ')'));
+							mini.parse();
+							$(mini.getsbyName('category')).each(function(index, item) {
+// 																var dateFields = eval('(' + selectData + ')');
+								var dateFields = selectData;
+								for (var i = 0; i < dateFields.length; i++) {
+									if (dateFields[i].text == item.defaultValue) {
+										var type = dateFields[i].type.toLowerCase();
+										fieldchangeinit(type, item);
+										break;
+									}
+								}
+								item.setData(selectData);
+							})
+							$(mini.getsbyName('filterField')).each(function(index, item) {
+								item.setData(selectData);
+							})
+						}
+					}
+				}
+			});
+		}
+
+		//保存
+		function confirmadd() {
+			//读取参数控件列表中的值
+			var parmdata = JSON.parse(mini.get('parameter').getValue());
+			for (var i = 0; i < parmdata.length; i++) {
+				if (parmdata[i].readonly) {
+					continue;
+				} else if (parmdata[i].parameterName == 'tableWhereFilter') {
+					var data = confirm();
+					/* if(data.flag){
+						epoint.alert('日期范围条件，左输入时间不能大于右输入时间。请修改。');
+						return;
+					} */
+					parmdata[i].value = confirm();
+				}
+			}
+
+			mini.get('parameter').setValue(JSON.stringify(parmdata));
+			if (epoint.validate()) {
+				epoint.confirm('选择字段匹配时，左右两边的字段类型必须保持一致；选择包含类型时，仅支持字符串匹配。请确认相关配置，否则会导致运行出错。', '', function() {
+					epoint.closeDialog(mini.get('parameter').getValue());
+				})
+			}
+		}
+
+		function chgds(src, rel) {
+			var ds = mini.get('p' + src).getValue();
+			epoint.execute("getTable", null, [ ds ], function(ret) {
+				var relslst = rel.split(',');
+				for (var i = 0; i < relslst.length; i++) {
+					mini.get('p' + relslst[i]).setData(ret);
+					//alert(mini.get('p' + relslst[i]).getAtt(""));
+				}
+			});
+		}
+
+		function chgtbl(src, rel) {
+			var tbl = mini.get('p' + src).getValue();
+			epoint.execute("getColumn", null, [ tbl ], function(ret) {
+				var relslst = rel.split(',');
+				for (var i = 0; i < relslst.length; i++) {
+					mini.get('p' + relslst[i]).setData(ret);
+				}
+			});
+		}
+
+		function fieldchange(e) {
+			var stype = e.selected.type.toLowerCase();
+			var data = JSON.stringify(getSelectDataBy(null));
+
+			//字符串类型
+			if (stype == "string" || stype == "nvarchar2" || stype == "varchar" || stype == "nvarchar" || stype.indexOf("字符串") != -1) {
+				data = JSON.stringify(getSelectDataBy(new Array(11, 12, 13, 14, 24, 25, 26, 27)));
+			} else if (stype == "date" || stype == "datetime" || stype == "timestamp" || stype.indexOf("日期型") != -1) {
+				data = JSON.stringify(getSelectDataBy(null));
+			} else if (stype == "numeric" || stype == "bigint" || stype == "int" || stype == "decimal" || stype == "double" || stype == "float" || stype.indexOf("数值") != -1 || stype == "integer") {
+				data = JSON.stringify(getSelectDataBy(new Array(1)));
+			}
+			var $parent = $(e.sender.el).parent().siblings('.filter-operate');
+			var $time = mini.byClass('filter-operate-select', $parent);
+			mini.get($time).setData(data);
+		}
+
+		function fieldchangeinit(stype, item) {
+			var data = JSON.stringify(getSelectDataBy(null));
+
+			//字符串类型
+			if (stype == "string" || stype == "nvarchar2" || stype == "varchar" || stype == "nvarchar" || stype.indexOf("字符串") != -1) {
+				data = JSON.stringify(getSelectDataBy(new Array(11, 12, 13, 14, 24, 25, 26, 27)));
+			} else if (stype == "date" || stype == "datetime" || stype == "timestamp" || stype.indexOf("日期型") != -1) {
+				data = JSON.stringify(getSelectDataBy(null));
+			} else if (stype == "numeric" || stype == "bigint" || stype == "int" || stype == "decimal" || stype == "double" || stype == "float" || stype.indexOf("数值") != -1 || stype == "integer") {
+				data = JSON.stringify(getSelectDataBy(new Array(1)));
+			}
+
+			var $parent = $(item.el).parent().siblings('.filter-operate');
+			var $time = mini.byClass('filter-operate-select', $parent);
+			mini.get($time).setData(data);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function OnUploadFinished() {
+			console.log("所有文件上传结束");
+		}
+
+		function getSelectDataBy(ids) {
+			var allSelect = [ {
+				id : 1,
+				name : '日期范围'
+			}, {
+				id : 2,
+				name : '包含'
+			}, {
+				id : 3,
+				name : '不包含'
+			}, {
+				id : 4,
+				name : '起始包含'
+			}, {
+				id : 5,
+				name : '结尾包含'
+			}, {
+				id : 6,
+				name : '起始不包含'
+			}, {
+				id : 7,
+				name : '结尾不包含'
+			}, {
+				id : 8,
+				name : '空值'
+			}, {
+				id : 9,
+				name : '非空值'
+			}, {
+				id : 10,
+				name : '等于'
+			}, {
+				id : 11,
+				name : '小于'
+			}, {
+				id : 12,
+				name : '大于'
+			}, {
+				id : 13,
+				name : '小于等于'
+			}, {
+				id : 14,
+				name : '大于等于'
+			}, {
+				id : 15,
+				name : '不等于'
+			}, {
+				id : 16,
+				name : '包含(字段)'
+			}, {
+				id : 17,
+				name : '不包含(字段)'
+			}, {
+				id : 18,
+				name : '起始包含(字段)'
+			}, {
+				id : 19,
+				name : '结尾包含(字段)'
+			}, {
+				id : 20,
+				name : '起始不包含(字段)'
+			}, {
+				id : 21,
+				name : '结尾不包含(字段)'
+			}, {
+				id : 22,
+				name : '等于(字段)'
+			}, {
+				id : 26,
+				name : '小于(字段)'
+			}, {
+				id : 27,
+				name : '大于(字段)'
+			}, {
+				id : 25,
+				name : '小于等于(字段)'
+			}, {
+				id : 24,
+				name : '大于等于(字段)'
+			}, {
+				id : 23,
+				name : '不等于(字段)'
+			} ];
+
+			for (var i = allSelect.length - 1; i >= 0; i--) {
+				var id = allSelect[i].id;
+				if (ids && contains(ids, id)) {
+					allSelect.remove(allSelect[i]);
+				}
+			}
+			return allSelect;
+		}
+
+		function contains(arr, obj) {
+			var i = arr.length;
+			while (i--) {
+				if (arr[i] === obj) {
+					return true;
+				}
+			}
+			return false;
+		}
+	</script>
+</body>
+</html>

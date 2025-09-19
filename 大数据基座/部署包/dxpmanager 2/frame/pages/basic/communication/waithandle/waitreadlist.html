@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>待阅事项</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-danger" onclick="deleteSelect">删除选中</a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="keyword" opened="false">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="时间">
+						<input name="dateFrom" id="dateFrom" bind="dateFrom"
+							class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" format="yyyy-MM-dd"
+							data-options="{'format': 'yyyy-MM-dd'}" showTime="false"
+							showClearButton="true" /> <span
+							style="width: 12%; text-align: center">至</span> <input
+							name="dateTo" id="dateTo" class="mini-datepicker"
+							onValuechanged="validateDate(this)" style="width: 44%;"
+							bind="dateTo" data-options="{'format': 'yyyy-MM-dd'}"
+							showTime="false" showClearButton="true" />
+					</div>
+					<div role="control" label="提交人">
+						<div class="mini-textbox" bind="fromDispName"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="标题">
+						<div id="keyword" class="mini-textbox" bind="txtTitle"></div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<a role="reset" callback="resetCallback"> <a role="searcher"
+			callback="searchData"></a><a role="close" callback="closeCallback"></a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="messageitemguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="waitreadlistaction.getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="topic" headerAlign="center" width="100%" align="left" validateLevel="1">
+					标题</div>
+				<div field="beiZhu" headerAlign="center" align="left" width="350">
+					步骤名称</div>
+				<div field="targetdispname" headerAlign="center" align="center"
+					width="150">办理人</div>
+				<div field="fromDispName" headerAlign="center" align="center"
+					width="150">提交人</div>
+				<div field="generateDate" headerAlign="center"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center" width="150"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">发送时间</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("waitreadlistaction");
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//删除回调事件
+		function callback(data) {
+			epoint.alert(data.msg, null, null, 'info');
+		}
+
+		//删除选中行
+		function deleteSelect() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("waitreadlistaction.delete", "", [ ids
+							.join(',') ], function(data) {
+						if (data.msg) {
+							epoint.alert(data.msg, null, null, 'info');
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}
+					});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", null, null, 'warning');
+			}
+		}
+
+		//批量处理
+		function handle() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.confirm("确定处理选中记录？", "", function(action) {
+					epoint.execute("waitreadlistaction.handle", "", [ ids
+							.join(',') ], function(data) {
+						if (data.msg) {
+							epoint.alert(data.msg, null, null, 'info');
+							epoint
+									.refresh([ 'datagrid', 'fui-form' ], '',
+											true);
+						}
+					});
+				});
+			} else {
+				epoint.alert("请选择要处理的记录!", null, null, 'warning');
+			}
+		}
+
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.alert("起始时间不能超过终止时间!", null, null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("终止时间不能小于起始时间!", null, null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

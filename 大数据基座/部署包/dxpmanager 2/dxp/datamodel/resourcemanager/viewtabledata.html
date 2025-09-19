@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>查看数据</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc" idField="rowguid" multiSelect="true" style="width: 100%; height: 100%;" allowResize="true"
+			action="getGridModelData" showPager="true">
+			<div property="columns">
+				<div field="sync_date" data-options="{'format':'yyyy-MM-dd hh:mm:ss'}">时间</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		var grid = mini.get("datagrid");
+		epoint.initPage("viewtabledatalistaction", null, callbackinit);
+
+		// 初始化回掉，动态生成列
+		function callbackinit(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			} else if (data) {
+				adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+				drawDynamicColumn(data);
+			}
+		}
+
+		// 绘制动态列
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = eval('(' + tmp + ')');
+			grid.set(columns);
+
+		}
+		//_$t
+	</script>
+
+</body>
+</html>

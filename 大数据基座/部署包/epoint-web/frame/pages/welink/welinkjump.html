@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>blank</title>
+<script src="../../fui/js/cssboot.js"></script>
+
+</head>
+<body>
+
+	<!-- 直接引用官方提供的hwh5-cloudonline.js，也可根据自己需要新建一个本地文件来引用-->
+	<script
+		src="https://open-doc.welink.huaweicloud.com/docs/jsapi/2.0.2/hwh5-cloudonline.js"></script>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		var realurl = Util.getUrlParams('realurl');
+		var requesthead = window.location.href;
+		var head = requesthead.substr(0, requesthead.indexOf('/welink/welinkjump') + 1)
+		
+		var code = "";
+		HWH5.getAuthCode().then(function (data) {
+			code = data.code;
+			}).catch(function (error) {
+			console.log('获取异常', error);
+			});
+
+		if(0 == code.length){
+			alert("华为的code未正常获取....请检查HWH5....");
+		}else{
+			$.ajax({
+			    url: head + "rest/getwelinkparams?huaweiword="+code+"&pageurl="+realurl,    //请求的url地址
+			    dataType:"text",   //返回格式为json
+			    async:true,//请求是否异步，默认为异步，这也是ajax重要特性
+			    data:{},    //参数值
+			    type:"GET",   //请求方式
+			    success:function(data){
+					window.location.href= data;
+			    }
+			});
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>指标详情</title>
+    <script src="../../js/boot/boot.min.js"></script>
+    <script>
+        ResBoot.output([
+            './css/label_detail.css',
+            './css/viewportrait.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div id="header" class="header">
+        <div class="container">
+            <p class="header-title">指标门户</p>
+        </div>
+    </div>
+
+    <div class="main" id="app">
+        <div class="main-header fix">
+            <div class="main-header-container clearfix">
+                <a class="goback l" href="./norm_list.html">指标列表页</a>
+                <div class="tools clearfix r">
+                    <input class="search-input l" type="text" placeholder="请输入指标名称" />
+                    <a class="search-btn l" href="javascript:;">搜索</a>
+                </div>
+            </div>
+        </div>
+        <div class="main-body">
+            <div class="main-body-container">
+                <div class="banner">
+                    <div class="label-msg">
+                        <span class="labelname l" >指标加载中</span>
+                    </div>
+                </div>
+                <div class="content clearfix">
+                    <div class="content-left l">
+                        <div class="fix-top">
+                            <div class="nav-container">
+                                <ul class="nav-list" id="nav">
+                                    <li class="nav-item current">
+                                        <a class="nav-item-href" href="#basic">基本信息</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-item-href" href="#advanced">数据信息</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-item-href" href="#rules">业务属性</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="content-right r" id="sectionwrap">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <!-- 模板 -->
+    <script id="banner-tmpl" type="mustache-tmpl">
+        <div class="label-msg">
+            <span class="labelname l" title="{{normname}}">
+                {{normname}}
+            </span>
+            <span class="labelupdatetime r">指标更新时间: {{lastupdatetime}}</span>
+        </div>
+        <div class="label-msg">
+            <span class="labeldept l">创建部门 :<span class="label-text"
+                    title="{{dep}}">{{dep}}</span></span>
+            <span class="labelvisittime clearfix r">
+                <i class="eye l"></i>浏览次数:<span class="label-text">{{visitcount}}</span> 次
+            </span>
+        </div>
+    </script>
+
+    <script id="content-tmpl" type="mustache-tmpl">
+        <div class="box" id="basic">
+            <h3 class="box-title">基本信息</h3>
+            <table class="basic">
+                <colgroup>
+                    <col width="150px" />
+                    <col width="405px" />
+                    <col width="150px" />
+                    <col width="405px" />
+                </colgroup>
+                <thead>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="box-td label-td">指标名称</td>
+                        <td class="box-td value-td">{{normname}}</td>
+                        <td class="box-td label-td">指标类型</td>
+                        <td class="box-td value-td">{{normtype}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">是否启用</td>
+                        <td class="box-td value-td">{{status}}</td>
+                        <td class="box-td label-td">是否预警</td>
+                        <td class="box-td value-td">{{isneedwarning}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">配置类型</td>
+                        <td class="box-td value-td">{{configtype}}</td>
+                        <td class="box-td label-td">聚合方式</td>
+                        <td class="box-td value-td">{{groupbytype}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box" id="advanced">
+            <h3 class="box-title">数据信息</h3>
+            <table class="advanced">
+                <colgroup>
+                    <col width="150px" />
+                    <col width="405px" />
+                    <col width="150px" />
+                    <col width="405px" />
+                </colgroup>
+                <thead>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="box-td label-td">来源库</td>
+                        <td class="box-td value-td" colspan="3">{{datasource}}</td>
+                    </tr>
+                    {{#datatablenameen}}
+                    <tr>
+                        <td class="box-td label-td">来源表</td>
+                        <td class="box-td value-td">{{datatablenameen}}({{datatablenamecn}})</td>
+                        <td class="box-td label-td">来源字段</td>
+                        <td class="box-td value-td">{{datafieldnameen}}({{datafieldnamecn}})</td>
+                    </tr>
+                    {{/datatablenameen}}
+                    {{#dimtablenameen}}
+                    <tr>
+                        <td class="box-td label-td">维表来源</td>
+                        <td class="box-td value-td">{{dimtablenameen}}({{dimtablenamecn}})</td>
+                        <td class="box-td label-td">维表字段</td>
+                        <td class="box-td value-td">{{dimfieldnameen}}({{dimfieldnamecn}})</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">组合方式</td>
+                        <td class="box-td value-td" colspan="3">
+                            <table>
+                                <colgroup>
+                                    <col width="160px" />
+                                    <col width="160px" />
+                                    <col width="160px" />
+                                    <col width="160px" />
+                                    <col width="160px" />
+                                    <col width="160px" />
+                                </colgroup>
+                                <thead>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="box-td value-td">来源表字段</td>
+                                        <td class="box-td value-td">组合方式</td>
+                                        <td class="box-td value-td">维度表字段</td>
+                                        <td class="box-td value-td">过滤字段</td>
+                                        <td class="box-td value-td">过滤条件</td>
+                                        <td class="box-td value-td">过滤值</td>
+                                    </tr>
+                                    {{#relatelist}}
+                                    <tr>
+                                        <td class="box-td value-td">{{DataFieldNameEN}}</td>
+                                        <td class="box-td value-td">{{RelateType}}</td>
+                                        <td class="box-td value-td">{{DimFieldNameEN}}</td>
+                                        <td class="box-td value-td">{{DimFilterFieldNameEN}}</td>
+                                        <td class="box-td value-td">{{#DimFilterFieldNameEN}}={{/DimFilterFieldNameEN}}</td>
+                                        <td class="box-td value-td">{{DimFilterValue}}</td>
+                                    </tr>
+                                    {{/relatelist}}
+                                </tbody>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    {{/dimtablenameen}}
+                    {{#filterlist}}
+                    <tr>
+                        <td class="box-td label-td">过滤条件</td>
+                        <td class="box-td value-td" colspan="3">
+                            <table>
+                                <colgroup>
+                                    <col width="320px" /><col width="320px" /><col width="320px" />
+                                </colgroup>
+                                <thead>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="box-td value-td">来源表字段</td>
+                                        <td class="box-td value-td">过滤条件</td>
+                                        <td class="box-td value-td">过滤值</td>
+                                    </tr>
+                                    {{#filterlist}}
+                                    <tr>
+                                        <td class="box-td value-td">{{DataFieldNameEN}}</td>
+                                        <td class="box-td value-td">{{FilterType}}</td>
+                                        <td class="box-td value-td">{{FilterValue}}</td>
+                                    </tr>
+                                    {{/filterlist}}
+                                </tbody>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    {{/filterlist}}
+                    {{#timewindow}}
+                    <tr>
+                        <td class="box-td label-td">时间字段</td>
+                        <td class="box-td value-td">{{timefieldnameen}}({{timefieldnamecn}})</td>
+                        <td class="box-td label-td">时间窗口</td>
+                        <td class="box-td value-td">{{timewindow}}</td>
+                    </tr>
+                    {{/timewindow}}
+                    {{#statisticscycle}}
+                    <tr>
+                        <td class="box-td label-td">统计周期</td>
+                        <td class="box-td value-td">{{statisticscycle}}</td>
+                        <td class="box-td label-td">是否累加</td>
+                        <td class="box-td value-td">{{iscumsum}}</td>
+                    </tr>
+                    {{/statisticscycle}}
+                    
+                    <tr>
+                        <td class="box-td label-td">权限控制</td>
+                        <td class="box-td value-td" {{^rightcontrolfielden}}colspan="3"{{/rightcontrolfielden}}>{{rightcontrol}}</td>
+                        {{#rightcontrolfielden}}
+                        <td class="box-td label-td">权限控制字段</td>
+                        <td class="box-td value-td">{{rightcontrolfielden}}({{rightcontrolfieldcn}})</td>
+                        {{/rightcontrolfielden}}
+                    </tr>
+                    {{#generatesql}}
+                    <tr>
+                        <td class="box-td label-td">sql语句</td>
+                        <td class="box-td value-td" colspan="3">{{generatesql}}</td>
+                    </tr>
+                    {{/generatesql}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box" id="rules">
+            <h3 class="box-title">业务属性</h3>
+            <table class="rules">
+                <colgroup>
+                    <col width="150px" />
+                    <col width="405px" />
+                    <col width="150px" />
+                    <col width="405px" />
+                </colgroup>
+                <thead>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="box-td label-td">数据责任部门</td>
+                        <td class="box-td value-td" colspan="3">{{liableou}}</td>
+                    </tr>
+                    <tr>
+                        <td class="box-td label-td">数据责任人</td>
+                        <td class="box-td value-td" colspan="3">{{liableperson}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </script>
+    <!-- 配置放于最前 -->
+    <script>
+        Config.ajaxUrls = {
+            // loaddata: Config.realUrl + 'Home/loaddata'
+        }
+    </script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+        ResBoot.output([
+            './js/libs/jquery.nav.js',
+            './js/libs/scrollfix.min.js',
+            './js/norm_detail.js'
+        ]);
+    </script>
+
+</body>
+
+</html>

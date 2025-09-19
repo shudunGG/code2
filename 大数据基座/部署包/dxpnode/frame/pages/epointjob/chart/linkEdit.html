@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>路径编辑</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="dag路径通过条件表达式">
+						<input class="mini-combobox" id="expression"
+							bind="dataBean.expressionStr" action="getexpressionList"
+							emptyText="请选择表达式" showClose="false" textField="text"
+							allowInput="false" valueField="id" showNullItem="true"
+							nullItemText="不选择" />
+					</div>
+					<div role="control" label="路径通过条件右值">
+						<input id="expressionRightData"
+							bind="dataBean.expressionRightData" class="mini-textbox"
+							emptyText="请输入路径通过条件右值" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 取url上的参数
+		var params = Util.getUrlParams();
+
+		// 路径id
+		var linkGuid = params.linkGuid;
+		// 路径起点
+		var linkFrom = params.from;
+		// 路径终点
+		var linkTo = params.to;
+
+		epoint.initPage('epointjobdagedgeaction', "", initPage);
+
+		function initPage(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+			}
+		}
+
+		// 路径配置的保存方法
+		function configSave() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', function(data) {
+					if (data.status) {//成功
+						window.parent.designerConfig.onLinkEditConfirm();
+					} else {//失败
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+			}
+		}
+	</script>
+</body>
+
+</html>

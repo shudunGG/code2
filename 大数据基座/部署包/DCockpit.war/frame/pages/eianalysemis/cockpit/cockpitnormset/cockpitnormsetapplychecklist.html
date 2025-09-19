@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标集申请审核列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 新增搜索区域 -->
+	<!-- 条件区域 -->
+	<div class="fui-condition" opened="false"
+		primaryControl="search_NormSetName">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="指标集名称">
+						<input id="search_NormSetName" class="mini-textbox"
+							bind="dataBean.normsetname" />
+					</div>
+					<div role="control" label="申请部门">
+						<input id="createou" class="mini-treeselect" required="required"
+							action="selectouaction.getLazyTreeModal"
+							bind="dataBean.applyouguid" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" showClose="true"
+							oncloseclick="onCloseClick" />
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="normsetname" headerAlign="center"
+					renderer="onNameRenderer">指标集名称</div>
+				<div field="apicode" headerAlign="center" align="center" width="150">ApiCode</div>
+				<div field="applyusername" headerAlign="center" align="center"
+					width="60">申请人</div>
+				<div field="applyouname" headerAlign="center" align="center"
+					width="60">申请部门</div>
+				<div field="operatedate" headerAlign="center" align="center"
+					width="100" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">申请时间</div>
+				<div field="status" headerAlign="center" align="center" width="60">状态</div>
+				<div field="setguid" visible="false"></div>
+				<!-- 操作列 -->
+				<div name="operate" type="actioncolumn" headerAlign="center"
+					align="center" width="60" renderer="onSubit"></div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitnormsetapplychecklistaction', null, function(
+				data) {
+		});
+
+		function deleteNormSet(e) {
+			epoint.confirm('确认要删除吗?', '', function(data) {
+				epoint.execute("deleteSet", '', e, callback);
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.setguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		// 弹出明细窗口
+		function openDetail(guid) {
+			epoint.openDialog('详细信息', "./cockpitnormsetdetail?guid=" + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		function onSubit(e) {
+			var title = "";
+			if (e.row.status == '审核通过') {
+				title = "-";
+			} else if (e.row.status == "待审核") {
+				title += '<span type="action" style=\"color:blue\" onclick="approve(\''
+						+ e.row.rowguid + '\')">同意</span>' + '&nbsp&nbsp';
+				title += '<span type="action" style=\"color:red\" onclick="turnback(\''
+						+ e.row.rowguid + '\')">拒绝</span>' + '&nbsp&nbsp';
+			} else if (e.row.status == "审核不通过") {
+				title += '<span type="action" style=\"color:red\" onclick="deleteNormSet(\''
+						+ e.row.rowguid + '\')">删除</span>' + '&nbsp&nbsp';
+			}
+			return title;
+
+		}
+
+		function turnback(e) {
+			epoint.confirm('确认要拒绝吗?', '', function(data) {
+				epoint.execute("turnback", '', e, callback);
+			});
+		}
+
+		function approve(e) {
+			epoint.confirm('确认要同意吗?', '', function(data) {
+				epoint.execute("approve", '', e, callback);
+			});
+		}
+	</script>
+</body>
+</html>

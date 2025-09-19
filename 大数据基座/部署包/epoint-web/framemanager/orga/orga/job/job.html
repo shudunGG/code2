@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>职位管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="row">
+				<div role="control" label="所属部门" starred="true">
+					<input id="ouName" class="mini-treeselect" bind="jobaction.ouName" onbeforenodeselect="beforenodeselect"
+						 required="true" emptyText="" onvaluechanged="selectOu"
+						allowInput="false" selectOnFocus="true" action="selectouaction.getLazyTreeModal"
+						requiredErrorText="所属部门不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="职位名称" starred="true">
+					<input id="jobName" class="mini-textbox" bind="frameJob.jobName"
+						required="true" requiredErrorText="职位名称不能为空!" vtype="maxLength:50" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="描述">
+					<input id="description" class="mini-textarea"
+						bind="frameJob.description" vtype="maxLength:50" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNumber" class="mini-textbox"
+						bind="frameJob.orderNumber" vtype="int;range:0,99999999"/>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="所属人员" starred="true">
+					<input id="belongDisplayName" class="mini-buttonedit"
+						selectOnFocus="true" bind="frameJob.belongDisplayName"
+						onbuttonclick="selectPerson" allowInput="false" required="true"
+						requiredErrorText="所属人员不能为空!" />
+				</div>
+			</div>
+			<input bind="jobaction.ouGuid" id="ouGuid" class="mini-hidden" /> <input
+				bind="jobaction.jobGuid" id="jobGuid" class="mini-hidden" /> <input
+				bind="jobaction.userGuid" id="userGuid" class="mini-hidden" /> <input
+				bind="jobaction.username" id="userName" class="mini-hidden" /> <input
+				bind="frameJob.belongUserGuid" id="belongUserGuid"
+				class="mini-hidden" />
+		</div>
+	</div>
+
+    <!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew"  style="display: none;" onclick="if(epoint.validate()){epoint.execute('addNew','',newCallback);}">保存并新建</a>
+		<a class="mini-button" id="addClose"  style="display: none;" onclick="if(epoint.validate()){epoint.execute('addJob','',closeCallback);}">保存并关闭</a>
+		<a class="mini-button" state="primary" id="save"  style="display: none;" onclick="if(epoint.validate()){epoint.execute('update','',closeCallback);}">保存修改</a>
+	    <a class="mini-button" id="cancelBtn" style="display: none;" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('jobaction', '', initCallBack);
+
+		//由list页面传参时进行触发
+		function initCallBack(data) {
+			mini.get("ouName").setText(mini.get("ouName").getValue());
+			mini.get("belongDisplayName").setText(
+					mini.get("belongDisplayName").getValue());
+			//如果新增
+			if (data.add) {
+				//隐藏修改按钮
+				document.getElementById("addNew").style.display = "";
+				document.getElementById("addClose").style.display = "";
+				document.getElementById("save").style.display = "none";
+				document.getElementById("cancelBtn").style.display = "none";
+			}
+			//如果修改
+			else {
+				//隐藏新增按钮
+				document.getElementById("addNew").style.display = "none";
+				document.getElementById("addClose").style.display = "none";
+				document.getElementById("save").style.display = "";
+				document.getElementById("cancelBtn").style.display = "";
+			}
+		}
+
+		function selectOu(e) {
+			var obj = e.sender;
+			mini.get("ouName").setValue(obj.value); 
+			mini.get("ouGuid").setValue(obj.value);
+			mini.get("belongUserGuid").setValue('');
+			mini.get("belongDisplayName").setValue('');
+			mini.get("belongDisplayName").setText('');
+		}
+		
+		
+
+		function selectPerson() {
+			var uGid = mini.get("belongUserGuid").getValue();
+			var uName = mini.get("belongDisplayName").getValue();
+			var ouGuid = mini.get("ouGuid").getValue();
+			if (!ouGuid) {
+				epoint.showTips("请先选择部门!",  {state : 'warning'});
+			} else {
+				epoint.openDialog('选择职位对应的人员',
+						"framemanager/orga/orga/user/selectuser?ouGuid="
+								+ ouGuid +"&showTabs=ownOu", openiconOperJS, {
+							'width' : 800,
+							'height' : 520,
+							param : {
+								userGuid : uGid
+							}
+						});
+			}
+		}
+
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s = rtnValue.split("_SPLIT_");
+				mini.get("userGuid").setValue(s[0]);
+				mini.get("belongUserGuid").setValue(s[0]);
+				mini.get("belongDisplayName").setValue(s[1]);
+				mini.get("belongDisplayName").setText(s[1]);
+				mini.get("belongDisplayName").validate(s[1]);
+				mini.get("userName").setValue(s[1]);
+			}
+		}
+
+		function newCallback(data) {
+			if (data.msg) {
+				// 清空表单
+				//if (data.msg.indexOf("成功") != -1) {
+				if (data.success) {
+					epoint.clear('fui-form');
+					epoint.showTips(data.msg, {state : 'success'});
+				}else{
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") != -1) {
+				if (data.success) {
+				    epoint.closeDialog(msg);
+				} else {
+					epoint.showTips(msg,  {state : 'danger'});
+				}
+			}
+		}
+		
+		function beforenodeselect(e){
+			if(e.node.id=='f9root'){
+				e.cancel = true;
+			}
+		} 
+		
+		//]]>
+	</script>
+
+</body>
+</html>

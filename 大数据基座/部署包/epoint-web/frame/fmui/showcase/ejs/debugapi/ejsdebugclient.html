@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+        <title>JSAPI终端</title>
+        <script>
+            document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            SrcBoot.output([
+                './common.css',
+            ]);
+        </script>
+
+    </head>
+
+    <body>
+        <div class="panel panel-primary">
+            <div id="panel-heading" class="panel-heading">
+                <h2 class="panel-title">JSAPI日志</h2>
+                <h5 id="status"></h5>
+            </div>
+            <div class="panel-body">
+                <button id="btn_clear_tips" class="mui-btn mui-btn-block ">清空</button>
+                <div id="tips"></div>
+            </div>
+        </div>
+
+        <script>
+            document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            var socket;
+            var tipsDom = document.getElementById('tips');
+            var statusDom = document.getElementById('status');
+            var clientId = Util.uuid();
+            var roomId = Util.getExtraDataByKey('roomid');
+            var ejsVer = +(Util.getExtraDataByKey('ejsver') || 3);
+            var isDebug = Util.getExtraDataByKey('isdebug') == '1' || Util.getExtraDataByKey('isdebug') == 'true';
+            var ejsFilesArr = [];
+            var ejsFilesArr2 = [];
+
+            if (Config.ejsVer !== ejsVer) {
+                // 默认如果不同，代表需要重新引入ejs
+                window.ejs = undefined;
+                window.JSBridge = undefined;
+                if (ejsVer === 3) {
+                    ejsFilesArr.push('js/ejs/v3/ejs.js');
+                    ejsFilesArr2 = [
+                        // 默认引入ejs h5 dd所有的支持库作为示例展示
+                        'js/ejs/v3/ejs.native.js',
+                        'js/ejs/v3/ejs.h5.js',
+                        'js/ejs/dingtalk.js',
+                        'js/ejs/v3/ejs.dd.js'
+                    ];
+                } else {
+                    ejsFilesArr.push('js/ejs/v2/epoint.moapi.v2.js');
+                    ejsFilesArr2 = [
+                        'js/ejs/v2/epoint.moapi.v2.h5mui.js',
+                        'js/ejs/v2/epoint.moapi.v2.dd.js',
+                    ];
+                }
+            }
+
+            Util.loadJs(
+                './socket.io.js',
+                isDebug ? 'js/libs/vconsole.min.js' : '',
+                // ejs的引用
+                ejsFilesArr,
+                ejsFilesArr2,
+                function() {
+                    init();
+                });
+
+            function init() {
+                initListeners();
+                connectSocket();
+            }
+
+            function initListeners() {
+                mui('.panel-body').on('tap', '#btn_clear_tips', function() {
+                    tipsDom.innerHTML = '';
+                });
+
+            }
+
+            function connectSocket() {
+                // socket = io.connect('http://'+ window.location.hostname + ':8100');
+                socket = io.connect('http://115.29.151.25:8100');
+
+                socket.on('open', function(data) {
+                    statusDom.innerText = data.time + '连接成功';
+                    createClient({
+                        roomId: roomId,
+                        clientId: clientId,
+                    });
+                });
+
+                socket.on('receive dispatch data', function(data) {
+                    console.log('接收到数据' + JSON.stringify(data));
+
+                    try{
+                        	// TODO: 可以执行
+                        eval(data.message);
+                        showMessage('执行一次来自房间（' + data.roomId + '）的命令');
+                        socket.emit('client excute notify', {
+                            code: 1,
+                            message: '成功执行',
+                            clientId: clientId,
+                        });
+                    } catch(e){
+                    	   //TODO handle the exception
+                    	   showMessage('执行来自房间（' + data.roomId + '）的命令失败，请检查ejs版本号是否匹配');
+                    	   socket.emit('client excute notify', {
+                            code: 0,
+                            message: '请检查ejs版本号是否匹配',
+                            clientId: clientId,
+                        });
+                    }
+                    
+                });
+
+                socket.on('disconnect', () => {
+                    // 失联
+                    socket = undefined;
+                    statusDom.innerText = (new Date()).toLocaleString() + '和服务端失去连接';
+                });
+            }
+
+            function createClient(data) {
+                // 创建房间，如果不符合要求需要提示错误
+                socket.emit('create client', data, function(data) {
+                    if (data.code) {
+                        showMessage('成功：' + data.message);
+                    } else {
+                        showMessage('失败：' + data.message);
+                        closeSocket();
+                    }
+                });
+            }
+
+            function closeSocket() {
+                socket && socket.close();
+                // socket.disconnect();
+            }
+
+            function showMessage(msg) {
+                var html = '<li class="list-group-item">' + msg + '</li>';
+
+                tipsDom.innerHTML += html;
+
+                console.log(msg);
+            }
+        </script>
+    </body>
+
+</html>

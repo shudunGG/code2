@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>表单预览页面</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+
+	<!-- 
+        
+        页面需要换成移动端的页面
+        url上有 tplId 、designId 、 tableGuid 三个参数
+        有 tpl 时 为模板预览 获取模板数据
+        无 tpl 则为设计器中预览 根据 designId 、 tableGuid 获取数据
+    -->
+	<div id="test" style="height: 100%;width: 100%;">
+	<iframe class="preview-ifr" id="ifr-mobile" src="./empty.html" height="100%" width="100%" frameborder="0">
+    </iframe>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//document.getElementById('test').innerText = location.search; innerHTML
+		var $mobileIfr = $('#ifr-mobile');
+		Util.ajax({
+			url : 'formlistmanage/sformdesignaction.action?cmd=getPreviewTemplate',
+			data : {
+				designId : Util.getUrlParams("designId"),
+			}
+		}).done(function(data) {
+			if (data.mobileHtml) {
+				  $mobileIfr[0].contentWindow.document.open('text/html', 'replace');
+				  $mobileIfr[0].contentWindow.document.write(data.mobileHtml);
+				  $mobileIfr[0].contentWindow.document.close();
+			}
+
+		});
+
+		// 可使用移动端的模板页面 获取部分html后填入
+
+		// 也可以直接获取完整 html 然后直接document.write(html)
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>新增文件集成</title>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            '../css/common.css',
+            './css/common.css',
+            './css/fileintegration.css'
+        ])
+    </script>
+    <style type="text/css">
+		.main .form-label {
+    width: 180px;
+}
+	</style>
+    <title>新增文件集成</title>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <!-- 头部 -->
+   <div class="top">
+		<a href="javascript:void(0);" onclick="back();" class="back l">返回</a>
+	</div>
+    <div id="main" class="main">
+        <div class="custom-accordions">
+        	<div role="accordion">
+				<div role="head" title="基本信息">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">基本信息</li>
+					</ul>
+				</div>
+				<div role="body">
+				<div class="accordions-wrapper">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="流程名称" starred="true" style="margin-right: 100px">
+									<input id="flowname" class="mini-textbox" required="true" bind="flowName"
+										requiredErrorText="流程名称不能为空"  />
+								</div>
+								<div role="control" label="节点域" starred="true">
+									<input id="nodeguid" class="mini-combobox" 
+										action="getNodeList" showClose="true" bind="nodeGuid"
+										required="true" requiredErrorText="节点域不能为空" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div></div>
+			</div>
+            <div role="accordion">
+                <div role="head" title="选择数据源">
+                    <ul class="ct-title clearfix">
+                        <li class="ct-item">来源服务器</li>
+                        <li class="ct-item">目标服务器</li>
+                    </ul>
+               		 <i>
+						<div class="tip-btn fui-toolbar-helper" style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+							<em>交换说明：</em>文件同步成功后会将源文件转移到同级的_back目录下，请先确认源文件是否可以移动。
+						</p>
+						<p>
+							<em>目录说明：</em>来源目录和目标目录必须提前创建好，并有修改权限。
+						</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+                </div>
+                <div role="body">
+                <div class="accordions-wrapper">
+					<!-- 选择数据源 -->
+					<div class="fui-form" id="selectDataSource">
+						<div role="form">
+							<div role="row">
+							</div>
+							<div role="row">
+								<div role="control" label="数据源" starred="true" style="margin-right: 100px">
+									<input id="fromds" action="getFromDSList" required="true"
+										allowInput="true" bind="fromDs" class="mini-combobox"
+										 showClose="true"
+										requiredErrorText="数据源不能为空" />
+								</div>
+								<div role="control" label="数据源" starred="true">
+									<input id="targetds" action="getTargetDSList" bind="targetDs"
+										 required="true" class="mini-combobox"
+										allowInput="true" showClose="true" requiredErrorText="数据源不能为空" />
+								</div>
+							</div>
+							<div role="row" id="table-row">
+								<div role="control" label="来源目录" starred="true" >
+									<input id="frompath" bind="fromPath"  required="true"
+										class="mini-textbox" showClose="true" requiredErrorText="来源目录不能为空"  />
+								</div>
+								<a id="checkFrompath" class="mini-button mini-btn-primary" onclick="checkFrompath()"
+										style="width:60px;margin-left:8px;">检测目录</a>
+								<div role="control" label="目标目录/表" starred="true">
+									<input id="targetpath" bind="targetPath" required="true" class="mini-combobox"
+										 showClose="true" requiredErrorText="目标目录不能为空"
+										 action="getTargetTableList"/>
+								</div>
+									<a id="checkTargetpath" class="mini-button mini-btn-primary" onclick="checkTargetpath()"
+										style="width:60px;margin-left:8px">检测目录</a>
+							</div>
+						</div>
+					</div>
+				</div></div>
+            </div>
+            <div role="accordion" id="field-select">
+				<div role="head" title="字段映射">
+					<ul class="ct-title clearfix">
+						<li class="ct-item">字段映射</li>
+					</ul>
+					<i>
+						<div class="tip-btn fui-toolbar-helper" style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+								<em>文件解析字段：</em>填写文件中需要解析的列名。
+							</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+				</div>
+				<div role="body">
+					<div class="accordions-wrapper">
+						<div class="mod-content">
+							<!-- 表格上方工具栏 -->
+							<div class="toolbar-box clearfix hidden">
+								<div class="toolbar-r r" style="margin-right: 60px;">
+									<span>筛选</span> <input id="filter" class="mini-combobox"
+										style="width: 90px;" textField="text" valueField="id"
+										emptyText="请选择..." required="true" allowInput="true" />
+								</div>
+							</div>
+							<!-- 表格头部 -->
+							<div class="table-hd clearfix">
+								<!-- 左侧头部 -->
+								<div class="table-hd-l l clearfix">
+									<div class="table-item col-l-1 l">主键</div>
+									<div class="table-item col-l-2 l ver-inner-md relative">
+										<span class="ver-md">文件解析字段</span>
+									</div>
+									<div class="table-item col-l-3 l ver-inner-md relative">
+										<span class="ver-md">目标表字段</span> <span id="left-search"
+											class="search-icon ver-md"></span>
+										<div id="source-search" class="search hidden">
+											<input id="source-input" class="search-input" type="text">
+											<span class="action-icon icon-remove search-close"></span>
+										</div>
+									</div>
+									<div class="table-item col-l-4 l ver-inner-md relative">
+										<span class="ver-md">类型</span>
+										<!-- <span class="row-type row-type-l ver-md"></span> -->
+									</div>
+									<!-- <div class="table-item col-l-4 l"></div> -->
+								</div>
+							</div>
+							<!-- 表格主体 -->
+							<div class="table-main relative">
+								<!-- 显示字段 -->
+								<div id="table-bd" class="table-bd">
+									<div class="table-bd-container relative clearfix">
+										<!-- 左侧字段列表 -->
+										<div id="table-bd-l" class="table-bd-l l hide-scroll">
+ 											<div class="source-add table-row clearfix hidden"
+												id="source-add">
+												<div class="table-item col-l-1 l"></div>
+												<div class="table-item col-l-2 l">
+													<input id="source-add-apifield" 
+														style="width: 100%;" />
+												</div>
+												<div class="table-item col-l-3 l">
+													<input id="source-add-field" class="mini-textbox"
+														style="width: 100%;" />
+												</div>
+												<div class="table-item col-l-4 l">
+													<input id="source-add-dataType" class="mini-combobox"
+														style="width: 100%;" textField="name" valueField="name"
+														allowInput="true" />
+												</div>
+												<div class="table-item col-l-5 l">
+													<input id="source-add-dataType" class="mini-combobox"
+														style="width: 100%;" textField="name" valueField="name"
+														allowInput="true" />
+												</div>
+												<div class="table-item col-l-6 l">
+													<a class="table-btn source-save-btn">保存</a> <a
+														class="table-btn source-cancel-btn">取消</a>
+												</div>
+											</div> 
+										</div>
+										<span id="delete-btn" class="delete-btn hidden">删除</span>
+									</div>
+								</div>
+								<!-- 移除字段 -->
+								<div id="table-bd-bottom" class="table-bd-bottom clearfix">
+									<!-- 左侧移除字段 -->
+									<div id="table-bd-bottom-l" class="table-bd-bottom-l l">
+<!-- 										<div class="table-addbtn text-center">+&nbsp;新增字段</div>
+ -->										<div id="table-remove-hd-l"
+											class="table-remove-hd table-remove-hd-l text-center hidden">
+											<span class="ver-md"><span id="remove-l-num">0</span>个字段已移除</span>
+											<span class="ver-md row-remove"></span>
+										</div>
+										<div id="table-remove-bd-l"
+											class="table-remove-bd table-remove-bd-l hidden"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+            <div role="accordion">
+                <div role="head" title="流程属性">
+                    <ul class="ct-title clearfix">
+                        <li class="ct-item">流程属性</li>
+                    </ul>
+               		<i>
+						<div class="tip-btn fui-toolbar-helper" style="position: absolute; right: 50px; top: 2px;"></div>
+					</i>
+					<!-- 帮助信息区域 默认隐藏-->
+					<div class="fui-notice hidden">
+						<!-- 内容 -->
+						<div class="fui-notice-inner text-left">
+							<p>
+								<em>交换策略：</em> 全量：每次同步将所有文件内容抽取到目标表。
+												文件比对：文件到文件时，比对文件修改时间，如有变动，则进行增删改操作；文件到库表时，比对文件内容，如文件内修改了数据，则对目标表进行增删改操作。
+												备份迁移：文件同步后，将源文件迁移到同级的_back目录下。
+							</p>
+							<p>
+								<em>目标文件存在时：</em> 覆盖文件：目标存在同名文件时覆盖更新；
+												创建副本：目标存在同名文件时保留源文件，新文件以重命名为副本文件并创建，
+							</p>
+							<p>
+								<em>文件过滤：</em>匹配正则表达式中的文件并过滤不进行同步操作，例如 ^(.*\.txt|.*\.doc)$ ，即过滤所有.txt和.doc后缀的文件。
+							</p>
+							<p>
+								<em>源文件操作：</em> 备份迁移：文件获取成功后将源文件迁移到同级的_back目录下。
+												      文件比对：不操作源文件，通过比对文件修改时间的方式增量获取文件。
+							</p>
+						</div>
+						<span class="notice-close-btn"></span>
+					</div>
+                </div>
+                <div role="body">
+                <div class="accordions-wrapper">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+									<div role="control" label="交换策略" starred="true" style="margin-right: 100px">
+										<input id="exchangemodels" bind="exchangeModels"
+											action="getExchangeModel" required="true" class="mini-combobox"
+											textField="text" valueField="value" showClose="true"
+											 requiredErrorText="交换策略不能为空" />
+									</div>
+									<div role="control" label="同步模式" starred="true" id="syncModel-control">
+										<input id="syncModel" bind='syncModels'
+											requiredErrorText="触发模式不能为空"
+											data="[{text:'插入',id:'I'},{text:'更新',id:'U'},{text:'删除',id:'D'}]"
+											required="true" class="mini-checkboxlist" repeatItems="3"
+											repeatLayout="table" textField="text" valueField="id" /> 
+									</div>
+								</div>
+								<div role="row" id="fulltransmodels-row">
+									<div role="control" label="同步规则" starred="true" style="margin-right: 100px">
+										<input id="fullTransModels" bind="fullTransModels"
+											action="getFullTransModel" required="true" class="mini-combobox"
+											textField="text" valueField="value" showClose="true"
+											 requiredErrorText="同步规则不能为空" />
+									</div>
+									<div role="control">
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="文件过滤(正则表达式)" style="margin-right: 100px">
+										<input id="filefilter" bind="fileFilter" 
+										class="mini-textbox" showClose="true"  />
+									</div>
+									<div role="control" label="目标文件存在时" starred="true" id="transmodels-control">
+										<input id="transmodels" bind="transModels"
+											action="getTransModel" required="true" class="mini-combobox"
+											textField="text" valueField="value" showClose="true"
+											 requiredErrorText="目标文件存在时不能为空" />
+									</div>
+								</div>
+								<div role="row" id="filetype-row">
+									<div role="control" label="文件类型" starred="true" style="margin-right: 100px">
+										<input id="filetype" bind='filetype'
+											requiredErrorText="文件类型不能为空"
+											data="[{text:'xlsx',id:'1'},{text:'csv、text',id:'2'}]"
+											required="true" class="mini-combobox" textField="text" valueField="id" /> 
+									</div>
+									<div role="control" label="源文件操作" starred="true" id="afterFTP-control">
+										<input id="afterFTP" bind="afterFTP"
+											data="[{text:'备份迁移',id:'1'},{text:'不做操作（文件比对）',id:'2'}]"
+											required="true" class="mini-combobox"
+											textField="text" valueField="id" showClose="true"
+											 requiredErrorText="交换策略不能为空" />
+									</div>
+								</div>
+								<div role="row" id="splitCharacter-row">
+									<div role="control" label="字段分隔符" starred="true" style="margin-right: 100px">
+										<input id="splitCharacter" bind="splitCharacter" 
+										class="mini-textbox" showClose="true"  />
+									</div>
+									<div role="control" label="文本限定符">
+										<input id="textQualifier" bind="textQualifier" 
+										class="mini-textbox" showClose="true"  />
+									</div>
+								</div>			
+							<div role="row">
+								<div role="control" label="调度方式">
+									<input id="scheduler"
+										data="[{text:'时间间隔',id:'1'},{text:'定时',id:'2'},{text:'自定义',id:'3'},{text:'无',id:'0'}]"
+										class="mini-radiobuttonlist" textField="text" valueField="id"
+										 /> <input id="schedulerType"
+										class="mini-hidden" value="0" bind="dxpscheduler.schedulerType" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row" id="row1">
+								<div role="control" starred="true" label="间隔单位" style="margin-right: 100px">
+									<input id="schedulerunit"  required="true"
+										data="[{text:'秒',id:'sec'},{text:'分',id:'min'}]"
+										class="mini-combobox" value="sec" textField="text"
+										valueField="id"  />
+								</div>
+								<div role="control"  starred="true" label="时间间隔" id="interval">
+									<input id="intervalSeconds" class="mini-textbox"  required="true"
+										bind="dxpscheduler.intervalSeconds"  vtype="int;range:1,86400"/> <input
+										id="intervalMinutes" class="mini-textbox"  required="true"
+										bind="dxpscheduler.intervalMinutes"  vtype="int;range:1,1440" /> 
+								</div><span
+										id='unit' style="width: 5px; padding-left: 5px" >分</span>
+							</div>
+							<div role="row" id="row2">
+								<div role="control" starred="true" label="定时类型" style="margin-right: 100px">
+									<input id="timingtype"  required="true"
+										data="[{text:'每天',id:'day'},{text:'每周',id:'week'},{text:'每月',id:'month'}]"
+										class="mini-combobox" textField="text" valueField="id"
+										 />
+								</div>
+								<div role="control"  starred="true" label="时间" id="time">
+									<input id="weekDay" bind="dxpscheduler.weekDay" style="width: 25%"
+										class="mini-combobox" textField="text" valueField="id"  required="true"
+										visible="false" action="getWeekDayCombobox" minValue="0" /><span
+										id="week" style="width: 10px; margin: 5px"></span><input  required="true"
+										id="dayOfMonth" visible="false" bind="dxpscheduler.dayOfMonth"
+										class="mini-spinner" minValue="1" style="width: 22%"
+										maxValue="31" /><span id="day"
+										style="width: 20px; padding-left: 5px">日</span> <input
+										id="hour" bind="dxpscheduler.hour" style="width: 22%"
+										class="mini-spinner" minValue="0" maxValue="23"  required="true"
+										visible="false" /><span
+										style="width: 20px; padding-left: 5px">时</span><input  required="true"
+										id="minutes" bind="dxpscheduler.minutes" class="mini-spinner"
+										style="width: 22%" visible="false" minValue="0" maxValue="59" /><span
+										style="width: 5px; padding-left: 5px">分</span>
+								</div>
+							</div>
+							<div role="row" id="row3">
+								<div role="control" starred="true" label="cron表达式">
+									<input id="cron" class="mini-textbox" bind="dxpscheduler.cron"  required="true"
+										 />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row">
+								<div role="control" label="高级配置">
+									<input id="advancedsetting" class="mini-checkbox" text="" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row" id="advancedsetting-01">
+									<div role="control" label="结果集大小" style="margin-right: 100px">
+										<input id="rowset" class="mini-textbox"
+											requiredErrorText="结果集大小不能为空" bind="rowset" vtype="int;range:1,100000" />
+									</div>
+									<div role="control" label="运行内存大小(M)">
+										<input id="memory" class="mini-textbox" bind="memory"
+											vtype="int;range:1,2048" />
+									</div>
+							</div>
+							<div role="row" id="advancedsetting-02">
+									<div role="control" label="输出批量提交数" style="margin-right: 100px">
+										<input id="outputCommitSize" class="mini-textbox"
+											bind="outputCommitSize" vtype="int;range:1,100000" />
+									</div>
+									<div role="control" label="插入批量提交数">
+										<input id="insertCommitSize" class="mini-textbox" bind="insertCommitSize"
+											vtype="int;range:1,100000" />
+									</div>
+							</div>
+							<div role="row" id="advancedsetting-03">
+									<div role="control" label="文件大小限制（MB）" style="margin-right: 100px">
+										<input id="sizeLimit" class="mini-textbox"
+											bind="sizeLimit" vtype="int;range:1,2048" />
+									</div>
+									<div role="control" label="文件下载数量告警">
+										<input id="warnningNum" class="mini-textbox" bind="warnningNum"
+											vtype="int;range:1,100000" />
+									</div>
+							</div>
+						</div>
+					</div>
+					</div>
+				</div>
+			</div>
+        </div>
+        <div id="save-btn" class="save-btn btn">保&nbsp;存</div>
+    </div>
+	<script id="table-row-l-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix relative" id="source-{{field}}">
+            <div class="table-item col-l-1 l ver-inner-md font-0"><div class="checkbox {{extendClass}}"></div></div>
+            <div class="table-item col-l-2 l"><input id="apifield-{{field}}" style="height: 22px" value="{{linkField}}"></input></div>
+            <div class="table-item col-l-3 l">{{field}}</div>
+            <div class="table-item col-l-4 l">{{dataType}}</div>
+            <div class="table-item col-l-5 l">
+				<input id="dataType-{{field}}" class="mini-combobox" value="{{diyType}}" showClose="true" style="width: 100%;vertical-align: middle;" textField="text" valueField="text" data="[{text:'yyyy/MM/dd HH:mm:ss.SSS',id:'1'},{text:'yyyy/MM/dd HH:mm:ss.SSS XXX',id:'2'},{text:'yyyy/MM/dd HH:mm:ss',id:'3'},{text:'yyyy/MM/dd HH:mm:ss XXX',id:'4'},{text:'yyyy/MM/dd',id:'6'},{text:'yyyy-MM-dd HH:mm:ss',id:'8'},{text:'yyyy-MM-dd HH:mm:ss XXX',id:'9'},{text:'yyyy-MM-dd',id:'10'},{text:'yyyyMMdd',id:'11'},{text:'MM/dd/yyyy',id:'12'},{text:'MM/dd/yyyy HH:mm:ss',id:'13'},{text:'MM-dd-yyyy',id:'14'},{text:'MM-dd-yyyy HH:mm:ss',id:'15'},{text:'MM/dd/yy',id:'16'},{text:'MM-dd-yy',id:'17'},{text:'dd/MM/yyyy',id:'18'},{text:'dd-MM-yyyy',id:'19'},{text:'yyyy-MM-dd HH:mm:ss.SSS',id:'20'},{text:'#',id:'21'},{text:'',id:'22'}]" allowInput="false"/>
+			</div>
+            <div class="table-item col-l-6 l">
+                {{^remove}}
+                <span class="eye-close"></span>
+                {{/remove}}
+                {{#remove}}
+                <span class="table-row-close"></span>
+                {{/remove}}
+                <span class="table-drag"></span>
+            </div>
+        </div>
+        {{/list}}
+    </script>
+    
+    <script id="table-row-l-tpl1" type="x-tmpl-mustache">
+        <input id="apifield-{{field}}" style="height: 22px" value="{{linkField}}"></input>
+    </script>
+
+	<script id="table-row-l-remove-tpl" type="x-tmpl-mustache">
+        {{#list}}
+        <div class="table-row clearfix" id="sourceremove-{{field}}">
+            <div class="table-item col-l-2 l ver-inner-md"><input id="apifield-{{field}}" style="height: 22px" value="{{linkField}}"></input></div>
+            <div class="table-item col-l-3 l">{{field}}</div>
+            <div class="table-item col-l-4 l">{{dataType}}</div>
+            <div class="table-item col-l-5 l"><span class="eye-open"></span><span class="table-drag"></span></div>
+        </div>
+        {{/list}}
+    </script>
+    <script src="../../rest/resource/jsboot"></script>
+    <script>
+        Util.hidePageLoading();
+		epoint.initPage('dxpfileflowinfoaddaction', '', function() {
+			var targetds=mini.get('targetds').getValue();
+			var exchangemodels=mini.get('exchangemodels').getValue();
+			var filetype=mini.get('filetype').getValue();
+			if(targetds==''||targetds.indexOf('SFTP')!=-1){
+				$('#splitCharacter-row').hide();
+	    		$('#filetype-row').hide();
+	    		$('#field-select').hide();
+	    		Util.form.showField('#transmodels-control');
+	    		Util.form.hideField('#afterFTP-control');
+	    		$('#fulltransmodels-row').hide();
+	    	}else{
+	    		$('#filetype-row').show();
+	    		$('#field-select').show();
+	    		Util.form.hideField('#transmodels-control');
+	    		Util.form.showField('#afterFTP-control');
+	    		$('#fulltransmodels-row').hide();
+	    	}
+	    	if(targetds.indexOf('SFTP')==-1&&exchangemodels==1){
+	    		Util.form.showField('#syncModel-control');
+			}else{
+	    		Util.form.hideField('#syncModel-control');
+			}
+	    	if(filetype.indexOf('2')!=-1){
+	    		$('#splitCharacter-row').show();
+			}else{
+	    		$('#splitCharacter-row').hide();
+			}
+			var schedulerValue=mini.get('scheduler').getValue();
+			if(!schedulerValue){
+				Util.form.hideField('#time');
+				$('#row1').hide();
+				$('#row2').hide();
+				$('#row3').hide();
+			}
+    		$('#advancedsetting-01').hide();
+    		$('#advancedsetting-02').hide();
+    		$('#advancedsetting-03').hide();
+		})
+
+		function back() {
+			window.history.back()
+		}
+		
+		function initScheduer(){
+			var scheduler=mini.get('scheduler'),
+	    	schedulerType=mini.get('schedulerType'),
+	    	schedulerunit=mini.get('schedulerunit'),
+	    	intervalSeconds=mini.get('intervalSeconds'),
+	    	intervalMinutes=mini.get('intervalMinutes'),
+	    	timingtype=mini.get('timingtype'),
+	    	weekDay=mini.get('weekDay'),
+	    	dayOfMonth=mini.get('dayOfMonth'),
+	    	hour=mini.get('hour'),
+	    	minutes=mini.get('minutes');
+			var schedulerTypeVal=schedulerType.getValue();
+			if(schedulerTypeVal==1){
+				scheduler.setValue('1');
+				$('#row1').show();
+	    		$('#row2').hide();
+	    		$('#row3').hide();
+	    		if(intervalSeconds.getValue()>0){
+	    			//秒
+	    			schedulerunit.setValue('sec');
+	    			intervalSeconds.setVisible(true);
+	    			intervalMinutes.setVisible(false);
+	    			$('#unit').html('秒');
+	    		}else if(intervalMinutes.getValue()>0){
+	    			//分
+	    			schedulerunit.setValue('min');
+	    			intervalSeconds.setVisible(false);
+	    			intervalMinutes.setVisible(true);
+	    			$('#unit').html('分');
+	    		}
+			}else if(schedulerTypeVal==2){
+				Util.form.showField('#time');
+				scheduler.select(1);
+				timingtype.select(0);
+				epoint.clear('row1');
+	    		epoint.clear('row3');
+				$('#row1').hide();
+	    		$('#row2').show();
+	    		$('#row3').hide();
+	    		weekDay.setVisible(false);
+	    		dayOfMonth.setVisible(false);
+	    		hour.setVisible(true);
+	    		minutes.setVisible(true);
+	    		$('#day').hide();
+	    		$('#week').hide();
+			}else if(schedulerTypeVal==3){
+				Util.form.showField('#time');
+				epoint.clear('row1');
+	    		epoint.clear('row3');
+				scheduler.select(1);
+				timingtype.select(1);
+				$('#row1').hide();
+	    		$('#row2').show();
+	    		$('#row3').hide();
+	        	weekDay.setVisible(true);
+	        	dayOfMonth.setVisible(false);
+	        	hour.setVisible(true);
+	        	minutes.setVisible(true);
+	        	$('#day').hide();
+	        	$('#week').show();
+			}else if(schedulerTypeVal==4){
+				Util.form.showField('#time');
+				scheduler.select(1);
+				timingtype.select(2);
+				$('#row1').hide();
+	    		$('#row2').show();
+	    		$('#row3').hide();
+	    		epoint.clear('row1');
+	    		epoint.clear('row3');
+	    		weekDay.setVisible(false);
+	    		dayOfMonth.setVisible(true);
+	    		hour.setVisible(true);
+	    		minutes.setVisible(true);
+	    		$('#day').show();
+	    		$('#week').hide();
+			}else if(schedulerTypeVal==5){
+				scheduler.setValue('3');
+				$('#row1').hide();
+	    		$('#row2').hide();
+	    		$('#row3').show();
+			}else if(schedulerTypeVal==0){
+				scheduler.setValue('0');
+				$('#row1').hide();
+	    		$('#row2').hide();
+	    		$('#row3').hide();
+	    		epoint.clear('row1');
+	    		epoint.clear('row2');
+	    		epoint.clear('row3');
+			}
+
+		}
+    </script>
+    <script src="./js/fileintegration.js"></script>
+</body>
+
+</html>

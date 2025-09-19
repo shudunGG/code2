@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>信息发布列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+		    <a class="mini-button" iconCls="icon-addcircle" id="addFeedback" onclick="addFeedbackClick();">问题</a> 
+		    <a class="mini-button" iconCls="icon-addcircle" id="saveOrderNum" 
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要保存的问题反馈！', '', null, 'warning');} else {save();}">保存</a>
+			<a class="mini-button mini-btn-danger" iconCls="icon-removecircle"
+				id="delFeedbackQuestion"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的问题反馈！', '', null, 'warning');} else {del();}">删除选中</a>
+		</div>
+	</div>
+
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 4列 -->
+				<div role="row">
+					<div role="control" label="问题反馈名称" starred="false">
+						<input id="searchString" bind="searchString" class="mini-textbox" />
+					</div>
+					<div role="control" label="问题出现类型">
+						<div id="searchString2" class="mini-combobox" style="width:150px;"
+						textField="text" valueField="value" bind="searchString2" showClose="true"
+					    action="appeartypeModel" oncloseclick="onCloseClick"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="10"></div>
+				<div type="indexcolumn" headerAlign="center" width="10">序</div>
+				<div field="cfeedbackquestiontitle" headerAlign="center" align="left"
+					width="120">问题反馈标题</div>
+				<div field="cfeedbacktype" headerAlign="center" align="center"
+					width="120" data-options="{code:'反馈问题类型'}">反馈类型</div>
+				<div field="cfeedbackusername" headerAlign="center" align="center"
+					width="60">反馈用户姓名</div>
+				<div field="cfeedbackquestiontime" headerAlign="center" align="center"
+					width="60" data-options="{format:'yyyy-MM-dd'}">提交时间</div>
+				<div field="ordernum" width="50" headerAlign="center" align="right"
+					vtype="int;range:0,99999999" allowSort="true">
+					排序号 <input property="editor" class="mini-textbox" minWidth="50"
+						inputStyle="text-align:right" />
+				</div>
+				<div width="30" headerAlign="center" align="center" renderer="edit">
+					查看</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("commfeedbackquestioninfolistaction","",initCallback);
+
+		var processGuid = "";
+		function initCallback(data){
+			if(data && data.processGuid){
+				processGuid = data.processGuid;
+			}else{
+				epoint.alert("您尚未配置问题反馈提交流程系统参数，请先前往配置！");
+			}
+		}
+		
+		function addFeedbackClick() {
+			epoint.openTopDialog(
+                '新建问题',
+                "frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid="+processGuid,
+                addCallBack);
+		}
+
+		//修改
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"createEditDialog","rowguid,processversioninstanceguid");
+		}
+
+		function createEditDialog(data) {
+			var config = epoint.decodeJson(data);
+			var rowGuid = config.rowguid;
+			var processVersionInstanceGuid = config.processversioninstanceguid;
+			epoint.openDialog("编辑发布内容",
+					"frame/pages/helpcenter/questionfeedback/feedbackdetail?rowguid="
+							+ rowGuid + "&ProcessVersionInstanceGuid=" + processVersionInstanceGuid, addCallBack, {
+						'width' : 1200,
+						'height' : 1000
+					});
+		}
+
+		// 保存
+		function save() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+
+		// 删除
+		function del() {
+			epoint.execute('del', [ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.alert(msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+            var obj = e.sender;
+            obj.setText("");
+            obj.setValue("");
+        }
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>红灯信息列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left" id="left">
+		<div role="head" title="驾驶舱"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree"
+				style="width: 100%; height: 100%" filterMode="server"
+				textField="text" idField="id" parentField="pid"
+				action="getOuCockpitTreeModel" resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right" id="fui-right">
+		<!-- 条件区域 -->
+		<div class="fui-condition" opened="false"
+			primaryControl="search_NormName">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="标题">
+							<input id="title" class="mini-textbox" bind="dataBean.title" />
+						</div>
+						<div role="control" label="状态">
+							<input id="status" class="mini-combobox" bind="dataBean.status"
+								valueField="id" textField="text"
+								data="[{id:'0',text:'进行中'},{id:'1',text:'已办结'},{id:'2',text:'超期'},{id:'3',text:'撤销'}]"
+								showClose="true" oncloseclick="onCloseClick" />
+						</div>
+					</div>
+					<input class="mini-hidden" bind="dataBean.cockpitguid"
+						id="cockpitguid" /><input class="mini-hidden"
+						bind="dataBean.ouguid" id="ouguid" />
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="20"></div>
+					<div type="indexcolumn" width="30" headerAlign="center">序</div>
+					<div field="title" headerAlign="center" align="center" width="60" renderer="onNameRenderer" >红灯标题</div>
+					<div field="normName" headerAlign="center" align="center" width="80">指标名称</div>
+					<div field="launchUserName" headerAlign="center" align="center"
+						width="60">发起人</div>
+					<div field="responseUserName" headerAlign="center" align="center"
+						width="60">接收人</div>
+					<div field="createtime" name="createtime" headerAlign="center"
+						align="center" data-options="{'format':'yyyy-MM-dd HH:mm'}"
+						dateFormat="yyyy-MM-dd HH:mm" width="90">发起时间</div>
+					<div field="expectedPerformanceTime" name="finishtime"
+						headerAlign="center" align="center"
+						data-options="{'format':'yyyy-MM-dd HH'}"
+						dateFormat="yyyy-MM-dd HH" width="90">完成期限</div>
+					<div field="statusText" headerAlign="center" align="center"
+						width="50">状态</div>
+					<!-- 操作列 -->
+					<div name="operate" type="actioncolumn" headerAlign="center"
+						align="center" width="100" renderer="onSubit">
+<!-- 						<span type="action" icon="icon-chat" onclick="feedback">反馈</span> -->
+<!-- 						<span type="action" icon="icon-doc" onclick="openFeedback">管理反馈</span> -->
+<!-- 						<span type="action" icon="icon-recover" onclick="backout">撤销</span> -->
+					</div>
+					<!-- 隐藏列 -->
+					<div field="status" visible="false"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get('datagrid');
+		// 初始化页面
+		epoint.initPage('cockpitredlightlistaction', null, function(data) {
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			var type = e.node.type;
+			if (type == 'cockpit') {
+				mini.get('cockpitguid').setValue(id);
+				mini.get('ouguid').setValue('');
+			} else if (type == 'ou') {
+				mini.get('ouguid').setValue(id);
+				mini.get('cockpitguid').setValue('');
+			}
+			searchData();
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		function openDetail(guid) {
+			epoint.openDialog('详细信息', "./cockpitredlightdetail?guid=" + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function feedback(guid) {
+			epoint.openDialog('新增反馈',
+					"./cockpitredlightfeedbackadd?redLightGuid=" + guid,
+					searchData, {
+						'width' : 600,
+						'height' : 400
+					});
+		}
+
+		function openFeedback(guid) {
+			epoint.openDialog('反馈管理',
+					"./cockpitredlightfeedbacklist?redLightGuid=" + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		function backout(guid,status) {
+			if (status == 1) {
+				epoint.alert("该红灯已办结，不可撤销！", '', searchData, 'info');
+			} else if (status == 3) {
+				epoint.alert("该红灯已撤销，不可再次撤销！", '', searchData, 'info');
+			} else {
+				epoint.confirm('确认要撤销吗?', '', function(data) {
+					epoint.execute("backout", '', guid, callback);
+				});
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		
+		function onSubit(e) {
+			return  '<span type="action" style=\"color:blue\" onclick="feedback(\''
+			+ e.row.rowguid + '\')">反馈</span>'
+			+ "&nbsp;&nbsp;"
+			+ '<span type="action" style=\"color:blue\" onclick="openFeedback(\''
+			+ e.row.rowguid + '\')">管理反馈</span>'
+			+ "&nbsp;&nbsp;"
+			+ '<span type="action" style=\"color:red\" onclick="backout(\''
+			+ e.row.rowguid + '\',\''+e.row.status+'\')">撤销</span>';
+		} 
+	</script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The data table structure</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="choose subsystem"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="tablebasicinfolistaction.getTreeData" resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="add()">add</a>
+				<a class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {epoint.confirm('Delete the content will be synchronized to delete all the information and its associated physical table and will delete database,Sure you want to delete?','',function(){deleteSelected();});}">delete</a>
+				<a class="mini-button" iconCls="icon-save" onclick="saveAll()">save</a>
+				<a class="mini-button" iconCls="icon-right"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a record to operate!', '', null, 'warning');}else{move();}">move the selected</a>
+				<a class="mini-button" iconCls="icon-forward"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a record to be exported!', '', null, 'warning');} else {epoint.execute('tablebasicinfolistaction.export','',exporttc)}">script export</a>
+			</div>
+
+			<input id="database" autoLoad="false"
+				action="tablebasicinfolistaction.getDsTypes" textField="text"
+				valueField="id" class="mini-combobox mr10" width="100"/>
+		</div>
+
+		<div class="fui-condition">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="chinese name">
+							<input bind="tablebasicinfolistaction.searchString1"
+								class="mini-textbox" />
+
+						</div>
+						<div role="control" label="SQL table name">
+							<input bind="tablebasicinfolistaction.searchString2"
+								class="mini-textbox" />
+						</div>
+					</div>
+
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="IDNo.">
+							<input bind="tablebasicinfolistaction.searchString3"
+								class="mini-textbox" />
+						</div>
+						<div role="control"></div>
+					</div>
+					<!-- Add a hidden field to the tree and the linkage of the table -->
+					<input bind="tablebasicinfolistaction.leftTreeNodeGuid"
+						id="categoryNum" class="mini-hidden" />
+				</div>
+			</div>
+
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+
+		</div>
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="tableid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true"
+				action="tablebasicinfolistaction.getDataGridData" showPager="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="50">order</div>
+
+					<div field="tableid" width="80" headerAlign="center">IDNo.</div>
+					<div field="tablename" width="100%" headerAlign="center" vType="maxLength:50;required">
+						data tableChinese name <input property="editor" class="mini-textbox"
+							minWidth="120" />
+					</div>
+					<div field="sql_tablename" width="250" headerAlign="center">SQLdataThe name of the table</div>
+					<div field="ordernum" width="150" headerAlign="center" align="right"
+						vType="maxLength:5;int;required">
+						roworderNo. <input property="editor" class="mini-textbox" minWidth="30"
+							inputStyle="text-align:right" />
+					</div>
+					<div width="120" headerAlign="center" align="center"
+						renderer="onBjgRenderer">table structure</div>
+					<div width="50" align="center" headerAlign="center"
+						renderer="onEditRenderer">edit</div>
+					<div width="100" align="center" headerAlign="center"
+						renderer="onSqRenderer">authorization</div>
+					<!-- <div width="30" align="center" headerAlign="center"
+						renderer="onDataRenderer">data</div> -->
+					<div width="120" align="center" headerAlign="center"
+						renderer="onDmscRenderer">code generation</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage("tablebasicinfolistaction", '', initDataBase);
+
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+		}
+
+		//The treejsobject
+		var tree = mini.get("tree");
+		// Click on the left side of theThe treeRefresh the form on the right side
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// To the leftThe treeClick on the nodeidIn a hidden field
+			// Send the second request, in the table will automatically bring conditions areaThe contents of the
+			mini.get('categoryNum').setValue(id);
+			//Refresh the table
+			searchData();
+		});
+
+		// drawTable structurebutton
+		var onBjgRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc", "tableStruct",
+					"tableid,tabletype");
+		};
+
+		// draweditbutton
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "updateInfo",
+					"tableid,tabletype");
+		};
+
+		// drawauthorizationbutton
+		var onSqRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-gear", "setViewRight");
+		};
+		// drawauthorizationbutton
+		var onSqRenderer2 = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"setViewRight2");
+		};
+
+		// drawdatabutton
+		var onDataRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"processPageUrl");
+		};
+
+		// drawCode generationbutton
+		var onDmscRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-folderopen",
+					"codepro");
+		};
+
+		// Table structure
+		function tableStruct(e) {
+			var config = epoint.decodeJson(e);
+			if (config.tabletype == 3) {
+				epoint.openDialog('entity structure',
+						'frame/epointmis/backend/TableStructViewList?tableID='
+								+ config.tableid, function() {
+									epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+								}, {
+							'width' : 1200,
+							'height' : 550
+						});
+			} else {
+				epoint.openDialog('data table structure',
+						'framemanager/metadata/mis/tableinfo/tablestructlist?tableID='
+								+ config.tableid, function() {
+									epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+								});
+			}
+		}
+
+		// edit
+		function updateInfo(e) {
+			var config = epoint.decodeJson(e);
+			if (config.tabletype == 3) {
+				epoint.openDialog('editentity',
+						'frame/epointmis/backend/TableBasicViewEdit?tableID='
+								+ config.tableid, function() {
+									epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+								}, {
+							'width' : 1000,
+							'height' : 400
+						});
+			} else if (config.tabletype == 5) {
+				epoint.openDialog('editFill in the report',
+						'frame/epointmis/backend/FillInTableEdit?tableID='
+								+ config.tableid, function() {
+									epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+								}, {
+							'width' : 1200,
+							'height' : 550
+						});
+			} else {
+				epoint.openDialog('edit data table',
+						'framemanager/metadata/mis/tableinfo/tablebasicinfoedit?tableID='
+								+ config.tableid, searchData, {
+							'width' : 1000,
+							'height' : 400
+						});
+			}
+		}
+
+		// authorization
+		function setViewRight(tableID) {
+			epoint.openDialog('Set up the data tablepermissions',
+					'framemanager/metadata/mis/tableinfo/settingviewright?tableID='
+							+ tableID, function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+							}, {
+						'width' : 700,
+						'height' : 550
+					});
+		}
+
+		// data
+		function processPageUrl() {
+		}
+
+		// Code generation
+		function codepro(tableID) {
+			epoint.openDialog('generated code',
+					'framemanager/metadata/mis/tableinfo/tablecodeproduct?tableID='
+							+ tableID, function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+							}, {
+						'width' : 800,
+						'height' : 400
+					});
+		}
+
+		// new
+		function add() {
+			epoint.openDialog('Add the data table',
+					'framemanager/metadata/mis/tableinfo/tablebasicinfoadd?guid='
+							+ mini.get("categoryNum").getValue(), function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+							}, {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		// Delete the structure
+		function deleteSelected() {
+			epoint.execute('tablebasicinfolistaction.deleteSelected',
+					[ 'datagrid', 'fui-form' ], msgCallBack);
+		}
+
+		// Save the information
+		function saveAll() {
+			if(mini.get('datagrid').isValid()){
+				epoint.execute('tablebasicinfolistaction.saveAll', [ 'datagrid', 'fui-form' ],
+						msgCallBack);
+			}
+			else{
+				epoint.alert('tableChinese name Do not allow null,roworderNo.Do not allow more than length5a!', '', null, 'warning');
+			}
+		}
+
+		// Move the selected
+		function move() {
+			epoint.execute('tablebasicinfolistaction.move', 'datagrid', movetc);
+		}
+
+		function movetc(data) {
+			epoint.openDialog('Transfer subsystem',
+					"framemanager/metadata/mis/tableinfo/tablecategoryselect?guidlist="
+							+ data.movelist, movetcCallBack, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+		
+		function movetcCallBack(msg){
+			if(msg && msg!='close'){
+				epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+			}
+		}
+
+		// exportsqlstatements
+		function exporttc(data) {
+			var combox = mini.get("database");
+			epoint.openDialog(combox.getText() + 'Script export',
+					"framemanager/metadata/mis/tableinfo/tablebasicinfoexport?tableIDs="
+							+ data.exportlist + "&databaseType="
+							+ combox.getValue(), '', {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		// Back off to remind
+		function msgCallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+				}, 'info');
+			}
+		}
+
+		// tableOf the search
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function UploadSuccess() {
+			epoint.alert('Import success', '', null, 'success');
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>

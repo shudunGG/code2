@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>订阅消息</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/roleSelect.css" />
+<style>
+.role-status:after {
+	content: '订阅全部后，原有的配置将被保留';
+	color: #999999;
+	font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<a class="mini-button" state="primary" id="addClose" onclick="saveAndClose">保存设置</a> <a
+			class="mini-button" id="btnClose" onclick="epoint.closeDialog">取消设置</a>
+	</div>
+	<div class="role-contain" id="role-contain">
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-content">
+			<div class="role-status">
+				<div class="public-status l" id="public-status"></div>
+				<span class="public-lable" id="public-lable">全部订阅：否</span>
+			</div>
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<div id="messagetree">
+					<div role="control" label="多tab树" starred="true">
+						<div id="tabstreeselect" class="mini-tabstreeselect"
+							selectedPanelTitle="已选应用" filterMode="server"
+							checkRecursive="true" action="getTreeModel" style="width: 950px;"
+							loadWhenChecked="true" showBorder="true">
+							<div tabText="授权应用" tabKey="class"></div>
+						</div>
+					</div>
+				</div>
+				<div id="waithandletree" style="display: none">
+					<div role="control" label="多tab树" starred="true">
+						<div id="tabstreeselect1" class="mini-tabstreeselect"
+							selectedPanelTitle="已选应用" filterMode="server"
+							checkRecursive="true" action="getTreeModel1"
+							style="width: 950px;" loadWhenChecked="true" showBorder="true">
+							<div tabText="授权应用" tabKey="class"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('subscribemessageaction', null, function(data) {
+			if (data) {
+				if (data.type == "message") {
+					$("#waithandletree").hide();
+					$("#messagetree").show();
+					epoint.refresh('tabstreeselect');
+				} else if (data.type == "waithandle") {
+					$("#messagetree").hide();
+					$("#waithandletree").show();
+					epoint.refresh('tabstreeselect1');
+				}
+				if(data.openAll && data.openAll == true){
+					$("#public-status").addClass('active');
+					$publicLable.text(' 订阅全部：是');
+				}
+
+			}
+			$(".mini-tabstreeselect-list").css("height", "286.01px");
+		});
+
+		//保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var isPublic = $publicStatus.hasClass('active');
+				epoint.execute('save', '', isPublic, closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.closeDialog(msg);
+				} else {
+					epoint.showTips(msg,{state : 'danger'});
+				}
+			}
+		}
+
+		var $roleContain = $('#role-contain'), $publicStatus = $('#public-status'), $publicLable = $('#public-lable');
+		$roleContain.on('click', '.public-status', function() {
+			var $this = $(this);
+			if ($this.hasClass("active")) {
+				$this.removeClass('active');
+				$publicLable.text(' 订阅全部：否');
+			} else {
+				$this.addClass('active');
+				$publicLable.text(' 订阅全部：是');
+			}
+		});
+	</script>
+</body>
+</html>

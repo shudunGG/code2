@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程变迁和跳转配置</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet"
+	href="../../../../frame/pages/basic/gateway/app/appinfomanage/css/roleSelect.css" />
+</head>
+
+<body>
+	<!-- 内容区域 -->
+	<!-- 	<div class="fui-content"> -->
+	<div id="fui-form" class="fui-form">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="授权特殊对象">
+					<input id="specialValueStr" bind="specialValueStr"
+						action="getSpecialValue" textField="text" valueField="id"
+						class="mini-checkboxlist" style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="role-contain" id="role-contain">
+		
+		<div class="tab-contain">
+			<div id="multi-tabs" class="hidden multi-tabs">
+				<div id="tabs1" class="mini-tabs" tabAlign="fit" activeIndex="0"
+					onactivechanged="onactivechanged"
+					style="width: 100%; height: 100%;" plain="false">
+					<div title="授权角色">
+						<div class="role-tab"  id="role-a">
+							<div class="clearfix">
+								<span class="l role-name">授权角色</span>
+								<div class="r  role-search">
+									<input class="search-input" id="search-input" type="text"
+										placeholder="搜索角色名称" />
+								</div>
+							</div>
+							<div class="role-box" id=""></div>
+						</div>
+					</div>
+					<div title="授权用户">
+						<div class="mini-fit">
+							<div id="tabstreeselect" class="mini-tabstreeselect"
+								selectedPanelTitle="已选择记录" style="width: 99%; height: 100%"
+								action="getUserTreeModal" loadWhenChecked="true"
+								filterMode="server" showBorder="true">
+								<div tabText="授权用戶" tabKey="user"></div>
+							</div>
+						</div>
+					</div>
+					<div title="授权部门">
+						<div class="mini-fit">
+							<div id="tabstreeselect2" class="mini-tabstreeselect"
+								CheckRecursive="false" selectedPanelTitle="已选择记录"
+								style="width: 99%; height: 100%" action="getOuTreeModal"
+								loadWhenChecked="true" filterMode="server" showBorder="true">
+								<div tabText="授权部门" tabKey="ou"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="single-tab" class="single-tab hidden">
+				<div class="role-tab">
+					<div class="clearfix">
+						<span class="l role-name">授权角色</span>
+						<div class="r  role-search">
+							<input class="search-input" id="search-input" type="text"
+								placeholder="搜索角色名称" />
+						</div>
+					</div>
+					<div class="role-box" id="role-box2"></div>
+				</div>
+			</div>
+		</div>
+		<div class="footer-btns">
+			<span class="confirm-btn role-btns">保存设置</span> <span
+				class="cancle-btn role-btns">取消</span>
+		</div>
+	</div>
+	<!-- 	</div> -->
+	<!-- 内容模板 -->
+	<script type="x-tmpl-mustache" id="role-template">
+        <ul>
+            {{#list}}
+            <li class="role-classify {{#isChecked}}select-all{{/isChecked}}">
+                <div class="role-title">
+                    <div data-id="{{id}}" data-title="{{title}}" class="role-title-check {{#isSearch}}search-title{{/isSearch}} {{#isHideCheck}}no-check{{/isHideCheck}} {{#isChecked}}active{{/isChecked}} l">
+                        {{^isSearch}}<i class="role-icons l"></i>{{/isSearch}}
+                        <span class="l">{{title}}</span>
+                    </div>
+                    <i class="role-arrow r"></i>
+                </div>
+                <div class="role-list-content">
+                    <ul class="clearfix role-list">
+                        {{#children}}
+                        <li class="role-item l">
+                            <div data-id="{{id}}" data-title="{{title}}" id="check-{{id}}" class="role-check {{#isSearch}}search-check{{/isSearch}} {{#isHideCheck}}no-check{{/isHideCheck}} {{#isChecked}}active{{/isChecked}} clearfix">
+                                <i class="role-icons l"></i>
+                                <span class="l">{{title}}</span>
+                            </div>
+                        </li>
+                        {{/children}}
+                    </ul>
+                </div>
+            </li>
+            {{/list}}
+        </ul>
+    </script>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化请求
+		epoint.initPage('workflowselectuseraction','',function(){
+			renderRoleList();
+		});
+
+		var roleConfig = {
+			// 角色列表
+			roleList : epoint
+					.dealRestfulUrl('workflowselectuseraction/getRoleData'),
+			//保存
+			roleSave : 'workflowselectuseraction/save',
+			// 角色搜索
+			searchRole : epoint
+					.dealRestfulUrl('workflowselectuseraction/searchRoles')
+		}
+
+		function onactivechanged(res) {
+			mini.get('tabstreeselect2').tree.doLayout();
+			mini.get('tabstreeselect').tree.doLayout();
+		}
+	</script>
+	<script
+		src="../../../../frame/pages/basic/gateway/app/appinfomanage/js/roleSelect.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程活动处理人</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input bind="activityGuid" id="activityGuid" class="mini-hidden" /> <input
+			bind="processVersionGuid" id="processVersionGuid" class="mini-hidden" />
+		<input bind="belongToParam" id="belongToParam" class="mini-hidden" />
+		<input bind="belongToParamFilter" id="belongToParamFilter"
+			class="mini-hidden" />
+		<div class="fui-accordions">
+			<div id="contentA" role="accordion" opened="true">
+				<div role="head" title="活动预设处理人"></div>
+				<div role="body">
+					<!-- toolbar区域 -->
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<a class="mini-button" onclick="addATransactor"
+								iconCls="icon-addcircle">新增处理人</a><a class="mini-button mini-btn-danger"
+								onclick="delATransactor" iconCls="icon-minuscircle">删除选中</a>
+						</div>
+					</div>
+					<div>
+
+						<div id="datagridA" class="mini-datagrid" sortOrder="desc"
+							idField="participatorGuid" multiSelect="true"
+							style="height: auto;" allowResize="true"
+							action="getDefaultModelA" showPager="false" allowCellEdit="true"
+							allowCellSelect="true" editNextOnEnterKey="true"
+							editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="40"></div>
+								<div type="indexcolumn" width="40" headerAlign="center">序
+								</div>
+								<div field="participatorName" width="200" headerAlign="center"
+									align="center">处理人员类型</div>
+								<div field="dataName" width="200" headerAlign="center"
+									align="center">处理人员名称</div>
+								<div name="belongDept" field="belongDept" width="200"
+									headerAlign="center" align="center">所在部门</div>
+								<div field="type" visible="false"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="contentB" role="accordion" opened="true">
+				<div role="head" title="活动处理人选择范围(人员选择树根据本列表中的设置进行过滤)"></div>
+				<div role="body">
+					<!-- toolbar区域 -->
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<a class="mini-button" onclick="addBTransactor"
+								iconCls="icon-addcircle">新增范围</a><a class="mini-button mini-btn-danger"
+								onclick="delBTransactor" iconCls="icon-minuscircle">删除选中</a>
+						</div>
+					</div>
+					<div>
+						<div id="datagridB" class="mini-datagrid" sortOrder="desc"
+							idField="participatorGuid" multiSelect="true"
+							style="height: auto;" allowResize="true"
+							action="getDefaultModelB" showPager="false" allowCellEdit="true"
+							allowCellSelect="true" editNextOnEnterKey="true"
+							editNextRowCell="true">
+							<div property="columns">
+								<div type="checkcolumn" width="40"></div>
+								<div type="indexcolumn" width="40" headerAlign="center">序
+								</div>
+								<div field="participatorName" width="200" headerAlign="center"
+									align="center">处理人员类型</div>
+								<div field="dataName" width="200" headerAlign="center"
+									align="center">处理人员名称</div>
+								<div name="relation" field="relation" width="200"
+									headerAlign="center" align="center">包含关系</div>
+								<div name="belongDept" field="belongDept" width="200"
+									headerAlign="center" align="center">所在部门</div>
+								<div field="type" visible="false"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitytransactoraction');
+
+		// 表格A的刷新
+		function searchData() {
+			epoint.refresh();
+		}
+		//新增回调-处理人
+		function addCallBack(data) {
+			if (data != "close")
+				searchData();
+		}
+		//选择部门回调B-处理范围
+		// 		function editCallBack(param) {
+		// 			if (param)
+		// 				searchData();
+		// 		}
+		//删除选中行A-处理人
+		function delATransactor() {
+			var datagrid = mini.get('datagridA');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("deleteSelectA", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, '', null, 'info');
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", '', null, 'warning');
+			}
+		}
+		//删除选中行B-处理人范围
+		function delBTransactor() {
+			var datagrid = mini.get('datagridB');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.confirm("确定删除选中记录？", "", function(action) {
+					epoint.execute("deleteSelectB", "", [ ids.join(',') ],
+							function(data) {
+								if (data.msg) {
+									epoint.alert(data.msg, '', null, 'info');
+									searchData();
+								}
+							});
+				});
+			} else {
+				epoint.alert("请选择要删除的记录!", '', null, 'warning');
+			}
+		}
+
+		//新增处理人
+		function addATransactor() {
+			var activityGuid = mini.get('activityGuid').getValue();
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var belongTo = mini.get('belongToParam').getValue();
+			epoint.openTopDialog("选择处理人",
+					'framemanager/workflow/design/workflowselectuser?activityGuid='
+							+ activityGuid + '&processVersionGuid='
+							+ processVersionGuid + '&belongTo=' + belongTo,
+					addCallBack, {
+						'width' : 900,
+						'height' : 600
+					});
+		}
+		//新增处理范围
+		function addBTransactor() {
+			var activityGuid = mini.get('activityGuid').getValue();
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var belongToFilter = mini.get('belongToParamFilter').getValue();
+			epoint.openTopDialog("选择处理人",
+					'framemanager/workflow/design/workflowselectuser?activityGuid='
+							+ activityGuid + '&processVersionGuid='
+							+ processVersionGuid + '&belongTo='
+							+ belongToFilter, addCallBack, {
+						'width' : 900,
+						'height' : 600
+					});
+		}
+		function getIsShow(data) {
+			isShow = data;
+		}
+		//渲染datagridA行按钮-处理人
+		var grida = mini.get("datagridA");
+		grida
+				.on(
+						"drawcell",
+						function(e) {
+							var record = e.record, column = e.column, field = e.field, value = e.value;
+							//belongDept列，操作按钮
+							if (column.name == "belongDept") {
+								e.cellStyle = "text-align:center;";
+								if (record.type == '20') {
+									if (record.belongDept == undefined) {
+										record.belongDept = "";
+									}
+									e.cellHtml = '<a id="'
+											+ record.participatorGuid
+											+ '" class="mini-button" onclick="javascript:editDepA(\''
+											+ record.participatorGuid + '\',\''
+											+ record.belongDept + '\',\''
+											+ record.type + '\')" >部门</a>';
+								}
+							}
+						});
+		//处理人选择部门
+		function editDepA(particpatorGuid, belongDept, type) {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var url = "framemanager/workflow/design/selectoupaticpator?particpatorGuid="
+					+ particpatorGuid
+					+ "&type="
+					+ type
+					+ "&processVersionGuid="
+					+ processVersionGuid
+					+ "&belongDept=" + belongDept;
+			epoint.openDialog("选择处理人部门", url, '', {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+
+		//渲染datagridB行按钮-处理范围
+		var gridb = mini.get("datagridB");
+		gridb
+				.on(
+						"drawcell",
+						function(e) {
+							var record = e.record, column = e.column, field = e.field, value = e.value;
+							//relation列，操作按钮
+							if (column.name == "relation") {
+								e.cellStyle = "text-align:center;";
+								e.cellHtml = '<a class="mini-button" onclick="javascript:changeTransactorFilter(\''
+										+ record.participatorGuid
+										+ '\') ">'
+										+ record.relation + '</a>'
+							}
+
+							//belongDept列，操作按钮
+							if (column.name == "belongDept") {
+								e.cellStyle = "text-align:center;";
+								//是角色，显示部门按钮
+								if (record.type == '20') {
+									if (record.belongDept == undefined) {
+										record.belongDept = "";
+									}
+									e.cellHtml = '<a id="'
+											+ record.participatorGuid
+											+ '" class="mini-button" onclick="javascript:editDepB(\''
+											+ record.participatorGuid + '\',\''
+											+ record.belongDept + '\',\''
+											+ record.type + '\')" >部门</a>';
+								}
+							}
+						});
+		//处理人范围选择部门
+		function editDepB(particpatorGuid, belongDept, type) {
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var url = "framemanager/workflow/design/selectoupaticpator?particpatorGuid="
+					+ particpatorGuid
+					+ "&type="
+					+ type
+					+ "&processVersionGuid="
+					+ processVersionGuid
+					+ "&belongDept=" + belongDept;
+			epoint.openDialog("选择处理人部门", url, '', {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+		//排除包含按钮
+		function changeTransactorFilter(participatorGuid) {
+			epoint.execute('changeTransactorFilter', [ 'contentB' ],
+					[ participatorGuid ], searchData);
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

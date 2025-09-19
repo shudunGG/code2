@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>内部通讯录详情</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/communicate.css' ]);
+</script>
+<style>
+.detailsinfo .otherinfo {
+	border-top: 0;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- <a class="mini-button close-aside" id="close-aside">关闭</a> -->
+		<div class="content nicescroll" style="overflow: hidden;">
+			<!-- 头像信息栏 -->
+			<div class="staff-baseinfo clearfix">
+				<div class="staff-portrait big">
+					<img src="images/photo-girl.png" alt="portrait"
+						class="icon-portrait" id="userimg" /> <img
+						src="images/icon-girl.png" alt="gender" class="icon-gender"
+						id="userseximg">
+				</div>
+				<p class="name" id="displayname">
+					<i class="state on">在岗</i>
+				</p>
+				<p class="dept info">
+					部门 <span class="text" id="ouname"></span>
+				</p>
+				<p class="duty info">
+					职务 <span class="text" id="title"></span>
+				</p>
+				<p class="mobile info">
+					手机<span class="text" id="mobile"></span>
+				</p>
+				<p class="phone info">
+					办公<span class="text" id="telephoneoffice"></span>
+				</p>
+				<div class="sender-bar big">
+					<!--<a href="javascript:writeMail()" class="bar-func contactmail">发邮件</a>-->
+					<a href="javascript:sendMsg()" class="bar-func webmsg" id="exun">E讯</a>
+					<!--<a href="#" class="bar-func sendermsg" id="sms">发短信</a>-->
+					<!--<a href="#" class="bar-func share">分享</a>
+                <div class="bar-more">更多</div>-->
+				</div>
+			</div>
+			<!-- 详细信息栏 -->
+			<div class="detailsinfo">
+				<!-- 联系方式 -->
+				<div class="fui-form">
+					<div role="form">
+						<!--<div role="row">
+                        <div role="control" label="手机号码">
+                            <span class="mini-outputtext" bind="dataBean.mobile"></span>
+                        </div>
+                        <div role="control" label="办公号码">
+                            <span class="mini-outputtext" bind="dataBean.telephoneoffice"></span>
+                        </div>
+                    </div>-->
+						<div role="row">
+							<div role="control" label="QQ号码">
+								<span class="mini-outputtext" id="qqnumber"></span>
+							</div>
+							<div role="control" label="电子邮件">
+								<span class="mini-outputtext" bind="dataBean.email"></span>
+							</div>
+						</div>
+						<!--<div role="row">
+                        <div role="control" label="个性签名">
+                            <span class="text"></span>
+                        </div>
+                    </div>-->
+					</div>
+				</div>
+				<!-- 其他 -->
+				<div class="otherinfo">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<!-- <div role="control" label="单位">
+                                <span class="text"></span>
+                            </div>-->
+								<!--<div role="control" label="电话">
+                                <span class="mini-outputtext" bind="dataBean.mobile"></span>
+                            </div>-->
+								<div role="control" label="地址">
+									<span class="mini-outputtext" id="postaladdress"></span>
+								</div>
+								<div role="control" label="车牌号">
+									<span class="mini-outputtext" id="carnum"></span>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="传真">
+									<span class="mini-outputtext" bind="dataBean.fax"></span>
+								</div>
+								<div role="control" label="邮编">
+									<span class="mini-outputtext" id="postalcode"></span>
+								</div>
+							</div>
+
+							<!--<div role="row">
+
+                            <div role="control" label="主页">
+                                <span class="text"></span>
+                            </div>
+                        </div>-->
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot
+				.output([ '../../../../fui/js/widgets/jquery.nicescroll.min.js' ]);
+	</script>
+	<script>
+		var name;
+		epoint
+				.initPage(
+						'frameinnerdetailaction',
+						null,
+						function(data) {
+							if (data.dataBean) {
+								name = data.dataBean.displayname;
+								//+"<i class='state on'>在岗</i>"      在位情况暂时隐藏   qqf 2017-5-9
+								$("#displayname").html(
+										data.dataBean.displayname);
+								if (data.ouname) {
+									$("#ouname").html(data.ouname);
+								}
+
+								$("#title").html(data.dataBean.title);
+								$("#mobile").html(data.dataBean.mobile);
+								$("#telephoneoffice").html(
+										data.dataBean.telephoneoffice);
+								if (data.dataBean.sex != "女") {
+									$("#userseximg").attr("src",
+											"images/icon-boy.png");
+
+									if (data.piccontent) {
+										$("#userimg")
+												.attr(
+														"src",
+														"../../../../../rest/readpictureaction/getUserPicture?isCommondto=true&userGuid="
+																+ data.dataBean.userguid);
+									} else {
+										$("#userimg").attr("src",
+												"images/photo-boy.png");
+									}
+
+								} else {
+									$("#userseximg").attr("src",
+											"images/icon-girl.png");
+									if (data.piccontent) {
+										$("#userimg")
+												.attr(
+														"src",
+														"../../../../../rest/readpictureaction/getUserPicture?isCommondto=true&userGuid="
+																+ data.dataBean.userguid);
+
+									} else {
+										$("#userimg").attr("src",
+												"images/photo-girl.png");
+									}
+								}
+								if (data.qqnumber)
+									$("#qqnumber").html(data.qqnumber);
+								if (data.postaladdress)
+									$("#postaladdress")
+											.html(data.postaladdress);
+								if (data.carnum)
+									$("#carnum").html(data.carnum);
+								if (data.postalcode)
+									$("#postalcode").html(data.postalcode);
+							}
+							if (data.showExun == 0) {
+								$("#exun").addClass('hidden');
+							}
+							if (data.showSms == 0) {
+								$("#sms").addClass('hidden');
+							}
+
+						});
+		var view = Util.getUrlParams("view");
+
+		var btnCloseAside = mini.get("close-aside");
+
+		if (view === "2") { // 卡片视图隐藏关闭按钮
+			btnCloseAside.hide();
+		}
+
+		Util.hidePageLoading();
+
+		/* btnCloseAside.on('click', function(event) { // 关闭侧滑详情
+			$(parent.document.getElementById("aside-wrap")).css('right',
+					"-781px");
+		}); */
+
+		// TODO 发送邮件
+		function writeMail() {
+			var id = Util.getUrlParams().uid;
+
+			if (top.TabsNav) { //如果顶层窗口支持 tab 式打开  使用 tab  打开整个邮件应用
+				top.TabsNav.addTab({
+					id : 'tab-' + id,
+					name : '公务邮件',
+					url : 'oa9/mail/mailframe',
+					closeIcon : true, // 是否显示最小化按钮
+					maxIcon : true,
+					param : {
+						target : "mailsend",// 如果是开打 mailframe 页面 初始化加载哪个子页面
+						touser : [ {
+							id : id,
+							name : name,
+							userType : 0
+						} ]
+					//收件人数组
+					}
+				});
+			} else { // 否则使用div 方式打开邮件发送页面
+				epoint.openDialog('发送邮件', 'oa9/mail/mailsend', '', {
+					'width' : null,
+					'height' : null,
+					'showCloseButton' : true,
+					'showMaxButton' : true,
+					'allowResize' : false
+				});
+			}
+
+		}
+		/* function writeMail() {
+		    epoint.openTopDialog('发送邮件','oa9/mail/mailsend','',{
+		        'width' : 1000,
+		        'height' : 500,
+		        'showCloseButton':true,
+		        'showMaxButton':true,
+		        'allowResize':true
+		    });
+		} */
+
+		// TODO 发消息
+		function sendMsg() {
+			top.OpenEMsg(Util.getUrlParams().uid);
+		}
+
+		// TODO 发短信
+		function sendMobileMsg(id) {
+			console.log(id);
+		}
+
+		//nicescroll
+		$(".nicescroll").niceScroll({
+			touchbehavior : false,
+			cursorcolor : "#f2f2f2",
+			cursoropacitymax : 1,
+			cursorwidth : 5,
+			cursorborder : "none",
+			cursorborderradius : "5px",
+			autohidemode : false
+		});
+	</script>
+</body>
+
+</html>

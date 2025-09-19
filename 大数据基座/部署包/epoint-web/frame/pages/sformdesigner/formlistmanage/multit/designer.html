@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang=zh-cn><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href="favicon.ico?v=1.1.1"><title>表单设计器V1.1.1</title><script src=./preset/iepolyfill/closest.js></script><script src=./preset/iepolyfill/nodelisteach.js></script><script src=./preset/iepolyfill/urlsearch.js></script><script>document.write('<script src="./preset/index.js?t=' + (+new Date()) + '"><\/script>')</script><script>document.write('<script src="../../config/allextcontrol.js?t=' + (+new Date()) + '"><\/script>')</script><script>document.write('<script src="./custom.js?t=' + (+new Date()) + '"><\/script>')</script><script>function getQueryString(name) {
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+      var r = window.location.search.substr(1).match(reg);
+      if (r != null)
+        return unescape(r[2]);
+      return null;
+    }
+    var isSub = getQueryString("getQueryString");
+
+    var reSetSelectUrl = './app-frame/frame'+ location.search;
+    var previewUrl = '../../preview/preview.html';
+
+    var formDesignerActions = {
+      // 获取的请求地址
+      getUrl: 'sformmultidesignaction.action?cmd=initFormRelationTableInfo&isSub=' + isSub,
+      // 代码项目获取地址
+      getCodeItemUrl: 'sformmultidesignaction.action?cmd=initCodeItemInfo&isSub=' + isSub,
+      // 保存的请求地址
+      saveUrl: 'sformmultidesignaction.action?cmd=generateCode&isSub=' + isSub,
+      // 获取子表字段的请求地址 参数 tableId = xxx
+      getSubTableInfoUrl: 'sformmultidesignaction.action?cmd=getSubTableInfo&isSub=' + isSub,
+      // 获取 buttonedit 弹出信息
+      getListInfoUrl: 'sformmultidesignaction.action?cmd=getSformListInfo&isSub=' + isSub,
+      // 获取 buttonedit 的字段接口 参数 listGuid = xxx
+      getListStructUrl: 'sformmultidesignaction.action?cmd=getlistStructInfo&isSub=' + isSub,
+      // 获取事件赋值时的表字段信息
+      getTableFieldsUrl: 'sformmultidesignaction.action?cmd=getTableFields&isSub=' + isSub,
+      // 获取某个控件的所有可选项目 参数 controlData = 目标控件配置对象
+      getControlDataListUrl: 'sformmultidesignaction.action?cmd=getControlDataList&isSub=' + isSub,
+      // 根据 dbtype 获取 displayTypeList 
+      getDisplayTypesUrl: 'sformmultidesignaction.action?cmd=getDisplayType&isSub=' + isSub,
+      // 获取大表单中可选的手风琴列表
+      getMultiFormAccListUrl: 'sformmultidesignaction.action?cmd=getTypeListData&isSub=' + isSub,
+      // 大表单中 根据手风琴id 获取 子分类列表 参数 codeId
+      getMultiFormSubCateListUrl: 'sformmultidesignaction.action?cmd=getCodeItems&isSub=' + isSub,
+      // 获取可选表单风格列表
+      getSkinListUrl: 'sformmultidesignaction.action?cmd=getSformStyle&isSub=' + isSub,
+      // getSkinListUrl: './config/skins.json',
+      // getSkinListUrl: 'sformmultidesignaction.action?cmd=getSkinList&isSub=' + isSub,
+      // 将表单风格保存
+      addSkinUrl: 'sformmultidesignaction.action?cmd=creatSformStyle&isSub=' + isSub,
+      // 自动保存
+      autoSaveUrl: 'sformmultidesignaction.action?cmd=autoSave&isSub=' + isSub,
+      // 存为模板
+      saveAsTplUrl: 'sformmultidesignaction.action?cmd=copyFormDesign&isSub=' + isSub,
+      // 获取所有模板：
+      getAllFormTplUrl: 'sformmultidesignaction.action?cmd=getAllDesignTemplate&isSub=' + isSub,
+      // 自动根据控件创建字段
+      autoCreateFieldUrl: 'sformmultidesignaction.action?cmd=autoCreateField&isSub=' + isSub,
+      // pc 转 移动
+      pc2mobileUrl: 'sformmultidesignaction.action?cmd=initMobileDesignData&isSub=' + isSub,
+      // 存为副本
+      saveAsCopyUrl: 'sformmultidesignaction.action?cmd=createNewForm&isSub=' + isSub,
+      // 生成新版本
+      saveAsNewVersionUrl: 'sformmultidesignaction.action?cmd=createFormVersion&isSub=' + isSub,
+      // 生成新版本时获取模板信息
+      getSFormTplUrl: 'sformmultidesignaction.action?cmd=getsformTemplate&isSub=' + isSub,
+      // 获取左侧数据域数据
+      getFieldListUrl: 'sformmultidesignaction.action?cmd=getFieldList&isSub=' + isSub,
+      // 获取左侧数据域配置
+      getFieldConfigUrl: 'sformmultidesignaction.action?cmd=getFieldConfig&isSub=' + isSub,
+      // 保存左侧数据域配置
+      saveFieldConfigUrl: 'sformmultidesignaction.action?cmd=saveFieldConfig&isSub=' + isSub,
+      // 清空合并关系
+      deleteFieldRelationUrl: 'sformmultidesignaction.action?cmd=deleteFieldRelation&isSub=' + isSub,
+      // 校验是否改变了字段名
+      verificationUrl: 'sformmultidesignaction.action?cmd=verification&isSub=' + isSub
+    };
+    if (/useMock/i.test(location.search)) {
+      formDesignerActions.getUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/initFormRelationTableInfo';
+      formDesignerActions.getCodeItemUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/initCodeItemInfo';
+      formDesignerActions.saveUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/generateCode';
+      formDesignerActions.getSubTableInfoUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getSubTableInfo';
+      formDesignerActions.getListInfoUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getSformListInfo';
+      formDesignerActions.getListStructUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getlistStructInfo';
+      formDesignerActions.getTableFieldsUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getTableFields';
+      formDesignerActions.getControlDataListUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getControlDataList';
+      formDesignerActions.getDisplayTypesUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getDisplayType';
+      formDesignerActions.getMultiFormAccListUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getTypeListData';
+      formDesignerActions.getMultiFormSubCateListUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getCodeItems';
+      formDesignerActions.getSkinListUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getSformStyle';
+      formDesignerActions.addSkinUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/creatSformStyle';
+      formDesignerActions.autoSaveUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/autoSave';
+      formDesignerActions.saveAsTplUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/copyFormDesign';
+      formDesignerActions.getAllFormTplUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getAllDesignTemplate';
+      formDesignerActions.autoCreateFieldUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/autoCreateField';
+      formDesignerActions.pc2mobileUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/initMobileDesignData';
+      formDesignerActions.getFieldListUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getFieldList';
+      formDesignerActions.getFieldConfigUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getFieldConfig';
+      formDesignerActions.saveFieldConfigUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/saveFieldConfig';
+      formDesignerActions.deleteFieldRelationUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/deleteFieldRelation';
+      formDesignerActions.saveAsCopyUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/createNewForm';
+      formDesignerActions.saveAsNewVersionUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/createFormVersion';
+      formDesignerActions.getSFormTplUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/getsformTemplate';
+      formDesignerActions.verificationUrl = 'https://fe.epoint.com.cn/mock/109/formdesigner/verification';
+      location.hash = '当前版本:1.1.1;更新时间:2021-7-15T4:26:49 ├F10: PM┤';
+    }</script><link href=assets/css/chunk-14c5851b.5cb8f353.css rel=prefetch><link href=assets/js/chunk-14c5851b.16fd3ddb.js rel=prefetch><link href=assets/css/app.a5f8e12d.css rel=preload as=style><link href=assets/css/chunk-vendors.c3d0933a.css rel=preload as=style><link href=assets/js/app.3445ee53.js rel=modulepreload as=script><link href=assets/js/chunk-vendors.448d4909.js rel=modulepreload as=script><link href=assets/css/chunk-vendors.c3d0933a.css rel=stylesheet><link href=assets/css/app.a5f8e12d.css rel=stylesheet></head><body><noscript><strong>We're sorry but epoint-form-design doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id=app></div><script type=module src=assets/js/chunk-vendors.448d4909.js></script><script type=module src=assets/js/app.3445ee53.js></script><script>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script><script src=assets/js/chunk-vendors-legacy.2c420ec9.js nomodule></script><script src=assets/js/app-legacy.a826dafc.js nomodule></script></body></html>

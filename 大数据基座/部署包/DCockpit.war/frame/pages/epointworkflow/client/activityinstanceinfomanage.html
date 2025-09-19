@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title></title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body style="height: 100%;">
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button" iconCls="icon-pause" id="terminate"
+				onclick="epoint.confirm('确定要终止本活动吗？','',terminate);">终止本活动</a> <a
+				class="mini-button" iconCls="icon-start" id="reactive"
+				onclick="epoint.confirm('确定要再次激活本活动吗？','',reactive);">再次激活本活动</a><a
+				class="mini-button" iconCls="icon-pause" id="active"
+				onclick="epoint.confirm('确定要激活本活动吗？','',unactive);">激活本活动</a> <a
+				class="mini-button" iconCls="icon-addcircle" id="add"
+				onclick="openAddTran()">新增处理人</a>
+		</div>
+	</div>
+
+	<div class="fui-content" style="height: 100%;">
+		<div id="aci_datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="workItemGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			action="getResultListModel2" showPager="true" allowCellEdit="false"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" headerAlign="center" width="30">序</div>
+
+				<div field="username" width="80" headerAlign="center" align="center">
+					处理人员</div>
+				<div field="operationname" width="80" headerAlign="center"
+					align="center">操作</div>
+				<div field="reDate" width="150" headerAlign="center" align="center">
+					收到时间</div>
+				<div field="opDate" width="150" headerAlign="center" align="center">
+					处理时间</div>
+				<div field="handleopinion" width="100%" headerAlign="center" validateLevel="1">
+					处理意见</div>
+				<div field="sendusername" width="80" headerAlign="center"
+					align="center">提交人员</div>
+				<div width="100" align="center" headerAlign="center" id="deleteTran"
+					renderer="onDeleteRenderer">删除处理人</div>
+			</div>
+		</div>
+
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		// 初始化页面
+		epoint.initPage('processoa9manageaction', '', initItemlist);
+
+		function initItemlist(data) {
+			if (!data.active) {
+				mini.get("terminate").setVisible(false);
+				mini.get("add").setVisible(false);
+			}
+			if (!data.reactive) {
+				mini.get("reactive").setVisible(false);
+			}
+			if (data.mode != "unactive") {
+				mini.get("active").setVisible(false);
+			}
+		}
+
+		// 绘制删除处理人按钮
+		var onDeleteRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-remove", "deleteItem");
+		}
+
+		function deleteItem(workItemGuid) {
+			epoint.confirm("确定删除该条记录？", "", function(action) {
+				epoint.execute('deleteItem', '@none',
+						[workItemGuid], searchData);
+			})
+		}
+
+		function msgCallBack() {
+			parent.location.reload();
+		}
+
+		function openAddTran() {
+			epoint.openDialog('选择处理人',
+					'framemanager/orga/orga/user/selectuser', addnew, {
+						'width' : 1200,
+						'height' : 550
+					});
+		}
+
+		function terminate() {
+			epoint.execute('terminate', '@none',
+					msgCallBack);
+		}
+
+		function reactive() {
+			epoint.execute('reActive', '@none',
+					msgCallBack);
+		}
+
+		function unactive() {
+			epoint.execute('unactive', '@none',
+					msgCallBack);
+		}
+
+		function searchData() {
+			epoint.refresh('aci_datagrid', '', true);
+		}
+
+		function addnew(back) {
+			if (back && back !='close') {
+				var te = back.split(";");
+				te = te.join("-=-");
+				epoint.execute('fireSearch', '@none',
+						[te], searchData);
+			}
+		}
+
+		$(document).ready(function() {
+			$('.content_lc').height($(window).height());
+		});
+	</script>
+
+</body>
+
+</html>

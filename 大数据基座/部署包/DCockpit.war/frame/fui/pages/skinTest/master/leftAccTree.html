@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>左侧手风琴树</title>
+    <script src="../../../js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+
+    <div class="master-content" master="leftAccTree"></div>
+    <script src="../../../js/jsboot.js"></script>
+
+    <script>
+        var LeftAccTree = {
+            // 获取菜单数据的请求url
+            loadUrl: 'test/LeftAccTree',
+
+            params: {
+                userguid: '13214fds'
+            },
+
+            // 默认打开页面地址
+            defaultUrl: '../contentpage.html',
+
+            onLoad: function () {
+                Util.hidePageLoading();
+            }
+        };
+    </script>
+    <script>
+        SrcBoot.output(['../../../js/libs/mock-min.js']);
+    </script>
+    <script>
+        Mock.mock(new RegExp(LeftAccTree.loadUrl, 'ig'), function () {
+            var list = Mock.mock({
+                "menus|3-10": [{
+                    "name": "@cword(2,8)",
+                    "code": "@id",
+                    "url": "../contentpage.html",
+                    // "icon": "modicon-@integer(1,140)",
+                    "expand": "@boolean",
+                    "isBlank": "@boolean", // url打开方式 true:新页面|false:右侧iframe
+                    "isLazy": "@boolean", // 导航树是否采用懒加载
+                    "items|1-5": [{
+                        "name": "@cword(2,8)",
+                        "code": "@id",
+                        "url": "../contentpage.html",
+                        "expand": "@boolean",
+                        "isBlank": "@boolean", // url打开方式 true:新页面|false:右侧iframe
+                        "isLazy": "@boolean", // 导航树是否采用懒加载
+                        // "icon": "modicon-@integer(1,140)",
+                        "items|0-5": [{
+                            "name": "@cword(2,8)",
+                            "code": "@id",
+                            "url": "../contentpage.html",
+                            // "icon": "modicon-@integer(1,140)",
+                            "expand": "@boolean",
+                            "isBlank": "@boolean", // url打开方式 true:新页面|false:右侧iframe
+                            "isLazy": "@boolean", // 导航树是否采用懒加载
+                        }]
+                    }]
+                }]
+            }).menus;
+
+            function dealIsLeaf(list) {
+                if (!list) return;
+                $.each(list, function (i, item) {
+                    item.isLazy = false;
+                    if (item.items && item.items.length) {
+                        item.isLeaf = false;
+                        item.url = '';
+                        dealIsLeaf(item.items);
+                    } else {
+                        item.isLeaf = true;
+                    }
+                });
+            }
+            dealIsLeaf(list);
+
+            return list;
+        });
+    </script>
+</body>
+
+</html>

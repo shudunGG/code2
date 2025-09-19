@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Process materials</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="createAdd">new material</a> <a class="mini-button"
+				iconCls="icon-removecircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose the material that you want to delete!', '', null, 'warning');} else {epoint.confirm('Sure to delete?','',deleteSelected);}">delete the material</a>
+			<a class="mini-button" iconCls="icon-save" onclick="saveAll">modify the sort</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="materialGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDefaultModel" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="35"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">order</div>
+
+				<div field="materialName" width="100%" headerAlign="center"
+					align="center">name</div>
+				<div field="type" width="150" headerAlign="center" align="center">type</div>
+				<div field="submitype" width="150" headerAlign="center"
+					align="center">submission</div>
+				<div field="orderNumber" width="80" headerAlign="center"
+					align="right" vType="maxLength:5;int;required" allowSort="true">
+					roworderNo. <input property="editor" class="mini-textbox" minWidth="30"
+						inputStyle="text-align:right" />
+				</div>
+<!-- 				<div width="50" headerAlign="center" align="center" renderer="model"> -->
+<!-- 					template</div> -->
+				<div width="50" headerAlign="center" align="center" renderer="edit">
+					edit</div>
+			</div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[ 
+		//Initialize the page
+		epoint.initPage("processmaterialaction");
+
+		var processVersionGuid = Util.getUrlParams('processVersionGuid');
+
+		function model(e) {
+			if (e.row.template_asinfogroupguid) {
+				return epoint.renderCell(e, "action-icon icon-download",
+						"openDownLoad", "template_asinfogroupguid");
+			}
+		}
+
+		function openDownLoad(guid) {
+			window
+					.open("../../../basic/attach/attachdown?attachGuid="
+							+ guid);
+		}
+
+		function edit(e) {
+			if (!(e.record && e.record.mainPv && e.record.mainPv == "true")) {
+				return epoint
+						.renderCell(e, "action-icon icon-edit", "openEdit");
+			}
+		}
+
+		// delete
+		function deleteSelected() {
+			epoint.execute('deletePvMaterial', 'datagrid', msgCallBack);
+		}
+
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.alert(msg, '', searchData(), 'info');
+			}
+		}
+
+		function createAdd() {
+			epoint.openDialog('The new process material',
+					"framemanager/workflow/manage/processmaterialadd?processVersionGuid="
+							+ processVersionGuid + "&dialogId="
+							+ Util.uuid(8, 16), searchData, {
+						'width' : 1000
+					});
+		}
+
+		function openEdit(materialGuid) {
+			epoint.openDialog('editProcess materials',
+					'framemanager/workflow/manage/processmaterialedit?materialGuid='
+							+ materialGuid, searchData, {
+						'width' : 1000
+					});
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh('datagrid','',true);
+		}
+
+		// Save the information
+		function saveAll() {
+			if (mini.get('datagrid').isValid()) {
+				epoint.execute('saveOrderNumber', 'datagrid', msgCallBack);
+			} else {
+				epoint.alert('roworderNo.Do not allow more than length5a!', '', null, 'warning');
+			}
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>
+

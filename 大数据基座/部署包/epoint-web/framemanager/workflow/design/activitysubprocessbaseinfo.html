@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>子流程活动详细信息</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="save" onclick="save">确认保存</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="活动名称" starred="true">
+						<input class="mini-textbox" bind="workflowActivity.activityName"
+							id="activityName" required="true" requiredErrorText="活动名称不能为空!"
+							vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="子过程" starred="true">
+						<input id="txtSubProcessVersionName"
+							bind="txtSubProcessVersionName" class="mini-buttonedit"
+							emptyText="直接选择子过程" onbuttonclick="selSubProcess"
+							selectOnFocus="true" />
+					</div>
+					<div role="control" label="">
+						<input id="txtMethodName"
+							bind="workflowActivity.callSubPVMethodGuid"
+							class="mini-buttonedit" emptyText="通过方法选择"
+							onbuttonclick="selectMethod" selectOnFocus="true" />
+					</div>
+					<div role="control" label="过程中选择">
+						<input class="mini-checkbox" bind="selectProcess" trueValue="true"
+							id="selectProcess" falseValue="false"></input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="会和方式">
+						<div id="joinType" class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.joinType" textField="text" valueField="id"
+							data="[{id:'20',text:'多路'},{id:'30',text:'单一'}]"></div>
+					</div>
+					<div id="split_content" role="control" label="对应分支点">
+						<input bind="workflowActivity.addAttachFileSource"
+							class="mini-buttonedit" id="splitActivityName"
+							emptyText="选择对应分支点" onbuttonclick="selectSplitActivity"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div id="split_msg" role="row">
+					<div role="control" label="">
+						<span class="text-danger">(如果会合方式为多路，那么必须手动设置对应的分支节点)</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="多人处理方式">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.subProMultiTransctorMode" textField="text"
+							valueField="id"
+							data="[{id:'10',text:'多个处理人时，处理人传递给子流程的第一个活动'},{id:'20',text:'多个处理人时，每一处理人独立处理子流程并汇总'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="调用方式">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.subProcessSyncType" textField="text"
+							valueField="id" data="[{id:'20',text:'同步'},{id:'10',text:'异步'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="流程处理页面">
+						<input class="mini-combobox" id="handleUrl"
+							bind="workflowActivity.handleUrl" allowInput="true"
+							showNullItem="true"
+							data="[{text:'含材料的流程处理页面',id:'frame/pages/epointworkflow/client/common/handlemain'},{text:'含材料列表的流程处理页面,包含历史处理意见列表(表单材料超过5个时请选择)',id:'frame/pages/epointworkflow/client/common/handlemainnomateriallist'},{text:'无样式的流程处理页面',id:'frame/pages/epointworkflow/client/common/handlemainwithhistoryopinionlist'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="汇合的额外条件">
+						<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="workflowActivity.multiTransactorMode" textField="text"
+							valueField="id"
+							data="[{id:'10',text:'全部子流程完成'},{id:'20',text:'只要有一个子流程完成'}]"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="短信通知内容">
+						<input id="smsContent" bind="workflowActivity.smsContent"
+							class="mini-textarea" style="width: 90%" /> <a
+							class="action-icon icon-mail" onclick="setSMS();"
+							style="width: 10%"></a>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<span class="text-danger">本步骤收到工作项时，以此处设置的内容发送短信通知（为空则不发送）</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textbox" bind="workflowActivity.note" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动Guid">
+						<input class="mini-textbox" bind="workflowActivity.activityGuid" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="活动标识">
+						<input class="mini-textbox"
+							bind="workflowActivity.activityDispName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<span class="text-danger">(用来唯一定位到该活动,一旦设定不允许修改,与活动对象的activityDispName关联)</span>
+					</div>
+				</div>
+			</div>
+			<!-- 隐藏域信息 -->
+			<input bind="workflowActivity.addAttachFileSource" id="hideSplit"
+				class="mini-hidden" /> <input
+				bind="workflowActivity.callSubProcessGuid" id="callSubProcessGuid"
+				class="mini-hidden" /> <input
+				bind="workflowActivity.callSubPVMethodGuid" id="callSubPVMethodGuid"
+				class="mini-hidden" /> <input bind="txtSubProcessVersionName"
+				id="txtSubPVName" class="mini-hidden" />
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activitysubprocessbaseinfoaction', null, initCallback);
+
+		var processVersionGuid;
+
+		function initCallback(data) {
+			mini.get("txtSubProcessVersionName").setText(
+					mini.get("txtSubPVName").getValue());
+			processVersionGuid = data.processVersionGuid;
+			showType(data.joinType);
+			//console.dir(data);
+			if (data.txtSubProcessVersionName) {
+				mini.get("txtSubProcessVersionName").setText(
+						data.txtSubProcessVersionName);
+			}
+			if (data.txtMethodName) {
+				mini.get("txtMethodName").setText(data.txtMethodName);
+			}
+			if (data.splitActivityName) {
+				mini.get("splitActivityName").setText(data.splitActivityName);
+			}
+		}
+
+		//汇合方式选择
+		mini.get("joinType").on("valuechanged", function(e) {
+			if (e.value) {
+				showType(e.value);
+			}
+		});
+
+		//控制汇合方式显隐
+		function showType(value) {
+			if (value == "30") {
+				Util.form.hideField("#split_content");
+				document.getElementById("split_msg").style.display = "none";
+			} else if (value == "20") {
+				Util.form.showField("#split_content");
+				document.getElementById("split_msg").style.display = "";
+			}
+		}
+
+		//流程处理页面选择	
+		mini.get("handleUrl").on("valuechanged", function(e) {
+			mini.get("handleUrl").setText(e.value);
+		});
+
+		//确认保存
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute("saveActivity", "fui-form", function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						if (!data.edit) {
+							parent.updateTab();
+						}
+						var textValue = mini.get('activityName').getValue();
+						if (!parent.tag) {
+							var param = {
+								Added : !data.edit,
+								Edit : data.edit,
+								ID : parent.Util.getUrlParams('MaxID'),
+								NodeType : 'SubProcess',
+								Text : textValue
+							};
+							parent.setDialogValue(param, !data.edit);
+						} else if (parent.tag == true) {
+							var param = {
+								Added : true,
+								Edit : false,
+								ID : parent.Util.getUrlParams('MaxID'),
+								NodeType : 'SubProcess',
+								Text : textValue
+							};
+							parent.setDialogValue(param, true);
+						}
+					}
+				});
+			}
+		}
+
+		function selSubProcess() {
+			epoint.openDialog("选择子流程", "framemanager/workflow/manage/selectprocess",
+					function(data) {
+						if (data && data != "close") {
+							var datas = data.split(";");
+							mini.get("txtSubProcessVersionName").setText(
+									datas[0]);
+							mini.get("txtSubProcessVersionName").setValue(
+									datas[0]);
+							mini.get("callSubProcessGuid").setValue(datas[1]);
+							clear(1);
+						}
+					}, {
+						width : 300,
+						height : 480
+					});
+		}
+
+		//选择方法
+		function selectMethod() {
+			epoint.openDialog('选择外部方法',
+					"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+							+ processVersionGuid, function(data) {
+						if (data && data != "close") {
+							var datas = data.split(";");
+							mini.get("txtMethodName").setValue(datas[0]);
+							mini.get("txtMethodName").setText(datas[0]);
+							mini.get("callSubPVMethodGuid").setValue(datas[1]);
+							clear(2);
+						}
+					}, {
+						width : 480,
+						height : 300
+					});
+		}
+
+		mini.get("selectProcess").on("valuechanged", function(e) {
+			clear(3);
+		});
+
+		function clear(type) {
+			if (type == 1) {
+				mini.get("txtMethodName").setValue("");
+				mini.get("txtMethodName").setText("");
+				mini.get("callSubPVMethodGuid").setValue("");
+				mini.get("selectProcess").setValue(false);
+			} else if (type == 2) {
+				mini.get("txtSubProcessVersionName").setValue("");
+				mini.get("txtSubProcessVersionName").setText("");
+				mini.get("callSubProcessGuid").setValue("");
+				mini.get("selectProcess").setValue(false);
+			} else if (type == 3) {
+				mini.get("txtMethodName").setValue("");
+				mini.get("txtMethodName").setText("");
+				mini.get("callSubPVMethodGuid").setValue("");
+				mini.get("txtSubProcessVersionName").setValue("");
+				mini.get("txtSubProcessVersionName").setText("");
+				mini.get("callSubProcessGuid").setValue("");
+			}
+		}
+
+		//选择方法
+		function selectSplitActivity() {
+			epoint.openDialog('选择分支点',
+					"framemanager/workflow/design/selectactivity?mode=function&processVersionGuid="
+							+ processVersionGuid, function(data) {
+						if (data && data != "close") {
+							var datas = data.split(";");
+							mini.get("splitActivityName").setValue(datas[0]);
+							mini.get("splitActivityName").setText(datas[0]);
+						}
+					});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

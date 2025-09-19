@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>服务分类管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left closed hidden" id="left">
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getOuTreeModel"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增分类</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选定 </a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="分类名称">
+							<input class="mini-textbox" bind="dataBean.categoryName" />
+						</div>
+					</div>
+					<input bind="belongouguid" id="belongouguid" class="mini-hidden" />
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="categoryName" headerAlign="center" width="100">分类名称</div>
+					<div field="ouname" headerAlign="center" width="100">所属部门</div>
+					<div field="OrderNum" headerAlign="center" align="center"
+						width="100">排序号</div>
+					<!-- 操作列 -->
+					<div type="actioncolumn" headerAlign="center" align="center">
+						<span type="action" icon="icon-edit" onclick="editAPI">修改</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitapicatelistaction', null, function(data) {
+			if (data.isadmin == true) {
+				$('#left').removeClass('closed');
+				$('#left').removeClass('hidden');
+			} else {
+				$('#left').addClass('closed');
+				$('#left').addClass('hidden');
+			}
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var belongouguid = mini.get('belongouguid').getValue();
+			epoint
+					.openDialog(
+							'新增分类',
+							"frame/pages/eianalysemis/cockpit/cockpitapi/cockpitapicateadd?belongouguid="+belongouguid,
+							searchData, {
+								'width' : 1000,
+								'height' : 600
+							});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editAPI");
+		};
+
+		// 弹出修改窗口
+		function editAPI(e) {
+			epoint.openDialog("修改分类",
+					'frame/pages/eianalysemis/cockpit/cockpitapi/cockpitapicateadd?guid='
+							+ e.rowguid, callBack, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', function(data){
+				epoint.alert(data.msg, null, searchData());
+			});
+		}
+
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			mini.get('belongouguid').setValue(id == 'f9root' ? '' : id);
+			searchData();
+		});
+	</script>
+</body>
+</html>

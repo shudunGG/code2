@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>数据集成-数据源配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ "../js/chosen/chosen.css",
+			"../js/pagination/mricode.pagination.css", "../css/common.css",
+			"./css/common.css", "./css/data_setting.css" ]);
+</script>
+</head>
+
+<body>
+	<div class="main">
+		<div class="top-area clearfix">
+			<div class="left-btn-area l">
+				<a id="add" class="mini-button mini-btn-primary" iconCls="icon-addcircle" onclick="addDataSource()">新增数据源</a>
+			</div>
+			<div class="right-btn-area r">
+			 	<span class="data-name">数据源名称：</span>
+				<input type="text" placeholder="请输入关键字" id="searchDataSourceName" class="search-input" />
+				<span class="data-category">数据源类别：</span>
+				<select name="data-choose" id="data-choose" class="choose-category"></select>
+				<span class="data-category">所属节点：</span>
+				<select name="searchNodeName" id="searchNodeName" class="choose-category"></select>
+				<a href="javascript:;" class="search-button btn r">搜索</a>
+			</div>
+		</div>
+		<div class="tab">
+			<ul class="tab-hd clearfix">
+				<li class="panel"></li>
+				<li class="grid"></li>
+			</ul>
+			<div class="tab-bd">
+				<div>
+					<div class="data-content">
+						<ul class="sql-list clearfix"></ul>
+					</div>
+					<div class="page" id="page"></div>
+				</div>
+				<div>
+					<div class="fui-form fui-condition" id="fui-form" style="display:none;">
+						<div role="form">
+							<input bind="dataSourceName" id="dataSourceName"
+										class="mini-textbox" style="display:none;"/>
+							<input bind="dataSourceType" id="dataSourceType"
+										class="mini-textbox" style="display:none;"/>
+							<input bind="nodeName" id="nodeName"
+										class="mini-textbox" style="display:none;"/>
+						</div>
+					</div>
+					<div class="fui-content mini-fit">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="dsid" multiSelect="true" extraId="fui-form"
+							style="width: 100%; height: 100%;" showPager="true"
+							action="getDataGridData">
+							<div property="columns">
+								<!-- <div type="checkcolumn" width="40" headerAlign="center"></div> -->
+								<div type="indexcolumn" width="60" headerAlign="center">序号</div>
+								<div field="dsname" width="100" headerAlign="center"
+									align="center">数据源名称</div>
+								<div field="dstype" width="80" headerAlign="center"
+									align="center">数据源类型</div>
+								<div field="loginuser" width="80" headerAlign="center"
+									align="center">登录用户</div>
+								<div field="connectionstring" width="260" headerAlign="center">链接字符串</div>
+								<div width="100" headerAlign="center" align="center"
+									renderer="onOptionRenderer">操作</div>
+								<div width="50" headerAlign="center" align="center"
+									renderer="onDetailRenderer">查看</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/template" id="temp">
+        {{#list}}
+       <li class="sql-item" data-id="{{id}}">
+           <a href="javascript:void(0);">
+            <div class="clearfix">
+                <div class="clearfix l">
+                    <img src="images/{{src}}" alt="" class="sql-icon l" data-src="{{src}}">
+                    <span class="sql-name" title="{{sqlname}}">{{sqlname}}</span>
+                </div>
+                <div class="r btn-area clearfix">
+                    <button class="edit-icon" title="编辑"></button>
+                    <button class="delete-icon" title="删除"></button>
+                </div>
+           </div>
+           <ul class="detail-info">
+               <li class="detail-item" title="{{type}}">数据库类型：{{type}}</li>
+               <li class="detail-item" title="{{user}}">登录用户：{{user}}</li>
+               <li class="detail-item" title="{{sql}}">链接字符串：{{sql}}</li>
+           </ul>
+          </a>
+       </li>
+      {{/list}}
+    </script>
+	<script type="text/template" id="temp1">
+	  <option value="">请选择数据源类型</option>
+      {{#list}}
+       <option value="{{id}}">{{name}}</option>
+      {{/list}}
+    </script>
+	<script type="text/template" id="temp2">
+	  <option value="">请选择所属节点</option>
+      {{#list}}
+       <option value="{{id}}">{{name}}</option>
+      {{/list}}
+    </script>
+	<script src="../../../rest/resource/jsboot"></script>
+	
+	<script>
+		epoint.initPage('dxpdatasourcelistaction');
+
+		function addDataSource() {
+			epoint.openDialog('新增数据源', '../dxpdatasource', searchData, {
+				'width' : 900,
+				'height' : 500
+			});
+		}
+
+		function onOptionRenderer(e) {
+			return '<a href="javascript:void(0);" onclick="editDataSource('
+					+ "'"
+					+ e.row.dsid
+					+ "'"
+					+ ');" >'
+					+ '编辑'
+					+ '</a>'
+					+ '<span>&nbsp;</span>'
+					+ '<a style="color: red" href="javascript:void(0);" onclick="deleteDataSource('
+					+ "'" + e.row.dsid + "'" + ');" >' + '删除' + '</a>';
+		}
+
+		function editDataSource(id) {
+			epoint.openDialog('修改数据源', "../dxpdatasource?dsid=" + id,
+					searchData, {
+						'width' : 900,
+						'height' : 500
+					});
+		}
+
+		function deleteDataSource(id) {
+			epoint.confirm("确认删除吗", "提示", function() {
+				epoint.execute("deleteSelected", 'datagrid', [id], function(data) {
+					if (data.result === 'success') {
+						epoint.alert("删除成功", "提示信息", null, "success");
+					} else if (data.result === 'failed') {
+						epoint.alert("删除失败", "提示信息", null, "deny");
+					} else if (data.result) {
+						epoint.alert(data.result, "提示信息", null, "deny");
+					}
+
+					searchData();
+				});
+			})
+		}
+		
+		function onDetailRenderer(e) {
+			return '<a href="javascript:void(0);" onclick="onDetailClick(\''
+					+ e.row.dsid
+					+ '\');" class="action-icon icon-search" title="查看相关集成作业"></a>';
+
+		}
+
+		function onDetailClick(dsid) {
+			epoint.openDialog('查看相关集成作业',
+					"dxp/flowinfo/relateflowinfolist?dsid=" + dsid, searchData,
+					{
+						'width' : 1200,
+						'height' : 550
+					});
+		}
+	</script>
+	<script>
+		var interfaceName = epoint
+				.dealRestfulUrl("../../../rest/dxpdatasourcelistaction/getDataSourceList");
+		var interfaceSourceTypeName = epoint
+				.dealRestfulUrl("../../../rest/dxpdatasourcelistaction/getSourceTypeList");
+		var interfaceNodeName = epoint
+				.dealRestfulUrl("../../../rest/dxpdatasourcelistaction/getNodeNameList");
+	</script>
+	<script>
+		SrcBoot.output([ "../js/jquery-tab.js",
+				"../js/pagination/mricode.pagination.js",
+				"../js/chosen/chosen.jquery.min.js",
+				"frame/fui/js/libs/mustache.min.js",
+				 "../js/jquery.nicescroll.min.js",
+				// "./_test/test_setting.js",
+				"../js/common.js", "./js/data_setting.js" ]);
+	</script>
+	<script>
+		function searchData() {
+			RequestData();
+			mini.get('datagrid').reload();
+		}
+		
+	</script>
+</body>
+
+</html>

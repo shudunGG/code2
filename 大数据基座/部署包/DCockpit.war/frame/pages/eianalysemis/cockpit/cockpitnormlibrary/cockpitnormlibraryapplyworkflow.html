@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标库申请工作流</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="applytoolbar">
+		<a class="mini-button mini-btn-primary" onclick="applyall()">全部申请
+		</a> <a class="mini-button" onclick="deleteset()">删除选定 </a>
+	</div>
+	<div class="fui-toolbar" id="pvitoolbar">
+		<div class="uc-handlecontrols" id="handlecontrols"
+			action="handlecontrolsaction.handleCtrl" style="width: 100%"></div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 隐藏按钮id不能修改 -->
+		<div class="hidden">
+			<a class="mini-button" id="btnSaveFrom" onclick="saveFrom();">保存</a>
+			<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+		</div>
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 400px;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" sortField="create_time"
+			editNextOnEnterKey="true" editNextRowCell="true"
+			allowAlternating="true">
+			<div property="columns">
+				<div align="center" type="checkcolumn" width="30"></div>
+				<div align="center" type="indexcolumn" width="60"
+					headerAlign="center">序号</div>
+				<div align="center" width="200" field="name" headerAlign="center"
+					name="name">名称</div>
+				<div align="center" width="105" field="belongouname"
+					headerAlign="center" name="belongouname">所属单位</div>
+			</div>
+		</div>
+		<div id="editWindow" class="mini-window" title="共享申请"
+			style="width: 650px; height: 450px" showModal="true"
+			allowResize="true" allowDrag="true">
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button" id="addNew" onclick="save">提交</a><a
+						class="mini-button" onclick="closewindow">关闭</a>
+				</div>
+			</div>
+			<div id="editform" class="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="指标分类" starred="true">
+							<input id="normdomain" class="mini-treeselect"
+								action="cockpitnormdomainaction.getNormDomainTreeModel"
+								bind="normNum" showFolderCheckBox="true" showRadioButton="true"
+								showTreeIcon="true" textField="text" idField="id"
+								expandOnLoad="true" required="required" showFilter="true"
+								requiredErrorText="指标分类不能为空" />
+						</div>
+						<div role="control"></div>
+					</div>
+					<div role="row">
+						<div role="control" label="申请用途" starred="true">
+							<div class="mini-textarea" style="height: 240px" bind="reason"
+								required="true" requiredErrorText="申请用途不能为空!"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-accordions" id="acc">
+			<div role="accordion">
+				<div role="head" title="签署意见"></div>
+				<div role="body">
+					<div class="uc-workflowopinion" id="workflowopinion"
+						action="workflowopinionaction.opinionCtrl"
+						data-options="{'showmode' : 3}" style="width: 100%;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script
+		src="../../../../../frame/pages/epointworkflow/js/workflowjsboot.js"></script>
+	<script
+		src="../../../../../frame/pages/epointworkflow/js/tableproperty.js"></script>
+
+	<script>
+		var pviguid = Util.getUrlParams('ProcessVersionInstanceGuid');
+		//初始化页面
+		epoint.initPage('cockpitnormlibraryapplyworkflowaction', '', function(
+				data) {
+
+			if (pviguid) {
+				$('#applytoolbar').css('display', 'none');
+			} else {
+				$('#pvitoolbar').css('display', 'none');
+				$('#acc').css('display', 'none');
+			}
+		});
+
+		function saveFrom() {
+			if (epoint.validate()) {
+				epoint.execute('saveForm', 'fui-form', newCallback);
+			} else
+				ShowTdOperate(true);
+		}
+
+		function submit() {
+			if (epoint.validate()) {
+				epoint.execute('submit', '', newCallback);
+			} else
+				ShowTdOperate(true);
+		}
+
+		// 新增操作的回调,必须回调handlecontrols中的HeaderSubmit触发流程流转
+		function newCallback(data) {
+			if (data && data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				//ShowTdOperate(true);
+				closewindow();
+			} else {
+				HeaderSubmit();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		function deleteset() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', searchData);
+		}
+
+		function applyall() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要申请的记录!', '', null, 'warning');
+			} else {
+				mini.get("editWindow").show();
+			}
+		}
+
+		function closewindow() {
+			mini.get('datagrid').reload();
+			mini.get("editWindow").hide();
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('batchapply', 'editform', newCallback);
+			}
+		}
+	</script>
+</body>
+
+</html>

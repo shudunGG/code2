@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用附件列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="configDataSource" class="mini-button"
+				onclick="configDataSource"> 选择数据源</a> <a id="btnDel"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', null, null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a> <a id="btnDelPhysical" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', null, null, 'warning');} else {epoint.confirm('确认要删除吗?','',deletePhysical);}">
+				删除物理附件 </a>
+
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="attachguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="attachfilename" headerAlign="center">附件名称</div>
+				<div field="filepath" headerAlign="center">路径</div>
+				<div field="Attach_ConnectionStringName" headerAlign="center">附件数据源</div>
+				<div field="md5id" headerAlign="center">MD5</div>
+				<div field="attachlength" headerAlign="center">附件大小(字节)</div>
+				<div field="uploaddatetime" headerAlign="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">上传日期</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onDownloadRenderer">下载</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appattachinfolistaction');
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 删除物理附件 
+		function deletePhysical() {
+			epoint.execute("deletePhysical", '', callback);
+		}
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+		//绘制下载按钮
+		var onDownloadRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-45",
+					"downloadAttach");
+		};
+		function downloadAttach(id) {
+			epoint.execute("download", '', id, downloadCallBack);
+		}
+		function downloadCallBack(data) {
+			window.open(Util.getRightUrl(data.url));
+		}
+		function configDataSource() {
+			var appguid = Util.getUrlParams('appguid');
+			epoint.openDialog('附件数据源管理',
+					"frame/pages/basic/gateway/app/appinfomanage/appattachconfiglist?appguid="
+							+ appguid, null, {
+						'width' : 600,
+						'height' : 450
+					});
+		}
+	</script>
+</body>
+</html>

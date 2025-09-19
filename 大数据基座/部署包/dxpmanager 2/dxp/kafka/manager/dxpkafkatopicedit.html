@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>topic修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div class="fui-accordions">
+					<div role="accordion" opened="true">
+						<div role="head" title="基本设置"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="topic名称" starred="true">
+									<input bind="topic.topicname" class="mini-textbox" readonly="readonly"
+										required="true" requiredErrorText="topic名称不能为空" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="所属分组" starred="true">
+									<input id="tree" class="mini-treeselect" action="getTreeModel"
+										bind="topic.groupguid" showFolderCheckBox="true"
+										required="true" oncloseclick="onCloseClick" 
+										showTreeIcon="true" textField="text" idField="id"
+										expandOnLoad="true" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="所属节点" starred="true">
+									<input id="nodeGuid" bind="topic.nodeguid"
+										class="mini-combobox" required="true" readonly="readonly"
+										requiredErrorText="所属节点不能为空" action="getNodeGuidList"
+										 />
+								</div>
+							</div>
+							<!-- <div role="row">
+								<div role="control" label="消息队列" starred="true">
+									<input id="dataSource" bind="topic.datasourceid" readonly="readonly"
+										class="mini-combobox" required="true" onvaluechanged="onDataSourceChanged"
+										requiredErrorText="消息队列不能为空" action="getDataSourceList" />
+								</div>
+							</div> -->
+							<div role="row">
+								<div role="control" label="描述">
+									<textarea class="mini-textarea" emptyText="请输入描述"
+										bind="topic.description"></textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div role="accordion" opened="true">
+						<div role="head" title="高级设置"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="分区数" starred="true">
+									<input id="partitions" changeOnMousewheel="false" class="mini-spinner"
+										minValue="1" maxValue="100" bind="topic.partitions" allowInput="false"
+										required="true" requiredErrorText="分区数不能为空" />
+								</div>
+								<div role="control" label="副本数" starred="true">
+									<input id="replication" changeOnMousewheel="false" class="mini-spinner"
+										minValue="1" maxValue="1" bind="topic.replication" allowInput="false"
+										required="true" requiredErrorText="副本数不能为空" readonly="readonly"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="btn-group" style="margin: 0 auto; width: 25%;">
+				<a class="mini-button" onclick="close()">关闭</a> <a
+					class="mini-button mr10" onclick="save()">确定</a>
+			</div>
+		</div>
+
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			epoint.initPage('dxpkafkatopiceditaction', '', function(data){
+				if(data.msg){
+					epoint.alertAndClose(data.msg,'','','warning');
+					return;
+				}
+				var partitions = mini.get('partitions');
+				var replication = mini.get('replication');
+				
+				partitions.setMinValue(partitions.getValue());
+				replication.setMinValue(replication.getValue());
+			});
+
+			//树js对象
+			var tree = mini.get("tree");
+			// 点击左侧树刷新右侧表格
+			tree.on('beforenodeselect', function(obj) {
+				if (obj.node) {
+					var id = obj.node.id;
+					if (id == 'all') {
+						obj.cancel = true;
+					}
+				}
+			});
+
+			function save() {
+				if (epoint.validate()) {
+					epoint.execute('save', '@all', function(data) {
+						if (data.success == 'success') {
+							epoint.alert(data.msg, '提示', function() {
+								epoint.closeDialog();
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				}
+			}
+
+			function close() {
+				epoint.closeDialog();
+			}
+
+			var onCloseClick = function() {
+				mini.get('tree').setValue("");
+				mini.get('tree').setText("");
+			}
+			
+			 /*自定义vtype*/
+	        mini.VTypes["englishErrorText"] = "请输入英文,'.', '_' , '-'";
+	        mini.VTypes["english"] = function (v) {
+	            var re = new RegExp("^[a-zA-Z\_\.\-]+$");
+	            if (re.test(v)) return true;
+	            return false;
+	        }
+		</script>
+</body>
+</html>

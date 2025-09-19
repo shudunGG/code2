@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>三员管理</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/threemanage.css">
+</head>
+
+<body>
+	<div class="three-box">
+		<div class="three-header -close close" id="three-header">
+			<!-- 左侧信息 -->
+			<div class="left-info l">
+				<div class="info-img l">
+					<img src="css/images/three.jpg" alt="" />
+				</div>
+				<div class="info-status l">
+					<h3 class="info-title">
+						三员管理： <span class="status-text"></span>
+					</h3>
+
+					<p class="info-desc">三员相互独立、相互制约，可有效的加强涉密信息系统保密管理，减少泄密风险</p>
+
+					<div class="close-manage" id="closeManage"></div>
+				</div>
+			</div>
+			<!-- 右侧选择 -->
+			<ul class="r right-content">
+				<li class="r three-item">
+					<p class="icon-person">
+						安全审计员 <a class="mini-button" iconCls="icon-refresh" plain="true"
+							onclick="resetPassword('2')" tooltip="重置密码"></a>
+					</p>
+					<div class="input-box">
+						<div class="input-contain">
+							<input id="security-auditor" class="mini-textboxlist class-input"
+								name="security-auditor" textName="securityAuditorName"
+								inputmode="false" allowInput="false" remote="false"
+								onremoveItem="removeItem" />
+						</div>
+						<div class="input-add" data-name="securityAuditor"></div>
+					</div>
+				</li>
+				<li class="r three-item">
+					<p class="icon-person">
+						安全管理员 <a class="mini-button" iconCls="icon-refresh" plain="true"
+							onclick="resetPassword('1')" tooltip="重置密码"></a>
+					</p>
+					<div class="input-box">
+						<div class="input-contain">
+							<input id="security-admin" class="mini-textboxlist class-input"
+								name="security-admin" textName="securityAdminName"
+								inputmode="false" allowInput="false" remote="false"
+								onremoveItem="removeItem" />
+						</div>
+						<div class="input-add" data-name="securityAdmin"></div>
+					</div>
+				</li>
+				<li class="r three-item">
+					<p class="icon-person">
+						配置管理员 <a class="mini-button" iconCls="icon-refresh" plain="true"
+							onclick="resetPassword('0')" tooltip="重置密码"></a>
+					</p>
+					<div class="input-box">
+						<div class="input-contain">
+							<input id="system-admin" class="mini-textboxlist class-input"
+								name="system-admin" textName="systemAdminName" inputmode="false"
+								allowInput="false" remote="false" onremoveItem="removeItem" />
+
+						</div>
+						<div class="input-add" data-name="systemAdmin"></div>
+					</div>
+				</li>
+				<li class="r three-item">
+					<p class="icon-person">三员管理员</p>
+					<div class="input-box">
+						<div class="input-contain">
+							<input id="super-admin" class="mini-textboxlist class-input"
+								name="super-admin" textName="superAdminName" inputmode="false"
+								allowInput="false" remote="false" onremoveItem="removeItem" />
+
+						</div>
+						<div class="input-add" data-name="superAdmin"></div>
+					</div>
+				</li>
+				<li class="r three-item">
+					<div id="roleGroup" class="mini-checkboxlist" valueField="id"
+						onvaluechanged="roleGroupChange"
+						data='[{"id":"hideouadmin","text":"是否屏蔽OuAdminGroup角色"}]'></div>
+				</li>
+			</ul>
+		</div>
+		<!-- 表单 -->
+		<div class="three-contain">
+			<div class="three-tablelist close" id="three-tablelist">
+				<!-- 此处放列表 -->
+
+				<!-- toolbar区域 -->
+				<div class="fui-toolbar">
+					<a class="mini-button" state="primary" onclick="addModule()">新增功能</a> <a
+						class="mini-button" onclick="saveBtn()">保存修改</a> <a
+						class="mini-button" state="danger"
+						onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的功能！',  {state : 'warning'});} else {epoint.confirm('确定要删除吗？','',function(){epoint.execute('deleteSelect','datagrid',callback);});}">删除选中</a>
+					<div id="fui-form" class="fui-toolbar-search r">
+						<input id="searchname" class="mini-textbox" showNullItem="true"
+							emptyText="请输入模块名称搜索" width="190px" allowInput="true"
+							textField="searchname" valueField="searchname"
+							onenter="searchData" /><a class="mini-button ml8"
+							state="primary" iconCls="icon-search" onclick="searchData"
+							tooltip="搜索"></a>
+					</div>
+				</div>
+
+				<!-- 表单布局 -->
+				<div id="fuiContent" class="fui-content">
+					<div id="datagrid" class="mini-treegrid" allowResize="true"
+						treeColumn="modulename" action="getDataGridData"
+						style="height: 100%;" multiSelect="true" pageSize="500"
+						showpager="false" allowCellEdit="true" allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40">序</div>
+							<div name="modulename" field="modulename" width="300"
+								vtype="required;maxLength:50">
+								功能名称 <input property="editor" class="mini-textbox"
+									style="width: 100%;" maxLength="50" />
+							</div>
+							<div field="modulecode" width="150">模块code</div>
+							<div field="moduleurl" width="300">
+								模块地址 <input property="editor" class="mini-textbox"
+									style="width: 100%;" />
+							</div>
+							<div field="ordernumber" width="80" vtype="int;range:0,99999999">
+								排序 <input property="editor" class="mini-textbox"
+									vtype="int;range:0,99999999" inputStyle="text-align:right"
+									style="width: 100%;" />
+							</div>
+							<div field="isAddOu" width="60" type="checkboxcolumn"
+								truevalue="1" falsevalue="0">隐藏</div>
+							<div field="isDisable" width="60" type="checkboxcolumn"
+								truevalue="1" falsevalue="0">禁用</div>
+							<div field="isBlank" width="60" type="checkboxcolumn"
+								truevalue="1" falsevalue="0">弹出</div>
+							<div field="superadmin" width="120" type="checkboxcolumn"
+								truevalue="1" falsevalue="0" onclick>三员管理员</div>
+							<div field="systemadmin" width="120" type="checkboxcolumn"
+								truevalue="1" falsevalue="0">配置管理员</div>
+							<div field="securityadmin" width="120" type="checkboxcolumn"
+								truevalue="1" falsevalue="0">安全管理员</div>
+							<div field="securityauditor" width="120" type="checkboxcolumn"
+								truevalue="1" falsevalue="0">安全审计员</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="js/threemanage.js"></script>
+	<script>
+		epoint.initPage('threemanageaction', null, initData);
+
+		/* var grid = mini.get('datagrid');
+		function OnCellBeginEdit(e) {
+			if (e.field == "superadmin") {
+				console.log(e);
+				if(e.record.expanded == true && e.record.superadmin == "0" ){
+					$(e.record.children).each(function(index, element) {
+						if(element.superadmin == '0'){
+							element.superadmin = '1'; 
+							grid.updateRow(element);
+						}
+					});
+				}
+			}
+		} */
+
+		var expandedKeys;
+
+		function saveExpanded(){
+			expandedKeys = new Array();
+			$(grid.data).each(function(index, rootmodule) {
+				if(rootmodule.expanded == true){
+					expandedKeys.push(rootmodule.id);
+				}
+				saveExpandedRescure(rootmodule);
+			});
+		}
+
+		function saveExpandedRescure(parent) {
+			$(parent.children).each(function(index, child) {
+				if(child.expanded == true){
+					expandedKeys.push(child.id);
+				}
+				saveExpandedRescure(child);
+			});
+		}
+		
+		var grid = mini.get('datagrid');
+
+		var searchedname;
+		function searchData() {
+			var searchname = mini.get('searchname').getValue();
+			if (searchedname != searchname) {
+				searchedname = searchname;
+				epoint.refresh([ 'datagrid' ], searchData);
+			}
+			if (searchname) {
+				$(grid.data).each(function(index, rootmodule) {
+					if (rootmodule.modulename.indexOf(searchname) != -1) {
+						grid.selectNode(rootmodule);
+					}
+					fetchChild(rootmodule, searchname);
+				});
+			} else {
+				epoint.refresh([ 'datagrid' ]);
+			}
+		}
+
+		function fetchChild(parent, searchname) {
+			var flag = false;
+			var flag2 = false;
+			$(parent.children).each(function(index, child) {
+				if (child.modulename.indexOf(searchname) != -1) {
+					flag = true;
+					grid.selectNode(child);
+					grid.scrollIntoView(child);
+				}
+				if (fetchChild(child, searchname) == true) {
+					flag2 = true;
+				}
+			});
+			if (flag == true || flag2 == true) {
+				grid.expandNode(parent);
+				flag2 = true;
+			}
+			return flag2;
+		}
+	</script>
+</body>
+
+</html>

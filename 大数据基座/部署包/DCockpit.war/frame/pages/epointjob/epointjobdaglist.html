@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>DAG流程列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="addProcess">新增DAG流程</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<span class="text-danger"> 暂无描述 </span>
+		</p>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="DAG流程名">
+						<input bind="jobDesc" class="mini-textbox" />
+					</div>
+					<div role="control" label="任务状态">
+						<input id="triggerStatus" class="mini-radiobuttonlist"
+							action="getTriggerStatusList" bind="triggerStatus" value="-1"
+							onvaluechanged="statusChange" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="负责人">
+						<input bind="author" class="mini-textbox" />
+					</div>
+					<div role="control" label=""></div>
+				</div>
+			</div>
+		</div>
+		<a id="searchBtn" role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="dagGuid" multiSelect="false"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="false" allowCellEdit="false" showPager="true"
+			action="getDataGridData" allowCellSelect="false">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="dagName" width="100%">DAG流程名</div>
+				<div field="dagCron" width="130">Cron</div>
+				<div field="author" width="100">负责人</div>
+				<div field="dagTriggerStatus" headeralign="center" align="center" width="80"
+					renderer="onStatusRenderer">状态</div>
+				<div width="80" headeralign="center" align="center" renderer="onStartOrStopRenderer">启动停止</div>
+				<div width="80" headeralign="center" align="center" renderer="onTriggerRenderer">执行一次</div>
+				<div width="80" headeralign="center" align="center" renderer="onDesignRenderer">流程设计</div>
+				<div width="80" headeralign="center" align="center" renderer="onLogRenderer">流程实例</div>
+				<div width="110" headeralign="center" align="center" renderer="onNextTimeRenderer">后续调度时间</div>
+				<div width="80" headeralign="center" align="center" renderer="onEditRenderer">编辑</div>
+				<div width="80" headeralign="center" align="center" renderer="onDelRenderer">删除</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面		
+		epoint.initPage('epointjobdaglistaction', '@all', function(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+			}
+		});
+
+		// 弹出新增窗口
+		function addProcess(e) {
+			epoint.openDialog("新增DAG流程",
+					"frame/pages/epointjob/epointjobdagadd", callBack, {
+						'width' : 800,
+						'height' : 500
+					});
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit",
+					"dagGuid");
+		};
+
+		// 弹出修改窗口
+		function openEdit(guid) {
+			var url = 'frame/pages/epointjob/epointjobdagadd?dagGuid=' + guid;
+			epoint.openDialog("编辑DAG流程", url, callBack, {
+				'width' : 800,
+				'height' : 500
+			});
+		}
+
+		// 回调方法
+		function callBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.alert(param, null, null, 'info');
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 绘制行删除按钮
+		var onDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove", "del",
+					"dagGuid");
+		};
+
+		// 删除一行数据
+		function del(guid) {
+			// 弹出确认框
+			epoint.confirm("确定要将本DAG流程删除吗?", '', function() {
+				epoint.execute("del", '', [ guid ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		// 绘制启动停止按钮
+		var onStartOrStopRenderer = function(e) {
+			if (e.row.dagTriggerStatus == "1") {
+				return epoint.renderCell(e, "action-icon icon-pause error",
+						"stopJob", "dagGuid");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-start success",
+						"startJob", "dagGuid");
+			}
+		};
+
+		// 开始任务
+		function startJob(guid) {
+			// 弹出确认框
+			epoint.confirm("你确定要启动该DAG流程？", '', function() {
+				epoint.execute("startProcess", '', [ guid ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		// 停止任务
+		function stopJob(guid) {
+			// 弹出确认框
+			epoint.confirm("你确定要停止该DAG流程？", '', function() {
+				epoint.execute("stopProcess", '', [ guid ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		// 绘制查看下次执行时间按钮
+		var onNextTimeRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-clock", "nextTime",
+					"dagCron");
+		};
+
+		//查看下次执行的时间
+		function nextTime(cron) {
+			// 弹出确认框
+			epoint.execute("nextTriggerTime", '', [ cron ], function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', null, 'info');
+				}
+			});
+		}
+
+		// 流程状态切换事件
+		function statusChange(e) {
+			// 流程状态切换时，触发搜索事件
+			$('#searchBtn span').trigger('click');
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 任务状态渲染
+		function onStatusRenderer(e) {
+			var cls = "";
+			var statusName = "";
+			if (e.row.dagTriggerStatus == "1") {
+				cls = "dot-success";
+				statusName = "运行";
+			} else {
+				cls = "dot-gone";
+				statusName = "停止";
+			}
+			return '<i class="' + cls+ '"></i>' + statusName;
+		}
+
+		// 流程设计按钮渲染
+		function onDesignRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-paper",
+					"openDesigner", "dagGuid");
+		}
+
+		// 弹出设计页面 
+		function openDesigner(dagGuid) {
+			epoint.openTopDialog('DAG流程设计',
+					'frame/pages/epointjob/chart/designer?dagGuid=' + dagGuid,
+					function(param) {
+						if (param != 'close') {
+							epoint.alert(param, null, null, 'info');
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					});
+		}
+
+		// 绘制执行一次按钮
+		var onTriggerRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-check", "trigger",
+					"dagGuid");
+		};
+
+		// 执行一次流程
+		function trigger(guid) {
+			// 弹出确认框
+			epoint.confirm("你确定要执行一次该DAG流程？", '', function() {
+				epoint.execute("trigger", '', [ guid ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', null, 'info');
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}
+				});
+			});
+		}
+
+		// 绘制日志按钮
+		var onLogRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-doc", "openLog",
+					"dagGuid");
+		};
+
+		// 弹出流程日志展示页
+		function openLog(guid) {
+			epoint
+					.openDialog('DAG流程实例列表',
+							'frame/pages/epointjob/epointjobdagloglist?dagGuid='
+									+ guid, "", {
+								'width' : 1400,
+								'height' : 1000
+							})
+
+		}
+	</script>
+</body>
+</html>

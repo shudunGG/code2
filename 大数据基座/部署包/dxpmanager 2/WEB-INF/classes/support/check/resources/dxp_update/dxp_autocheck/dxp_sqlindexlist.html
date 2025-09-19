@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>数据库索引检测</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<link href="css/style.css" type="text/css" rel="stylesheet" />
+<link href="css/indexlist.css" type="text/css" rel="stylesheet" />
+
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+
+<body class="body-content">
+	<div class="page-loading"></div>
+
+	<div class="tabs">
+		<ul class="tab" style="padding-left: 20%">
+			<!-- <li class="tab-item active" title="按必建索引对比数据库是否有缺失">必建索引</li> -->
+			<li class="tab-item active" title="按标准索引对比数据库是否有缺失">标准索引</li>
+			<li class="tab-item" title="查询库中表记录超过500但没有索引的记录">索引预警</li>
+		</ul>
+	</div>
+	<div class="container">
+		<form method="post" id="sqlForm" action="">
+			<!-- <div class="main selected">
+				<table style="background-color: #fff"
+					class="showtable table table-bordered responsive-utilities"
+					id="necIndexForm">
+				</table>
+			</div> -->
+			<div class="main selected">
+				<table style="background-color: #fff"
+					class="showtable table table-bordered responsive-utilities"
+					id="indexForm">
+				</table>
+			</div>
+			<div class="main">
+				<table style="background-color: #fff"
+					class="showtable table table-bordered responsive-utilities"
+					id="warnForm">
+					<tr>
+						<td style="width: 8%; font-weight: bold">序号</td>
+						<td style="width: 23%; font-weight: bold">表名</td>
+						<td style="width: 23%; font-weight: bold">表记录数</td>
+						<td style="width: 23%; font-weight: bold">检查结果</td>
+						<td style="width: 23%; font-weight: bold">查看索引</td>
+					</tr>
+				</table>
+			</div>
+		</form>
+	</div>
+</body>
+<script src="js/jquery.min.js" type="text/javascript" charset="utf8"></script>
+<!-- 配置变量 -->
+<script>
+	String.prototype.endsWith = function(str) {
+		var reg = new RegExp(str + "$");
+		return reg.test(this);
+	}
+
+	//初始化页面
+	var showDiv;
+	$.getJSON('../../dxpsqlindexlist/checkSqlindex',function(data) {
+						$("#indexForm").append(getMsg(data.indextypelist, data.indexcomparelist));
+						$("#necIndexForm").append(getMsg(data.necindextypelist, data.necindexcomparelist));
+						
+						// 索引预警表
+						var warnIndex = 0;
+						var warnMsg = "";
+						if (!Object.keys(data.indexwarninglist).length) {
+							warnMsg = "<tr><td style='width: 8%; font-weight: bold'>1</td>"
+									+ "<td style='width: 92%; font-weight: bold' colspan='4'>未检测到有记录数超过500的表</td></tr>";
+							$("#warnForm").append(warnMsg);
+						} else {
+							$
+									.each(
+											data.indexwarninglist,
+											function(index, value) {
+												var tableName = index;
+												var warningInfo = value;
+												// 预警状态
+												var shonwWarningStatus = "";
+												if (warningInfo.warnStatus == 0) {
+													shonwWarningStatus = "<font color=\"red\">缺少索引</font>";
+												} else if (warningInfo.warnStatus == 1) {
+													shonwWarningStatus = "<font color=\"red\">仅有主键</font>";
+												} else if (warningInfo.warnStatus == 3) {
+													shonwWarningStatus = "<font color=\"red\">索引不存在</font>";
+												} else {
+													shonwWarningStatus = "已有索引";
+												}
+												var warnIndexMap = warningInfo.sqlIndexMap;
+												var showWarnIndexName = "";
+												var showWarnIndexKeys = "";
+												if (warnIndexMap) {
+													$
+															.each(
+																	warnIndexMap,
+																	function(
+																			index,
+																			value) {
+																		showWarnIndexName += index
+																				+ "\r\n";
+																		var currentWarnKeys = "";
+																		$
+																				.each(
+																						value,
+																						function(
+																								index,
+																								value) {
+																							currentWarnKeys += value
+																									+ ";";
+																						});
+																		if (currentWarnKeys
+																				.endsWith(";")) {
+																			currentWarnKeys = currentWarnKeys
+																					.substring(
+																							0,
+																							currentWarnKeys.length - 1);
+																		}
+																		showWarnIndexKeys += currentWarnKeys
+																				+ "\r\n";
+																	});
+												}
+												warnIndex++;
+												warnMsg += '<tr><td style="width: 8%;">'
+														+ warnIndex
+														+ '</td>'
+														+ '<td style="width: 23%;">'
+														+ tableName
+														+ '</td>'
+														+ '<td style="width: 23%;">'
+														+ warningInfo.tableRowCount
+														+ '</td>'
+														+ '<td style="width: 23%;" class="ischeck">'
+														+ shonwWarningStatus
+														+ '</td>'
+														+ '<td style="width: 23%;">';
+												if (warningInfo.warnStatus == 1
+														|| warningInfo.warnStatus == 2) {
+													warnMsg += '<a data-type="hidewarn" data-index="' + (warnIndex - 1) + '" onclick="toggleDiv(this);">查看</a>';
+												}
+												warnMsg += '</td></tr><tr><td class="hidewarn" id="hidewarn'
+														+ (warnIndex - 1)
+														+ '" colspan="5" style="padding: 0px;">'
+														+ '<table style="width: 100%;border: 0px;padding: 0px;" cellpadding="0" cellspacing="0">'
+														+ '<tr><td class="smalltd">索引名</td><td class="smalltd">索引字段</td></tr>'
+														+ '<tr><td class="smalltd" style="padding: 0px;">'
+														+ '<textarea rows="6">'
+														+ showWarnIndexName
+														+ '</textarea></td>'
+														+ '<td class="smalltd" style="padding: 0px;">'
+														+ '<textarea rows="6">'
+														+ showWarnIndexKeys
+														+ '</textarea>'
+														+ '</td></tr></table></td></tr>';
+											});
+						}
+						$("#warnForm").append(warnMsg);
+						hideAll(true);
+					});
+
+	function getMsg(indextypelist, indexcomparelist) {
+		var numIndex = 0;
+		var msg = "";
+		// 索引对比表
+		for ( var key in indextypelist) {
+			var indexInfoMap = indextypelist[key];
+			msg = "<tr><td colspan='5'><h4>" + key + "</h4></td></tr>";
+			msg += "<tr><td style='width: 8%; font-weight: bold'>序号</td>"
+					+ "<td style='width: 23%; font-weight: bold'>表名</td><td style='width: 23%; font-weight: bold'>索引状态</td>"
+					+ "<td style='width: 23%; font-weight: bold'>同步</td>"
+					+ "<td style='width: 23%; font-weight: bold'>查看索引</td>"
+					+ "</tr>";
+			numIndex = 0;
+			var indexCompare = indexcomparelist[key];
+			for ( var tablename in indexCompare) {
+				var compareInfo = indexCompare[tablename];
+				// 索引状态
+				var shonwIndexStatus;
+				if (compareInfo.syncStatus == 1) {
+					shonwIndexStatus = "<font color='red'>缺少索引</font>";
+				} else if (compareInfo.syncStatus == 2) {
+					shonwIndexStatus = "与标准索引有差异";
+				} else if (compareInfo.syncStatus == 3) {
+					shonwIndexStatus = "<font color='red'>索引或表不存在</font>";
+				} else {
+					shonwIndexStatus = "正常";
+				}
+				// 待执行的sql
+				var showCompareSql = "";
+				if (compareInfo.needExecuteList
+						&& compareInfo.needExecuteList.length > 0) {
+					$.each(compareInfo.needExecuteList, function(index, value) {
+						var suffix = "";
+						if (!value.endsWith(";")) {
+							suffix = ";";
+						}
+						showCompareSql += value + suffix;
+					});
+				}
+				// 标准索引
+				var indexInfoList = indexInfoMap[tablename];
+				var showIndexName = "";
+				var showIndexKeys = "";
+				if (indexInfoList && indexInfoList.length > 0) {
+					$.each(indexInfoList, function(index, value) {
+						var indexInfo = value;
+						showIndexName += indexInfo.indexName + "\r\n";
+						var currentKeys = "";
+						$.each(indexInfo.indexKeys, function(index, value) {
+							currentKeys += value + ";";
+						});
+						if (currentKeys.endsWith(";")) {
+							currentKeys = currentKeys.substring(0,
+									currentKeys.length - 1);
+						}
+						showIndexKeys += currentKeys + "\r\n";
+					});
+				}
+
+				//库中索引
+				var sqlIndexMap = compareInfo.sqlIndexMap;
+				var showComIndexName = "";
+				var showComIndexKeys = "";
+				if (sqlIndexMap) {
+					$.each(sqlIndexMap, function(index, value) {
+						showComIndexName += index + "\r\n";
+						var currentComKeys = "";
+						$.each(value, function(index, value) {
+							currentComKeys += value + ";";
+						});
+						if (currentComKeys.endsWith(";")) {
+							currentComKeys = currentComKeys.substring(0,
+									currentComKeys.length - 1);
+						}
+						showComIndexKeys += currentComKeys + "\r\n";
+					});
+				}
+				numIndex++;
+				msg += "<tr><td style='width: 8%;'>" + numIndex
+						+ "</td><td style='width: 23%;'>" + tablename
+						+ "</td><td style='width: 23%;' class='ischeck'>"
+						+ shonwIndexStatus + "</td><td style='width: 23%;'>";
+
+				if (compareInfo.syncStatus == 1 || compareInfo.syncStatus == 3) {
+					msg += '<a href="javascript:;" onclick="doUpdate('
+							+ (numIndex - 1)
+							+ ',\''
+							+ tablename
+							+ '\', this)">同步索引</a>'
+							+ '<a href="javascript:;" data-type="hidepath" data-index="' + (numIndex - 1) + '" onclick="toggleDiv(this)">查看待执行SQL</a>';
+				}
+
+				msg += '</td>'
+						+ '<td style="width: 23%;" ><a data-type="hidesql" data-index="' + (numIndex - 1) + '" onclick="toggleDiv(this);">查看</a></td>'
+						+ '</tr><tr><td class="hidepath" id="hidepath'
+						+ (numIndex - 1)
+						+ '" colspan="5">'
+						+ showCompareSql
+						+ '</td>'
+						+ '</tr><tr><td class="hidesql" id="hidesql'
+						+ (numIndex - 1)
+						+ '" colspan="5" style="padding: 0px;">'
+						+ '<table style="width: 100%;border: 0px;padding: 0px;" cellpadding="0" cellspacing="0">'
+						+ '<tr><td colspan="2" class="smalltd">标准索引</td><td colspan="2" class="smalltd">当前库索引</td>'
+						+ '</tr><tr><td class="smalltd">索引名</td><td class="smalltd">索引字段</td><td class="smalltd">索引名</td>'
+						+ '<td class="smalltd">索引字段</td></tr><tr><td class="smalltd" style="padding: 0px;">'
+						+ '<textarea rows="6">'
+						+ showIndexName
+						+ '</textarea>'
+						+ '</td><td class="smalltd" style="padding: 0px;">'
+						+ '<textarea rows="6">'
+						+ showIndexKeys
+						+ '</textarea>'
+						+ '</td><td class="smalltd" style="padding: 0px;">'
+						+ '<textarea rows="6">'
+						+ showComIndexName
+						+ '</textarea>'
+						+ '</td><td class="smalltd" style="padding: 0px;">'
+						+ '<textarea rows="6">'
+						+ showComIndexKeys
+						+ '</textarea>'
+						+ '</td></tr></table></td></tr><tr><td data-type="hideerr" data-index="'+(numIndex - 1)+'" class="hideerr" colspan="5"></td></tr>';
+			}
+		}
+		return msg;
+	}
+
+	$(document).ready(function() {
+		/* buildcommon.buildHead(5); */
+		$(".tab .tab-item").click(function() {
+			$(this).addClass("active").siblings().removeClass("active");
+			$(".container .main").eq($(this).index()).show().siblings().hide();
+		})
+	});
+
+	function hideAll(showerror) {
+		$('.hidesql').hide();
+		$('.hidepath').hide();
+		$('.hidewarn').hide();
+		$('.hideerr').each(function() {
+			if ($(this).html().trim() == "")
+				$(this).hide();
+			else if ($(this).html().trim() == "OK") {
+				$(this).hide();
+				$(this).html("");
+			} else {
+				showDiv = $(this);
+				$(this).show();
+			}
+		});
+	}
+
+	function toggleDiv(targetObj) {
+		var type = $(targetObj).attr('data-type');
+		var objIndex = $(targetObj).attr('data-index');
+		var tDiv = $(targetObj).closest('table').find('.' + type).eq(parseInt(objIndex));
+		if (showDiv) {
+			showDiv.hide();
+			if (showDiv[0].id != tDiv[0].id) {
+				showDiv = tDiv;
+				showDiv.show();
+			} else
+				showDiv = null;
+		} else {
+			showDiv = tDiv;
+			showDiv.show();
+		}
+	}
+
+	function doUpdate(i, tablename, targetObj) {
+		$.getJSON('../../dxpsqlindexlist/updateSqlindex?index=' + i + '&tablename='
+				+ tablename, function(data) {
+			var targetTable = $(targetObj).closest('table');
+			var hideErr = targetTable.find('.hideerr').eq(i);
+			hideErr.eq(i).html(data.result + ", 查看前请刷新页面");
+			hideErr.eq(i).show();
+			toggleDiv(hideErr);
+			if (data.result == 'OK') {
+				targetTable.find('.ischeck').eq(i).html('已更新');
+			} else {
+				alert(data.result);
+			}
+		});
+	}
+</script>
+</html>

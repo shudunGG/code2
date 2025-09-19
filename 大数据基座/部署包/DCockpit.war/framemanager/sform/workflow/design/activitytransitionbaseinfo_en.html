@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Basic information change line</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="save">save changes</a>
+		</div>
+
+		<div class="some-wrap r mr20">
+			<span class="text-special mr5" id="showcontent"></span>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="Change the name">
+						<input class="mini-textbox"
+							bind="workflowTransition.transitionName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Change the display name">
+						<input class="mini-textbox"
+							bind="workflowTransition.transitionDispName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Work item type marker">
+						<input class="mini-textbox"
+							bind="workflowTransition.workItemModeName" /><span
+							class="explainMsg">Todo list will be displayed in this type of tag, such as“reading”、“To handle the”</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Whether to generate the todo list">
+						<input class="mini-checkbox" bind="isSendToMessageCenter"
+							trueValue="true" falseValue="false" text="edit"></input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="According to independent action button">
+						<input class="mini-checkbox" bind="isShowOperationBtn"
+							trueValue="true" falseValue="false"></input>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="priority">
+						<input class="mini-combobox" bind="workflowTransition.priority"
+							allowInput="true"
+							data="[{text:'The highest',id:'100'},{text:'higher',id:'80'},{text:'medium',id:'60'},{text:'The lower',id:'40'},{text:'The minimum',id:'20'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Processing the initial data source">
+						<input class="mini-combobox"
+							bind="workflowTransition.targetActivityTransactorSource"
+							allowInput="true"
+							data="[{text:'Using the processing of the target activity Settings',id:'10'},{text:'Use change process of the definition of one set',id:'20'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Dealing with people limit">
+						<input class="mini-textbox"
+							bind="workflowTransition.transactorAllowMaxCount" vtype="int"
+							inputStyle="text-align:left;" /><span class="explainMsg">Note: empty is not control。</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="alloweditDealing with people">
+						<div class="mini-radiobuttonlist" repeatItems="3"
+							bind="workflowTransition.isTargetTransactorEditable"
+							textField="text" valueField="id" value="false"
+							data="[{id:'10',text:'allowedit'},{id:'15',text:'Can delete set processor but cannot add new handler'},{id:'20',text:'Don'tallowedit'}]"></div>
+						<span class="explainMsg">Note: if set to“no”Set out, then change activities“through”Operation of the general processing page will hide personnel selection tree。</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="processVersionGuid" bind="processVersionGuid"/>
+	<input class="mini-hidden" id="content" bind="showcontent"/>
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+        // Initialize the page
+        epoint.initPage ('activitytransitionbaseinfoaction', null, initCallBack);
+        
+        var processVersionGuid;
+        
+        //Initializes the callback event
+        function initCallBack (data)
+        {
+        	document.getElementById ("showcontent").innerHTML = mini.get("content").getValue();
+			processVersionGuid = mini.get("processVersionGuid").getValue();
+        }
+
+        //save
+        function save ()
+        {
+	        epoint.execute ('save', 'fui-form', function (data)
+	        {
+		        epoint.alert (data.message, '', null, 'info');
+	        });
+        }
+
+        //]]>
+	</script>
+</body>
+</html>

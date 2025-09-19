@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>模块添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" iconCls="icon-save" onclick="add">保存模块</a><a
+				class="mini-button mobileappparams" iconCls="icon-addcircle"
+				onclick="addParam"> 添加参数 </a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row" id="quickmenu">
+					<div role="control" label="快捷入口类型" starred="true">
+						<input id="menukey" class="mini-combobox"
+							action="selectQuickMenuModel" bind="menuKey"
+							onValueChanged="onQuickMenuTypeChanged()" />
+					</div>
+				</div>
+				<div role="row" id="moduleguid">
+					<div role="control" label="模块ID">
+						<input bind="dataBean.moduleguid" class="mini-outputtext" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模块名称">
+						<input bind="dataBean.modulename" class="mini-textbox"
+							vtype="maxLength:50;" required="true" requiredErrorText="模块名称" />
+					</div>
+				</div>
+				<div role="row" id="icon1">
+					<!-- <div role="control" label="应用图标">
+						<input id="icon" bind="dataBean.icon" allowInput="false"
+							emptyText="" class="mini-buttonedit" showClose="true"
+							onbuttonclick="openicon()" selectOnFocus="true"
+							oncloseclick="onCloseClick" />
+					</div> -->
+				</div>
+				<div role="row" id="icon2">
+					<div role="control" label="自定义应用图标">
+						<div style="position: relative; float: left;">
+							<span id="photo1" class="text-minor">暂无应用图标， </span> <a
+								id="photo5" class="mini-button" onclick="openicon">选择默认图标</a> <span
+								class="text-minor" style="width: 300px" id="photo4">或 </span>
+							<div id="uploader" class="mini-webuploader"
+								action="getFileUploadModel" fileSingleSizeLimit="1024"
+								limitType="png" mimeTypes="image/*" showDefaultUI="false"
+								auto="true" pickerText="请上传" onfilesuccess="OnPhotoSuccess"></div>
+							<span class="text-minor" style="width: 300px" id="photo3">（最佳图片尺寸：93px<em>*</em>93px;
+								1M以内）
+							</span>
+						</div>
+
+						<div class="img-view" id="photo">
+							<img id="lblPicture" src="" width="93px" height="93px" alt="应用图标" />
+							<i class="action-icon icon-removecirclefilled"
+								style="position: absolute; left: 110px; top: 20px;"
+								onclick="delPhoto();"></i>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="mobileplatformrow">
+					<div role="control" label="移动应用支持平台">
+						<div id="platform" class="mini-checkboxlist" showNullItem="true"
+							bind="dataBean.platform" action="getPlatformList" repeatItems="3"
+							repeatLayout="table" textField="text" valueField="id"
+							multiSelect="true"></div>
+					</div>
+				</div>
+				<input class="mini-hidden" id="showicon" bind="showiconurl" />
+			</div>
+		</div>
+		</hr>
+		<!-- <div id="mobileappparams"> -->
+		<!-- <div class="fui-toolbar mobileappparams">
+			<div class="btn-group mr10">
+				local标签用于国际化
+				<a class="mini-button" iconCls="icon-addcircle" onclick="addParam">
+					添加参数 </a>
+			</div>
+		</div> -->
+		<div id="datagrid" class="mini-datagrid mobileappparams"
+			sortOrder="desc" idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowCellValid="true"
+			showPager="false" action="getDataGridData" allowResize="true"
+			allowCellEdit="true" editNextOnEnterKey="true" allowCellSelect="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="paramname" headerAlign="center" align="center"
+					width="100" vtype="maxLength:25;">
+					参数名<input property="editor" class="mini-textbox" required="true"
+						style="width: 100%;" />
+				</div>
+				<div field="paramvalue" headerAlign="center" align="center"
+					width="100" vtype="maxLength:1000;">
+					参数值<input property="editor" class="mini-textbox"
+						style="width: 100%;" />
+				</div>
+				<div field="description" headerAlign="center" align="left"
+					width="150" validateLevel="3" vtype="maxLength:250;">
+					说明<input property="editor" class="mini-textbox"
+						style="width: 100%;" />
+				</div>
+				<div field="ordernum" width="80" align="right" headerAlign="center"
+					vtype="int;range:0,99999999">
+					排序 <input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%" />
+				</div>
+				<div width="80" align="center" headerAlign="center"
+					renderer="onRemoveRender">删除</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'frame/fui/js/epoint/uc/oauploader/oauploader.js' ]);
+	</script>
+	<script>
+		//<![CDATA[
+
+		// 初始化页面
+		epoint.initPage('mobilemoduleaction', null, function(e) {
+			if (e.isadd) {
+				$("#moduleguid").hide();
+			}
+			if (e.lblPicture) {
+				showPhoto(Util.getRightUrl(e.lblPicture));
+			} else {
+				showPhoto(null);
+			}
+			var isenter;
+			if (e.isenter) {
+				isenter = e.isenter;
+			} else {
+				isenter = Util.getUrlParams("isenter");
+			}
+			if (isenter && isenter == 1) {
+				$("#moduleguid").hide();
+				$("#mobileplatformrow").hide();
+			} else {
+				$("#quickmenu").hide();
+			}
+			if (e.menukey) {
+				mini.get("menukey").setValue(e.menukey);
+				if (e.menukey == "scan") {
+					$(".mobileappparams").hide();
+				}
+			}
+			if (e.platform) {
+				mini.get("platform").setValue(e.platform);
+			}
+		});
+
+		function add() {
+			if (epoint.validate()) {
+				var data = grid.getChanges();
+				var json = mini.encode(data);
+				epoint.execute('add', 'fui-form', json, function(e) {
+					if (e.success) {
+						epoint.closeDialog("保存成功");
+					} else {
+						if (e.msg) {
+							epoint.alert(e.msg, '', null, 'error');
+						}
+					}
+				});
+			}
+		}
+
+		// 关闭操作的回调
+		function callback(data) {
+			if (data.msg) {
+				if (data.success) {
+					mini.showTips({
+						content : data.msg,
+						state : 'success',
+						x : 'center',
+						y : 'center'
+					});
+					searchData();
+				} else {
+					mini.showTips({
+						content : data.msg,
+						state : 'warning',
+						x : 'center',
+						y : 'center'
+					});
+				}
+			}
+		}
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr("src", url);
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#icon1").hide();
+				$("#photo4").hide();
+				$("#photo5").hide();
+				$("#photo").show();
+			} else {
+				$("#photo").hide();
+				$("lblPicture").attr("src", "");
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+				$("#icon1").show();
+				$("#photo4").show();
+				$("#photo5").show();
+			}
+		}
+		//上传成功
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+		}
+		//删除个性签名图片
+		function delPhoto() {
+			epoint.execute("btnDelPic_Click", "", function delPhotoCallback(
+					data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					mini.get("showicon").setValue("");
+					showPhoto();
+				}
+			});
+		}
+
+		function openicon() {
+			var url = 'framemanager/mobile/module/defaultpicchoose';
+			epoint.openDialog("选择图标", url, openiconOperJS, {
+				'width' : 1100,
+				'height' : 500
+			});
+		}
+
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				$("#lblPicture").attr("src", Util.getRightUrl(rtnValue));
+
+				$("#photo").show();
+
+				mini.get("showicon").setValue(rtnValue);
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#photo4").hide();
+				$("#photo5").hide();
+
+			}
+		}
+		/* ********************************模块参数相关******************************** */
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		var onRemoveRender = function(e) {
+			if (e.record.nooperate && e.record.nooperate == 1) {
+				return null;
+			}
+			return epoint.renderCell(e, "action-icon icon-remove", "remove");
+		};
+
+		function remove(e) {
+			epoint.execute('remove', '', e, callback);
+		}
+
+		var grid = mini.get("datagrid");
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		function addParam() {
+			var newRow = {
+				rowguid : "",
+				paramname : "",
+				paramvalue : "",
+				description : ""
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditRow(newRow);
+		}
+
+		function onQuickMenuTypeChanged() {
+			if (mini.get("menukey").getValue() == "scan") {
+				$(".mobileappparams").hide();
+			} else {
+				$(".mobileappparams").show();
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

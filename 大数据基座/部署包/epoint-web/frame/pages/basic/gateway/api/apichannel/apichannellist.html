@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"></meta>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+<title>高可用通道</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar1">
+		<a class="mini-button" state="primary" id="addClose"
+			onclick="saveAndClose">新增通道</a> <a class="mini-button" state="danger"
+			id="delClose" onclick="deleteClose">删除选定</a>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="通道名称">
+						<input id="channelname" class="mini-textbox" bind="channelName" />
+					</div>
+					<div role="control" label="创建时间">
+						<input name="dateFrom" id="starttime" bind="starttime"
+							class="mini-datepicker" onValuechanged="validateDate(this)"
+							style="width: 44%;" format="yyyy-MM-dd HH:mm:ss" showTime="true"
+							showClearButton="true" /> <span
+							style="width: 12%; text-align: center">至</span> <input
+							name="endtime" id="endtime" class="mini-datepicker"
+							onValuechanged="validateDate(this)" style="width: 44%;"
+							format="yyyy-MM-dd HH:mm:ss" bind="endtime" showTime="true"
+							showClearButton="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="row_guid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData">
+				<div property="columns">
+					<div width="40" type="checkcolumn"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="upstream_name" width="100">名称</div>
+					<div field="order_number" width="30">排序值</div>
+					<div field="create_date" width="100"
+						data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">创建时间</div>
+					<div type="actioncolumn">
+						操作 
+						<span type="action" icon="icon-gear" onclick="openManage">管理</span>
+						<span type="action" icon="icon-edit" onclick="openEdit">修改</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('apichannellistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//　日期控件的验证
+		var start = mini.get("starttime");
+		var end = mini.get("endtime");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!",  {state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!",  {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		function saveAndClose() {
+			epoint.openDialog("新增高可用通道",
+					"frame/pages/basic/gateway/api/apichannel/apichannelinfo",
+					function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 1200,
+						'height' : 1200
+					});
+		}
+
+		function openManage(row) {
+			epoint.openDialog("高可用通道管理",
+					"frame/pages/basic/gateway/api/apichannel/apichanneltargetlist?rowguid="
+							+ row.row_guid, '', {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+
+		function openEdit(row) {
+			epoint.openDialog("修改高可用通道",
+					"frame/pages/basic/gateway/api/apichannel/apichannelinfo?edit=edit&rowguid="
+							+ row.row_guid, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						searchData();
+					}, {
+						'width' : 1200,
+						'height' : 800
+					});
+		}
+
+		function deleteClose() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.showTips('请选择要删除的记录!', {state : 'warning'});
+			} else {
+				epoint.confirm('确认要删除吗?', '', deleteSelect);
+			}
+		}
+
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', closeCallback);
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>服务基本信息列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<!-- 左侧的内容区域 -->
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				expandOnLoad="true" resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+
+	<!-- 左右布局页面的右侧内容 -->
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-button" state="primary" onclick="openAdd();"
+				id="btnAddRecord"> 新增服务 </a> <a class="mini-button" id="syncbutton"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要同步的记录!', {state : 'warning'});} else {syncgateway();}">同步选中服务</a>
+			<div class="mini-btn-group">
+				<a class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要导出的记录!', {state : 'warning'});} else {exportApi();}"
+					id="exportApi">导出服务</a> <a style="display: none" id="hidExport"><span
+					id="spanId">下一步</span></a>
+				<div id="uploader1" class="mini-webuploader"
+					action="apiinfolistaction.getFileUploadModel" fileNumLimit="10"
+					fileSingleSizeLimit="5120" showDefaultUI="false" auto="true"
+					pickerText="导入服务" onfilesuccess="OnFileSuccess"></div>
+			</div>
+			<a class="mini-button" onclick="batchUpdate();" id="btnUpdateRecord">
+				批量调整 </a><a id="btnDel" class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a> <a role="helper" class="mr10"></a>
+		</div>
+		<!-- 帮助信息区域 默认隐藏-->
+		<div class="fui-notice hidden">
+			<p>您在操作网关的时候因为不可控因素导致了一些无法预料的异常,</p>
+			<p>为避免影响之后的操作，请点击服务参数中的 初始化网关按钮!</p>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-search" opened="false" primaryControl="search_apiname">
+			<div class="fui-form" id="fui-form" style="margin-right: 100px">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="服务名称">
+							<input id="search_apiname" class="mini-textbox"
+								bind="dataBean.apiname" />
+						</div>
+						<div role="control" label="服务源地址">
+							<input id="search_apirealurl" class="mini-textbox"
+								bind="dataBean.apirealurl" />
+						</div>
+					</div>
+					<div role="row" id="gatewayssearch">
+						<div role="control" label="服务发布地址">
+							<input class="mini-textbox" bind="apiUrl" id="apiurl" />
+						</div>
+						<div role="control" label="同步状态">
+							<input id="syncflag" class="mini-radiobuttonlist"
+								action="getsyncflag" bind="dataBean.syncflag" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动 -->
+				<input bind="dataBean.categoryid" id="search_categoryid"
+					class="mini-hidden" />
+			</div>
+			<a role="searcher" callback="searchData"></a> <a role="reset"
+				callback="resetCallback"></a> <a role="close"
+				callback="closeCallback"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				showLoading="false" action="getDataGridData" sortOrder="desc"
+				showPager="true" style="height: 100%;" allowResize="true"
+				multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div width="40" type="checkcolumn"></div>
+					<div width="40" type="indexcolumn" align="left">序</div>
+					<div width="100%" field="apiname">服务名称</div>
+					<div width="200" field="api_url">服务发布地址</div>
+					<div width="200" field="apirealurl">服务源地址</div>
+					<div width="100" field="syncflagvalue"
+						renderer="onDisplayExceptionRender">同步状态</div>
+					<div width="100" field="statusvalue"
+						renderer="onDisplayStatusRender">启用状态</div>
+					<div width="100" field="runstate" renderer="onRunStateRender">运行状态</div>
+					<div width="150" field="updateDate" allowSort="true"
+						data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">修改时间</div>
+					<div width="100" renderer="onOperationRenderer">操作</div>
+					<div field="status" name="status"></div>
+				</div>
+			</div>
+			<ul id="gridMenu" class="mini-contextmenu"
+				style="inline-size: fit-content;">
+				<li onclick="openEdit" iconCls="icon-edit">修改api</li>
+				<li class="openDeb" onclick="openDeb" iconCls="icon-check"
+					style="display: none">调试api</li>
+				<li onclick="openCopy" iconCls="icon-copy">复制api</li>
+				<li onclick="openDetail" iconCls="icon-search">查看api</li>
+				<li class="openStatistics" onclick="openStatistics"
+					iconCls="action-icon icon-chat" style="display: none">统计</li>
+				<li onclick="openHistory" iconCls="icon-recover" id="historyVersion">历史版本</li>
+				<li class="log" onclick="openApiSynclog" style="display: none"
+					iconCls="icon-doc">同步日志</li>
+				<li class="log" onclick="openApi" style="display: none"
+					iconCls="icon-paper">运行日志</li>
+				<li class="use" onclick="openStatus" style="display: none"
+					iconCls="icon-start">启用</li>
+				<li class="forbiduse " onclick="openStatus" style="display: none"
+					iconCls="icon-stop">禁用</li>
+			</ul>
+
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		var opeanGateway = true;
+		// 初始化页面
+		epoint.initPage('apiinfolistaction', '', initCallBack);
+		function initCallBack(param) {
+			if (param.isAlert) {
+				$(".fui-notice").removeClass("hidden");
+			}
+
+			if (!param.isOpenGateway) {
+				opeanGateway = false;
+				mini.get("syncbutton").hide();
+				mini.get("historyVersion").hide();
+				var datagrid = mini.get("datagrid");
+				datagrid.hideColumn(3);
+				datagrid.hideColumn(5);
+				$("#gatewayssearch").hide();
+			}
+			mini.get("datagrid").hideColumn("status");
+		}
+
+		//停止图片地址
+		var tingzhiimg = Util
+				.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/tingzhi.png');
+		//运行图片地址
+		var yunxingimg = Util
+				.getRightUrl('frame/pages/basic/gateway/api/apiinfo/photo/yunxingzhong.png');
+
+		var grid = mini.get('datagrid');
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('search_categoryid').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			searchDataExcludeTree();
+		});
+
+		// 绘制行编辑按钮
+		var onMethodRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "openMethod");
+		};
+
+		function onRunStateRender(e) {
+			if (e.value == "1") {
+				return "<img src='" + yunxingimg + "' title='正在运行'></img>";
+			} else if (e.value == "2") {
+				return "<img src='" + tingzhiimg + "' title='运行异常'></img>";
+			} else {
+				return "-";
+			}
+		}
+
+		//复制服务功能
+		function openCopy() {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选要复制的服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog('复制服务',
+						"frame/pages/basic/gateway/api/apiinfo/apiinfo?guid="
+								+ select[0].rowguid + "&copy=copy", function(
+								param) {
+							if (param != 'close') {
+								epoint.showTips(param, {
+									state : 'success'
+								});
+							}
+							searchData();
+						});
+			}
+		}
+
+		//调试服务功能
+		function openDeb() {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选要调试的服务", {
+					state : 'warning'
+				});
+			} else {
+				window
+						.open("../apimarket/pages/api/apidebug?hideTitle=1&rowguid="
+								+ select[0].rowguid);
+			}
+		}
+
+		//服务运行日志
+		function openApi() {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog('服务运行日志',
+						"frame/pages/basic/gateway/api/log/apiloglist?rowguid="
+								+ select[0].rowguid);
+			}
+		}
+
+		//同步服务日志
+		function openApiSynclog() {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog('查看操作日志',
+						"frame/pages/basic/gateway/api/log/apisyncloglist?clientid="
+								+ select[0].rowguid);
+
+			}
+		}
+
+		//运行状态
+		function openStatus(status) {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.execute("modifyStatus", '', [ select[0].status ],
+						function() {
+							if ("1" == select[0].status
+									|| "true" == select[0].status) {
+								epoint.showTips("禁用成功！", {
+									state : 'success'
+								});
+								searchData();
+							}
+							if ("0" == select[0].status
+									|| "false" == select[0].status) {
+								epoint.showTips("启用成功！", {
+									state : 'success'
+								});
+								searchData();
+							}
+						});
+			}
+
+		}
+
+		// 弹出新增窗口
+		function syncgateway() {
+			epoint.execute("syncApi", '', callback);
+		}
+
+		//同步状态
+		function onDisplayExceptionRender(e) {
+			var val = e.value;
+			if (val === '未同步') {
+				val = '<i class="dot-error"></i>未同步';
+			} else if (val == '已同步') {
+				val = '<i class="dot-success"></i>已同步';
+			}
+			return val;
+		}
+
+		//启用状态
+		function onDisplayStatusRender(e) {
+			var val = e.value;
+			if (val === '禁用') {
+				val = '<i class="dot-error"></i>禁用';
+			} else if (val == '启用') {
+				val = '<i class="dot-success"></i>启用';
+			}
+			return val;
+		}
+
+		// 弹出新增窗口
+		function openOperationLog(apiguid) {
+			epoint.openDialog('查看操作日志',
+					"frame/pages/basic/gateway/api/log/apisyncloglist?clientid="
+							+ apiguid, "");
+		}
+
+		// 弹出新增窗口
+		function batchUpdate() {
+			epoint.openDialog('批量调整',
+					"frame/pages/basic/gateway/api/apiinfo/apiinfoadjusts",
+					function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						searchData();
+					});
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var categoryid = mini.get('search_categoryid').getValue();
+			epoint.openDialog('新增服务',
+					"frame/pages/basic/gateway/api/apiinfo/apiinfo?categroyid="
+							+ categoryid, function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {
+								state : 'success'
+							});
+						}
+						searchData();
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit() {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选要修改的服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog('修改服务',
+						"frame/pages/basic/gateway/api/apiinfo/apiinfo?guid="
+								+ select[0].rowguid, function(param) {
+							if (param != 'close') {
+								epoint.showTips(param, {
+									state : 'success'
+								});
+							}
+							searchData();
+						});
+			}
+		}
+
+		// 弹出明细窗口
+		function openDetail(id) {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选要查看的服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog('查看服务',
+						"frame/pages/basic/gateway/api/apiinfo/apiinfodetail?guid="
+								+ select[0].rowguid + "&isdetail=1", null);
+			}
+		}
+
+		// 弹出历史版本窗口
+		function openHistory(id) {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选要查看的服务", {
+					state : 'warning'
+				});
+			} else {
+				epoint.openDialog('API历史版本',
+						"frame/pages/basic/gateway/api/apiinfo/selectapiinfohistorylist?apiguid="
+								+ select[0].rowguid, function(rowguid) {
+							// 获取返回的API历史版本rowguid
+							if (rowguid && rowguid !== 'close') {
+								epoint.openDialog('恢复服务',
+										"frame/pages/basic/gateway/api/apiinfo/apiinfo?guid="
+												+ rowguid + "&recover=recover",
+										searchData);
+
+							}
+						});
+			}
+		}
+
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+
+		function clearAllApi() {
+			epoint.execute("clearAllApi", '', callbackNoRefresh);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callbackNoRefresh(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {
+					state : 'info'
+				});
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {
+					state : 'success'
+				});
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchDataExcludeTree() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//导出服务
+		function exportApi() {
+			// 			epoint.execute('exportApi', '', searchData);
+			var datas = mini.get("datagrid").getSelecteds();
+			var dataguid = "";
+			if (datas) {
+				for (var i = 0; i < datas.length; i++) {
+					dataguid += datas[i].rowguid;
+					if (i != datas.length - 1) {
+						dataguid += ",";
+					}
+				}
+			}
+			var href = "apiinfolistaction.action?cmd=exportApi&attachGuid="
+					+ dataguid + "";
+			document.getElementById("hidExport").href = href;
+			$("#spanId").click();
+		}
+
+		function OnFileSuccess(e) {
+			if (e.data.extraDatas) {
+				var name = "导入失败，";
+				if (e.data.extraDatas.jsonfail) {
+					name += e.data.extraDatas.jsonfail;
+				}
+				if (e.data.extraDatas.samename) {
+					name += e.data.extraDatas.samename + "服务名称存在重复 ";
+				}
+				if (e.data.extraDatas.sameUrl) {
+					name += e.data.extraDatas.sameUrl + "网关前缀存在重复 ";
+				}
+				epoint.showTips(name + "！", {
+					state : 'warning'
+				});
+			} else {
+				epoint.showTips("导入成功！请点击同步按钮同步服务", {
+					state : 'success'
+				});
+			}
+		}
+
+		!(function() {
+			epoint.execute('refreshStatus', [ 'datagrid', 'fui-form' ],
+					new function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ]);
+						// 状态轮询
+						setInterval(function() {
+							epoint.execute('refreshStatus', [ 'datagrid',
+									'fui-form' ], new function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ]);
+							});
+						}, 60000);
+					});
+		})();
+
+		//操作
+		var onOperationRenderer = function(e) {
+			return "<a class=\"action-icon icon-gear\"  onclick=\"moreOperate(event)\" href=\"javascript:void(0);\" ></a>";
+		};
+
+		// API统计详情
+		function openStatistics(id) {
+			var select = grid.getSelecteds();
+			if (select.length == 0) {
+				epoint.showTips("请勾选要查看的服务", {
+					state : 'warning'
+				});
+			} else {
+				window.open("../../apicontrolpanel/detail?rowguid="
+						+ select[0].rowguid);
+			}
+
+		}
+
+		function moreOperate(event) {
+
+			var menu;
+			if (opeanGateway) {
+				// 去除隐藏属性
+				$(".log").each(function() {
+					$(this).css('display', '')
+				})
+				$(".openStatistics").css('display', '');
+				$(".openDeb").css('display', '');
+
+				var select = grid.getSelecteds();
+				if (select.length == 0) {
+					epoint.showTips("请勾选要使用的服务", {
+						state : 'warning'
+					});
+				} else {
+					if (select[0].syncflagvalue == '已同步') {
+						if (select[0].status == "1"
+								|| "true" == select[0].status) {
+							$('.use').css('display', 'none');
+							$(".forbiduse").each(function() {
+								$(this).css('display', '')
+							})
+						}
+						if (select[0].status == "0"
+								|| "false" == select[0].status) {
+							$('.forbiduse').css('display', 'none');
+							$(".use").each(function() {
+								$(this).css('display', '')
+							})
+						}
+					} else {
+						$(".use").css('display', 'none');
+						$(".forbiduse").css('display', 'none')
+					}
+				}
+			}
+
+			menu = mini.get("gridMenu");
+			menu.showAtEl(event.target);
+		};
+	</script>
+</body>
+</html>

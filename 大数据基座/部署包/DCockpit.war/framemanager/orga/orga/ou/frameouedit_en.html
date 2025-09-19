@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Department to modify</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <!-- This must have,it is loaded with some loading effect -->
+    <div class="page-loading"></div>
+    <!-- toolbar area -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" id="save" onclick="saveModify">save changes</a>
+            <a class="mini-button" onclick="epoint.closeDialog">shut down</a>
+        </div>
+         <!--Help button -->
+		<a role="helper" class="mr10">precautions</a>
+    </div>
+     <!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>
+			<em>Department code For entry, only without a business function , i.e.,Department code Without any related service method  Or processing logic</em>:
+		</p>
+	</div>
+    <!-- content area -->
+    <div class="fui-content">
+    	<!-- The form area -->
+        <div id="fui-form" class="fui-form">
+        	<div role="form">
+	           <div role="row">
+					<div role="control" label="parent directory">
+						<input id="parentOuName" bind="parentOuName"
+							class="mini-buttonedit" emptyText="The root" allowInput="false"
+							onbuttonclick="selectOu" selectOnFocus="true" />
+						<!-- Hidden fields, used for binding superior departmentsguid -->
+						<input bind="parentOUGuid" id="parentOuguid"
+							class="mini-hidden" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="department of type">
+						<div name="ouType" bind="isIndependence"
+							text="Independent department" class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="department name" starred="true">
+						<input id="ouName" bind="frameOu.ouname"
+							class="mini-textbox" required="true" requiredErrorText="Department nameCan't be empty" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="department or">
+						<input id="oushortName" bind="frameOu.oushortName"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="department code">
+						<input id="oucode" bind="frameOu.oucode"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input id="orderNumber" bind="frameOu.orderNumber"
+							maxLength="8" class="mini-textbox" vtype="int" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="contact phone no">
+						<input id="tel" bind="frameOu.tel"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="flow type">
+						<div name="subWebFlow" bind="isSubWebFlow"
+							text="Independent flow" class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="zip code">
+						<input id="postalCode" bind="frameOu.postalCode"
+							class="mini-textbox" vtype="postCode" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="fax">
+						<input id="ouFax" bind="frameOuExtendInfo.ouFax"
+							class="mini-textbox" onvalidation="onFaxValidation" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="address">
+						<input id="address" bind="frameOu.address"
+							class="mini-textbox" vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="describe">
+						<input id="description" bind="frameOu.description"
+							class="mini-textbox" vtype="maxLength:50" />
+					</div>
+				</div>
+            </div>
+        </div>
+    </div>
+    <!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+    
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+    <script type="text/javascript">
+  //<![CDATA[ 
+    //Initialization request 
+    epoint.initPage('frameoueditaction','',initCallBack);
+    
+    function initCallBack(e){
+    	if(e.soa){
+    		epoint.alertAndClose(e.soa, '', null, null, 'warning');
+    	}
+    	if(e.parentOuName){
+    		mini.get("parentOuName").setText(e.parentOuName);
+			mini.get("parentOuName").setValue(e.parentOuName);
+    	}else{
+    		mini.get("parentOuName").setText('The root');
+			mini.get("parentOuName").setValue('The root');
+    	}
+    }
+    
+    var attr= Util.getUrlParams('isSub');
+	var isSub = attr== undefined?'':attr;
+    
+    function selectOu(e) {
+    	var url='framemanager/orga/orga/ou/selectou';
+    	if(isSub){
+    		url+='?isSub='+isSub+'&type=1';
+    	}
+		epoint.openDialog('Select the superior departments',url,
+				function(param) {
+					if (param) {
+						s = param.split(";");
+						if('1'==isSub && s[1]=='f9root'){//Independent departmentMode allows you to selectThe rootnode
+							epoint.alert("Don't allow to chooseThe rootnode", '', null, 'warning');
+						}else if(s[1]=='f9root'){
+							mini.get("parentOuName").setText('The root');
+							mini.get("parentOuName").setValue('The root');
+							mini.get("parentOuguid").setValue('');
+						}else if(s[0]!='close'){
+							mini.get("parentOuName").setText(s[0]);
+							mini.get("parentOuName").setValue(s[0]);
+							mini.get("parentOuguid").setValue(s[1]);
+						}
+						
+					}
+				}, {
+					width : 300,
+					height : 500
+				});
+	}
+    
+ 	// The callback for the save operation
+    function saveCallback(data) {
+        if (data.msg) {
+        	//if(data.msg=='Save the success!'){
+        	if(data.success){
+        		epoint.alertAndClose(data.msg, '', null, null, 'success');
+        	}else{
+        		epoint.alert(data.msg, '', null, 'error');
+        	}
+        }
+    }
+    
+    function saveModify() {
+        if(epoint.validate()){
+            epoint.execute('update','fui-form',saveCallback);
+        }
+    }
+    
+  //isFax
+	function isFax(v) {
+		var re = new RegExp(/^((\d{3,4}-)?\d{7,8})$/);
+		if (re.test(v))
+			return true;
+		return false;
+	}
+
+	//faxvalidation
+	function onFaxValidation(e) {
+		if (e.isValid) {
+			if (e.value && isFax(e.value) == false) {
+				e.errorText = "Please enter the correctfaxNo.";
+				e.isValid = false;
+			}
+		}
+	}
+  //]]> 
+    </script>
+</body>
+
+</html>

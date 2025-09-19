@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Attachment database</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<script src="../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<!-- This must have,it is loaded with some loading effect -->
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<!-- localLabels used for internationalization -->
+				<a class="mini-button" iconCls="icon-addcircle" onclick="add">new connection </a>
+				<a class="mini-button" iconCls="icon-save" onclick="saveAll"> save changes </a>
+				<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select need to delete the connection!', '', null, 'warning');} else {epoint.confirm('Sure you want to delete?','',deleteSelected);}">delete the connection</a>
+			</div>
+
+			<!--Help button -->
+			<a role="helper" class="mr10">precautions</a>
+		</div>
+
+		<!-- Help information area Hidden by default-->
+		<div class="fui-notice hidden">
+			<div>
+				<div style="margin: 0px auto; text-align: left; width: 750px">
+					<p>
+						<em>ORACLEThe sample</em>:server=test_192.168.0.123;User ID=DBMail_Attach2007;Password=11111;
+					</p>
+					<p>
+						<em>SQLThe sample:</em>Database=DBMail_Attach2007;Server=192.168.0.123;User ID=sa;Password=11111;
+					</p>
+					<p>
+						<em>MSQLThe sample:</em>Database=DBMail_Attach2007;Server=192.168.0.123;User ID=root;Password=11111;
+					</p>
+					<p>
+						<em>Ali cloudOSSThe rules:</em>
+						1: ossEndpoint;accessId;accessKeySecret;bucketName
+						2: ossEndpoint;accessId;accessKeySecret;bucketName;configName1:configValue1;configName2:configValue2;...
+						before4The parameters required,In order to;Interval, the back isconfParameter configuration,Each group ofIn order to;interval In English in the group:As a parameter to, according to the need to be set
+					</p>
+					<p>
+						<em>MongoDBThe sample:</em>Database=DBMail_Attach2007;Server=192.168.0.123;User ID=admin;Password=11111;
+					</p>
+					<p>
+						<em>MongoDB</em>Only requires the cluster configurationServerwith,Split multiple serversipCan, port is not configured by default27017
+					</p>
+					<p>
+						<em>MongoDB</em>The user name and passwordIn order toNo configuration,If database need to verify,Can beIn order toconfiguration,Multiple database clusterconfigurationwhen,If the user name password is not consistent,So want to use,segmentationconfiguration, only need toconfigurationOne that isCan be
+					</p>
+					<p>
+						<em>The clusterconfiguration:</em>server=jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(ADDRESS = (PROTOCOL = TCP)(HOST = 10.0.6.10)(PORT = 1521)))(CONNECT_DATA =(SERVER=DEDICATED)(SERVICE_NAME = orcl)));User ID=DBMail_Attach2007;Password=11111;
+					</p>
+					<p>
+						The attribute name case has nothing to do,User IDCan beIn order towrittenuid,Space cannot little,PasswordCan beIn order towrittenpwd
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="fui-condition" opened="true">
+			<!-- conditions area -->
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="connection name" starred="true">
+							<input bind="frameAttachConfig.attachConnectionStringName" class="mini-textbox" required="true" requiredErrorText="The connection nameCan't be empty"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="connection string." starred="true">
+							<input bind="frameAttachConfig.attachConnectionString" class="mini-textbox" required="true" requiredErrorText="Connection string.Can't be empty"/>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="order no">
+							<input bind="frameAttachConfig.orderNum" vType="int" class="mini-textbox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="storage type" starred="true">
+							<input id="dsTypes" bind="frameAttachConfig.databaseType" required="true" requiredErrorText="Please select aStorage type" action="getDsTypes" value="SQL Server" textField="text" valueField="id" class="mini-combobox" />
+						</div>
+						<div role="control" label="start using">
+							<input bind="frameAttachConfig.isNowUse" class="mini-checkbox" truevalue="1" falsevalue="0"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- content area -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="sysguid" multiSelect="true" showPager="false"
+			style="width: 100%; height: 100%;" allowCellValid="true"
+			action="getDataGridData">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">
+						order
+					</div>
+					<div field="attach_ConnectionStringName" width="350" headerAlign="center">
+						connection name
+					</div>
+					<div field="attach_ConnectionString" headerAlign="center" width=100%>
+						connection string.
+						<input property="editor" class="mini-textbox" style="width: 100%" />
+					</div>
+					<div field="orderNum" width="80" headerAlign="center" align="right" vType="int">
+						order no
+						<input property="editor" class="mini-textbox" vType="int" style="width: 100%" />
+					</div>
+					<div field="databaseType" width="150" headerAlign="center">
+						storage type
+						<input property="editor" class="mini-combobox" style="width: 100%" data="dsTypes" autoLoad="false"/>
+					</div>
+					<div field="isNowUse" type="checkboxcolumn" truevalue="1" falsevalue="0" width="80" align="center" headerAlign="center" >
+						start using
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../rest/resource/jsboot"></script>
+		<script>
+			//<![CDATA[
+			// Initialize the page
+			epoint.initPage('frameattachconfiglistaction', '', initCallBack);
+
+			function initCallBack(e) {
+				adjustContentHeight();//hiddenconditionCome out To recount a height
+				$("a[role='searcher']").find("span").first().removeClass().addClass("mini-button icon-addcircle l").html("Open the detailed");
+			}
+
+			var grid = mini.get("datagrid");
+			grid.on("load", function(e) {
+				var rows = e.sender.findRows();
+				for (var i = 0; i < rows.length; i++) {
+					grid.beginEditRow(rows[i]);
+				}
+			});
+
+			var combox = mini.get("dsTypes");
+			var dsTypes;
+			combox.on("load", function(e) {
+				dsTypes = e.sender.data;
+			});
+
+			function add() {
+				if (epoint.validate()) {
+					epoint.execute('add', '', function(e){
+						epoint.alert(e.msg, null, null, 'info');
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					});
+				}
+			}
+
+			function saveAll() {
+				if (epoint.validate(['datagrid'])) {
+					epoint.execute('saveAll', '', callback);
+				}
+			}
+
+			function deleteSelected() {
+				epoint.execute('deleteSelected', '', function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				});
+			}
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//callback
+			function callback(args) {
+				if (args.msg) {
+					epoint.alert(args.msg, '', searchData, 'info');
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+
+</html>

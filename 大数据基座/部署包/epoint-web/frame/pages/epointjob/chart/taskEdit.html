@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>节点配置</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节点名称" starred="true">
+						<input id="taskName" bind="dataBean.taskName" class="mini-textbox"
+							required="true" requiredErrorText="节点名称不能为空" emptyText="请输入节点名称" />
+					</div>
+					<div role="control" label="dagTaskGuid">
+						<input id="dagTaskGuid" bind="dataBean.dagTaskGuid"
+							class="mini-textbox" emptyText="如果不输入，dagTaskGuid随机生成" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="执行器" starred="true">
+						<input class="mini-combobox" showNullItem="false"
+							id="groupName" bind="dataBean.groupName"
+							action="getJobGroupList" emptyText="请选择执行器..." showClose="false"
+							textField="text" allowInput="false" valueField="id"  onvaluechanged="groupNameChange"/>
+					</div>
+					<div role="control" label="前置条件" starred="true">
+						<input id="triggerCondition" bind="dataBean.triggerCondition"
+							class="mini-combobox" showNullItem="false"
+							action="getTriggerConditionList" emptyText="请选择..."
+							showClose="false" textField="text" allowInput="false"
+							valueField="id" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="任务运行模式" starred="true">
+						<input id="glueType" class="mini-combobox" showNullItem="false"
+							bind="dataBean.glueType" action="getGlueTypeList"
+							emptyText="请选择..." showClose="false" textField="text"
+							allowInput="false" valueField="id" onvaluechanged="modelChange" />
+					</div>
+					<div role="control" label="JobHandler" starred="true">
+						<input id="executorHandler" bind="dataBean.executorHandler"
+							class="mini-combobox" required="true"  action="getJobHandlerList"  allowInput="true" 
+							requiredErrorText="JobHandler不能为空" emptyText="请输入JobHandler" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="路由策略" starred="true">
+						<input id="executorRouteStrategy" class="mini-combobox"
+							showNullItem="false" bind="dataBean.executorRouteStrategy"
+							action="getExecutorRouteStrategyList" emptyText="请选择..."
+							showClose="false" textField="text" allowInput="false"
+							valueField="id" onvaluechanged="typeChange" />
+					</div>
+					<div role="control" label="固定执行器地址"  starred="true">
+						<input id="staticExecutorAddress"
+							bind="dataBean.staticExecutorAddress" class="mini-textbox" required="true" 
+							emptyText="示例：192.168.56.1:9998"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="任务超时时间">
+						<input id="executorTimeout" bind="dataBean.executorTimeout"
+							class="mini-textbox" vtype="int" inputStyle="text-align:left"  emptyText="任务超时时间单位为秒，大于零生效" />
+					</div>
+					<div role="control" label="失败重试次数">
+						<input id="executorFailRetryCount"
+							bind="dataBean.executorFailRetryCount" class="mini-textbox" vtype="int" inputStyle="text-align:left" 
+							emptyText="" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="任务参数">
+						<input id="executorParam" bind="dataBean.executorParam"
+							class="mini-textbox" emptyText="请输入任务参数..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="脚本">
+						<input id="glueSource" bind="dataBean.glueSource"
+							class="mini-textarea" height="150" emptyText="选择脚本模式时,提供脚本源代码..." />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 取url上的参数
+		var params = Util.getUrlParams();
+
+		// 编辑类型 add 或 edit
+		var editType = params.editType;
+		//是否是新增页面
+		var isAdd = editType == 'add';
+		// 当前节点类型
+		var nodeType = params.type;
+		// 当前节点位移标识 新增时没有
+		var nodeId = params.nodeId || '';
+
+		epoint.initPage('epointjobdagtaskaddaction', "", initPage);
+
+		function initPage(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+			}
+			// 新增时，初始化任务运行模式
+			if(isAdd){
+				mini.get("glueType").setValue(nodeType.toUpperCase());
+				//如果有脚本初始化脚本
+				if(data.defaultGlueSource){
+					mini.get("glueSource").setValue(data.defaultGlueSource);
+				}
+			}
+			// 无法编辑运行模式
+			mini.get("glueType").setEnabled(false);
+			if(mini.get("glueType").getValue() == 'JAVA'){
+				hideControl('glueSource');
+				showControl('executorHandler');
+			}else{
+				showControl('glueSource');
+				hideControl('executorHandler');
+			}
+			// 编辑时,无法编辑dagTaskGuid
+			if(!isAdd){
+				if(mini.get("dagTaskGuid")){
+					mini.get("dagTaskGuid").setEnabled(false);
+				}
+			}
+			// 路由策略为固定时,需要编辑地址框
+			if (data.showStaticExecutorAddress) {
+				showControl('staticExecutorAddress');
+			}else{
+				hideControl('staticExecutorAddress');
+			}
+		}
+
+		// 节点配置的保存方法
+		function configSave() {
+			// 发请求 创建数据 
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', function(data) {
+					if (data.status) {//成功
+						// 调用父页面新增或修改 参数为修改后的节点数据
+						window.parent.designerConfig.onConfigConfirm({
+							"taskGuid" : data.taskGuid,
+							"taskName" : data.taskName,
+							"editType" : editType
+						});
+					} else {//失败
+						epoint.alert(data.msg, '', null, 'info');
+					}
+				});
+			}
+		}
+
+		// 路由策略选择事件
+		function typeChange(e) {
+			if (this.getValue() == "STATIC") {
+				showControl('staticExecutorAddress');
+			} else {
+				hideControl('staticExecutorAddress');
+			}
+		}
+		
+		//隐藏控件
+		function hideControl(id){
+			$('#' + id).parent().hide();
+			$('#' + id).parent().prev().hide();
+			mini.get(id).setValue('');
+		}
+		//显示控件
+		function showControl(id){
+			$('#' + id).parent().show();
+			$('#' + id).parent().prev().show();
+		}
+		
+		//执行器变更后的触发事件
+		function groupNameChange(){
+			if(mini.get("glueType").enabled || mini.get("glueType").getValue() == 'JAVA'){
+				mini.get('executorHandler').setValue('');
+				mini.get('executorHandler').setText('');
+				epoint.refresh(['groupName','executorHandler'], function(){})
+			}
+		}
+	</script>
+</body>
+
+</html>

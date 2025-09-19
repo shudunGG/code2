@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>查询区域条件配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="查询条件名称" starred="true">
+					<input id="columnText" class="mini-textbox"
+						bind="dataBean.querytext" required="true" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="查询类型" starred="true">
+					<div class="mini-radiobuttonlist" textField="text" id="cType"
+						valueField="id" bind="dataBean.ctype"
+						onvaluechanged="changeType(this.value)" required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="controlTypeArea" style="display: none">
+				<div role="control" label="控件类型" starred="true">
+					<div id="controlType" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.controltype"
+						onvaluechanged="changeControltype(this.value)"
+						action="getControlTypeList" required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="dataArea" style="display: none">
+				<div role="control" label="数据表选择" starred="true">
+					<div id="dataTable" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.tableId" action="getTableList"
+						onvaluechanged="selectTableChange(this.value,'A')" required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="dataArea2" style="display: none">
+				<div role="control" label="表字段选择" starred="true">
+					<div id="dataField" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.fieldId" required="true"></div>
+				</div>
+			</div>
+			<div role="row" id="customcodeArea">
+				<div role="control" label="自定义代码项">
+					<div id="customcode" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.customcode"
+						action="getCustomcodeList"></div>
+				</div>
+			</div>
+			<div role="row" id="rangeTypeArea" style="display: none">
+				<div role="control" label="范围类型" starred="true">
+					<div class="mini-radiobuttonlist" textField="text" id="rangeType"
+						valueField="id" bind="dataBean.rangetype"
+						data="[{id:'datepicker',text:'时间范围'},{id:'textbox',text:'数值范围'}]"
+						required="true"></div>
+				</div>
+			</div>
+			<div id="rangeSConfigArea" style="display: none">
+				<div role="row">
+					<div role="control" label="起始配置表" starred="true">
+						<div id="startTableId" class="mini-combobox" textField="text"
+							valueField="id" bind="startTableId" action="getTableList"
+							onvaluechanged="selectTableChange(this.value,'B')"
+							required="true"></div>
+					</div>
+					<div role="control" label="起始配置字段" starred="true">
+						<div id="startFieldId" class="mini-combobox" textField="text"
+							valueField="id" bind="startFieldId" required="true"></div>
+					</div>
+					<div role="control" label="起始配置比较条件" starred="true">
+						<div id="startCompare" class="mini-combobox" textField="text"
+							valueField="id" bind="startCompare" action="getCompareType"
+							required="true"></div>
+					</div>
+				</div>
+				<div role="row" id="rangeEConfigArea" style="display: none">
+					<div role="control" label="结束配置表" starred="true">
+						<div id="endTableId" class="mini-combobox" textField="text"
+							valueField="id" bind="endTableId" action="getTableList"
+							onvaluechanged="selectTableChange(this.value,'C')"
+							required="true"></div>
+					</div>
+					<div role="control" label="结束配置字段" starred="true">
+						<div id="endFieldId" class="mini-combobox" textField="text"
+							valueField="id" bind="endFieldId" required="true"></div>
+					</div>
+					<div role="control" label="结束配置比较条件" starred="true">
+						<div id="endCompare" class="mini-combobox" textField="text"
+							valueField="id" bind="endCompare" action="getCompareType"
+							required="true"></div>
+					</div>
+				</div>
+				<!-- 				<div  role="row" id="rangeControlTypeArea" style="display: none"> -->
+				<!-- 					<div role="control" label="范围配置控件类型"> -->
+				<!-- 						<div id="rangeControlType" class="mini-combobox" textField="text" -->
+				<!-- 							valueField="id" bind="rangeControlType" action="getControlTypeList"></div> -->
+				<!-- 					</div> -->
+				<!-- 				</div> -->
+			</div>
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int;range:0,99999999" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('queryareaconfigaddaction', '', initCallback);
+
+		function initCallback(data) {
+			var cType = mini.get("cType").getValue();
+			changeType(cType);
+			changeControltype(mini.get("controlType").getValue());
+			ctypeSetData(data.templatetype);
+
+			if (data.tableName && data.fieldName) {
+				mini.get('dataTable').setText(data.tableName);
+				mini.get('dataField').setText(data.fieldName);
+				selectTableChange(mini.get('dataTable').getValue(), 'A');
+			}
+			if (data.startTableName && data.startFieldName) {
+				mini.get('startTableId').setText(data.startTableName);
+				mini.get('startFieldId').setText(data.startFieldName);
+				selectTableChange(mini.get('startTableId').getValue(), 'B');
+			}
+			if (data.endTableName && data.endFieldName) {
+				mini.get('endTableId').setText(data.endTableName);
+				mini.get('endFieldId').setText(data.endFieldName);
+				selectTableChange(mini.get('endTableId').getValue(), 'C');
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+
+		function selectTableChange(tabelId, type) {
+			var controlType = "";
+			if (type == "A") {
+				controlType = "dataTable";
+			} else if (type == "B") {
+				controlType = "startTableId";
+			} else if (type == "C") {
+				controlType = "endTableId";
+			}
+			if (tabelId) {
+				epoint.execute("dataTableValueChangeByType", controlType, [
+						tabelId, type ], mcallback);
+			}
+		}
+
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				if (data.type && data.type == "A") {
+					mini.get("dataField").setData(data.fieldslist);
+					// 					mini.get("dataField").select(0);
+				} else if (data.type && data.type == "B") {
+					mini.get("startFieldId").setData(data.fieldslist);
+					// 					mini.get("startFieldId").select(0);
+				} else if (data.type && data.type == "C") {
+					mini.get("endFieldId").setData(data.fieldslist);
+					// 					mini.get("endFieldId").select(0);
+				}
+			}
+		}
+
+		//更改类型
+		function changeType(flag) {
+			if (flag == "Value" || flag == "LikeValue") {
+				document.getElementById("controlTypeArea").style.display = "block";
+				document.getElementById("dataArea").style.display = "block";
+				document.getElementById("dataArea2").style.display = "block";
+				document.getElementById("rangeTypeArea").style.display = "none";
+				document.getElementById("rangeSConfigArea").style.display = "none";
+				document.getElementById("rangeEConfigArea").style.display = "none";
+				// 				document.getElementById("rangeControlTypeArea").style.display = "none";
+			} else if (flag == "Range") {
+				document.getElementById("controlTypeArea").style.display = "none";
+				document.getElementById("dataArea").style.display = "none";
+				document.getElementById("dataArea2").style.display = "none";
+				document.getElementById("rangeTypeArea").style.display = "block";
+				document.getElementById("rangeSConfigArea").style.display = "block";
+				document.getElementById("rangeEConfigArea").style.display = "block";
+				// 				document.getElementById("rangeControlTypeArea").style.display = "block";
+			} else if (flag == "Tree") {
+				document.getElementById("controlTypeArea").style.display = "none";
+				document.getElementById("dataArea").style.display = "block";
+				document.getElementById("dataArea2").style.display = "block";
+				document.getElementById("customcodeArea").style.display = "none";
+				document.getElementById("rangeTypeArea").style.display = "none";
+				document.getElementById("rangeSConfigArea").style.display = "none";
+				document.getElementById("rangeEConfigArea").style.display = "none";
+			}
+		}
+
+		/*自定义代码项控制显影*/
+		function changeControltype(value) {
+			if (value == 'combobox' || value == 'radiobuttonlist'
+					|| value == 'checkboxlist') {
+				document.getElementById("customcodeArea").style.display = "block";
+			} else {
+				document.getElementById("customcodeArea").style.display = "none";
+				mini.get("customcode").setValue("");
+				mini.get("customcode").setText("");
+			}
+		}
+
+		/*查询类型赋值*/
+		function ctypeSetData(value) {
+			if (value == 3) {
+				mini
+						.get("cType")
+						.setData(
+								"[{id:'Value',text:'精确查询'},{id:'LikeValue',text:'模糊查询'},{id:'Range',text:'范围查询'},{id:'Tree',text:'左树关联查询'}]");
+			} else {
+				mini
+						.get("cType")
+						.setData(
+								"[{id:'Value',text:'精确查询'},{id:'LikeValue',text:'模糊查询'},{id:'Range',text:'范围查询'}]");
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

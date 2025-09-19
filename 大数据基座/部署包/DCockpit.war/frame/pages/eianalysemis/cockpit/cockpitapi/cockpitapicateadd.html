@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增分类</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="分类名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.categoryName"
+							required="required" requiredErrorText="分类名称不能为空"
+							vtype="maxLength:50;" emptyText="请填写分类名称..." />
+					</div>
+					<div role="control" label="所属部门" starred="true">
+						<input id="id_ouguid" class="mini-treeselect" textField="text"
+							valueField="id" bind="dataBean.ouguid"
+							action="frameoulistaction.getTreeModel"
+							oncloseclick="onCloseClick" showClose="true" required="true"
+							shownullitem="true" requiredErrorText="所属部门不能为空" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.OrderNum"
+							vtype="int;range:0,99999;" emptyText="请填写排序号..." />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var isadmin = false;
+		var belongouguid = Util.getUrlParams('belongouguid');
+		var guid = Util.getUrlParams('guid');
+		// 初始化页面
+		epoint.initPage('cockpitapicateaddaction', null, function(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+				return;
+			}
+			if (data.isadmin) {
+				isadmin = data.isadmin;
+			}
+			if (!isadmin) {
+				mini.get('id_ouguid').disable();
+			}
+			if (data.ouName) {
+				mini.get('id_ouguid').setText(data.ouName);
+			}
+			if (guid) {
+				mini.get('id_ouguid').disable();
+			}
+		});
+		var tree4 = mini.get('id_ouguid');
+		tree4.on('beforenodeselect', function(obj) {
+			if (obj.node.id == "f9root") {
+				obj.cancel = true;
+			} else {
+				obj.cancel = false;
+			}
+		});
+		
+		function onCloseClick() {
+		    mini.get("id_ouguid").setValue("");
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+	</script>
+</body>
+</html>

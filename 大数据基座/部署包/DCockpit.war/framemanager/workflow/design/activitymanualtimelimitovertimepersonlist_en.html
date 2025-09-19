@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Remind staff overtime Settings</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="OpenAddWindow();"
+				id="btnAddRecord"> New Deal with people </a> 
+			<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('reFreshData').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}">
+				delete selected </a>
+		</div>
+	</div>
+	
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div id="reFreshData" class="mini-datagrid" idField="participatorGuid"
+			action="getDefaultModel" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">order</div>
+				<div field="participatorName" headerAlign="center">Handle staff types</div>
+				<div field="clrymc" headerAlign="center">Processing staff name</div>
+				<div field="modeType" width="30" align="center" headerAlign="center"
+					renderer="changeBtn">Contains the relationship</div>
+				
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="activityGuid" bind="activityGuid" />
+	
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitymanualtimelimitovertimepersonlistaction');
+		
+		// The new popup Windows
+		function OpenAddWindow() {
+			var activityGuid = mini.get("activityGuid").getValue();
+			epoint.openDialog('new',
+					"framemanager/workflow/design/workflowselectuser?activityGuid="+activityGuid+"&belongTo=overtimenotify", searchData, {
+						'width' : 800,
+						'height' : 560
+					});
+		}
+		
+		// delete data
+		function deleteSelect() {
+			epoint.execute("btnDelete_Click", '', callback);
+		}
+		
+		function changeBtn(e) {
+			if (e.row.modeType == 10) {
+				return epoint.renderCell(e, "action-icon icon-addcircle","contain","participatorGuid");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-removecircle","remove","participatorGuid");
+			}
+
+		}
+		
+		function contain(participatorguid) {
+			epoint.execute("DataGrid1_ItemCommand",'',[participatorguid,'contains'], callback);
+		}
+		
+		function remove(participatorguid) {
+			epoint.execute("DataGrid1_ItemCommand",'',[participatorguid,'To rule out'], callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'reFreshData', 'fui-content' ],'',true);
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

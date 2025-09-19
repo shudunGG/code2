@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>分库分表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.asLabel .mini-textbox-border, .asLabel .mini-textbox-input, .asLabel .mini-buttonedit-border,
+	.asLabel .mini-buttonedit-input, .asLabel .mini-textboxlist-border {
+	border: 0;
+	background: none;
+	cursor: default;
+	color: #d2322d;
+}
+
+.asLabel .mini-buttonedit-button, .asLabel .mini-textboxlist-close {
+	display: none;
+}
+
+.asLabel .mini-textboxlist-item {
+	padding-right: 8px;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-save"
+				onclick="addNew">保存并新建</a> <a class="mini-button" id="addClose"
+				iconCls="icon-save" onclick="add">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-removecircle" onclick="epoint.closeDialog">关闭</a> <a
+				class="mini-button" id="btnshowTables" title="列出最终所有的分表"
+				iconCls="icon-doc" onclick="showTables">查看分表</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p style="text-indent: 2em;">
+			<span class="text-danger"> 查看分表：列出分表时 现有配置生成的所有表名. </span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger"> 分(表/库)键名：以源表的
+				这个字段作为划分的依据,目前只支持单键，此字段值不允许为空! </span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger"> 分表-按年划分：请确保这个键值在所选的这些年份中 </span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger"> 自定义分(表/库)策略：填写
+				分表分库策略接口实现类全路径(接口:SingleKeyTableShardingAlgorithm/SingleKeyDatabaseShardingAlgorithm)
+			</span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger"> 分表规则：选择按首字母分时 填写划分表的后缀,多个以;隔开
+				,例：048c;159d;26ae;37bf;extra,那生成的表名为 XXX_048c;XXX_159d;... </span>
+		</p>
+		<p style="text-indent: 6em;">
+			<span class="text-danger"> 其中extra表示 当值的规则不符合前面的这些后缀规则时，存入
+				XXX_extra表中,如能确保所有规则都能囊括，extra是不需要加的 </span>
+		</p>
+		<p style="text-indent: 6em;">
+			<span class="text-danger"> 当 选择自定义分表策略时 ，此时分表规则 完全由用户的接口自己掌控 </span>
+		</p>
+		<p style="text-indent: 2em;">
+			<span class="text-danger">
+				分库-分库数据源：仅显示和应用启动的数据库一样类型的数据源；例：框架数据源是oracle,则这里仅显示oracle类型的。 </span>
+		</p>
+		<p style="text-indent: 8em;">
+			<span class="text-danger"> 分库的规则由数据源名字控制;数据源名字必须以 '_XXX'
+				结尾，XXX为库具体规则。类似分表规则，只是规则具体定义到数据源名字上。 </span>
+		</p>
+		<p style="text-indent: 8em;">
+			<span class="text-danger">
+				例：message_center_history需要以按年分库，那么数据源名字配置为
+				YYYY_2016;YYYY_2017...;YYYY不做限制，自己做好分类。 </span>
+		</p>
+	</div>
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div style="margin-left: 42%" id="BeCareful">
+				<font color="red" size="2">注意：请配置好对应的数据源</font>
+			</div>
+			<div role="row" id="sourceDbRow">
+				<div role="control" label="源数据源">
+					<input bind="dataBean.sourcedb" action="getDbList"
+						onvaluechanged="saveSourceDb" showClose="true"
+						oncloseclick="onCloseClick" textField="text" valueField="id"
+						class="mini-combobox" />
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="源表名称" starred="true">
+					<div class="mini-autocomplete" textField="text" id="sourcetable"
+						valueField="id" bind="dataBean.sourcetable" required="true"
+						onvaluechanged="saveTableName" requiredErrorText="源数据表名称不能为空"
+						action="getTableName" maxLength="50"></div>
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="分表分库类型">
+					<input autoLoad="false" id="shardingtype" action="getTypeList"
+						bind="dataBean.shardingtype" class="mini-combobox"
+						onvaluechanged="onSharingTypeChanged" />
+				</div>
+			</div>
+
+			<div role="row" id="shardingkeyRow">
+				<div role="control" label="分表键名" starred="true">
+					<div class="mini-autocomplete" textField="text" id="shardingkey"
+						valueField="id" bind="dataBean.shardingkey" required="true"
+						requiredErrorText="分表键名必须填写" action="getColumnName" maxLength="200"></div>
+				</div>
+			</div>
+
+			<div role="row" id="shardingInterRow">
+				<div role="control" label="分表策略" starred="true">
+					<div id="shardingInter" class="mini-combobox" textField="text"
+						valueField="id" bind="shardingInter" required="true"
+						action="getSharingInterList" requiredErrorText="请选择分表策略"
+						onvaluechanged="onInterChanged"></div>
+				</div>
+			</div>
+			<div role="row" id="custiomShardingInterRow">
+				<div role="control" label="自定义分表策略" starred="true">
+					<input class="mini-textbox" required="true"
+						bind="custiomShardingInter" requiredErrorText="请填写分表策略接口" maxLength="100"/>
+				</div>
+			</div>
+
+			<div role="row" id="shardingYearRow">
+				<div role="control" label="开始年份" starred="true">
+					<input class="mini-textbox" required="true" bind="startYear"
+						maxlength="4" vtype="int;rangeLength:4,4"
+						requiredErrorText="请填写开始年份" />
+				</div>
+				<div role="control" label="结束年份" starred="true">
+					<input class="mini-textbox" required="true" bind="endYear"
+						maxlength="4" vtype="int;rangeLength:4,4"
+						requiredErrorText="请填写结束年份" />
+				</div>
+			</div>
+
+			<div role="row" id="shardingRuleRow">
+				<div role="control" label="分表规则" starred="true">
+					<input id="shardingrule" class="mini-textbox" required="true"
+						bind="shardingrule" requiredErrorText="请填写分表规则" maxLength="200"/>
+				</div>
+			</div>
+
+			<div role="row" id="codeShardingRuleRow" style="display: none;">
+				<div role="control" label="分表规则" starred="true">
+					<input id="codeshardingrule" multiSelect="true" emptyText="请选择..."
+						bind="shardingrule2" class="mini-treeselect"
+						action="getCodeTree" showClose="true" showFolderCheckBox="true"
+						checkRecursive="true" autoCheckParent="true" textField="text"
+						valueField="id" expandOnLoad="true" expandOnNodeClick="true"
+						loadWhenChecked="true" parentField="pid" required="true"
+						requiredErrorText="请填写分表规则" />
+				</div>
+			</div>
+
+			<div role="row" id="dbShardingkeyRow">
+				<div role="control" label="分库键名" starred="true">
+					<div class="mini-autocomplete" textField="text" id="dbShardingkey"
+						valueField="id" bind="dataBean.dbshardingkey" required="true"
+						requiredErrorText="分库键名必须填写" action="getColumnName" maxLength="200"></div>
+				</div>
+			</div>
+
+			<div role="row" id="targetdbRow">
+				<div role="control" label="目标数据源" starred="true">
+					<input bind="dataBean.targetdb" action="getDbList"
+						multiSelect="true" required="true" textField="text"
+						valueField="id" class="mini-combobox" requiredErrorText="请选择分库数据源" />
+				</div>
+			</div>
+
+			<div role="row" id="dbShardingInterRow">
+				<div role="control" label="分库策略" starred="true">
+					<div id="dbShardingInter" class="mini-combobox" textField="text"
+						valueField="id" bind="dbShardingInter" required="true"
+						action="getDbSharingInterList" requiredErrorText="请选择分库策略"
+						onvaluechanged="onDbInterChanged"></div>
+				</div>
+			</div>
+
+			<div role="row" id="dbCustiomShardingInterRow">
+				<div role="control" label="自定义分库策略" starred="true">
+					<input class="mini-textbox" required="true"
+						bind="dbCustiomShardingInter"
+						onvalidation="onEnglishAndNumberValidation"
+						requiredErrorText="请填写分库策略接口" />
+				</div>
+			</div>
+
+			<div role="row">
+				<div role="control" label="排序号">
+					<input id="orderNumber" bind="dataBean.orderNumber" maxLength="8"
+						class="mini-textbox" vtype="int;range:0,99999999" />
+				</div>
+			</div>
+
+			<div role="row" id="shardingTableNameRow">
+				<div role="control" label="分表表名">
+					<input id="tableNames" class="mini-textarea asLabel"
+						bind="tableNames" style="height: 80px;" />
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('frameshardingaddaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			$('#custiomShardingInterRow').hide();
+			$('#shardingRuleRow').hide();//默认按年，这个不需要显示
+			$('#dbShardingkeyRow').hide();
+			$('#shardingTableNameRow').hide();
+
+			//分库都不显示
+			$('#dbShardingkeyRow').hide();
+			$('#dbShardingInterRow').hide();
+			$('#dbCustiomShardingInterRow').hide();
+			$('#targetdbRow').hide();
+		}
+
+		//分表分库类型改变行为
+		function onSharingTypeChanged(e) {
+			if (e.value == '1') {//分表
+				$('#dbShardingkeyRow').hide();
+				$('#dbShardingInterRow').hide();
+				$('#dbCustiomShardingInterRow').hide();
+				$('#targetdbRow').hide();
+
+				$('#shardingkeyRow').show();
+				$('#shardingInterRow').show();
+				var typeValue = mini.get('shardingInter').getValue();
+				var typeText = mini.get('shardingInter').getText();
+				initInterChange(typeValue, typeText);
+			} else {//分库
+				$('#shardingkeyRow').hide();
+				$('#shardingInterRow').hide();
+				$('#custiomShardingInterRow').hide();
+				$('#shardingYearRow').hide();
+				$('#shardingkeyRow').hide();
+				$('#shardingRuleRow').hide();
+				$('#shardingTableNameRow').hide();
+
+				$('#dbShardingkeyRow').show();
+				$('#dbShardingInterRow').show();
+				$('#targetdbRow').show();
+				var dbtypeValue = mini.get('dbShardingInter').getValue();
+				initDbInterChange(dbtypeValue);
+			}
+		}
+
+		//构造分表区域显隐
+		function initInterChange(typeValue, typeText) {
+			if (typeValue == 'custom') {
+				$('#custiomShardingInterRow').show();
+				$('#shardingYearRow').hide();
+				$('#shardingRuleRow').show();
+			} else {
+				$('#custiomShardingInterRow').hide();
+			}
+			if (typeText.indexOf('年') > -1) {//选择了按年划分
+				$('#shardingYearRow').show();
+				$('#shardingRuleRow').hide();
+				$('#codeShardingRuleRow').hide();
+			} else {
+				$('#shardingYearRow').hide();
+				$('#codeShardingRuleRow').hide();
+				if (typeText.indexOf('月') > -1) {//按月分
+					$('#shardingRuleRow').hide();
+				} else if (typeText.indexOf('代码项') > -1) {
+					$('#shardingRuleRow').hide();
+					$('#codeShardingRuleRow').show();
+				} else {
+					$('#shardingRuleRow').show();
+				}
+			}
+		}
+
+		//分表类型改变行为操作
+		function onInterChanged(e) {
+			mini.get('shardingrule').setValue('');
+			mini.get('codeshardingrule').setValue('');
+			if (e.selected.text.indexOf('首字母') > -1) {
+				mini.get('shardingrule').setValue('048c;159d;26ae;37bf;extra');
+			}
+			initInterChange(e.value, e.selected.text);
+		}
+
+		//构造分库区域显隐
+		function initDbInterChange(typeValue) {
+			if (typeValue == 'custom') {
+				$('#dbCustiomShardingInterRow').show();
+			} else {
+				$('#dbCustiomShardingInterRow').hide();
+			}
+		}
+
+		//分库类型改变行为操作
+		function onDbInterChanged(e) {
+			initDbInterChange(e.value);
+		}
+
+		// 新增
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		// 新增
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+		function showTablesCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			} else {
+				if (mini.get("shardingtype").getValue() == '1') {
+					mini.get("tableNames").setValue(data.tableNames);
+					$('#shardingTableNameRow').show();
+				}
+			}
+		}
+
+		//
+		function showTables() {
+			if (epoint.validate()) {
+				epoint.execute('showTables', 'fui-form', showTablesCallback);
+			}
+		}
+
+		function saveTableName(e) {
+			mini.get("shardingkey").setText("");
+			epoint.execute('saveSourceTable', 'fui-form', e.value);
+		}
+
+		function saveSourceDb(e) {
+			mini.get("sourcetable").setText("");
+			mini.get("shardingkey").setText("");
+			epoint.execute('saveSourceDb', 'fui-form', e.value);
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			mini.get("sourcetable").setText("");
+			mini.get("shardingkey").setText("");
+			epoint.execute('saveSourceDb', 'fui-form', "");
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

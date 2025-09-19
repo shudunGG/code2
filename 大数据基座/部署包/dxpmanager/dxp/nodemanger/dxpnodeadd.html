@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>交换节点域信息表添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog(0)">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节点域名称" starred="true" starred="true">
+						<input id="nodename" class="mini-textbox" bind="dataBean.nodename"
+							required="true" requiredErrorText="节点域名称不能为空!"
+							vtype="maxLength:25" maxLengthErrorText="不能超过25字" />
+					</div>
+				</div>
+				<div role="row" class="xxl">
+					<div role="control" label="调度应用名" starred="true">
+						<input id="appname" class="mini-textbox" bind="dataBean.appname"
+							required="true" requiredErrorText="调度应用名不能为空" />
+					</div>
+				</div>
+				<div role="row" class="xxl">
+					<div role="control" style="color: red">
+						调度应用名：与所配置节点application.properties中xxl.job.executor.appname配置相同</div>
+				</div>
+				<div role="row">
+					<div role="control" label="节点域类型" starred="true">
+						<input class="mini-combobox" action="getNodeTypeList()"
+							id="nodetype" multiSelect="false" bind="dataBean.nodetype"
+							required="true" textField="text" valueField="id"
+							requiredErrorText="节点域类型不能为空" />
+					</div>
+					<div role="control" >
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="描述">
+						<textarea class="mini-textarea" bind="dataBean.description"
+							id="description" vtype="maxLength:500"
+							maxLengthErrorText="不能超过500字" style="height:150px"></textarea>
+					</div>
+				</div>
+			</div>
+
+			<!-- 请修改相对路径 -->
+			<script src="../../frame/fui/js/jsboot.js"></script>
+			<!-- <script src="./js/nodecommon.js"></script> -->
+			<script>
+				// 初始化页面
+				epoint.initPage('dxpnodeaddaction','',function(data){
+					if(data.schedulerType=='quartz'){
+						//quartz调度的情况下，不需要配置appName
+						$('.xxl').hide();
+					}
+				});
+
+				function saveAndNew() {
+					if (epoint.validate()) {
+						epoint.execute('addNew', 'fui-form', newCallback);
+					}
+				}
+
+				function saveAndClose() {
+					if (epoint.validate()) {
+						epoint.execute('add', 'fui-form', '',
+								closeCallback);
+					}
+				}
+
+				// 新增操作的回调
+				function newCallback(data) {
+					if (data.msg) {
+						epoint.alert(data.msg);
+						// 清空表单
+						epoint.clear('fui-form');
+					}
+				}
+
+				// 关闭操作的回调
+				function closeCallback(data) {
+					if (data.msg.indexOf('成功')!=-1) {
+						epoint.alertAndClose("保存成功,请设置节点域服务！");
+					} else {
+						epoint.alert(data.msg);
+					}
+				}
+
+				function isdschange(e) {
+					if (e.value == 'true') {
+						$('#win1').show();
+					} else {
+						$('#win1').hide();
+					}
+				}
+
+				var ipContent = "<div class=\"jdip file\" style=\"line-height: 35px; width: 800px\">&nbsp;ip：&nbsp;<input id=\"ipFileKey0\" name=\"ipFileKey\" style='width: 320px'class=\"mini-textbox\" textField=\"text\" valueField=\"id\" onvalidation=\"onIPValidation\" required=\"true\"/>&nbsp;port：&nbsp;<input id=\"ipFileValue0\" name=\"ipFileValue\" style='width: 300px' class=\"mini-textbox\" textField=\"text\" valueField=\"id\"/><a id=\"ipFileBtn\" onclick=\"addVariable(this.id)\"class=\"action-icon icon-addcircle\"></a></div>";
+
+				// 是否启用集群
+				function isCluster(e) {
+					if (e.value == 'true') {
+						$("#win0").show();
+						$("#ipFile").html(ipContent);
+						mini.parse();
+					} else {
+						$("#win0").hide();
+					}
+				}
+
+				// 新增节点域
+				function addVariable() {
+					var tmpContent = ipContent;
+					var $parent = $("#ipFile");
+					if ($parent.children().length == 1) {
+						$("#ipFileBtn")
+								.before(
+										"<a class=\"action-icon icon-minuscircle delVis\" onclick=\"delVis(this);\" style=\"width:20px;\"></a>");
+					}
+					$("#ipFileBtn").remove();
+					$parent.append(tmpContent.replace("ipFileKey0",
+							"ipFileKey" + $parent.children().length).replace(
+							"ipFileValue0",
+							"ipFileValue" + $parent.children().length));
+
+					$("#ipFileBtn")
+							.before(
+									"<a class=\"action-icon icon-minuscircle delVis\" onclick=\"delVis(this);\" style=\"width:20px;margin-top:15px;\"></a>");
+
+					mini.parse();
+				}
+
+				// 删除节点域
+				function delVis(e) {
+					var $parent = $(e).parent().parent();
+					// 节点域个数
+					var ipCount = $parent.children().length;
+					// 要删除的节点域位置
+					var index = ($(e).parent()).index() + 1;
+
+					$(e).parent().remove();
+					// 给最后一个节点域加上加号
+					if (index == ipCount) {
+						$parent
+								.children()
+								.last()
+								.append(
+										"<a id=\"ipFileBtn\" onclick=\"addVariable(this.id)\"class=\"action-icon icon-addcircle\"></a>");
+					}
+					// 只有一个节点域时，去除减号
+					ipCount = $parent.children().length;
+					if (ipCount == 1) {
+						if ($("#ipFileBtn").prev(".delVis")) {
+							$("#ipFileBtn").prev(".delVis").remove();
+						}
+					}
+				}
+				//去掉字符串头尾空格   
+				function trim(str) {
+					if (str == null || typeof str == "undefined") {
+						return "";
+					}
+					return str.replace(/(^\s*)|(\s*$)/g, "");
+				};
+			</script>
+</body>
+</html>

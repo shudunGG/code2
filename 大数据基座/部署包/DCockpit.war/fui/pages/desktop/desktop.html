@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>我的桌面</title>
+    <link rel="stylesheet" href="./desktop.min.css">
+    <!-- 页面容器的边距 -->
+    <!--<style>        
+        /*.elem-container {
+            padding: 10px 20px;
+        }*/
+    </style>-->
+</head>
+
+<body>
+    <div class="elem-container" id="elem-container">
+
+    </div>
+
+    <script src="../../js/lib/jquery-1.11.1.min.js"></script>
+    <script src="../../js/lib/jquery.cookie.min.js"></script>
+    <script src="../../js/lib/mustache.min.js"></script>
+    
+    <script src="../../js/dist/common.min.js"></script>
+        <script>
+        if (!window._rootPath) {
+            var _rootPath = window._rootPath = (function () {
+                var path = location.pathname;
+
+                if (path.indexOf('/') === 0) {
+                    path = path.substring(1);
+                }
+
+                return '/' + path.split('/')[0];
+            }());
+        }
+
+        // 添加epoint dealRestfulUrl方法
+        (function ($) {
+            if (!window.epoint) {
+                window.epoint = {};
+            }
+
+            function dealUrl(url) {
+                // action形式的url需要加上页面路径
+                // 例如在 "/pages/login/login.xhtml"中，url为"login.autoLoad"
+                // 则url会转换为 "/pages/login/login.autoLoad"
+                url = getRequestMapping() + '/' + url;
+
+                // 将"a.b"类型的url转化为"a/b"
+                if (url.indexOf('.') != -1 && url.indexOf('.jspx') == -1) {
+                    url = url.replace('.', '/');
+
+                }
+                // 加上页面地址中的请求参数
+                var all = window.location.href;
+                var index = all.indexOf('?');
+                var hasParam = url.indexOf('?') > -1;
+
+                if (index != -1) {
+                    if (hasParam) {
+                        url += '&' + all.substring(index + 1);
+                    } else {
+                        url += '?' + all.substring(index + 1);
+                    }
+
+                    // 加上isCommondto标识
+                    // 用来给后台区分与其他不是通过epoint中的三个方法发送的请求
+                    url += '&isCommondto=true';
+                } else {
+                    if (hasParam) {
+                        url += '&isCommondto=true';
+                    } else {
+                        url += '?isCommondto=true';
+                    }
+                }
+
+                url = Util.getRightUrl('rest/' + url);
+
+                return url;
+            }
+
+            /**
+             * 获取请求映射前缀
+             *
+             * @return /frame/sysconf/code/codemainlist
+             */
+            function getRequestMapping() {
+                var url = window.location.protocol + '//' + window.location.host + window.location.pathname;
+                var root = Util.getRootPath();
+                return url.substring(root.length, url.lastIndexOf('/'));
+            }
+            $.extend(epoint, {
+                dealRestfulUrl: function (url) {
+                    var index;
+
+                    // 对于未指定方法（即没有"/"）的自动加上"page_load"方法
+                    if (url.indexOf('/') == -1) {
+                        index = url.indexOf('?');
+                        if (index == -1) {
+                            url += '/page_load';
+                        } else {
+                            url = url.substr(0, index) + '/page_load' + url.substr(index);
+                        }
+                    }
+
+                    // 是否是相对路径
+                    var isRelative = url.indexOf('./') != -1 || url.indexOf('../') != -1;
+
+                    if (isRelative) {
+                        index = url.lastIndexOf('./');
+
+                        url = url.substr(0, index + 2) + 'rest/' + url.substr(index + 2);
+                    } else {
+                        url = 'rest/' + getRequestMapping() + '/' + url;
+                    }
+
+                    // 加上isCommondto标识，以保证通过epoint处理的方法都有这个标识
+                    if (url.indexOf('?') !== -1) {
+                        url += '&isCommondto=true';
+                    } else {
+                        url += "?isCommondto=true";
+                    }
+
+                    return url;
+                }
+            });
+        }(jQuery));
+    </script>
+    <!-- 配置变量 -->
+    <script>
+        // 元件基本高度
+        var BASE_HEIGHT = 150,
+            // 元件间隙[上下,左右] 尽可能配置成偶数
+            GAPS = [10, 10],
+            // 获取数据的地址
+            getDataUrl = "../../../" + epoint.dealRestfulUrl("userdeskmanagementaction/initUserElement")
+    </script>
+
+    <script src="./desktop.js"></script>
+
+     <!--模拟测试 -->
+    <!--<script>
+        window.addEventListener('message', function (e) {
+            window._initDesktop(JSON.parse(e.data));
+        });
+    </script>-->
+
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The new signature</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- Wait for the tooltip -->
+	<div class="page-loading"></div>
+
+	<!-- Button area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="addNew" class="mini-button" onclick="addNew" iconCls="icon-save">save and new</a> <a
+				class="mini-button" onclick="addClose" id="addClose" iconCls="icon-save">save and close</a><a
+				class="mini-button" onclick="save" id="save" iconCls="icon-save">save changes</a><a
+				class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">cancel</a>
+		</div>
+	</div>
+
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="The title" starred="true">
+						<input id="txtSubject" class="mini-textbox" bind="txtSubject"
+							vtype="maxLength:50" required="true" requiredErrorText="The titleCan't be empty" />
+					</div>
+					<div role="control" label="order no">
+						<input id="orderNumber" class="mini-textbox" bind="orderNumber"
+							vtype="int" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<textarea id="ewebeditor" class="mini-webeditor" readOnly="false"
+							bind="mainContent"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot">
+		
+	</script>
+
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage("mysignatureaction", "", initCallback);
+
+		epoint.clear("fui-form");
+
+		//Initializes the callback event
+		function initCallback(data) {
+			if (data.edit) {
+				mini.get("addNew").setVisible(false);
+				mini.get("addClose").setVisible(false);
+			} else {
+				mini.get("save").setVisible(false);
+			}
+		}
+
+		//save and closeThe callback event
+		function addCloseback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, null, null, null, 'info');
+			}
+		}
+
+		//save and close
+		function addClose() {
+			if (epoint.validate()) {
+				epoint.execute("add", "", "", addCloseback);
+			}
+		}
+
+		//save and newThe callback event
+		function addNewback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+				epoint.clear("fui-form");
+				mini.get("orderNumber").setValue(0);
+			}
+		}
+
+		//save and new
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute("add", "", "", addNewback);
+			}
+		}
+
+		//save changes
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute("save", "", "", addCloseback);
+			}
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

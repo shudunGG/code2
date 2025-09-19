@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>指标模板维护</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addClose" onclick="saveAndNew">保存</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="模板标题" starred="true">
+						<input id="name" class="mini-textbox" bind="dataBean.name"
+							required="true" requiredErrorText="模板标题不能为空" />
+					</div>
+					<div role="control" label="发布时间">
+						<input id="publishtime" class="mini-datepicker"
+							bind="dataBean.publishtime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模板文件" starred="true">
+						<!-- <div id="uploader" class="uc-oauploader" auto="true"
+							duplicate="true" fileSingleSizeLimit="51200"
+							action="indexmodeladdaction.getFileUploadModel" fileNumLimit="1"
+							editurl="oa9/mail/mailofficeedit?attachguid="></div> -->
+						<div id="uploader" class="mini-webuploader" pickerText="上传文件"
+								action="indexmodeladdaction.getFileUploadModel" showDefaultUI="true" onload="onload"
+								limitType="xls,xlsx" auto="true" fileNumLimit="1" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input id="remark" class="mini-textarea" bind="dataBean.remark" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../../../../fui/js/epoint/uc/oauploader/oauploader.js"></script>
+
+	<script>
+		// 初始化页面
+		epoint.initPage('indexmodeladdaction');
+
+		function saveAndNew() {
+			var isUpload = true;
+			var $webuploader = $(".mini-webuploader");
+			console.log($webuploader[0]);
+			isUpload = $("#" + $webuploader[0].id).find(".mini-uploader-list").html();
+			if(!isUpload){
+				epoint.alert("请上传模版文件！");
+				return;
+			}
+			if (epoint.validate()) {
+				epoint.execute('saveAndNew', 'fui-form', function(data) {
+					if (data.msg) {
+						epoint.alertAndClose(data.msg);
+					}
+				});
+			}
+		}
+	</script>
+</body>
+</html>

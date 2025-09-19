@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The new task</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-save"
+				onclick="addNew">save and new</a> <a class="mini-button" id="addClose"
+				iconCls="icon-save" onclick="add">save and close</a> <a class="mini-button"
+				id="save" iconCls="icon-save" onclick="saveModify">save changes</a> <a
+				class="mini-button" iconCls="icon-removecircle"
+				onclick="epoint.closeDialog">shut down</a>
+		</div>
+		<!--Help button -->
+		<a role="helper" class="mr10">directions for use</a>
+	</div>
+
+	<!-- Help information area Hidden by default-->
+	<div class="fui-notice hidden">
+		<p>1.Interface implementation notes:If you need to asynchronous execution of interface, so the task of writing your own class must implementorg.quartz.Jobinterface,If need to be synchronizedinterfaceClass must implement, then write their own tasksorg.quartz.StatefulJobinterfaceAnd write in this task contentinterfacetheexecuteIn the method。</p>
+		<p>2.Implementation class name:Write their owntheThe task classtheThe full path,Concrete is a package name.The name of the class,As I wrote1aEpointJbobA,Where the package iscom.epoint.taskmanager.taskschedule,The path configurationcom.epoint.taskmanager.taskschedule.EpointJbobA</p>
+		<p>
+			3.The name of the task:Fill out at random, indicate the current tasktheMeaning can。
+		</p>
+		<p>4.Implement way:Move and break up two automatically。If the configuration is automatically,Then the task will be run automatically after the application starts。Performed manuallytheWords, the need to callapiThe above, or click on the pagethePerform link。</p>
+		<p>5.Classification task belong to:The task to do1aThe classified management, is also in the thread pool managementtheCategory id</p>
+	</div>
+
+	<!-- Content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="class name" starred="true">
+						<input bind="dataBean.taskclassname" required="true"
+							requiredErrorText="implementation class nameCan't be empty" class="mini-textbox" />
+					</div>
+					<div role="control" label="task name" starred="true">
+						<input bind="dataBean.taskname" requiredErrorText="task nameCan't be empty"
+							class="mini-textbox" required="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="implement way">
+						<input bind="dataBean.executetype" action="getExecutetype"
+							id="executetype" class="mini-combobox" value="0" />
+					</div>
+					<div role="control" label="classification">
+						<input bind="dataBean.categoryguid" showNullItem="true"
+							action="getCategoryguidModal" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="custom interface">
+						<input bind="dataBean.yearflag" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<font color="red">Some of the time, we arethePerform the configuration is very much, and in the otheraThe place has been configured, we don't want to do repeattheThe configuration, you can write aaClass, there must be insideaThe name forgetTriggerthepublicMethod, the return value isList
+							Trigger(org.quartz.Trigger)That method is1aparameter(FrameTaskMsg),inIn the methodbuildtriggerobjecttheTime,
+							groupnamethroughFrameTaskMsg.getCategoryguid()To obtain, it finallyaThe customthetriggerReturn can, if you need any correctionparameter, you can setintriggerthedescriptionAttributes, and then you caninjobinterfacetheTo implement insidethrough
+							jobCtx.getTrigger().getDescription()To obtain</font>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('frametaskmsgaddpageaction', '', initCallBack);
+
+		// initializationthecallback
+		function initCallBack(data) {
+			if (data.edit) {
+				//Hide the new button
+				mini.get('addNew').setVisible(false);
+				mini.get('addClose').setVisible(false);
+			} else {
+				//Hide the modify button
+				mini.get('save').setVisible(false);
+			}
+		}
+
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// The new operationthecallback
+		function newCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// Empty form
+					epoint.clear('fui-form');
+					mini.get("executetype").setValue("0");
+				}
+			}
+		}
+
+		// Shut downoperationthecallback
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

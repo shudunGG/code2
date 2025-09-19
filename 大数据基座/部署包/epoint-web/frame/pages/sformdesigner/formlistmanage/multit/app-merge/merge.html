@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="../../../../../fui/js/cssboot.js"></script>
+<!-- <script src="../../../fui/js/cssboot.js"></script> -->
+<link rel="stylesheet" href="./merge.css">
+<title>多表合一</title>
+</head>
+
+<body>
+	<div class="container">
+		<div class="content">
+			<!-- 流程 -->
+			<div class="flow ver-inner-md">
+				<!-- <div class="flow-circle before">
+					<span class="flow-circle-txt">创建主表</span>
+				</div>
+				<div class="flow-line before"></div> -->
+				<div class="flow-circle before">
+					<span class="flow-circle-txt">选择表单</span>
+				</div>
+				<div class="flow-line before"></div>
+				<div class="flow-circle active">
+					<span class="flow-circle-txt">字段合并</span>
+				</div>
+				<!-- <div class="flow-line"></div>
+				<div class="flow-circle">
+					<span class="flow-circle-txt">布局组合</span>
+				</div> -->
+			</div>
+			<div id="main" class="main clearfix">
+				<div id="chart" class="chart l">
+					<div class="chart-hd">数据表</div>
+					<div id="chart-list" class="chart-list"></div>
+				</div>
+				<div id="field" class="field l">
+					<div class="field-hd ver-inner-md">
+						<input id="field-input" type="text" class="field-input ver-md"
+							placeholder="搜索"> <span
+							class="icon-search action-icon ver-md"></span>
+					</div>
+					<div id="field-list" class="field-list"></div>
+				</div>
+				<div class="tools l">
+					<div id="auto-merge" class="auto-merge" title="智能合并"></div>
+				</div>
+				<div class="merge l">
+					<div class="merge-hd clearfix">
+						<span id="merge-hd-txt" class="merge-hd-txt box-inline l">已合并&nbsp;0</span>
+						<span id="delete-btn" class="delete-btn box-inline r" title="删除全部"></span>
+					</div>
+					<div id="merge-list" class="merge-list">
+						<!-- <div class="merge-box clearfix">
+                            <div class="merge-item l">
+                                <span class="merge-item-index">1</span>
+                                <span class="merge-item-txt">纳税人名称</span>
+                            </div>
+                            <div class="merge-item l">
+                                <span class="merge-item-index">2</span>
+                                <span class="merge-item-txt">纳税人名称</span>
+                            </div>
+                            <div class="merge-item l">
+                                <span class="merge-item-index">3</span>
+                                <span class="merge-item-txt">纳税人名称</span>
+                            </div>
+                        </div> -->
+					</div>
+				</div>
+				<div id="placeholder" class="placeholder box-inline ver-md hidden"></div>
+			</div>
+
+
+		</div>
+		<div id="bottom" class="bottom ver-inner-md text-center">
+			<a href="javascript:;" class="mini-button ver-md prev-btn">上一步</a> <a
+				href="javascript:;" class="mini-button ver-md next-btn"
+				state="primary">保 存</a>
+		</div>
+	</div>
+
+	<script id="chart-tpl" type="text-mustache">
+        {{#list}}
+        <div class="chart-item text-ellipsis" data-id="{{id}}" data-index="{{index}}" data-name="{{name}}">
+            <span class="chart-index">{{index}}</span>
+            <span class="chart-txt">{{name}}</span>
+        </div>
+        {{/list}}
+    </script>
+
+	<script id="field-tpl" type="text-mustache">
+        {{#list}}
+        <div class="field-item text-ellipsis {{#disabled}}disabled{{/disabled}}" data-name="{{name}}" data-type="{{type}}" data-control="{{control}}" data-fieldname="{{fieldName}}" data-formguid="{{formguid}}">{{{nameHtml}}}({{control}})</div>
+        {{/list}}
+    </script>
+
+	<script id="merge-box-tpl" type="text-mustache">
+        {{#list}}
+        <div class="merge-box clearfix" data-type="{{type}}" data-control="{{control}}">{{{html}}}</div>
+        {{/list}}
+    </script>
+
+	<script id="merge-tpl" type="text-mustache">
+        {{#list}}
+        <div class="merge-item box-inline ver-inner-md ver-md" data-index="{{index}}" data-index="{{index}}" data-chartid="{{chartId}}" data-name="{{name}}" data-fieldname="{{fieldName}}" data-formguid="{{formguid}}">
+            <span class="merge-item-index ver-md">{{index}}</span>
+            <span class="merge-item-txt ver-md">{{name}}</span>
+            <span class="merge-delete-btn ver-md"></span>
+        </div>
+        {{/list}}
+    </script>
+
+	<script id="helper-tpl" type="text-mustache">
+        {{#list}}
+        <div class="merge-item box-inline bite" style="padding-right: 20px; z-index: 100" data-index="{{index}}" data-chartid="{{chartId}}" data-name="{{name}}" data-fieldname="{{fieldName}}" data-control="{{control}}" data-type="{{type}}" data-formguid="{{formguid}}">
+            <span class="merge-item-index">{{index}}</span>
+            <span class="merge-item-txt">{{name}}</span>
+        </div>
+        {{/list}}
+    </script>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<!-- <script src="../../../fui/js/jsboot.js"></script> -->
+
+	<!-- 模拟数据 -->
+	<!-- <script src="../../../fui/js/libs/mock-min.js"></script>
+    <script src="./test/test.js"></script> -->
+
+	<script>
+		var getTablesUrl = 'formlistmanage/epointsformmultitaddaction.action?cmd=getTableStructInfo', // 获取表和字段数据
+		getMergeUrl = 'formlistmanage/epointsformmultitaddaction.action?cmd=getShareInfo', // 获取已合并的字段数据
+		autoMergeUrl = 'formlistmanage/epointsformmultitaddaction.action?cmd=autoMerge', // 智能合并
+		saveMergeDataUrl = 'formlistmanage/epointsformmultitaddaction.action?cmd=saveMultiInfo'; // 保存合并数据
+		// var getTablesUrl = 'getTables', // 获取表和字段数据
+		// getMergeUrl = 'getMerge', // 获取已合并的字段数据
+		// autoMergeUrl = 'autoMerge', // 智能合并
+		// saveMergeDataUrl = 'saveMergeData'; // 保存合并数据
+
+		function CloseForm() {
+			var relationguid = Util.getUrlParams('relationguid');
+			epoint.execute('deltetsForm', '', [ relationguid ], '')
+		}
+	</script>
+
+	<script src="./merge.js"></script>
+</body>
+
+</html>

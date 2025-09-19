@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>soa主动推送日志</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="选择应用"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar区域 `-->
+		<div class="fui-toolbar">
+			<div class="mini-btn-group">
+				<a class="mini-button" state="primary" onclick="retryNotify">重新推送</a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-search" primaryControl="attachFileName" opened="false">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="业务名称">
+							<input id="clientTag" class="mini-combobox"
+								action="selectTagModel" bind="clientTag" />
+						</div>
+						<div role="control" label="推送发生时间">
+							<input class="mini-datepicker" id="dateFrom"
+								onValuechanged="validateDate(this)"
+								data-options='{"format":"yyyy-MM-dd "}' width="45%"
+								format="yyyy-MM-dd " align="center" bind="fromTime" /> <span>至</span>
+							<input class="mini-datepicker" id="dateTo"
+								onValuechanged="validateDate(this)"
+								data-options='{"format":"yyyy-MM-dd "}' width="45%"
+								format="yyyy-MM-dd " align="center" bind="endTime" />
+						</div>
+					</div>
+				</div>
+				<input id="appKey" bind="appKey" class="mini-hidden" />
+			</div>
+			<a role="reset" callback="resetCallback"></a> <a role="searcher"
+				callback="searchData"></a><a role="close" callback="closeCallback"></a>
+		</div>
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="logguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="40">序</div>
+					<div field="clientname" width="100">业务名称</div>
+					<div field="eventname" width="70">事件</div>
+					<div field="pushurl" width="200">推送地址</div>
+					<div field="statusname" width="70" renderer="onDisplayStatusRender">推送结果</div>
+					<div field="remark" width="150">推送结果描述</div>
+					<div field="entityname" width="150">推送耗时/微秒</div>
+					<div field="pushdate" width="150"
+						data-options='{"format":"yyyy-MM-dd HH:mm:ss"}'
+						dateFormat="yyyy-MM-dd HH:mm:ss">生成时间</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="info-box" class="mini-window mini-messagebox" title="进度提醒"
+		style="width: 400px; height: 250px; display: none;"
+		showMaxButton="false" showCollapseButton="false" showShadow="true"
+		showToolbar="false" showFooter="true" showModal="true"
+		allowResize="false" allowDrag="false">
+		<i class="mini-messagebox-icon mini-messagebox-info" style=""></i>
+		<div style="margin-left: 100px; height: 50px; margin-top: 60px;">
+			<div id="info-box-moving">
+				<div id="move-progressbar" class="mini-progressbar" value="0"></div>
+				<p>
+					重新推送中，当前第<span id="info-box-curr"></span> 个，共 <span
+						id="info-box-all"></span> 个。
+				</p>
+			</div>
+			<div id="info-box-pausing" style="display: none;">
+				<p>推送已暂停。</p>
+			</div>
+		</div>
+
+		<div property="footer"
+			style="text-align: right; padding: 5px; padding-right: 15px;">
+			<a class="mini-button" id="restart-moveing" onclick="reStart"
+				style="display: none;">继续</a> <a class="mini-button"
+				id="cancel-moveing" onclick="cancelPush">停止</a>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('soanotifypushloglistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			if (e.node) {
+				var text = e.node.id;
+				//将左侧树点击的节点id放到隐藏域中
+				mini.get('appKey').setValue(text);
+			}
+			//刷新表格
+			searchData();
+		});
+
+		// 弹出数据源选择窗口
+		function retryNotify() {
+			epoint.execute('check', '', '', checkCallBack);
+		}
+
+		// 提示区域
+		var infoBox = mini.get('info-box');
+		// 进度条
+		var progressbar = mini.get('move-progressbar');
+		// 总数
+		var $infoCountAll = $('#info-box-all'),
+		// 当前数据
+		$infoCountCurr = $('#info-box-curr'),
+		// 转移中提示
+		$moveingTips = $('#info-box-moving'),
+		// 暂停中提示
+		$pausingTips = $('#info-box-moving');
+
+		//var IS_PAUSED = false;
+
+		function checkCallBack(rtnValue) {
+			//IS_PAUSED = false;
+			if (rtnValue.message) {
+				epoint.alert(rtnValue.message, '', null, 'info');
+				return;
+			}
+			// 有文件需要转移才显示
+			if (!rtnValue.totalcount)
+				return;
+			// 初始记录总数初始为1
+			var all = rtnValue.totalcount;
+			$infoCountAll.text(all);
+			$infoCountCurr.text(1);
+			// 显示提示
+			infoBox.show();
+			var countmove = setInterval(function() {
+				countMoveCallback();
+			}, 1000);
+			var dataUrl = epoint
+					.dealRestfulUrl('soanotifypushloglistaction/retryNotify');
+			Util.ajax({
+				type : 'POST',
+				dataType : 'json',
+				url : dataUrl,
+				data : {},
+				success : function(data) {
+					console.log('success');
+				}
+			});
+
+			function countMoveCallback() {
+				var dataUrl = epoint
+						.dealRestfulUrl('soanotifypushloglistaction/countRetryLeft');
+				Util.ajax({
+					type : 'POST',
+					dataType : 'json',
+					url : dataUrl,
+					success : function(amountleft) {
+						// 未完成则更新当前计数和进度条
+						// 总的-剩余即为当前
+						var curr;
+						if (amountleft.length == 0) {
+							curr = all - 1;
+						} else {
+							curr = all - amountleft;
+						}
+						console.log(curr);
+						var progress = parseFloat(
+								(curr / all * 100).toFixed(2), 10);
+						progressbar.setValue(progress);
+						$infoCountCurr.text(curr);
+
+						// 已经暂停
+						/* if (IS_PAUSED) {
+							//$moveingTips.hide();
+							//$pausingTips.show();
+						} */
+						if (amountleft <= 0) {
+							clearInterval(countmove);
+							// 完成
+							infoBox.hide();
+							epoint.alert('推送结束');
+							searchData();
+							progressbar.setValue(0);
+						}
+					}
+				});
+
+			}
+
+			/* // 继续方法
+			window.reStartMove = function(n) {
+				//$moveingTips.show();
+				//$pausingTips.hide();
+				//countMoveCallback(n);
+			} */
+		}
+
+		//var pauseBtn = mini.get('pause-moveing'), restartBtn = mini
+		//		.get('restart-moveing');
+
+		/* function pauseMove() {
+			// 暂停
+			// 发一个请求到后端 成功后设置IS_PAUSED = true;
+			//epoint.execute('pauseMove', '', '', function() {
+			//	pauseBtn.hide();
+			//	restartBtn.show();
+			//	IS_PAUSED = true;
+			});
+		} */
+
+		/* function reStart() {
+			// 开始
+			// 重新开始转移并返回当前的未转移到数目
+			pauseBtn.show();
+			restartBtn.hide();
+			var dataUrl = epoint.dealRestfulUrl('attachinfolistaction/reStart');
+			Util.ajax({
+				type : 'POST',
+				dataType : 'json',
+				url : dataUrl,
+				success : function(data) {
+					console.log('restartsuccess');
+					IS_PAUSED = false;
+					reStartMove(n);
+				}
+			});
+		} */
+		function cancelPush() {
+			// 转移完成
+			epoint.execute('cancelPush', '', '', function(e) {
+
+			});
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.alert("起始时间不能大于终止时间!", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("终止时间不能小于起始时间!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		function onDisplayStatusRender(e) {
+			var val = e.value;
+			if (val === '失败') {
+				val = '<i class="dot-error"></i>失败';
+			} else if (val == '成功') {
+				val = '<i class="dot-success"></i>成功';
+			}
+			return val;
+		}
+	</script>
+</body>
+
+</html>

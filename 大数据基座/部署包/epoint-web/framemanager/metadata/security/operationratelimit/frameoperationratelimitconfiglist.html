@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>频繁操作验证配置表列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="btnAddRecord" class="mini-button"
+				onclick="openAdd" state="primary">新增配置</a> <a id="save"
+				class="mini-button" onclick="saveAll()">保存修改</a>
+			<a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的消息！',  {state : 'warning'});} else {epoint.confirm('确认要删除吗？','',deleteData);}">删除选定
+			</a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="地址">
+						<div id="search_PageUrl" class="mini-textbox"
+							bind="frameoperationratelimitconfiglistaction.pageurlStr"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true" action="getDataGridData"
+			style="height: 100%; height: 100%;" allowResize="true"
+			showPager="true" sortOrder="desc" allowCellValid="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="10"></div>
+				<div type="indexcolumn" width="10" align="left">序</div>
+				<div field="policyremark" width="50" vtype="maxLength:200">
+					描述 <input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="50" />
+				</div>
+				<div field="targetusername" width="20">目标用户名字</div>
+				<div field="pageurl" width="40" vtype="required;maxLength:500">
+					地址 <input property="editor" class="mini-textbox"
+						style="width: 100%;" required="true" vtype="maxLength:800"
+						maxLength="800" />
+				</div>
+				<div field="timeinterval" width="25"
+					vtype="required;int;range:1,99999999">
+					单位时间(秒) <input property="editor" class="mini-textbox"
+						style="width: 100%;" required="true" vtype="int;range:1,99999999" />
+				</div>
+				<div field="maxcount" width="25"
+					vtype="required;int;range:1,99999999">
+					最大上限次数 <input property="editor" class="mini-textbox"
+						style="width: 100%;" required="true" vtype="int;range:1,99999999" />
+				</div>
+				<!-- <div field="verificationmodeplayname" width="25" >当前验证模式</div> -->
+				<div field="policyvalidperiod" width="30"
+					vtype="required;int;range:1,99999999">
+					持续有效期(秒) <input property="editor" class="mini-textbox"
+						style="width: 100%;" required="true" vtype="int;range:1,99999999" />
+				</div>
+				<div field="policyenabled" width="25" type="checkboxcolumn"
+					truevalue="1" falsevalue="0">黑名单记入</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameoperationratelimitconfiglistaction');
+
+		var grid = mini.get('datagrid');
+
+		// 弹出新增窗口
+		function openAdd() {
+			epoint
+					.openDialog(
+							'新增记录',
+							"framemanager/metadata/security/operationratelimit/frameoperationratelimitconfigadd",
+							function(param) {
+								if (param && param != "close") {
+									epoint.showTips(param, {
+										state : 'success'
+									});
+								}
+								searchData();
+							}, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 删除数据
+		function deleteData() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				if(data.msg.indexOf("成功")!=-1){
+					epoint.showTips(data.msg,{state : 'success'});
+				}else{
+					epoint.showTips(data.msg,{state : 'error'});
+				}
+				searchData();
+			}
+		}
+
+		// 保存
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+	</script>
+</body>
+</html>

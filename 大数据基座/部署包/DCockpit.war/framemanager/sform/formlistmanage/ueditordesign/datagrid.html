@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+<style>
+.content {
+	margin-top: 20px;
+	padding: 0 10px;
+}
+
+.table {
+	table-layout: fixed;
+}
+
+.table th {
+	box-sizing: border-box;
+	text-align: center;
+}
+
+.content td {
+	text-align: center;
+	box-sizing: border-box;
+	line-height: 30px;
+	vertical-align: top;
+}
+
+.remove-row {
+	background: url("./images/close.png") center no-repeat;
+	width: 20px;
+	height: 30px;
+	/* height: 100%; */
+	display: block;
+	visibility: hidden;
+	cursor: pointer;
+}
+
+tr:hover .remove-row {
+	visibility: visible;
+}
+
+.content .index {
+	text-align: center;
+}
+
+.content .datagrid-input {
+	box-sizing: border-box;
+	width: 100%;
+	height: 30px;
+	margin: 0;
+}
+
+.datagrid-input.is-total, .datagrid-input.requiredValidate {
+	width: 14px;
+	height: 14px;
+	/* margin: 8px 0 0 8px; */
+}
+
+.input-append {
+	width: 100%;
+	height: 30px;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+.input-append>.column-width {
+	width: 60px;
+	height: 30px;
+	box-sizing: border-box;
+}
+
+.content input.in-error, .content select.in-error {
+	border-color: #f00;
+}
+</style>
+</head>
+
+<body>
+	<input type="hidden" id="datafield" />
+	<div class="content">
+		<!-- <div class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label" for="control-name">控件名称</label>
+                <div class="controls">
+                    <input type="text" id="control-name" name="control-name">
+                </div>
+            </div>
+        </div> -->
+		<div class="form-inline">
+			<label class="control-label" for="control-name">控件名称</label>
+			<!-- <div class="controls"> -->
+			<input type="text" id="control-name" name="control-name">
+			<!-- </div> -->
+		</div>
+		<table class="table" id="datagrid-table">
+			<thead>
+				<tr>
+					<th width="20"></th>
+					<th width="50">序号</th>
+					<th width="120">表头名称</th>
+					<th width="50">列宽度</th>
+					<th width="110">类型</th>
+					<th width="50">必填校验</th>
+					<th width="80">格式校验</th>
+					<th width="50">合计</th>
+					<th width="100">计算公式</th>
+					<th width="150">值</th>
+					<th width="150">默认值(可扩展)</th>
+				</tr>
+			</thead>
+			<tbody>
+
+			</tbody>
+		</table>
+		<div>
+			<button class="btn" id="add-row">增加</button>
+		</div>
+	</div>
+
+	<!-- 必须引入此JavaScript 用以在此页面直接获取dialog实例！ -->
+	<script src="../../../../frame/fui/js/libs/jquery-1.11.1.min.js "></script>
+	<script
+		src="../../../../frame/fui/js/widgets/ueditor/dialogs/internal.js "></script>
+	<script src="../../../../frame/fui/js/libs/mustache.min.js"></script>
+	<!-- tr 模板 -->
+	<script type="text/x-mustache-tpl" id="tr-tpl">
+        <tr>
+            <td><span class="remove-row"></span></td>
+            <td class="index">{{index}}</td>
+            <td><input class="datagrid-input header-name" name="header-name" type="text" placeholder="请输入表头名称" value="{{headername}}"></td>
+            <td>
+                <div class="input-append">
+                    <input class="column-width" type="text" placeholder="请输入列宽度" value="{{cellwidth}}">
+                    <span class="add-on">px</span>
+                </div>
+            </td>
+            <td>
+                <select class="datagrid-input type" name="type">
+                    {{#typeList}}
+                        <option value="{{value}}" {{#selected}}selected="true"{{/selected}}>{{text}}</option>
+                    {{/typeList}}
+                </select>
+            </td>
+			<td><input class="datagrid-input requiredValidate" name="requiredValidate" type="checkbox" {{#requiredValidate}}checked="true" {{/requiredValidate}}></td>
+			<td>
+                <select class="datagrid-input format" name="formatValidate">
+                    {{#formatList}}
+                        <option value="{{value}}" {{#selected}}selected="true"{{/selected}}>{{text}}</option>
+                    {{/formatList}}
+                </select>
+            </td>            
+			<td><input class="datagrid-input is-total" name="is-total" type="checkbox" {{#isTotal}}checked="true" {{/isTotal}}></td>
+            <td><input class="datagrid-input formula" name="formula" type="text" placeholder="请输入计算公式" {{#formula}}value="{{formula}}"
+                    {{/formula}}></td>
+            <td><input class="datagrid-input column-value" name="column-value" type="text" placeholder="多个值之间用英文逗号分隔" title="多个值之间用英文逗号分隔"
+                    {{#value}}value="{{value}}" {{/value}}></td>
+ 			<td><input class="datagrid-input column-dvalue" name="column-dvalue" type="text" placeholder="可扩展" title="可扩展"
+                    {{#dvalue}}value="{{dvalue}}" {{/dvalue}}></td>
+        </tr>
+    </script>
+	<!-- 类型配置 -->
+	<script>
+		// 类型选择下拉框中的数据配置
+		var editorTypeList = [ {
+			value : 'textbox',
+			text : '文本输入框',
+			selected : true
+		// 此值为true时表示默认选中 只能有一个为true
+		}, {
+			value : 'dropdowntextbox',
+			text : '数字输入框'
+		}, {
+			value : 'dropdowntextbox',
+			text : '下拉菜单'
+		}, {
+			value : 'checkbox',
+			text : '多选框'
+		} ];
+
+		var editorFormatList = [ {
+			value : '',
+			text : '',
+			selected : true
+		// 此值为true时表示默认选中 只能有一个为true
+		}, {
+			value : 'email',
+			text : '邮件'
+		}, {
+			value : 'cardId',
+			text : '身份证'
+		} ];
+
+		// 初始化时 自动创建几行 
+		var DEFAULT_NEW_ROWS = 3;
+
+		// 控件名称的总体校验 名称和列数目
+		function controlValidate($cName, trLength) {
+			// 名称
+			if (!$.trim($cName.val())) {
+				$cName.addClass('in-error');
+				alert('控件名称必填');
+				return false;
+			}
+			// 列数目
+			if (trLength < 3) {
+				alert('表格至少需要配置三列！');
+				return false;
+			}
+
+			return true;
+		}
+		// 表格行的验证规则，在点击确定获取数据时进行调用 data 为
+		// {
+		//     $headerName: // 表头名称 jQuery对象下同
+		//     $columnWidth: //  列宽
+		//     $type: // 类型
+		//     $isTotal: // 合计
+		//     $formula: // 公式
+		//     $value: // 值
+		// };
+		function trValidate(data) {
+			// 标题名称的校验
+			if (!data.$headerName.val()) {
+				data.$headerName.addClass('in-error');
+				alert('表头名称必填');
+				return false;
+			}
+
+			return true;
+		}
+	</script>
+	<script src="./js/datagrid.js"></script>
+	<!-- dialog -->
+	<script>
+		// 初始化
+		datagridDesign.init();
+
+		// 对应编辑器中的此控件的dom对象
+		var oNode = null,
+		// 当前控件的类型 即扩展的命令名称
+		thePlugins = 'datagrid';
+
+		// 取消按钮点击
+		dialog.oncancel = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+
+		// 获取编辑器中的dom 读取属性数据修改当前页面控件值
+		window.onload = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				oNode = UE.plugins[thePlugins].editdom;
+				var data = {
+					controlName : oNode.getAttribute('title'),
+					subfields : oNode.getAttribute('subfields')
+				};
+				if (data.controlName && data.subfields) {
+					// 调用封装的方法根据数据创建dom
+					datagridDesign.setData(data);
+				}
+			} else {
+				parent.controlId += 1;
+				var df = "Ctrl" + parent.controlId
+				$G('datafield').value = df;
+			}
+		};
+
+		// 确定按钮点击
+		dialog.onok = function() {
+			// 获取数据并进行验证
+			var data = datagridDesign.getData();
+
+			// 验证失败则不用继续了
+			if (!data) {
+				return false;
+			}
+
+			// 存在则表示编辑 否则为新建
+			if (oNode) {
+				// 已经存在则修改编辑器中的dom即可
+				// 修改名称 并将新的列数据写入即可
+				oNode.setAttribute('value', data.controlName);
+				oNode.setAttribute('title', data.controlName);
+				oNode.setAttribute('datafieldcn', data.controlName);
+				oNode.setAttribute('subfields', data.subfields);
+				oNode.setAttribute('readonly', 'readonly');
+
+				delete UE.plugins[thePlugins].editdom;
+
+			} else {
+				// 不存在则为新建 需要在创建 dom 并在插入到编辑器中
+				try {
+					oNode = document.createElement('img');
+					oNode.setAttribute('controltype', thePlugins);
+					oNode.setAttribute('class', 'datagrid');
+					oNode.setAttribute('data-ctrl', 'datagrid');
+					oNode.setAttribute('value', data.controlName);
+					oNode.setAttribute('title', data.controlName);
+					oNode.setAttribute('datafieldcn', data.controlName);
+					oNode.setAttribute('datafield', $G('datafield').value);
+					oNode.setAttribute('type', 'text');
+					oNode.setAttribute('readonly', 'readonly');
+					oNode.setAttribute('subfields', data.subfields);
+					editor.execCommand('inserthtml', oNode.outerHTML);
+				} catch (err) {
+					throw err;
+				}
+			}
+		};
+	</script>
+</body>
+
+</html>

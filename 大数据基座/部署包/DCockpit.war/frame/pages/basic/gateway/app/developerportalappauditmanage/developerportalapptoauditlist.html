@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>待审核应用列表</title>
+<script src="../../../../../fui/js/cssboot.js"></script>
+<style type="text/css">
+        .btn-in-column{margin-right:5px;}
+        .btn-in-column-text{margin-left:5px;margin-right:5px;}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="应用名称">
+						<input id="search_appName" class="mini-textbox"
+							bind="appName" onkeyenter="searchData();" />
+					</div>
+					<div role="control" label="申请人">
+						<input id="search_linkManName" class="mini-textbox"
+							bind="linkManName" onkeyenter="searchData();" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="appName" headerAlign="center" width="150">应用名称</div>
+				<div field="companyName" headerAlign="center" align="left" width="100%">企业名称</div>
+				<div field="linkManName" headerAlign="center" align="center" width="150">申请人</div>
+				<div field="submitTime" headerAlign="center" renderer="onSubmitTimeRender"
+					align="center" width="150">提交时间</div>
+				<div name="operation" headerAlign="center" renderer="onOperationRender"
+					align="center" width="150">操作</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		                      
+		//初始化页面
+		epoint.initPage('developerportalapptoauditlistaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 格式化提交时间列
+		function onSubmitTimeRender(e) {
+			
+			var submitTime = e.value;
+			
+			submitTime = new Date(submitTime);
+			
+			// 格式化时间
+			var year = submitTime.getFullYear();
+			var month = submitTime.getMonth() + 1;
+			month = fixZero(month);
+			var date = submitTime.getDate();
+			date = fixZero(date);
+			var hours = submitTime.getHours();
+			hours = fixZero(hours);
+			var minutes = submitTime.getMinutes();
+			minutes = fixZero(minutes);
+			var seconds = submitTime.getSeconds();
+			seconds = fixZero(seconds);
+			
+			return year + '-' + month + '-' + date + ' ' + hours + ':' + minutes + ':' + seconds;
+		}
+		
+		function fixZero(data, range){
+			if (data < 10) {
+				data = '0' + data;
+			}
+			return data;
+		}
+
+		// 绘制操作按钮
+		function onOperationRender(e) {
+			var appGuid = e.row['rowguid'];
+			
+			// 审核
+			var forDetailHtml = '<a class="mini-button btn-in-column" id="btnDetail" onclick="toDetail(\'' + appGuid + '\');"><div class="btn-in-column-text">审核</div></a>';
+		
+			var renderHtml = '<div>' +  forDetailHtml + '</div>';
+			return renderHtml;
+		}
+		
+		// 审核
+		function toDetail(appGuid){
+			epoint.openDialog("应用详情", 'frame/pages/basic/gateway/app/developerportalappauditmanage/developerportalappedit?rowguid=' + appGuid + '&showMode=audit', detailCallBack, {'width': 1000, 'height': 580});
+		}
+		
+		// 审核回调
+		function detailCallBack(param) {
+	        if (param) {
+	        	epoint.refresh(['datagrid'],'',true);
+	        }
+	    }
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form']);
+		}
+		//]]>
+	</script>
+
+
+</body>
+</html>

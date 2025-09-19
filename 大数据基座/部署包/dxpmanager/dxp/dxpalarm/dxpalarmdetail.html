@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>集成监控</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.top {
+	height: 100px;
+	background: #fff;
+	overflow: hidden;
+	padding-left: 0px;
+	font-size: 16px;
+	color: #5c5c5c;
+	border-bottom: 1px solid #ebebeb;
+	box-shadow: 0 1px 8px 0 rgba(75, 75, 75, 0.14);
+}
+
+.type-choose {
+	width: 80%;
+	padding-top: 12px;
+}
+
+.type-choose>li {
+	float: left;
+	text-align: center;
+	font-size: 16px;
+	color: #5c5c5c;
+	cursor: pointer;
+}
+
+.search-input {
+	float: left;
+	height: 32px;
+	line-height: 32px;
+	margin: 0 10px 0 15px;
+}
+
+.search-input {
+	width: 186px;
+	box-sizing: border-box;
+	border: 1px solid #dddddd;
+	border-radius: 4px;
+	padding-left: 10px;
+	line-height: 24px;
+	outline: none;
+}
+.situation-item>div {
+    margin: 0 12px;
+    text-align: center;
+    padding-top: 7px;
+}
+.situation-item>div>p {
+    height: 35px;
+}
+
+.type-choose>li.first{
+	width:20%;
+	border-right: 1px solid #ebebeb;
+}
+
+.situation-item {
+    float: left;
+    width:13%;
+}
+
+.situation-item>div>span {
+    font-weight: bold;
+}
+
+.grid {
+   margin:10px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<div class="top" id="top">
+		<ul class="type-choose l ">
+			<li class="first situation-item "><div>
+					<p>待处理告警</p>
+					<span>10</span>
+				</div></li>
+		</ul>
+	</div>
+		<!-- 按钮区域 -->
+		<div class="fui-toolbar fui-condition">
+			<div class="btn-group">
+				<a class="mini-button mini-btn-primary" id="fast" onclick="fastcheck()">快速检测</a>
+			</div>
+			<div class="btn-group">
+				<a class="mini-button mini-btn-primary" id="through" onclick="batthrough()">办结</a>
+			</div>
+		<div class="right-btn-area r">
+			<input bind="alarmType" action="getAlarmTypeList" id="alarmType"  emptyText="请选择告警类型" showNullItem="true"
+				class="search-input mini-combobox" /><input id="daterangepicker" emptyText="请选择告警时间范围"
+				class="mini-daterangepicker search-input" bind="startDate,endDate"
+				rangeType="date" /> <a id="search"
+				class="search-button btn r mini-button" onclick="searchData">搜索</a>
+		</div>
+	</div>
+
+
+		<!-- 表格区域 -->
+		<div class="mini-fit grid">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true" 
+				style="width: 100%; height: 100%;" showPager="true"
+				action="getDataGridData">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">序</div>
+					<div field="alarmName" width="100" headerAlign="center">告警类型</div>
+					<div field="batchNum" width="80" headerAlign="center"
+						align="center">批次</div>
+					<div field="monitordate" width="80" headerAlign="center"
+						align="center"  data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"  dateFormat="yyyy-MM-dd HH:mm:ss">告警时间</div>
+					<div field="batchNum" width="80" headerAlign="center"
+						align="center" renderer="onDownLoadRenderer">日志下载</div>
+					<div field="flowguid" width="80" visible="false"></div>
+					<div field="status" width="80" headerAlign="center" renderer="onThroughRenderer"
+						align="center" >告警处理</div>
+				</div>
+			</div>
+			<form id="download_form" method="post" enctype="multipart/form-data"></form>
+		</div>
+
+	<script src="../../rest/resource/jsboot"></script>
+	<script id="row-tmpl" type="application/x-mustache">
+        {{#rows}}
+          <li class="situation-item">
+			<div>
+				<p>{{itemname}}</p>
+				<span>{{itemvalue}}</span>
+			</div>
+		  </li>
+        {{/rows}}
+    </script>
+	<script>
+		var rowTmpl = $("#row-tmpl").html();
+		var grid=mini.get('datagrid');
+		epoint.initPage('dxpalarmdetailaction','@all',function(data){
+			console.log(data);
+			var rendered = Mustache.render(rowTmpl, data);
+			$('.type-choose').append(rendered);
+			$('.first div span').html(data.wait);
+			mini.parse();
+		});
+
+	
+		function onThroughRenderer(e) {
+			if (e.value=='01') {
+				return '<a class="mini-button mini-disabled" >办结</a>'
+			}else{
+				return '<a class="mini-button mini-btn-primary" onclick="through(\''+e.row.rowguid+'\')">办结</a>'
+			}
+		}
+		
+		function through(e){
+			epoint.execute('through','',e,function(data){
+				if(data.msg){
+					epoint.showTips(data.msg);
+					searchData();
+				}
+			});
+		}
+		
+		function batthrough(){
+			if (mini.get('datagrid').getSelecteds().length == 0 
+					|| (mini.get('datagrid').getSelecteds().length==1 && mini.get('datagrid').getSelecteds()[0].status=='01')) {
+				epoint.alert('请选择要办结的告警!', '', null, 'warning');
+			} else {
+				epoint.execute('batThrough','','',function(data){
+					if(data.msg){
+						epoint.showTips(data.msg);
+						searchData();
+					}
+				});
+			}
+		}
+		
+		function onDownLoadRenderer(e) {
+			if (e.value) {
+				return epoint.renderCell(e, "action-icon icon-download",
+						"download", 'batchNum,flowguid');
+			}
+		}
+
+		function download(e) {
+			var form = document.getElementById('download_form');
+			form.action = "dxpalarmdetailaction.action?cmd=downloadLog&batchNum="
+					+ e.batchNum+"&rowguid="+e.flowguid;
+			form.submit();
+		}
+
+		
+		function fastcheck(){
+			var rowguid=Util.getUrlParams('rowguid');
+			epoint.openDialog('快速检测','./dxpfastchecklist?rowguid='+rowguid);
+		}
+		
+		mini.get('datagrid').on('drawcell',function(e){
+			if(e.columnIndex==0&&e.record.status=='01'){
+				//办结的复选框不再显示
+				e.cellHtml="";
+			}
+		});
+		
+		
+		
+		function searchData() {
+			mini.get('datagrid').reload();
+			epoint.refresh('top');
+		}
+	</script>
+</body>
+</html>

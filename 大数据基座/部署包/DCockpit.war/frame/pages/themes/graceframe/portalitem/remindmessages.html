@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8"></meta>
+	<title>待办事宜</title>
+	<link rel="stylesheet" href="css/portalItem.css"></link>
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 元件内容 -->
+	<div class="portalitem large">
+		<h3 class="portalitem-header">
+			<!-- 标题 -->
+			<span class="portalitem-header-text">统一消息——待办事宜</span>
+			<!-- 数量显示及连接 -->
+			<div class="portalitem-remind r"></div>
+		</h3>
+
+		<!-- 用于列表展示 -->
+		<ul class="portalitem-body">
+
+		</ul>
+	</div>
+
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+
+	<!-- 配置变量 -->
+	<script>
+		function init() {
+			Util
+				.loadPageModule({
+					templ: 'frame/pages/themes/graceframe/portalitem/templ/portalItem.tpl',
+					js: 'frame/pages/themes/graceframe/portalitem/js/portalItem.js',
+					callback: Util.hidePageLoading
+				});
+		}
+
+
+		init();
+
+		// 消息的配置
+		var dataUrl = epoint.dealRestfulUrl('f9remindmessageaction/getPortalData');
+		var type = 'large';
+		// 根据高度计算需要显示多少条代办
+		// var itemNum = 8;
+		var itemNum = (function () {
+			// list
+			var $listBody = $('.portalitem-body'),
+				// 元件 头部高度
+				HEADER_HEIGHT = $('.portalitem-header').outerHeight() || 46,
+				// 列表行高
+				LINE_HEIGHT = 30,
+				// 列表上下间距和
+				LIST_PADDING = (parseFloat($listBody.css('padding-top'), 10) || 0) + (parseFloat($listBody.css('padding-bottom'),
+					10) || 0);
+			
+			// 需要显示的列表条数 = （列表内容高度 / 行高 ）并向下取整
+			return ($(window).height() - HEADER_HEIGHT - LIST_PADDING) / LINE_HEIGHT >> 0;
+		})();
+	</script>
+
+
+
+</body>
+
+</html>

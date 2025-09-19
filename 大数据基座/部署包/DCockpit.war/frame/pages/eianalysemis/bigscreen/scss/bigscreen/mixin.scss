@@ -1,0 +1,29 @@
+$base-font-size: 275px !default;
+// 计算属性的rem值，values为px单位
+@mixin remCalc($property, $values...) {
+    $max: length($values);
+    $pxValues: '';
+    $remValues: '';
+    @for $i from 1 through $max {
+        $value: strip-units(nth($values, $i));
+        $browser-default-font-size: strip-units($base-font-size);
+        $remValues: #{$remValues + $value / $browser-default-font-size}rem;
+        @if $i < $max {
+            $remValues: #{$remValues + ' '};
+        }
+    }
+    @for $i from 1 through $max {
+        $value: strip-units(nth($values, $i));
+        $pxValues: #{$pxValues + $value}px;
+        @if $i < $max {
+            $pxValues: #{$pxValues + ' '};
+        }
+    }
+    #{$property}: $pxValues;
+    #{$property}: $remValues;
+}
+
+// 去除数字单位
+@function strip-units($number) {
+    @return $number / ($number * 0 + 1);
+}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>消息中心用户添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="用户标识" starred="true">
+						<input bind="dataBean.userID" class="mini-textbox" required="true"
+							requiredErrorText="用户标识不能为空" style="width: 90%"
+							vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="用户名称" starred="true">
+						<input bind="dataBean.userName" class="mini-textbox"
+							required="true" requiredErrorText="用户名称不能为空" style="width: 90%"
+							vtype="maxLength:50" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="渠道" starred="true">
+						<input bind="dataBean.channelID" class="mini-combobox"
+							required="true" action="selectChannelModel"
+							requiredErrorText="渠道" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="渠道发送必要信息">
+						<input bind="dataBean.userChannelData" class="mini-textarea"
+							style="width: 90%" vtype="maxLength:500" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messagesuseraddaction');
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					epoint.showTips(data.msg,{state : 'success'});
+				} else {
+					epoint.showTips(data.msg,{state : 'error'});
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,{state : 'error'});
+				}
+			}
+		}
+	</script>
+</body>
+</html>

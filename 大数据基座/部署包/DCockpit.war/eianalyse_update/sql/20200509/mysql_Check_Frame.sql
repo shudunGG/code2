@@ -1,0 +1,1 @@
+select count(*) num from portrait_entity where belongOuGuid is null or belongOuGuid=''

@@ -1,0 +1,1 @@
+SELECT count(*) FROM information_schema.tables WHERE table_schema = DATABASE () AND table_name = 'cockpit_feedback_norm_history'

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>数字驾驶舱</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            './js/remfit.js',
+            './css/common.css',
+            './css/special_column.css'
+        ]);
+    </script>
+</head>
+
+<body>
+
+    <div class="page-loading"></div>
+
+    <div class="fui-content">
+        <div class="main-l l">
+            <!-- 大厅运营情况 -->
+            <div class="box box1">
+                <div class="box-hd">
+                    <h3>大厅运营情况</h3>
+                </div>
+                <div class="box-bd" renderer="hallOperate">
+                    <div class="operate-handle clearfix">
+                        <div>
+                            <p class="name">累计办件量</p>
+                            <div class="scroll" id="whole-handle"></div>
+                        </div>
+                        <div>
+                            <p class="name">累计办结量</p>
+                            <div class="scroll" id="whole-finish"></div>
+                        </div>
+                    </div>
+                    <div class="operate-handle clearfix">
+                        <div>
+                            <p class="name">本月办件量</p>
+                            <div class="clearfix">
+                                <div class="scroll" id="month-handle"></div>
+                                <div class="opearte-compare r" id="compare-handle">
+                                    <p>同比</p>
+                                    <p class="num"><span data-render='monthHRate' data-animatenumber="true">0</span>%</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="name">本月办结量</p>
+                            <div class="clearfix">
+                                <div class="scroll" id="month-finish"></div>
+                                <div class="opearte-compare r" id="compare-finish">
+                                    <p>同比</p>
+                                    <p class="num"><span data-render='monthFRate' data-animatenumber="true">0</span>%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="clearfix finish-rate">
+                        <li class="on-time">
+                            <p>按时办结率：<span class="num" data-render='onTimeRate' data-animatenumber="true">0</span>%</p>
+                        </li>
+                        <li class="overdue">
+                            <p>超期办结率：<span class="num" data-render='overdueRate' data-animatenumber="true">0</span>%</p>
+                        </li>
+                    </ul>
+                    <p class="chart-title">近一年受理量趋势</p>
+                    <div class="chart-handle" id="chart-handle"></div>
+                </div>
+            </div>
+            <!-- 事项分析 -->
+            <div class="box box2">
+                <div class="box-hd">
+                    <h3>事项分析</h3>
+                </div>
+                <div class="box-bd">
+                    <div class="amount" renderer='itemAnalysis'>
+                        <p class="name">事项总数</p>
+                        <p class="num"><span data-render='amount' data-animatenumber='true'>0</span>项</p>
+                    </div>
+                    <p class="analysis-title">中心事项领域</p>
+                    <div class="clearfix">
+                        <div class="l chart-pie" id="analysis-chart"></div>
+                        <div class="l analysis-legend">
+                            <ul class="clearfix" id="nalysis-legend"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 窗口统计 -->
+            <div class="box box3">
+                <div class="box-hd">
+                    <h3>窗口统计</h3>
+                </div>
+                <div class="box-bd">
+                    <ul class="clearfix window-statistic" id="window-statistic"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="main-m l">
+            <!-- 政务服务拥挤通道 -->
+            <div class="channel">
+                <h3 class="common-hd"><span>政务服务拥挤通道</span></h3>
+                <ul class="warning-list clearfix">
+                    <li><span>市场准入业务区</span></li>
+                    <li><span>协税护税业务区</span></li>
+                    <li><span>不动产业务区</span></li>
+                </ul>
+                <!-- 地图 -->
+                <div class="chart-map" id="chart-map"></div>
+                <!-- 长三角地图 -->
+                <div class="yangtze" renderer='yangtze'>
+                    <h5 class="title">长江三角一网通办</h5>
+                    <p class="num">本年办件量：<span data-render='yangtze' data-animatenumber='true'>0</span></p>
+                    <div class="chart-yangtze">
+                        <p class="js">江苏省</p>
+                        <p class="sh">上海市</p>
+                        <p class="ah">安徽省</p>
+                        <p class="zj">浙江省</p>
+                    </div>
+                </div>
+            </div>
+            <!-- 中心窗口 -->
+            <div class="box box4">
+                <div class="box-hd">
+                    <h3>中心窗口</h3>
+                    <a href="javascript:;" class="r moniter">窗口监控</a>
+                </div>
+                <div class="box-bd">
+                    <ul class="center-window clearfix" id="center-window"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="main-r r">
+            <!-- 综合满意度 -->
+            <div class="box box5">
+                <div class="box-hd">
+                    <h3>综合满意度</h3>
+                </div>
+                <div class="box-bd">
+                    <div class="l chart-satisfy">
+                        <div id="chart-satisfy"></div>
+                    </div>
+                    <ul class="l satisfy-list" id="satisfy-list"></ul>
+                </div>
+            </div>
+            <!-- 一体机分析 -->
+            <div class="box box6">
+                <div class="box-hd">
+                    <h3>一体机分析</h3>
+                </div>
+                <div class="box-bd" renderer='aio'>
+                    <div class="amount">
+                        <p class="name">一体机总数</p>
+                        <p class="num"><span data-render='amount' data-animatenumber='true'>0</span>台</p>
+                    </div>
+                    <div class="clearfix">
+                        <div class="l aio-basic">
+                            <p class="aio-title">一体机基本信息</p>
+                            <ul class="basic-info">
+                                <li>
+                                    <p class="name">使用人次</p>
+                                    <p><span class="val" data-render='use' data-animatenumber='true'>0</span>人次</p>
+                                </li>
+                                <li>
+                                    <p class="name">模块点击量</p>
+                                    <p><span class="val" data-render='clicks' data-animatenumber='true'>0</span>件</p>
+                                </li>
+                                <li>
+                                    <p class="name">打印总数</p>
+                                    <p><span class="val" data-render='print' data-animatenumber='true'>0</span>份</p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="l aio-top">
+                            <p class="aio-title">一体机使用总数TOP5</p>
+                            <ul class="top-list" id="top-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 村村办件 -->
+            <div class="box box7">
+                <div class="box-hd">
+                    <h3>村村办件</h3>
+                </div>
+                <div class="box-bd">
+                    <div class="amount" renderer="village">
+                        <p class="name">办件总数</p>
+                        <p class="num"><span data-render='amount' data-animatenumber='true'>0</span>件</p>
+                    </div>
+                    <ul class="village-handle clearfix" id="village-handle"></ul>
+                </div>
+            </div>
+            <!-- 上门服务 -->
+            <div class="box box7">
+                <div class="box-hd">
+                    <h3>上门服务</h3>
+                </div>
+                <div class="box-bd">
+                    <div class="amount" renderer="doorService">
+                        <p class="name">办件总数</p>
+                        <p class="num"><span data-render='amount' data-animatenumber='true'>0</span>件</p>
+                    </div>
+                    <ul class="village-handle clearfix" id="door-service"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 窗口统计 -->
+    <script type="text/html" id="window-tmpl">
+        {{#data}}
+        <li>
+            <p class="No">{{No}}</p>
+            <p class="name" title="{{name}}">{{simpleName}}</p>
+            <p class="val"><span>{{value}}</span>件</p>
+        </li>
+        {{/data}}
+    </script>
+
+    <!-- 中心窗口 -->
+    <script type="text/html" id="center-tmpl">
+        {{#data}}
+        <li>
+            <img src="{{imgSrc}}" alt="" />
+            <p class="name" title="{{name}}">{{name}}</p>
+        </li>
+        {{/data}}
+    </script>
+
+    <!-- 综合满意度 -->
+    <script type="text/html" id="satisfy-tmpl">
+        {{#data}}
+        <li>
+            <p class="name">{{name}}</p>
+            <div class="clearfix">
+                <p class="r val">{{value}}%</p>
+                <p class="bar"><span class="inner" style="width: {{value}}%"></span></p>
+            </div>
+        </li>
+        {{/data}}
+    </script>
+
+    <!-- 一体机分析 -->
+    <script type="text/html" id="aio-tmpl">
+        {{#data}}
+        <li>
+            <p class="l name">{{name}}</p>
+            <p class="r val">{{value}}</p>
+        </li>
+        {{/data}}
+    </script>
+
+    <!-- 村村办件 && 上门服务 -->
+    <script type="text/html" id="village-tmpl">
+        {{#data}}
+        <li class="village-item">
+            <p class="ico"><img src="{{imgUrl}}" alt="" /></p>
+            <p class="name">{{name}}</p>
+            <p class="val"><span>{{value}}</span>件</p>
+        </li>
+        {{/data}}
+    </script>
+
+    <!-- 页面模块接口 -->
+    <script>
+        window.pageConfig = {
+            getHallOperate: 'https://fe.epoint.com.cn/mock/348/getHallOperate', //大厅运营情况
+            getItemAnalysis: 'https://fe.epoint.com.cn/mock/348/getItemAnalysis', //事项分析
+            getWindowStatistic: 'https://fe.epoint.com.cn/mock/348/getWindowStatistic', //窗口统计
+            getCenterWindow: 'https://fe.epoint.com.cn/mock/348/getCenterWindow', //中心窗口
+            getSatisfy: 'https://fe.epoint.com.cn/mock/348/getSatisfy', // 综合满意度
+            getAIO: 'https://fe.epoint.com.cn/mock/348/getAIO', //一体机分析
+            getVillage: 'https://fe.epoint.com.cn/mock/348/getVillage', //村村办件
+            getDoorService: 'https://fe.epoint.com.cn/mock/348/getDoorService', //上门服务
+            getChannel: 'https://fe.epoint.com.cn/mock/348/getChannel' //政务服务拥挤通道
+        };
+    </script>
+
+    <script src="../../../fui/js/jsboot.js"></script>
+
+    <script>
+        SrcBoot.output([
+            './js/libs/jquery.scrollnumber.js',
+            './js/libs/countUp.min.js',
+            './js/libs/echarts4.7.0.min.js',
+            './js/libs/echarts-liquidfill.js',
+            './js/libs/d3.min.js',
+            './js/libs/Donut3d.js',
+            './js/common.js',
+            './js/special_column.js'
+        ]);
+    </script>
+</body>
+
+</html>

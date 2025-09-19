@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+    <script src="../../../js/cssboot.js"></script>
+    <!-- <script>
+            SrcBoot.output([
+                ['tabsnav-style', 'fui/pages/tabsnav/tabsnav.css']
+            ]);
+        </script> -->
+</head>
+
+<body>
+<img id="theme-bg-img" class="theme-bg-img" src="">
+<script>
+    !function () {
+        var skin = document.cookie.match(/_grace_skin_=(.+)(?=;)?/);
+        // console.log(skin);
+        skin = (skin && skin.length && skin[1]) || '';
+        // console.log(skin);
+        var index = skin.indexOf(';');
+        skin = index === -1 ? skin : skin.substring(0, index);
+        // console.log(skin);
+        document.getElementById('theme-bg-img').src = './skins/'
+            + (skin || 'default') + '/images/bg.png';
+    }();
+</script>
+<div class="header-container clearfix has-search">
+    <div class="sys-logo-wrap">
+        <img src="./images/logo.png" id="sys-logo-img" class="sys-logo-img">
+    </div>
+
+    <div class="header-main-nav l clearfix" id="header-main-nav">
+        <!-- portal -->
+        <div class="portal clearfix l invisible" id="top-portal">
+            <span class="portal-curr l">门户</span> <span class="portal-trigger l"></span>
+            <div class="portal-wrap">
+                <div class="portal-box-inner clearfix">
+                    <div class="portal-category-list"></div>
+                    <div class="portal-sub-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- top-menu -->
+        <div class="top-menu-wrap l" id="top-menu">
+            <ul class="top-menu-list clearfix"></ul>
+            <span class="top-menu-trigger"></span>
+        </div>
+
+        <!-- qucick menu -->
+        <div class="quick-menu" id="quick-menu">
+            <div class="quick-menu-header">常用</div>
+            <div class="quick-menu-listwrap">
+                <ul class="quick-menu-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- quick btn -->
+    <div class="header-actions-area">
+        <!-- search -->
+        <div class="header-search classify-search l clearfix"
+             id="header-search"></div>
+        <!-- actions -->
+        <div class="header-action-btns l clearfix" id="header-action-btns">
+				<span class="header-action-btn help"
+                      onclick="window.open(Util.getRightUrl('frame/helpcenter/commonquestion/index'))"></span>
+            <span class="header-action-btn theme" id="theme-skin-switch"></span>
+            <span class="header-action-btn remind " data-ref="msgRemind">
+					<i class="remind-num hidden header-action-btn-tip"></i>
+
+					<div class="new-remind-wrap hidden" id="new-remind-wrap">
+						<span class="icon"></span> <span class="text">您有新的消息提醒</span> <span
+                            class="close"></span>
+					</div>
+				</span> <span class="header-action-btn chart " data-ref="msgEMsg"> <i
+                class="emsg-num hidden header-action-btn-tip"></i>
+				</span>
+        </div>
+        <!-- user -->
+        <div class="user-info" id="user-info">
+            <div class="user-info-summary">
+                <img src="./images/header/user-portrait.png" alt=""
+                     class="user-portrait">
+            </div>
+            <div class="user-action-panel">
+                <div class="user-action-panel-inner">
+                    <div class="user-info-detail" id="user-info-detail">
+                        <img src="./images/header/user-portrait.png" alt=""
+                             class="user-portrait"> <span class="user-name"></span> <span
+                            class="user-dept"></span>
+                    </div>
+                    <ul class="user-action-list">
+                        <li class="user-action-item person-info"
+                            data-id="person-info-setting" id="person-info-setting" data-name="个人信息维护" title="个人信息维护"
+                            data-url="frame/sysconf/personalset/personalinfo/personalinfo">个人信息维护
+                        </li>
+                        <li class="user-action-item role-change hidden"
+                            data-id="user-role-change" data-name="兼职切换" title="兼职切换">兼职切换
+                        </li>
+                        <!-- 此处扩展时添加 li 即可 -->
+                        <!-- <li class="user-action-item css样式类需定义图标" title="显示的名字"  url="要打开的链接地址" data-opentype="打开方式 tabsnav/dialog/blank之一" data-id="一个标识，请勿重复，可以不配置自动生成生成" script="如果打开一个链接不能满足需求，可以在此配置一段js脚本，将在点击时执行，配置url后此项无效" >显示的名字</li> -->
+                        <!-- 扩展demo -->
+                        <li class="user-action-item logout" title="注销登录">注销登录</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- 右侧滑动弹窗 -->
+<div id="msg-panel" class="msg-panel hidden">
+    <!-- 消息 -->
+    <div id="msgRemind" class="msg-panel-detail ">
+        <h2 class="msg-panel-head">
+            消 &nbsp; 息 <i class="msg-panel-hide"></i>
+        </h2>
+        <div class="msg-panel-content"></div>
+    </div>
+    <!-- E讯 -->
+    <div id="msgEMsg" class="msg-panel-detail">
+        <h2 class="msg-panel-head tab">
+            <span class="panel-hd-tab active">E讯提醒</span> <span
+                class="panel-hd-tab hidden" data-ref="online-user">在线人员( <span
+                class="online-user-num">0</span>)
+				</span> <i class="msg-panel-hide"></i>
+        </h2>
+        <div class="msg-panel-content">
+            <ul class="emsg-recent-list empty"></ul>
+            <iframe id="online-user" class="emsg-online-user hidden"
+                    width="100%" height="100%" frameborder="0"></iframe>
+        </div>
+    </div>
+</div>
+<div class="main" id="main">
+    <div class="left-nav" id="left-menu">
+        <span class="left-nav-trigger"></span>
+        <div class="left-nav-container"></div>
+    </div>
+    <div class="main-content">
+        <div class="main-content-inner">
+            <!-- tabsnav 相关容器配置 -->
+            <div class="main-content-ifr-wrap" id="main-ifr-wrap"></div>
+            <div class="main-content-tab-wrap" id="main-tab-wrap"></div>
+        </div>
+        <div class="cover-wrap" id="cover-wrap"></div>
+    </div>
+</div>
+
+<!-- 声音提示 js动态添加IE加载iframe 非IE使用audio -->
+<div id="msg-sound"></div>
+
+<script src="../../../../rest/resource/jsboot"></script>
+<script>
+    // 获取数据的通用请求地址，后面直接+/方法名即可
+    var getDataUrl = 'themedataaction';
+    var getThemesUrl = epoint.dealRestfulUrl(getDataUrl + '/getThemes');
+    var saveThemeUrl = epoint.dealRestfulUrl(getDataUrl + '/saveTheme');
+    var topMenuSaveUrl = epoint
+        .dealRestfulUrl(getDataUrl + '/saveMenuSort');
+    var UserSettins = {
+        logout: function () {
+            window.location.href = Util
+                .getRightUrl('rest/logout?isCommondto=true');
+        },
+        // 兼职切换处理函数
+        changeRole: function (userGuid) {
+            // 未做提醒 逻辑需要自己实现
+            // 参数为后端返回的userGuid
+            var url = "frame/orga/user/switchparttime?userguid=" + userGuid;
+            epoint.openDialog("账号选择", url, function (result) {
+                if (result == 'success') {
+                    window.location.reload();
+                }
+            }, {
+                'width': 850,
+                'height': 350
+            });
+        }
+    };
+    // 消息提醒tip配置
+    var RemindTipsCfg = {
+        timeout: 60 * 1000, // 自动关闭时间 单位毫秒 0 不自动关闭
+        show: true
+        // 是否启用
+    };
+    var onlineUserIframe = document.getElementById('online-user');
+    // 在线人员选项卡配置
+    var OnlineUserSettings = {
+        // 是否显示
+        show: true,
+        // 对应页面地址
+        url: '../../../../frame/orga/user/onlineuser',
+        // 每次显示E讯面板时都会触发该方法
+        onRefreshData: function (callback) {
+            // 调用在线人员页面中的刷新数据方法
+            // 同时tab上的在线人数需要更新，但考虑到获取数据是异步操作，所以需要在refreshData方法中获取到在线人数后调用callback方法
+            try {
+                onlineUserIframe.contentWindow.refreshData(callback);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+    var EmsgConfig = {
+        baseUrl: epoint.dealRestfulUrl('exundataaction/eXun'),
+        treeUrl: epoint.dealRestfulUrl("exundataaction/getTree"),
+        websocketUrl: "../../../../websocket/eXun",
+        historyUrl: "frame/communication/exun/exunmsg",
+        groupImg: "../../emsg/images/emsg-group-bg.png",
+        userImg: "../../emsg/images/emsg-user-error.jpg",
+        // 发送邮件的地址，如果配置了将显示E讯窗口上方显示发送邮件 经在URL后自动拼接收件人guid，多个以“;”分隔
+        // 约定 如果有多人，参数名为ToUserGuidList 一个人则参数名为ToUserGuid
+        sendEmailUrl: '',
+        showErrorMsg: true
+    };
+
+    // 全文检索分类
+    var fullSearchCateUrl = epoint
+        .dealRestfulUrl('fullsearchaction/getftsSystem');
+</script>
+<script>
+    SrcBoot.output(['fui/js/widgets/classifysearch/classifysearch.js',
+        'fui/pages/tabsnav/tabsnav.js',
+        './grace' + (SrcBoot.debug ? '' : '.min') + '.js']);
+</script>
+</body>
+
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>任务运维</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', './css/maintain.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 页面内容区域 -->
+	<div class="fui-content mini-fit">
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+		<div>
+			<!-- 左侧 -->
+			<div class="left-container">
+				<div class="left-top">
+					<h3 class="l">分组</h3>
+				</div>
+				<!-- 在此填充树状内容 -->
+				<div role="body" class="mini-fit"
+					style="margin-top: 10px; margin-right: 10px; height: 100%">
+					<ul id="tree" class="mini-filtertree" textField="text" idField="id"
+						parentField="pid" action="dxpflowgroupaction.getTreeModel"
+						resultAsTree="false" filterMode="server">
+					</ul>
+				</div>
+			</div>
+			<!-- 右侧 -->
+			<div class="right-container">
+				<div class="right-top">
+					<div class="work-info">
+						<div class="work-num">
+							<p>任务数量</p>
+							<p id="totalFlow"></p>
+						</div>
+						<div class="dispatch-num">
+							<p>调度次数</p>
+							<p id="totalNum" style="text-overflow:ellipsis;overflow:hidden;white-space:nowrap"></p>
+						</div>
+					</div>
+					<div class="chart-wrap">
+						<div class="dispatch-chart" id="dispatch"></div>
+						<div class="pie-chart" id="total"></div>
+					</div>
+				</div>
+				<!-- 表格内容 -->
+				<div class="main-container">
+					<!-- 按钮区域 -->
+					<div class="fui-toolbar" style="border-bottom: none;">
+						<div class="btn-group">
+							<a class="mini-button mini-btn-primary" onclick="startJob()">启动</a>
+						</div>
+						<div class="btn-group">
+							<a class="mini-button mini-btn-warning" id="stop"
+								onclick="stopJob()">停止</a>
+						</div>
+						<div class="btn-group">
+							<a class="mini-button mini-btn-primary" onclick="batchDownload()">批量下载</a>
+						</div>
+					</div>
+					<div class="fui-search" primaryControl="flowName" opened="false">
+						<!-- 表单布局 -->
+						<div class="fui-form" id="fui-form">
+							<div role="form">
+								<div role="row">
+									<div role="control" label="流程名称">
+										<input bind="dataBean.flowName" id="flowName"
+											class="mini-textbox" />
+									</div>
+									<div role="control" label="所属节点域">
+										<input bind="nodeguid" id="nodeguid" class="mini-combobox"
+											action="getNodeGuidList" />
+									</div>
+								</div>
+								<div role="row">
+									<div role="control" label="调度状态">
+										<input bind="jobStatus" class="mini-combobox"
+											action="getJobStatusSelectList" />
+									</div>
+									<!-- <div role="control" label="最新执行结果">
+										<input bind="logStatus" class="mini-combobox"
+											action="getLogStatusSelectList" />
+									</div> -->
+								</div>
+								<input bind="groupGuid" id="groupGuid" class="mini-hidden" />
+							</div>
+						</div>
+
+						<!-- 搜索按钮 -->
+						<a role="searcher" callback="searchData"></a>
+					</div>
+					<!-- 在此填充表格内容 -->
+					<div style="margin-left: 10px; margin-right: 10px;"
+						class="mini-fit">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="rowguid" multiSelect="true" showPager="true"
+							action="getSchedulerDataGridData" style="height: 100%">
+							<div property="columns">
+								<div type="checkcolumn" width="30"></div>
+								<div type="indexcolumn" width="50" headerAlign="center">序</div>
+								<div field="flowname" width="200" headerAlign="center"
+									align="center">流程名称</div>
+								<div field="nodename" width="100" headerAlign="center"
+									align="center">所属节点域</div>
+								<div field="isdagchild" visible="false">dag节点</div>
+								<div field="flowtypename" width="100" headerAlign="center"
+									align="center">流程类型</div>
+								<div field="jobstatus" width="80" headerAlign="center"
+									align="center" renderer="onStatusRender">调度状态</div>
+								<!-- <div field="logstatus" width="100" headerAlign="center"
+									align="center" renderer="onLogStatusRender">最新执行结果</div> -->
+								<div field="operatedate" width="80" headerAlign="center"
+									align="center" renderer="onScheduleRenderer">调度配置</div>
+								<div field="log" width="80" headerAlign="center" align="center"
+									renderer="onLogRenderer">作业日志</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../frame/fui/js/jsboot.js"></script>
+
+	<!-- 接口配置 -->
+	<script>
+		var getChartsData = epoint
+				.dealRestfulUrl("../../rest/dxpdatadeveloplistaction/getChartsData"); //图表接口
+	</script>
+
+	<!-- 模拟数据测试js,实际环境请删除 -->
+	<!-- 	<script src="../../frame/fui/js/libs/mock-min.js"></script> -->
+	<!-- 	<script src="./_test/test_maintain.js"></script> -->
+
+	<script>
+		SrcBoot.output([ "../js/echarts.min.js", "../js/common.js",
+				'./js/maintain.js' ]);
+	</script>
+	<script>
+		epoint.initPage('dxpdatadeveloplistaction');
+
+		var tree = mini.get('tree');
+		tree.on('beforenodeselect', function(e) {
+			if (e.node.id === 'f9root') {
+				mini.get('groupGuid').setValue('');
+			} else {
+				mini.get('groupGuid').setValue(e.node.id);
+			}
+			searchData();
+		});
+
+		var grid = mini.get('datagrid');
+		grid.on('selectionchanged', function(e) {
+			// 			if (e.selecteds.length > 0) {
+			// 				buttonEnable();
+			// 			} else {
+			// 				buttonDisable();
+			// 			}
+		});
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], null, true);
+		}
+		
+	/* 	function onRelateRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-omit", "relateTask");
+		}
+
+		function relateTask(e){
+			epoint.openDialog('关联作业', 'dxp/flowinfo/index?rowguid='+e);
+		} */
+		
+		function batchDownload() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择下载的作业!', '', null, 'warning');
+			} else {
+				var a = mini.get('datagrid').getSelecteds();
+				var ids = '';
+				for (var i = 0; i < a.length; i++) {
+					ids += a[i].rowguid + ";";
+				}
+				var form = document.getElementById('download_form');
+				form.action = "dxpdatadeveloplistaction.action?cmd=batchDownload&ids="
+						+ ids;
+				form.submit();
+			}
+		}
+
+		function startJob() {
+			// start标志变量启动作业
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择启动的作业!', '', null, 'warning');
+			} else {
+				 mini.showMessageBox({
+		                title: "启动确认",
+		                iconCls: "mini-messagebox-question",
+		                buttons: ["yes", "no"],
+		                message: "启动任务后是否立即执行一次？",
+		                callback: function (action) {
+		                    if(action=='yes'){
+		                    	start('1');
+		                    }else{
+		                    	start('0');
+		                    }
+		                }
+		        });
+			}
+		}
+		
+		function start(type){
+			epoint.execute('doJobWork', '', ['start',type], function(data) {
+				if (data.msg.indexOf('成功') != -1) {
+					epoint.alert(data.msg, '', function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '',
+										true);
+					}, 'success');
+				} else {
+					epoint.alert(data.msg, '', '', 'warning');
+				}
+			});
+		}
+
+		function stopJob() {
+			if (mini.get('datagrid').getSelecteds().length == 0) {
+				epoint.alert('请选择停止的作业!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要停止吗?', '', function() {
+					// stop 标志变量停用作业
+					epoint.execute('doJobWork', '', 'stop', function(data) {
+						if (data.msg.indexOf('成功') != -1) {
+							epoint.alert(data.msg, '', function() {
+								epoint.refresh([ 'datagrid', 'fui-form' ], '',
+												true);
+							}, 'success');
+						} else {
+							epoint.alert(data.msg);
+						}
+					});
+				});
+			}
+		}
+
+		var onScheduleRenderer = function(e) {
+			if(e.record.isdagchild){
+				return "";
+			}
+			return epoint.renderCell(e, "action-icon modicon-97",
+					"openScheduleList");
+		};
+
+		function openScheduleList(e) {
+			epoint.openDialog('调度配置', 'dxp/flowinfo/taskconfigNew?guid=' + e,
+					null, {
+						'width' : 700,
+						'height' : 350
+					});
+		}
+
+		var onLogRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-49",
+					"openLogList", "rowguid,flowname");
+		};
+
+		function openLogList(e) {
+			epoint.openDialog(e.flowname,
+					'dxp/flowinfo/dxpschedulerloglist?guid=' + e.rowguid, null,
+					{
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		function onStatusRender(e) {
+			var color = 'red';
+			if (e.value == '交换中') {
+				color = '#f39c12';
+			} else if (e.value == '已停止') {
+				color = '#d2d6de';
+			} else if (e.value.indexOf('运行中') != -1) {
+				color = '#00a65a';
+			} else {
+				color = '#dd4b39';
+			}
+			return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+					+ e.value + '</span>';
+		}
+		
+		function onLogStatusRender(e) {
+			var color = 'red';
+			if (e.value == '-1') {
+				color = '#f39c12';
+				e.value = "进程中断";
+			} else if (e.value == '1') {
+				color = '#00a65a';
+				e.value = "交换成功";
+			} else if (e.value = 0) {
+				color = '#red';
+				e.value = "交换失败";
+			} else {
+				color = '#d2d6de';
+				e.value = "未执行";
+			}
+			return '<span class="label" style="background-color:' + color + ';border-radius:.25em;color:white;padding: .2em .6em .3em;">'
+					+ e.value + '</span>';
+		}
+	</script>
+</body>
+
+</html>

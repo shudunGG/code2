@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="renderer" content="webkit">
+<title>比对源选择</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css', './css/choose.css' ]);
+</script>
+</head>
+
+<body>
+ <div class="choose-outer">
+	<div class="choose">
+		<div class="steps">
+			<div class="step active">
+				<p class="step-num">1</p>
+				<p class="step-tt">比对源选择</p>
+				<span class="tip" data-tooltip="比对源选择" data-placement="bottom"></span>
+			</div>
+			<p class="step-line"></p>
+			<div class="step">
+				<p class="step-num">2</p>
+				<p class="step-tt">字段关联配置</p>
+			</div>
+			<p class="step-line"></p>
+			<div class="step">
+				<p class="step-num">3</p>
+				<p class="step-tt">结果显示字段配置</p>
+			</div>
+			<p class="step-line"></p>
+			<div class="step">
+				<p class="step-num">4</p>
+				<p class="step-tt">查看结果</p>
+			</div>
+		</div>
+		<div class="kinds">
+			<div class="kinds-tt">
+				<div class="kinds-tt-inner"></div>
+				<span class="kinds-tt-arrow"></span>
+				<div>
+	                    <input class="mini-textbox my-textbox" id="my-textbox"/>
+	                    <div id="my-search" class="action-icon icon-search my-search"></div>
+                    </div>
+			</div>
+			<div class="kinds-ct">
+				<div class="kinds-ct-inner">
+					<div class="kinds-move clearfix"></div>
+				</div>
+				<span class="kinds-left-arrow kinds-arrow"></span>
+				<span class="kinds-right-arrow kinds-arrow"></span>
+			</div>
+		</div>
+		<div class="options">
+			<div class="options-tt">
+				<p class="options-tt-txt">已选比对源</p>
+				<p class="options-tt-tip">至少需要两个对比源，第一个比对源默认关联主表</p>
+			</div>
+			<div class="options-inner">
+				<div class="option-outer">
+					<div class="option" data-name="" data-id="" data-guid="" data-condition="">
+						<p class="option-tt">
+							这里是
+							<span class="option-name">数据源1</span>
+							<span class="option-tt-tip"> (主表)</span>
+							<span class="option-detail">添加过滤</span>
+							<span class="option-delete"></span>
+						</p>
+						<div class="option-ct">
+							<div class="option-ct-init">
+								<img src="./images/img/option-init-img.png" alt="" class="option-int-img">
+								<p class="option-init-tip">
+									此处数据默认关联主表
+									<br>
+									请从上方拖拽需要比对的数据表至此处
+								</p>
+							</div>
+						</div>
+						<span class="item-arrow"></span>
+					</div>
+					<div class="option" data-name="" data-id="" data-guid="" data-condition="">
+						<p class="option-tt">
+							这里是
+							<span class="option-name">数据源2</span>
+							<span class="option-detail">添加过滤</span>
+							<span class="option-delete"></span>
+						</p>
+						<div class="option-ct">
+							<div class="option-ct-init">
+								<img src="./images/img/option-init-img.png" alt="" class="option-int-img">
+								<p class="option-init-tip">请从上方拖拽需要比对的数据表至此处</p>
+							</div>
+						</div>
+						<span class="item-arrow"></span>
+					</div>
+				</div>
+				<div class="option-add">
+					<p class="option-add-icon"></p>
+					<p class="option-add-text">点击新增比对源</p>
+				</div>
+			</div>
+		</div>
+		<div class="crash">
+			<p class="crash-tt">选择碰撞方式：</p>
+			<div class="crash-way">
+				<p class="crash-way-icon"></p>
+				<p class="crash-way-name">内关联</p>
+			</div>
+			<div class="crash-way">
+				<p class="crash-way-icon"></p>
+				<p class="crash-way-name">左关联</p>
+			</div>
+			 <span class="crash-icon inner-link"></span>
+             <span class="crash-icon right-link"></span>
+		</div>
+		<div class="choose-btns">
+			<p class="choose-btn choose-save">保 存</p>
+			<p class="choose-btn choose-next">下一步</p>
+		</div>
+	</div>
+ </div>
+	<script type="x/html" id="kind-tpl">
+        <p class="kind-tt {{active}}" data-id='{{id}}' title="{{title}}">
+            <span class="kind-tt-inner">{{title}}</span>
+        </p>
+    </script>
+
+	<script type="x/html" id="move-tpl">
+        <div class="kinds-move-item l {{active}}" data-id='{{id}}' data-condition="{{condition}}" data-guid="{{guid}}">
+            <div class="kinds-move-img">
+                <img src="{{src}}" alt="" class="kinds-move-image">
+            </div>
+            <p class="kinds-move-tt" title="{{title}}">{{title}}</p>
+        </div>
+    </script>
+
+	<script type="x/html" id="item-tpl">
+        <div class="option-ct-txt">
+            <p class="option-ct-txt-inner" title="{{text}}">{{text}}</p>
+        </div>
+    </script>
+
+	<script type="x/html" id="init-tpl">
+        {{#list}}
+        <div class="option" data-name="{{name}}" data-id="{{id}}" data-guid="{{guid}}" data-condition="{{condition}}">
+            <p class="option-tt">
+                这里是<span class="option-name">{{title}}</span>
+				<span class="option-detail">添加过滤</span>
+                <span class="option-tt-tip"></span>
+                <span class="option-delete"></span>
+				
+            </p>
+            <div class="option-ct active">
+                {{#item}}
+                <div class="option-ct-txt">
+                    <p class="option-ct-txt-inner" title="{{text}}">{{text}}</p>
+                </div>
+                {{/item}}
+            </div>
+            <span class="item-arrow"></span>
+        </div>
+        {{/list}}
+    </script>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		var kindUrl = epoint.dealRestfulUrl("../../../rest/dxpguidemodelaction/getTableTypeList"),
+			moveUrl = epoint.dealRestfulUrl("../../../rest/dxpguidemodelaction/getTableByType"),
+			itemUrl = epoint.dealRestfulUrl("../../../rest/dxpguidemodelaction/getTableFieldByTable"),
+			initUrl = epoint.dealRestfulUrl("../../../rest/dxpguidemodelaction/getInitStep1");
+	</script>
+	<script>
+		var rowGuid;
+		epoint.initPage('dxpguidemodelaction', null, function(data) {
+			if (data.rowguid != "") {
+				rowGuid = data.rowguid;
+			}
+		});
+	</script>
+	<script>
+		SrcBoot.output([ '../../../frame/fui/js/widgets/jquery.nicescroll.min.js', './js/choose.js' ]);
+	</script>
+</body>
+
+</html>

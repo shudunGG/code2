@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新建表单</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<style>
+.tpl-list {
+	margin-bottom: 24px;
+}
+
+.tpl-list.system {
+	margin-top: 24px;
+}
+
+.tpl-item {
+	float: left;
+	font-size: 14px;
+	font-size: 0.14rem;
+	border: 1px solid #ddd;
+	height: 60px;
+	line-height: 58px;
+	box-sizing: border-box;
+	border-radius: 4px;
+	width: 30%;
+	margin-left: 1.5%;
+	margin-right: 1.5%;
+	overflow: hidden;
+	margin-bottom: 10px;
+	padding: 0 8px 0 16px;
+	cursor: pointer;
+	position: relative;
+}
+
+.tpl-item.active {
+	background-color: #e9f4fd;
+	background-color: var(- -theme-color-5);
+	border-color: #2590eb;
+	border-color: var(- -theme-color);
+}
+
+.tpl-item .tpl-btn.preview {
+	position: absolute;
+	top: 0;
+	right: 8px;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.tpl-item:hover .tpl-btn.preview {
+	opacity: 1;
+}
+
+.tpl-name {
+	display: inline-block;
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+</style>
+</head>
+<body>
+	<div class="page-cover"></div>
+	<div class="fui-content">
+		<ul class="tpl-list clearfix system" id="sys-tpl-list"></ul>
+
+		<h3 style="margin-left: 1.5%;">我的模板</h3>
+		<ul class="tpl-list clearfix user" id="user-tpl-list"></ul>
+	</div>
+	<div class="fui-toolbar bottom">
+		<span class="mini-button" onclick="prevStep">上一步</span> <span
+			class="mini-button" state="primary" id="genderForm">生成表</span>
+	</div>
+	<script type="x/tpl" id="tpl-item-tpl">
+      {{#list}}<li class="tpl-item clearfix" data-id="{{id}}">
+          <span class="tpl-name " title="{{name}}">{{name}}</span>
+          <span class="tpl-btn preview text-primary">预览</span>
+      </li>{{/list}}
+    </script>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var TPL = Util.clearHtml($('#tpl-item-tpl').html());
+
+		// 获取模板数据
+		Util.ajax({
+			url : 'formlistmanage/epointsformaddaction.action?cmd=getDesignTemplates'
+		}).done(
+				function(data) {
+					var sysList = data.sysList || [];
+					var userList = data.userList || [];
+
+					$(Mustache.render(TPL, {
+						list : sysList
+					})).appendTo($('#sys-tpl-list'));
+					$(Mustache.render(TPL, {
+						list : userList
+					})).appendTo($('#user-tpl-list'));
+					$('body').find('.tpl-item').removeClass('active').eq(0)
+							.addClass('active');
+					Util.hidePageLoading();
+				});
+
+		//   选中
+		$('body').on('click', '.tpl-item', function() {
+			$('body').find('.tpl-item').removeClass('active');
+			$(this).addClass('active');
+		})
+		// 预览
+		.on('click', '.tpl-item .tpl-btn.preview', function(e) {
+			e.stopPropagation();
+			var id = $(this).closest('.tpl-item').data('id');
+			if (id) {
+				window.open(Util.getRootPath()
+    					+ "frame/pages/sformdesigner/preview/preview?tplId="
+    					+ id  );
+				
+			}
+		});
+		mini.get('genderForm').on('click', function() {
+			var tplId = $('body').find('.tpl-item.active').data('id');
+			if (tplId) {			 		
+				 mini.showMessageBox({
+			            title: "提示",
+			            iconCls: "mini-messagebox-question",
+			            buttons: ["开始设计", "稍后再说"],
+			            message: "表单已创建完成，是否进入设计页面？",
+			            callback: function (action) {
+			               if(action=="开始设计"){
+			            	   Util.ajax({
+			            			url : 'formlistmanage/epointsformaddaction.action?cmd=designForm',
+			            		    data : {
+						        				rowguid : Util.getUrlParams("rowguid"),		
+						        				tplId:tplId
+						        			}
+			                    }).done(function(data){
+			                    	if(data){
+			                    		window.open(Util.getRootPath()
+			                					+ "frame/pages/sformdesigner/designer?tableGuid="
+			                					+ Util.getUrlParams("rowguid") + "&designId=" + data.designId
+			                					+ "&isSub=" + Util.getUrlParams("isSub"));
+			                    		epoint.closeDialog("success");
+			                    	}
+			                    	
+			                    })
+			               }
+			               else{
+			            	   epoint.closeDialog("success");
+			               }
+			            }
+			        });
+			}
+		});
+		function prevStep() {
+			if(Util.getUrlParams("editType") == "edit"){
+				Util.location.href = "epointsformedit?guid="
+					+ Util.getUrlParams("rowguid")+"&isSub="+ Util.getUrlParams("isSub")+"&formType="+Util.getUrlParams("formType");
+			}else{
+				Util.location.href = "epointsformadd?rowguid="
+					+ Util.getUrlParams("rowguid")+"&isSub="+ Util.getUrlParams("isSub")+"&formType="+Util.getUrlParams("formType");
+			}
+			
+			
+		}
+		
+		function onCloseForm() {
+			//epoint.execute('epointsformaddaction.deleteSform', '');
+			Util.ajax({
+			    url: 'sformdesigner/epointsformaddaction.action?cmd=deleteSform',		  
+	            async:false
+			});
+		}
+
+	</script>
+</body>
+</html>

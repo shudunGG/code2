@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>To do the work</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+	<div class="fui-left">
+	    <div role="head" title="Process list">
+	    </div>
+	    <div role="body">
+	    	<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="getTreeModal" resultAsTree="false"></ul>
+	    </div>
+	</div>
+	
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-removecircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', null, null, 'warning');} else {epoint.confirm('Sure to delete?','',deleteSelected);}">delete selected</a>
+			</div>
+		</div>
+	
+	
+		<div class="fui-condition">
+				<!-- The form layout -->
+				<div class="fui-form" id="fui-form">
+					<div role="form">
+						<!-- 2column -->
+						<div role="row">
+							<div role="control" label="to do work name" starred="false">
+								<input bind="workitemlistaction.workItemName"
+								class="mini-textbox" />
+							</div>
+						</div>
+						<!-- Add a hidden field to the tree and the linkage of the table -->
+						<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+						class="mini-hidden" />
+					</div>
+				</div>
+
+				<!-- Search button -->
+				<a role="searcher" callback="searchData"></a>
+		</div>
+				
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="workItemGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDefaultModel"
+			showPager="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" headerAlign="center" width="150">
+						serial number
+					</div>
+					<div field="itemStatus" width="80" headerAlign="center" align="center">
+						state
+						<input property="editor" class="mini-textbox" minWidth="200" />
+					</div>
+					<div field="workItemName" width="100%" headerAlign="center"  renderer="onLocationUrl">
+						to do the work
+					</div>
+					<div field="processVersionName" width="150" headerAlign="center" align="center">
+						working classes
+					</div>
+					<div field="createDate" width="150" headerAlign="center" align="center" dateFormat="yyyy-MM-dd HH:mm:ss" data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}"  allowSort="true">
+						circulation time
+					</div>
+					<div field="lastDate" width="150" headerAlign="center" align="center">
+						latest finish time
+					</div>
+					<div field="restDate" width="150" headerAlign="center" align="center">
+						for the rest of
+					</div>
+				</div>
+			</div>
+		</div>	
+	</div>
+	
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//Initialize the page
+			epoint.initPage("workitemlistaction");
+
+			//The treejsobject
+			var tree = mini.get("tree");
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				var id = e.node.objectcode;
+				// To the leftThe treeClick on the nodeidIn a hidden field
+				// At the second request, the form is sent automatically bring conditions the contents of the area
+				mini.get('leftTreeNodeGuid').setValue(id);
+				//Refresh the table
+				searchData();
+			});
+
+			// delete
+			function deleteSelected() {
+				epoint.execute('delete', 'datagrid', msgCallBack);
+			}
+			
+			// The callback to remind
+			function msgCallBack(data) {
+				var msg =data.msg;
+				if (msg) {
+					epoint.alert(msg, '', searchData(), 'info');
+				}
+			}
+			
+			function onLocationUrl(e){
+				return ' <a class="" href="javascript:openUrl(\'' + e.row['handleurl'] + '\')">'+e.value+'</a>';
+			}
+			
+			function openUrl(handleUrl){
+				epoint.openTopDialog('To do procedure', handleUrl, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				});
+			}
+			
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+		</script>
+
+	</body>
+
+</html>

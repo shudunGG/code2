@@ -1,0 +1,1 @@
+select count(*) from mysql.proc where db = database() and `type` = 'FUNCTION' and name='fun_getPY' 

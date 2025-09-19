@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增版块</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../cockpitcolumn/css/addcolumn.css">
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="版块名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.PlateName"
+							required="required" requiredErrorText="版块名称不能为空"
+							vtype="maxLength:50;" emptyText="请填写版块名称..." />
+					</div>
+					<div role="control" label="ApiCode" starred="true" id="apicodeText">
+						<input class="mini-textbox" bind="dataBean.apicode" id="apicode"
+							required="true" enabled="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="版块描述">
+						<input class="mini-textarea" bind="dataBean.remark"
+							emptyText="请填写版块描述..." vtype="maxLength:9999;"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="卡片分类">
+						<div>
+							<input class="mini-textbox" style="display: inline-block;"
+								id="special-textbox"> <a
+								class="mini-button mini-btn-primary" id="add-classify"
+								onclick="" iconCls="icon-add">添加分类</a>
+						</div>
+						<ul class="classify-list clearfix" id="classify-list">
+						</ul>
+					</div>
+					<div role="control" label="排序号">
+						<input id="ordernum" class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999" />
+					</div>
+				</div>
+				<div id="editWindow" class="mini-window" title="修改卡片分类"
+					style="width: 550px; height: 180px" showModal="true"
+					allowResize="true" allowDrag="true">
+					<div class="fui-toolbar">
+						<div class="btn-group mr10">
+							<a class="mini-button" id="addNew" onclick="save">提交</a><a
+								class="mini-button" onclick="closewindow">关闭</a>
+						</div>
+					</div>
+					<div id="editform" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="卡片分类" starred="true">
+									<div class="mini-textbox" required="true"
+										requiredErrorText="卡片分类不能为空!" bind="cardcatename"
+										id="cardcatename"></div>
+								</div>
+							</div>
+							<div class="mini-hidden" id="categuid" bind="categuid"></div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<script type="text/html" id="classify-tmpl">
+        {{#list}}
+        <li class="classify-item">
+            <span class="classify-item-name" title="{{name}}" guid="{{guid}}" onclick="oncateedit('{{guid}}')">{{name}}</span>
+            <span class="action-icon icon-removethin classify-item-close" data-name="{{name}}" data-guid="{{guid}}" title="删除"></span>
+        </li>
+        {{/list}}
+    </script>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../cockpitcolumn/js/addcolumn.js"></script>
+	<script>
+		var uploader = mini.get("uploader");
+		var urlguid = Util.getUrlParams('guid');
+		var itemguids = "";
+		// 初始化页面
+		epoint.initPage('cockpitmobileplateeditaction', null, function(data) {
+			try{
+				var cates = JSON.parse(data.cates);
+			}
+			catch{
+				
+			}
+			
+			if(cates){
+				for(var i=0;i<cates.length;i++){
+					$('#classify-list').append(Mustache.render($('#classify-tmpl').html(), {list:cates[i]}));
+				}
+				
+			}
+		});
+		
+		function getProjectCate(){
+			var cateNames = '';
+			$(".classify-item-name").each(function(i, v) {
+				cateNames += ';' + v.getAttribute("title");
+			});
+			return cateNames.substring(1);
+		}
+		
+		function change() {
+			epoint.refresh([ 'belongOuGuid','projectGuid'], function() {});
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('removeCate', '@none', [itemguids], function(data){
+					if(data.err){
+						epoint.alert(data.err);
+						$('#classify-list').empty();
+						epoint.refresh();
+					}else {
+						epoint.execute('save', 'fui-form', getProjectCate(), closeCallback);
+					}
+					itemguids="";
+				});
+
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+		
+		function oncateedit(guid) {
+			if(urlguid){
+				mini.get('categuid').setValue(guid);
+				mini.get("editWindow").show();
+			}
+		}
+
+		function closewindow() {
+			mini.get("editWindow").hide();
+		}
+
+		function save() {
+			if (urlguid) {
+				if (epoint.validate()) {
+					epoint.execute('editCate', 'editform', function(data) {
+						closewindow();
+						epoint.alert(data.msg);
+						$('#classify-list').empty();
+						epoint.refresh();
+					});
+				}
+
+			}
+		}
+	</script>
+</body>
+</html>

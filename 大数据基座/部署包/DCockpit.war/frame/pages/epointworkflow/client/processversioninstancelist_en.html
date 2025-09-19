@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Version process instance</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="btnDel" iconCls="icon-removecircle" 
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', null, null, 'warning');} else {epoint.confirm('Sure you want to delete?','',deleteSelected);}">delete selected</a>
+				<a class="mini-button" id="btnBack" iconCls="icon-backward" 
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a want to back to the record of the first step!', null, null, 'warning');} else {epoint.confirm('Sure you want to back to the first step?','',backToStart);}">first step back</a>
+				<a class="mini-button" id="btnEnd" iconCls="icon-stop" 
+				   onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a record wants to end!', null, null, 'warning');} else {epoint.confirm('Sure you want to terminate?','',terminatePVI);}">terminate the process instance</a>
+			</div>
+		</div>	
+			
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="process name">
+							<input bind="processversion" id="processversion"
+								class="mini-textbox" />
+						</div>
+						<div role="control" label="PVIGuid">
+							<input bind="pviguid" id="pviguid"
+								class="mini-textbox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="processinstancestate">
+							<input id="processversionstate" autoLoad="false" bind="processversionstate"
+								textField="text" 
+								data="[{text:'All categories',id:'0'},{text:'Initialize the',id:'10'},{text:'Have not been submitted',id:'15'},{text:'Has been submitted',id:'20'},{text:'hang',id:'30'},{text:'complete',id:'80'},{text:'Termination of',id:'90'}]"
+								valueField="id" class="mini-combobox mr10" />
+						</div>
+						<div role="control" label="tenant">
+							<input id="tenantguid" autoLoad="false" bind="tenantguid"
+								textField="text" 
+								action="getTenantModel" valueField="id" class="mini-combobox mr10" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="processVersionInstanceGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				action="getDefaultDataModel" showPager="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+					<div property="columns">
+					
+					<div type="checkcolumn" width="35"></div>
+	
+					<div type="indexcolumn" headerAlign="center" width="35">
+						serial number
+					</div>
+					<div field="processVersionInstanceGuid" width="300" headerAlign="center">
+						pviguid
+					</div>
+					<div field="pviName" width="100%" headerAlign="center" align="center" renderer="onLocationUrl">
+						name
+					</div>
+					<div field="tenantName" width="80" headerAlign="center" align="center">
+						tenantlogo
+					</div>
+					<div field="sendName" width="120" headerAlign="center" align="center">
+						originator
+					</div>
+					<div field="tenantName" width="80" headerAlign="center" align="center" renderer="onSetting">
+						process monitoring
+					</div>
+					<div field="startDate" width="150" headerAlign="center" align="center" dateFormat="yyyy-MM-dd HH:mm:ss" data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}"  allowSort="true" sortOrder="desc">
+						start time
+					</div>
+					<div field="pviStatus" width="80" headerAlign="center" align="center">
+						state
+					</div>
+					<div field="endDate" width="150" headerAlign="center" align="center" dateFormat="yyyy-MM-dd HH:mm:ss" data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">
+						end time
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			//Initialize thepage
+			epoint.initPage("processversioninstancelistaction");
+			
+			function deleteSelected(){
+				epoint.execute('delete','datagrid',msgCallBack);
+			}
+			
+			function backToStart(){
+				epoint.execute('backToStart','datagrid',msgCallBack);
+			}
+			
+			function terminatePVI(){
+				epoint.execute('terminatePVI','datagrid',msgCallBack);
+			}
+			
+			function onLocationUrl(e){
+				return ' <a class="" href="javascript:openBrowserWindow(\'' + e.row['processVersionInstanceGuid'] + '\')">'+e.value+'</a>';
+			}
+			
+			function showFlowChart(processversioninstanceguid){
+				epoint.openDialog('Process monitoring', "frame/pages/epointworkflow/client/processoa9manage?processVersionInstanceGuid=" + processversioninstanceguid, searchData);
+			}
+			
+			function openBrowserWindow(processversioninstanceguid){
+				var url = "frame/pages/epointworkflow/client/browser/browserenter?ProcessVersionInstanceGuid="
+					+ processversioninstanceguid;
+				epoint.openDialog('Process the preview', url);
+			}
+			
+			function onSetting(e){
+				return epoint.renderCell(e, "action-icon icon-gear", "showFlowChart");
+			}
+			
+			// The callback to remind
+			function msgCallBack(data) {
+				var msg =  data.msg;
+				if (msg) {
+					epoint.alert(msg, '', function(){
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}, 'info');
+				}
+			}
+			
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+		</script>
+	</body>
+</html>

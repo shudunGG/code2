@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>请求转换</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-content">
+
+		<!-- 内容区域 -->
+		<div role="accordion" id="req">
+			<div role="head" title="请求转换"></div>
+			<div role="body">
+				<!-- 内容区域 -->
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row" id="chooseApp">
+							<div role="control" label="选择应用">
+								<input class="mini-buttonedit" style="width: 50%" id="Subscribe"
+									allowInput="false" allowInput="false"
+									onbuttonclick="onSubscribe" /> <input class="mini-hidden"
+									id="selectReqAm" bind="selectReqAm"> <input
+									class="mini-hidden" id="selectReqAmGuid" bind="selectReqAmGuid">
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="Http方法">
+								<input class="mini-combobox" style="width: 50%"
+									id="reqHttpMethod" bind="dataBean.reqHttpMethod"
+									action="getHttpMethod" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">针对哪种Http请求</div>
+						</div>
+						<div role="row">
+							<div role="control" label="移除头部参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqRemoveHeaders" bind="dataBean.reqRemoveHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">移除头部参数名，例：（键）p1,p2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="移除请求路径参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqRemoveQuerystring" bind="dataBean.reqRemoveQuerystring" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">移除请求路径中的参数名，例：（键）p1,p2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="移除请求体参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqRemoveBody" bind="dataBean.reqRemoveBody" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">content-type需满足application/json,
+								multipart/form-data,
+								application/x-www-form-urlencoded中的一种。移除已存在的post请求body参数名，例：（键）p1,p2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="替换头部参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqReplaceHeaders" bind="dataBean.reqReplaceHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">如果头部的参数不存在，则忽略此属性；否则替换参数的值，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="替换请求路径参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqReplaceQuerystring"
+									bind="dataBean.reqReplaceQuerystring" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">如果请求路径的参数不存在，则忽略此属性；否则替换参数的值，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="替换请求体参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqReplaceBody" bind="dataBean.reqReplaceBody" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">content-type需满足application/json,
+								multipart/form-data,
+								application/x-www-form-urlencoded中的一种。如果请求体的参数不存在，则忽略此属性；否则替换参数的值，例：（键:值）p1:v1,p2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="添加头部参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqAddHeaders" bind="dataBean.reqAddHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">添加头部参数，不存在则添加，否则忽略，例：（键:值）h1:v1,h2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="添加请求路径参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqAddQuerystring" bind="dataBean.reqAddQuerystring" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">添加请求路径参数，不存在则添加，否则忽略，例：（键:值）h1:v1,h2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="添加请求体参数">
+								<input class="mini-textbox" style="width: 50%" id="reqAddBody"
+									bind="dataBean.reqAddBody" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">content-type需满足application/json,
+								multipart/form-data,
+								application/x-www-form-urlencoded中的一种。如果参数不存在，则添加；否则忽略，例：（键:值）h1:v1,h2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="重命名头部参数键">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqRenameHeaders" bind="dataBean.reqRenameHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">修改请求头部参数键，存在则改键，否则忽略，例（老键:新键)
+								h1:v1,h2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="重命名请求路径参数键">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqRenameQuerystring" bind="dataBean.reqRenameQuerystring" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">修改请求路径参数键，存在则改键，否则忽略，例（老键:新键)
+								h1:v1,h2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="重命名请求体参数键">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqRenameBody" bind="dataBean.reqRenameBody" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">content-type需满足application/json,
+								multipart/form-data,
+								application/x-www-form-urlencoded中的一种。修改请求体参数键，存在则改键，否则忽略，例（老键:新键)
+								h1:v1,h2:v2</div>
+						</div>
+						<div role="row">
+							<div role="control" label="拼接请求头参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqAppendHeaders" bind="dataBean.reqAppendHeaders" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">同添加请求头参数（键:值）</div>
+						</div>
+						<div role="row">
+							<div role="control" label="拼接请求路径参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqAppendQuerystring" bind="dataBean.reqAppendQuerystring" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">同添加请求路径参数（键:值）</div>
+						</div>
+						<div role="row">
+							<div role="control" label="拼接请求体参数">
+								<input class="mini-textbox" style="width: 50%"
+									id="reqAppendBody" bind="dataBean.reqAppendBody" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">content-type需满足application/json,
+								multipart/form-data,
+								application/x-www-form-urlencoded中的一种。请求体参数不存在，则添加；否则在原先body键中添加新值，例：（键:值）h1:v1,h2:v2</div>
+						</div>
+						<input class="mini-hidden" id="datagrid"> <input
+							class="mini-hidden" id="consumerName">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="apiguid" bind="apiguid">
+	<input class="mini-hidden" id="transformationContent">
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<div id="add">
+			<a class="mini-button" state="primary" id="addClose"
+				onclick="saveAndClose">新增并关闭</a> <a class="mini-button"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<div id="edit">
+			<a class="mini-button" state="primary" id="editClose"
+				onclick="editAndClose">保存并关闭</a> <a class="mini-button"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		function saveAndClose() {
+			var name = mini.get("consumerName").getValue();
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', name, closeCallback);
+			}
+		}
+
+		function editAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					//console.log(data.param);
+					epoint.alertAndClose(data.msg, '', null, {
+						backParam : {
+							'param' : data.param,
+						}
+					}, 'success');
+				} else {
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		function onSubscribe() {
+			var apiguid = mini.get("apiguid").value;
+			//用于查看是否是默认all
+			var selectreqamguid = mini.get("selectReqAmGuid").value;
+			var datagrid = mini.get("datagrid").value;
+			epoint.openTopDialog('选择应用',
+					"frame/pages/basic/gateway/api/apiinfo/apiauth?apiguid="
+							+ apiguid + "&flag=transformation&amguid="
+							+ selectreqamguid + "&datagrid=" + datagrid,
+					function(data) {
+						if (data.text) {
+							mini.get("Subscribe").setText(data.text);
+							mini.get("selectReqAm").setValue(data.text);
+						}
+						if (data.guid) {
+							mini.get("selectReqAmGuid").setValue(data.guid);
+						}
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		//修改参数
+		function pageLoad(data) {
+			// 初始化页面
+			epoint.initPage('reqtransformationaction', '', function(data1) {
+				if (data1.method) {
+					if (data1.method == "add") {
+						$("#edit").hide();
+						mini.get("Subscribe").setText("All");
+						mini.get("selectReqAm").setValue("All");
+						mini.get("selectReqAmGuid").setValue("All");
+					}
+					if (data1.method == "edit") {
+						$("#add").hide();
+						$("#chooseApp").hide();
+					}
+				}
+
+				if (data1.apiguid) {
+					mini.get("apiguid").setValue(data1.apiguid);
+				}
+				var value = data.value;
+				if (value) {
+					mini.get("Subscribe").setText(value.consumerName);
+					mini.get("selectReqAm").setValue(value.consumerName);
+					mini.get("selectReqAmGuid").setValue(value.consumerId);
+					mini.get("reqAddBody").setValue(value.config.reqaddbody);
+					mini.get("reqAddHeaders").setValue(
+							value.config.reqaddheaders);
+					mini.get("reqAddQuerystring").setValue(
+							value.config.reqaddquerystring);
+
+					mini.get("reqAppendBody").setValue(
+							value.config.reqappendbody);
+					mini.get("reqAppendHeaders").setValue(
+							value.config.reqappendheaders);
+					mini.get("reqAppendQuerystring").setValue(
+							value.config.reqappendquerystring);
+
+					mini.get("reqRemoveBody").setValue(
+							value.config.reqremovebody);
+					mini.get("reqRemoveHeaders").setValue(
+							value.config.reqremoveheaders);
+					mini.get("reqRemoveQuerystring").setValue(
+							value.config.reqremovequerystring);
+
+					mini.get("reqRenameBody").setValue(
+							value.config.reqrenamebody);
+					mini.get("reqRenameBody").setText(
+							value.config.reqrenamebody);
+					mini.get("reqRenameHeaders").setValue(
+							value.config.reqrenameheaders);
+					mini.get("reqRenameQuerystring").setValue(
+							value.config.reqrenamequerystring);
+
+					mini.get("reqReplaceBody").setValue(
+							value.config.reqreplacebody);
+					mini.get("reqReplaceHeaders").setValue(
+							value.config.reqreplaceheaders);
+					mini.get("reqReplaceQuerystring").setValue(
+							value.config.reqreplacequerystring);
+
+					mini.get("reqHttpMethod").setText(
+							value.config.reqhttpmethod);
+					mini.get("reqHttpMethod").setValue(
+							value.config.reqhttpmethod);
+
+				}
+			});
+
+			var datagrid = data.datagrid;
+			if (datagrid) {
+				var gridguid = "";
+				var gridName = "";
+				for (var i = 0; i < datagrid.length; i++) {
+					if ("All" == datagrid[i].consumerName) {
+						gridName = datagrid[i].consumerName;
+					}
+					if (i != datagrid.length - 1) {
+						gridguid += datagrid[i].consumerId + ";";
+					} else {
+						gridguid += datagrid[i].consumerId;
+					}
+				}
+				mini.get("datagrid").setValue(gridguid);
+				mini.get("consumerName").setValue(gridName);
+			}
+		}
+	</script>
+</body>
+</html>

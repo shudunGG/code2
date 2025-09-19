@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>左侧向导</title>
+    <script src="../../../js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+
+    <div class="master-content" master="leftWizard"></div>
+    <script src="../../../js/jsboot.js"></script>
+
+    <script>
+        var WizardNav = {
+            // 获取菜单数据的请求url
+            loadUrl: 'test/wizard',
+
+            params: {
+                userguid: '13214fds'
+            },
+
+            // dir为步骤切换标识：
+            // 'next'（下一步）
+            // 'prev'（上一步）
+            // 'over'（结束）
+            // --------------------------------
+            // flow为当前流程对象，支持方法：
+            // next(): 获取下一步流程对象
+            // prev(): 获取上一步流程对象
+            // getIndex(): 获取流程的顺序索引，从0开始
+            // isFirst(): 是否为第一步
+            // isLast(): 是否为最后一步
+            // disable(): 锁死流程（使流程失效），不可切换到该流程
+            // enable(): 解锁路程（启动流程）
+            // isDisabled(): 是否为锁死状态
+            // getData(): 获取流程相关数据（即初始化时ajax返回的json数据）
+            // --------------------------------
+            // 返回false，终止步骤切换
+            onStepChange: function (dir, flow) {
+                console.log('dir: %s', dir);
+
+                if (flow.getIndex() == 3) {
+
+                    epoint.showTips('发生了什么，不能往下走', {
+                        status: 'danger'
+                    });
+                    return false;
+
+                }
+
+                // if(dir == 'next') {
+                //     flow.disable();
+                // }
+            },
+
+            onLoad: function () {
+                Util.hidePageLoading();
+            }
+        };
+    </script>
+    <script>
+        SrcBoot.output(['../../../js/libs/mock-min.js']);
+    </script>
+    <script>
+        Mock.mock(new RegExp(WizardNav.loadUrl, 'ig'), function () {
+            var status = ['active', 'done', 'default', 'disabled'];
+            var list = Mock.mock({
+                "list|4-10": [{
+                    "name": "测试流程-", // 步骤名称
+                    "title": "测试流程-", // 步骤title（鼠标hover时显示），若未配置，采用name
+                    "code": "@id", // 步骤ID（code）
+                    "url": "../contentpage.html", // 步骤页面地址
+                    "status": status[Mock.Random.integer(1, status.length - 1)] // 步骤状态
+                }]
+            }).list;
+
+            var activeIndex = Mock.Random.integer(0, list.length - 1);
+            $.each(list, function (i, item) {
+                if (i < activeIndex) {
+                    item.status = 'done';
+                } else if (i == activeIndex) {
+                    item.status = 'active';
+                }
+                item.name = item.title = '测试流程-' + (i + 1);
+            });
+
+            return list;
+        });
+    </script>
+</body>
+
+</html>

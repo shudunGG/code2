@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>业务信息设置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+</style>
+</head>
+<style type="text/css">
+.item {
+	float: left;
+	width: 12%;
+	height: 40%;
+	border: solid 1px #ccc;
+	border-radius: 4px;
+	margin-left: 6.5%;
+	margin-top: 20px;
+}
+
+.item-action {
+	text-align: right;
+	padding-right: 6px;
+}
+
+.mini-layout-split-south .mini-layout-spliticon {
+	background: url(../image/opened.png) no-repeat;
+	width: 40px;
+	height: 8px;
+}
+
+.mini-layout-split-south .mini-layout-spliticon-collapse {
+	background: url(../image/closed.png) no-repeat;
+	width: 40px;
+	height: 8px;
+}
+</style>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="mini-layout" style="width: 100%; height: 100%"
+		splitSize="0">
+
+		<div title="north" region="north" height="30" showHeader="false"
+			style="background-color: white;">
+			<ul class="mini-menubar mymenu" style="float: left">
+				<li><span>子集查询</span>
+					<ul>
+						<li onclick="person.simpleSearch">简单查询</li>
+						<li onclick="person.commonSearch">高级查询</li>
+					</ul></li>
+				<li class="separator"></li>
+				<li><span>子集方案</span>
+					<ul>
+						<li onclick="person.showSchemeManage">维护方案管理</li>
+						<li onclick="person.orderSchemeManage">排序方案管理</li>
+						<li onclick="person.tableSchemeManage">表显示方案管理</li>
+					</ul>
+				</li>
+			</ul>
+			<div class="btn-group mr10">
+				<input id="schemeCombobox" class="mini-combobox" textField="text" bind="schemeGuid" valueField="id" action="schemeModel"
+					onvaluechanged="person.showSchemeChange" emptyText="维护方案选择" /> 
+				<input id="orderSchemeCombobox" class="mini-combobox" textField="text" valueField="id" action="orderSchemeModel"
+					onvaluechanged="person.searchChange" emptyText="排序方案选择" />
+			</div>
+		</div>
+		<div title="center" region="center">
+			<div class="fui-toolbar">
+				<a class="mini-button" onclick="search" id="search">查找</a>
+				<a class="mini-button" onclick="person.clearCondition" id="clearCondition">清空查询条件</a>
+				<a class="mini-button hidden" onclick="add" id="add">新增</a> 
+				<a class="mini-button hidden" onclick="edit" id="edit">修改</a> 
+				<a class="mini-button hidden" onclick="deleteSelect" id="delete">删除</a>
+			</div>
+			<div class="fui-condition">
+				<div class="fui-form" id="fui-form">
+					<input bind="simpleCondition" id="simpleCondition" class="mini-hidden" /> 
+					<input bind="commonCondition" id="commonCondition" class="mini-hidden" />
+					<input bind="schemeGuid" id="schemeGuid" class="mini-hidden" /> 
+					<input bind="orderSchemeGuid" id="orderSchemeGuid" class="mini-hidden" />
+					<input bind="tableId" id="tableId" class="mini-hidden" />
+					<input bind="tableName" id="tableName" class="mini-hidden" />
+					<input class="mini-hidden" id="params" bind="params" />
+				</div>
+				<a role="searcher" callback="searchData"></a>
+			</div>
+
+			<div class="mini-fit">
+				<div class="mini-layout" style="width: 100%; height: 100%"
+					id="layout" allowResize="true" splitSize="3">
+					<div title="center" region="center">
+						<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+							idField="recordguid" style="width: 100%; height: 100%;"
+							action="getDatagridData" allowCellSelect="true"
+							allowResize="false" allowCellEdit="false" allowCellValid="true"
+							multiSelect="true" headerContextMenu="#headerMenu"></div>
+						<ul id="headerMenu" class="mini-contextmenu" onbeforeopen="onBeforeOpen">
+							<li name="frozen" iconCls="icon-lock" onclick="frozenColumns()">锁定列</li>
+							<li name="unFrozen" iconCls="icon-unlock" onclick="unFrozenColumns()">解锁列</li>
+						</ul>
+						<div style="display: none; height: 100%;" id="datagridview"
+							class="mini-datagrid" idField="rowguid" allowResize="false"
+							showPager="true" action="getDataGridView" viewType="cardview"
+							showColumns="false"></div>
+					</div>
+					<div title="" region="south" height="280" expanded="true"
+						splitSize="8px;" showHeader="false" showSplitIcon="true" >
+						<div id="tabs" class="mini-tabs" tabAlign="left"
+							contextMenu="#tabsMenu" style="height: 100%" tabPosition="bottom"></div>
+						<ul id="tabsMenu" class="mini-contextmenu"
+							onbeforeopen="onTabBeforeOpen"
+							style="height: 80%; overflow-y: auto">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script src="../js/person.js"></script>
+	<script src="../js/eputil.js"></script>
+	<script src="../../../../../../frame/fui/js/epoint/epoint.controlconfig.js"></script>
+	<script src="../../../../../../frame/fui/js/epoint/epoint.form.js"></script>
+
+	<script>
+	   //<![CDATA[ 
+		var layout = mini.get('layout');
+		var subUrl = "subsetrecordmanagelist";
+		var personUrl = "recordmanagelist?tableId="+Util.getUrlParams("tableId");
+		var addUrl = "framemanager/metadata/mis/datamanage/commonform/commonformtable";
+		var detailUrl = "framemanager/metadata/mis/datamanage/commonform/commonformtabledetail";
+		var schemeType = "1";
+		var searchIndex = -1;
+		var copyData = {};
+		var fieldMaps = null;
+		var params = mini.get('params');
+	
+
+		epoint.initPage('recordmanagelistaction', '', initCallBack);
+		
+		function initCallBack(data) {
+			mini.parse();
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+			}
+			if (data.controls) {
+				appearCondition(data);
+				if(data.fields){
+					fieldMaps = data.fields;
+				}
+			}
+			if (data.columns) {
+				drawDynamicColumn(data.columns);
+				//drawDynamicColumn(handleColumn(data.columns));
+			}
+			if (data.tabs && data.tabs.length) {
+				tabs.setTabs(data.tabs);
+				loadTabButton(data.tabs);
+				layout.showRegion("south");
+			}else{
+				layout.hideRegion("south");
+			}
+			if(data.right){
+				var right = data.right;
+				if(right.add && right.add==true){
+					$('#add').removeClass('hidden');
+					$('#insert').removeClass('hidden');
+				}
+				if(right.edit && right.edit==true){
+					$('#edit').removeClass('hidden');
+				}
+				if(right.delete && right.delete==true){
+					$('#delete').removeClass('hidden');
+				}
+			}
+			mini.get("schemeGuid").setValue(Util.getUrlParams("schemeGuid"));
+			mini.get("tableId").setValue(Util.getUrlParams("tableId"));
+		}
+
+		function add() {
+			var url = addUrl;
+			//如果表单配置了addUrl地址，直接取配置的，否则打开默认通用页面
+			epoint.execute('getPersonalUrlByType','fui-form',["add"],function(data){
+				if(data && data.url){
+					url = data.url;	
+				}
+				epoint.openTopDialog('信息维护', url + "?tableId=" + mini.get("tableId").getValue() + "&tableName=" + mini.get("tableName").getValue(), function(data) {
+					searchData();
+						}, {
+							'width' : 1000,
+							'height' : 600
+						});
+			});
+		}
+		
+		function edit(){
+			var url = addUrl;
+			var rows = grid.getSelecteds();
+			if(rows.length > 0){
+				//如果表单配置了addUrl地址，直接取配置的，否则打开默认通用页面
+				epoint.execute('getPersonalUrlByType', 'fui-form', ["edit"], function(data){
+					if(data && data.url){
+						url = data.url;
+					}
+					if (rows.length == 1) {
+						var guid= rows[0].recordguid;
+						epoint.openTopDialog('信息维护', url +"?tableId=" + mini.get("tableId").getValue() +"&tableName="+mini.get("tableName").getValue()+"&rowGuid=" +guid, function(data) {
+							searchData();
+							}, {
+								'width' : 1000,
+								'height' : 600
+							}
+						);
+					}else if(rows.length>1){
+						epoint.alert("请选择一条记录进行修改!");
+					}
+				});
+			}else{
+				epoint.alert("请选择要修改的记录!");
+			}
+		}
+
+		function deleteSelect() {
+			 if (grid.getSelecteds().length <= 0){
+				 epoint.alert("请选择要删除的记录!");
+			 }
+			 else {
+				 epoint.confirm("确认要删除吗？", "提示", function() {
+					 var rows = grid.getSelecteds();
+					 for(var i=0;i<rows.length;i++){
+						var row = rows[i];
+						if(!row.recordguid){
+							grid.removeRow(row, false);
+						}
+					}
+					if(grid.getSelecteds().length == 0){
+						return false;
+					}
+					epoint.execute("deleteSelect", '', null, function(result) {
+						if (result.msg) {
+							epoint.alert(result.msg, null, null, 'info');
+							searchData();
+						}
+					});
+				});
+			}
+		} 
+
+		function onBeforeOpen(e){
+		    var row = grid.getSelected();
+		    if (!row) {
+		        e.cancel = true;
+		        //阻止浏览器默认右键菜单
+		        e.htmlEvent.preventDefault();
+		        return;
+		    }
+		}
+	
+		function onTabBeforeOpen(e){
+			$("#tabsMenu").show();
+			var currentTab = tabs.getTabByEvent(e.htmlEvent);
+	        if (!currentTab) {
+	           e.cancel = true; 
+	           //阻止浏览器默认右键菜单
+			   e.htmlEvent.preventDefault();
+			   return;
+	        }
+		}
+		
+		//绘制tab右击按钮菜单
+		function loadTabButton(tabs){
+			var buttonHtml = "";
+			for(var i = 0,len = tabs.length; i < len;i++){   
+				buttonHtml = buttonHtml + '<li><a style="color:black" href="javascript:changeTab(\''+ i +'\')">'+tabs[i].name+'</a></li> ';
+			}
+			$("#tabsMenu").html(buttonHtml);
+		}
+		
+		function changeTab(i){
+			var tabs = mini.get("tabs");
+			var tabArray = tabs.tabs
+			tabs.activeTab(tabArray[i]);
+			$("#tabsMenu").hide();
+		}
+		
+		// 查找
+		function search() {
+			// 返回数组
+			var columnArr = [];
+			var columnList = grid.getColumns();
+
+			// 遍历 json 数组
+			for ( var i in columnList) {
+				var editColumn = columnList[i];
+
+				if (editColumn.header!= null && editColumn.name != null && editColumn.cellCls == null) {
+					var item = {};
+					item.id = editColumn.name;
+					item.text = editColumn.header;
+					columnArr.push(item);
+				}
+			}
+			epoint.openDialog("查找", "framemanager/metadata/mis/datamanage/search/searchcommonitem", null, {
+				width : 500,
+				height : 350,
+				param : {
+					columnArr : columnArr
+				}
+			});
+		};
+
+		//]]>
+	</script>
+</body>
+</html>

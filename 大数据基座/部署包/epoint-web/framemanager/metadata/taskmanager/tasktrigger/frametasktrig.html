@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>配置管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" iconCls="icon-save"
+			onclick="addNew">保存并新建</a> <a class="mini-button" id="addClose"
+			iconCls="icon-save" onclick="add">保存并关闭</a> <a class="mini-button"
+			id="save" iconCls="icon-save" onclick="saveModify">保存修改</a> <a
+			class="mini-button" iconCls="icon-removecircle"
+			onclick="epoint.closeDialog();">关闭</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">使用说明</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			1.每个任务的执行条件由一条trig记录控制,多条trig可以实现1个任务按照多种情况执行。
+		</p>
+		<p>
+			2.每个trig的配置主要由执行策略控制。
+		</p>
+		<p>
+			3.轮循时间点:是一个时间控件，可以精确到秒，配合轮循类型使用。比如我想配置任务在每天2点运行{首先选择轮循类型为日,然后轮循时间点里面的时选到2点即可,天可以任意选,因为过滤条件是从日开始往下计算的。
+		</p>
+		<p>
+		    4.触发配置名称:trig的名字,任意标识即可。
+		</p>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control">
+						<div name="isOnlyMyApp"
+							bind="frametasktrigaction.isOnlyMyApp" text="仅当前应用使用"
+							class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="执行方式">
+						<input bind="dataBean.executetype" action="getExecutetype"
+							id="executetype" class="mini-combobox" value="0" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="触发配置名称" starred="true">
+						<input bind="dataBean.tasktrigname" required="true"
+							requiredErrorText="触发配置名称不能为空" class="mini-textbox"
+							style="width: 350px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="执行策略" id="operatetype">
+						<input bind="dataBean.operateusername" id="operateusername"
+							action="getExecutetypeModal" repeatItems="5" repeatLayout="table"
+							textField="text" valueField="id" class="mini-radiobuttonlist" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="轮循类型" id="recuretype">
+						<input bind="dataBean.recuretype" id="recuretypecomp"
+							action="getRecuretypeModal" repeatItems="10" repeatLayout="table"
+							textField="text" valueField="id" class="mini-radiobuttonlist" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="轮循时间点" id="operatedate">
+						<input class="mini-datepicker" bind="dataBean.operatedate" id="operatedate" data-options="{'format':'yyyy-MM-dd H:mm:ss'}"
+							style="width: 250px" format="yyyy-MM-dd H:mm:ss" showTime="true"
+							showOkButton="true" showClearButton="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="开始时间" id="startexecutedate">
+						<input class="mini-datepicker" id="startexecutedate"
+							onValuechanged="validateDate(this)"
+							bind="dataBean.startexecutedate" data-options="{'format':'yyyy-MM-dd H:mm:ss'}"
+							style="width: 250px; float: left"
+							showTime="true" showOkButton="true" showClearButton="false" />
+						&#160;(不设定为当前时间)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="结束时间" id="endexecutedate">
+						<input class="mini-datepicker" id="endexecutedate"
+							onValuechanged="validateDate(this)" data-options="{'format':'yyyy-MM-dd H:mm:ss'}"
+							bind="dataBean.endexecutedate" style="width: 250px"
+							format="yyyy-MM-dd H:mm:ss" showTime="true" showOkButton="true"
+							showClearButton="false" /> &#160;(不设定会一直执行下去)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="间隔" id="taskinterval">
+						<input bind="dataBean.taskinterval" vType="int"
+							style="width: 300px" class="mini-textbox" /> &#160;(单位是秒)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="重复次数" id="tasktimes">
+						<input bind="dataBean.tasktimes" vType="int" style="width: 300px"
+							class="mini-textbox" /> &#160;(不设定会一直执行下去,执行1次的话设置为0)
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="自定义执行策略接口" id="yearflag">
+						<input bind="dataBean.yearflag" class="mini-textbox"
+							style="width: 350px" /> <span><font color="red">
+								写一个类，里面必须有个名字为getTrigger的public方法，返回值为Trigger(org.quartz.Trigger)，方法有2个参数(FrameTaskMsg,FrameTaskTrig),在方法中构建trigger对象的时候，triggername通过FrameTaskTrig.getTasktrigname()获取，groupname通过FrameTaskMsg.getCategoryguid()获取，最后将这个自定义的trigger返回即可</font></span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="特殊时间点" id="belongxiaqucode">
+						<input bind="dataBean.belongxiaqucode"
+							action="getOperatedateModal" emptyText="请选择..."
+							showNullItem="true" nullItemText="请选择..." class="mini-combobox"
+							style="width: 350px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="自定义执行策略接口" id="cronexpression">
+						<input bind="dataBean.cronexpression" class="mini-textbox"
+							style="width: 350px" /> <span><font color="red">cron 时间表达式</font></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('frametasktrigaction', '', initCallBack);
+
+		// 执行策略默认值,轮询类型默认值
+		var executeType, recureType;
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			if (data.edit) {
+				//隐藏新增按钮
+				mini.get('addNew').setVisible(false);
+				mini.get('addClose').setVisible(false);
+			} else {
+				//隐藏修改按钮
+				mini.get('save').setVisible(false);
+			}
+
+			// 取后台值
+			//executeType = mini.get("operateusername").getValue();
+			//recureType = mini.get("recuretypecomp").getValue();
+			// 根据后台值初始化页面
+			//setVisibleOfComp(executeType);
+			setVisibleOfComp('4');
+		}
+
+		//　按钮组事件
+		var rbl = mini.get("operateusername");
+		rbl.on("valuechanged", function(e) {
+			setVisibleOfComp(e.value);
+		});
+
+		// 根据执行策略设置控件显影
+		function setVisibleOfComp(val) {
+			initCompVisible();
+			if (val == '0') {
+				showRow("#recuretype");
+				showRow("#operatedate");
+			}
+			if (val == '1') {
+				showRow("#startexecutedate");
+				showRow("#endexecutedate");
+				showRow("#taskinterval");
+				showRow("#tasktimes");
+			}
+			if (val == '2') {
+				showRow("#yearflag");
+			}
+			if (val == '3') {
+				showRow("#belongxiaqucode");
+			}
+			if (val=='4') {
+				showRow("#cronexpression")
+			}
+		}
+
+		function initCompVisible() {
+			hideRow("#recuretype");
+			hideRow("#operatedate");
+			hideRow("#startexecutedate");
+			hideRow("#endexecutedate");
+			hideRow("#taskinterval");
+			hideRow("#tasktimes");
+			hideRow("#yearflag");
+			hideRow("#belongxiaqucode");
+			hideRow("#cronexpression");
+			hideRow("#operatetype");
+		}
+
+		function hideRow(id) {
+			$(id).parent().addClass('hidden');
+		}
+
+		function showRow(id) {
+			$(id).parent().removeClass('hidden');
+		}
+
+		//　日期控件的验证
+		var start = mini.get("start");
+		var end = mini.get("end");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'start') {
+						epoint.alert("开始时间不能大于结束时间！", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("结束时间不能小于开始时间！", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		// 新增
+		function addNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		// 新增
+		function add() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 修改
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				epoint.alert(data.msg, '', null, 'info');
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+
+					// 恢复默认值
+					mini.get("operateusername").setValue(executeType);
+					mini.get("recuretypecomp").setValue(recureType);
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+				    epoint.closeDialog(data.msg);
+				} else {
+					epoint.alert(data.msg, '', null, 'error');
+				}
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

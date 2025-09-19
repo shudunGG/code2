@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+</script>
+</head>
+
+<body>
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="sure-btn"
+				onclick="saveModify">保存并关闭</a><a
+				class="mini-button mini-btn-primary" id="closebtn"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="padding-top: 1px">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" required="true"
+							emptyText="请输入步骤名称"  vtype="maxLength:20"  requiredErrorText="步骤名称不能为空"/>
+						<input id="tablename" name="tableName" class="mini-hidden" />
+						<input id="tableid" name="tableid" class="mini-hidden"/>
+						<input id="sql" name="sql" class="mini-hidden"/>
+						<input id="prestosql" name="prestosql" class="mini-hidden"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="参数值" starred="true">
+						<div class="mini-button" onclick="btnAllParamField" width="70">全选</div>
+						<div class="mini-button" onclick="btnNullParamField" width="70"
+							style="margin-left: 10px;">全不选</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control">
+						<div id="paramField" name="paramField" class="mini-checkboxlist" action="getSelfField"  requiredErrorText="参数值不能为空"
+							repeatLayout="table"  repeatItems="2" textField="text1" valueField="id" required="true" style="overflow: auto;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script type="text/javascript">
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var paramField = mini.get('paramField');
+		var tablename=Util.getUrlParams('tablename');
+		var tableid=Util.getUrlParams('tableid');
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+            //从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+				nodeData.tableName=tablename;
+				nodeData.tableid=tableid;
+			epoint.initPage('modeltableinputaction', '', initCallBack);
+        }
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			if(!nodeData.paramField){
+				btnAllParamField();
+			}
+			var nodeName = nodeData.stepName;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			
+		}
+
+		//保存修改,不需要入库，只需要将配置内容传给父页面
+		function saveModify() {
+			var nodeForm = getForm();
+			if (epoint.validate('@all', false)) {
+				epoint.execute("saveForm", '',[nodeInfo,nodeForm],function(msg){
+					if(msg == 'success'){
+						epoint.closeDialog(nodeForm);
+					}else{
+						epoint.alert(msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+
+		//复选框全选
+		function btnAllParamField() {
+			var data = paramField.getData();
+			// 获取所有值
+			var val = "";
+			for (var i = 0, len = data.length; i < len; i++) {
+				if (i == 0)
+					val += data[i]["id"];
+				else
+					val += "," + data[i]["id"];
+			}
+			paramField.setValue(val);
+		}
+
+		function btnNullParamField() {
+			paramField.setValue("");
+		}
+
+
+	</script>
+</body>
+
+</html>

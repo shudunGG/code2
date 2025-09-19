@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Event processing modification</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save"
+				onclick="saveModify">Sure to modify</a> <a class="mini-button"
+				iconCls="icon-removecircle" onclick="epoint.closeDialog">Cancel the change</a>
+		</div>
+	</div>
+
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="The name of the event" starred="true">
+						<input id="eventName" class="mini-textbox"
+							bind="workflowEvent.eventName" required="true"
+							requiredErrorText="The name of the eventCan't be empty!" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Event source">
+						<div id="sourceName" bind="sourceName" class="mini-output" ></div>
+					</div>
+				</div>
+				<div id="divOperate" role="row">
+					<div role="control" label="operation">
+						<div id="operationName" bind="operationName" class="mini-output" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The event type">
+						<div id="evType" bind="evType" class="mini-output" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="The solution" starred="true">
+						<input id="meName" bind="eventMethodName" class="mini-buttonedit"
+							emptyText="" onbuttonclick="selEventMethod" selectOnFocus="true"
+							required="true" requiredErrorText="The solutionCan't be empty!" />
+						<!-- Hide area -->
+						<input class="mini-hidden" id="meGuid"
+							bind="workflowEvent.eventMethodGuid" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="Call way">
+						<input name="syncType" bind="workflowEvent.syncType"
+							textField="text" valueField="id" class="mini-combobox"
+							data="[{text:'synchronous',id:'0'},
+							{text:'asynchronous',id:'1'}]" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input id="orderNumber" class="mini-textbox"
+							bind="workflowEvent.orderNumber" vtype="int" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="processVersionGuid"
+		bind="processVersionGuid" />
+	<input class="mini-hidden" id="eventMethodName" bind="eventMethodName" />
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// Initialize the page
+		epoint.initPage('activitymanualeventeditaction', '', initCallBack);
+
+		function initCallBack(data) {
+			mini.get("meName").setText(mini.get("eventMethodName").getValue());
+			if (data.isShow == "false")
+				document.getElementById("divOperate").style.display = "none";
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('btnSaveClick', '', closeCallback);
+			}
+		}
+
+		// Shut downoperationThe callback
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function selEventMethod(e) {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			epoint
+					.openDialog(
+							'chooseThe solution',
+							"framemanager/workflow/design/designhelper?mode=function&processVersionGuid="
+									+ processVersionGuid, selEventMethodOperJS,
+							{
+								'width' : 480,
+								'height' : 500
+							});
+		}
+
+		function selEventMethodOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var name = rtnValue.split(';')[0];
+				var guid = rtnValue.split(';')[1];
+				mini.get("meName").setText(name);
+				mini.get("meName").setValue(name);
+				mini.get("meGuid").setValue(guid == 'undefined' ? '' : guid);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

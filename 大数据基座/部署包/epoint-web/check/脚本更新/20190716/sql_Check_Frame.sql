@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where  table_name = 'app_param' and column_name='paramvalue' and data_type='nvarchar' and character_maximum_length=2000

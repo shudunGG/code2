@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>任务数量统计图表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	
+	<!-- 测试刷新按钮 -->
+	<a class="mini-button" state="primary" onclick="refreshLog">日志刷新</a>
+
+	<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+	<div id="main" style="width: 600px; height: 400px; padding-left: 20px;"></div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 请引入 ECharts.js文件 -->
+	<script>
+		SrcBoot.output([ '../epointjob/chart/js/echarts.min.js' ]);
+	</script>
+	<script>
+	//<![CDATA[
+		// 初始化页面
+		epoint.initPage('epointjobstatisminuteaction', null, function(data) {
+			initChart();
+			getChartInfo();
+		});
+
+		var myChart;
+		var initChart = function() {
+			// 基于准备好的dom，初始化echarts实例
+			myChart = echarts.init(document.getElementById('main'));
+
+		}
+
+		// 获取图表中的数据
+		var getChartInfo = function getChartInfo() {
+			epoint.execute("getLineData", null, null, function(data) {
+				console.log(data.chart);
+				rendermorechart(data.chart);
+			});
+		}
+		
+		// 测试按钮
+		function refreshLog() {
+			epoint.execute("refreshLog", null, null, function(data) {
+				console.log("123");
+			});
+		}
+
+		var rendermorechart = function(data) {
+			// 指定图表的配置项和数据
+			option = {
+				title : {
+					text : '每分钟任务数量统计',
+					subtext : '纯属虚构'
+				},
+				tooltip : {
+					trigger : 'axis'
+				},
+				legend : {
+					data : [ '最高气温', '最低气温' ]
+				},
+				toolbox : {
+					show : true,
+					feature : {
+						mark : {
+							show : true
+						},
+						dataView : {
+							show : true,
+							readOnly : false
+						},
+						magicType : {
+							show : true,
+							type : [ 'line', 'bar' ]
+						},
+						restore : {
+							show : true
+						},
+						saveAsImage : {
+							show : true
+						}
+					}
+				},
+				calculable : true,
+				xAxis : [ {
+					type : 'category',
+					boundaryGap : false,
+					data : [ '周一', '周二', '周三', '周四', '周五', '周六', '周日' ]
+				} ],
+				yAxis : [ {
+					type : 'value',
+					axisLabel : {
+						formatter : '{value} °C'
+					}
+				} ],
+				series : [ {
+					name : '最高气温',
+					type : 'line',
+					data : data.topdata,
+					markPoint : {
+						data : [ {
+							type : 'max',
+							name : '最大值'
+						}, {
+							type : 'min',
+							name : '最小值'
+						} ]
+					},
+					markLine : {
+						data : [ {
+							type : 'average',
+							name : '平均值'
+						} ]
+					}
+				}, {
+					name : '最低气温',
+					type : 'line',
+					data : data.lowdata,
+					markPoint : {
+						data : [ {
+							name : '周最低',
+							value : -2,
+							xAxis : 1,
+							yAxis : -1.5
+						} ]
+					},
+					markLine : {
+						data : [ {
+							type : 'average',
+							name : '平均值'
+						} ]
+					}
+				} ]
+			};
+
+			// 使用刚指定的配置项和数据显示图表。
+			myChart.setOption(option);
+		}
+		//]]>
+	</script>
+</body>
+</html>

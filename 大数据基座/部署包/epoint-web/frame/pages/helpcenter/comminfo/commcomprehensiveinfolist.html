@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>通用综合信息发布列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addMessage"
+			onclick="addMessageClick();">信息发布</a> <a class="mini-button"
+			id="saveForm"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要保存的消息！', {state : 'warning'});} else {save();}">消息保存</a>
+		<a class="mini-button" state="danger" id="delMessage"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的消息！', {state : 'warning'});} else {del();}">删除选中</a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" id="searchString" bind="searchString"  width="180px"
+				emptyText="请输入信息标题搜索" onenter="searchData" /> <input
+				class="mini-combobox" id="searchString2" bind="searchString2"
+				emptyText="请选择信息类型搜索" textField="text" valueField="value"  width="210px"
+				showClose="true" action="typeModel" oncloseclick="onCloseClick"
+				onenter="searchData" /> <a class="mini-button ml8" state="primary"
+				iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="cinfoguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getTableModal" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="cinfoname" width="100%">信息标题</div>
+				<div field="cinfotype" width="120" data-options="{code:'综合信息类型'}">信息类型</div>
+				<div field="pageview" width="120">访问量</div>
+				<div field="ordernum" width="100" vtype="int;range:0,99999999"
+					allowSort="true">
+					排序号 <input property="editor" class="mini-textbox" minWidth="50"
+						inputStyle="text-align:right" />
+				</div>
+				<div width="80" renderer="edit">编辑</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("commcomprehensiveinfolistaction");
+
+		function addMessageClick() {
+			epoint.openDialog("消息发布",
+					"frame/pages/helpcenter/comminfo/comminfoadd", addCallBack,
+					{
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		//修改
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"createEditDialog");
+		}
+
+		function createEditDialog(data) {
+			epoint.openDialog("编辑发布内容",
+					"frame/pages/helpcenter/comminfo/comminfoadd?cInfoGuid="
+							+ data, addCallBack, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 保存
+		function save() {
+			epoint.execute('save', 'datagrid', msgCallBack);
+		}
+
+		// 删除
+		function del() {
+			epoint.confirm("是否确定删除?", '', function() {
+				epoint.execute('del', [ 'datagrid', 'fui-form' ], msgCallBack);
+			});
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.showTips(msg,  {state : 'success'});
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param && param != 'close') {
+					epoint.showTips(param, {state : 'success'});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>专题发布</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../css/cockpitprojectlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+		<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="publish">发布</a>
+			<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="专题名称">
+						<input bind="dataBean.projectname" class="mini-outputtext" id="projectName" />
+					</div>
+					<div role="control" ></div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属部门">
+						<input id="createou" bind="dataBean.createou" class="mini-outputtext"/>
+					</div>
+					<div role="control" label="创建人">
+						<input class="mini-outputtext" id="createusername" bind="dataBean.createuser">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="负责人">
+						<input id="liableperson" class="mini-outputtext" bind="dataBean.liableperson"/>
+					</div>
+					<div role="control" label="联系电话">
+						<input id="phone" class="mini-outputtext" bind="dataBean.phone"/>
+					</div>
+				</div>
+				<div role="row" id="model">
+					<div role="control" label="发布驾驶舱">
+						<input bind="dataBean.cockpitguid" id="cockpitguid" 
+							oncloseclick="onCloseClick" showClose="true"
+							action="getCockpitModel" class="mini-combobox" 
+							onvaluechanged="changeCockpit" />
+					</div>
+					<div role="control" label="发布专题分类">
+						<input bind="dataBean.projectcateguid" id="projectcateguid" 
+							oncloseclick="onCloseClick" showClose="true"
+							action="getProjectCateModel" class="mini-combobox"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var projectguid = Util.getUrlParams("projectguid");
+		// 初始化页面
+		epoint.initPage('cockpitprojectpublishaddaction', null, function(data) {
+			if(data.createusername){
+				mini.get("createusername").setValue(data.createusername);
+			}
+			if(data.createouname){
+				mini.get("createou").setValue(data.createouname);
+			}
+		});
+		
+		function changeCockpit(e){
+			var cockpitguid = mini.get("cockpitguid").getValue();
+			if(cockpitguid){
+				mini.get('projectcateguid').setValue("");
+			}
+			epoint.refresh([ 'cockpitguid','projectcateguid' ]);
+		}
+		
+		function publish(){
+			console.log(projectguid);
+			epoint.execute('save', 'fui-form', function(data) {
+				if(data.msg){
+					epoint.openTopDialog('专题发布',"frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=b87d8859-45be-4511-8247-413db8b20741&rowguid="
+									+ projectguid,
+							function(data) {
+								if (data.action != 'close') {
+									epoint.closeDialog();
+								}
+							},
+							{
+								'width' : 1200,
+								'height' : 800
+							});
+			 	}
+			}); 
+		}
+		
+	</script>
+</body>
+
+</html>

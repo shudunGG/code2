@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>表结构权限配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="add()">新增配置</a>
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDataGridData" showPager="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="fieldguid" width="60">字段Id</div>
+				<div field="fieldname" width="150">字段英文名称</div>
+				<div field="fieldchinesename" width="150">字段中文名称</div>
+				<div field="righttypetext" width="100">权限类型</div>
+				<div width="60" renderer="onManageRenderer">编辑</div>
+				<div width="60" renderer="onDelRenderer">删除</div>
+				<div field="tableid" width="0"></div>
+				<div field="righttypeid" width="0"></div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="tableId" bind="tableId" />
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage("tablestructrightconfiglistaction");
+
+		// 新增表单权限配置
+		function add() {
+			epoint.openDialog('表权限管理',
+					'framemanager/metadata/mis/tableinfo/tablestructrightconfigadd?tableId='
+							+ mini.get("tableId").getValue(), function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						searchKeepPage();
+					}, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		// 权限编辑
+		var onManageRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"tableRightConfig", "tableid,fieldguid,righttypeid");
+		};
+
+		// 配置
+		function tableRightConfig(data) {
+			data = epoint.decodeJson(data);
+			var tableId = data.tableid;
+			var fieldId = data.fieldguid;
+			var rightType = data.righttypeid;
+			epoint.openDialog('表单权限配置',
+					'framemanager/metadata/mis/tableinfo/tablestructrightconfigmanage?tableId='
+							+ tableId + '&fieldId=' + fieldId + '&rightType='
+							+ rightType + '&type=edit', function(param) {
+						if (param && param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						searchKeepPage();
+					}, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		// 权限删除
+		var onDelRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-remove",
+					"deleteRight", "tableid,fieldguid,righttypeid");
+		};
+
+		// 配置
+		function deleteRight(data) {
+			data = epoint.decodeJson(data);
+			var tableId = data.tableid;
+			var fieldId = data.fieldguid;
+			var rightType = data.righttypeid;
+			console.log(data);
+			epoint.execute('deleteSelected', [ 'datagrid' ], [ tableId,
+					fieldId, rightType ], msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchKeepPage();
+			}
+		}
+
+		function searchKeepPage() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

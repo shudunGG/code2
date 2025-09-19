@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>消息渠道列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新增记录 </a> <a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('将同步删除消息渠道下的消息发送规则，确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+		</div>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="渠道ID">
+						<input class="mini-combobox" bind="channelID" showNullItem="true"
+							action="getChannelIdAll" emptyText="请选择..."
+							oncloseclick="onCloseClick" nullItemText="请选择..."
+							showClose="true" allowInput="true" textField="channelID"
+							valueField="channelID" />
+					</div>
+					<div role="control" label="渠道名称">
+						<input class="mini-textbox" bind="channelName" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="channelid" headerAlign="center" align="left" width="150">渠道ID</div>
+				<div field="channelname" headerAlign="center" align="left"
+					width="300">渠道名称</div>
+				<div field="initusertable" headerAlign="center" align="left"
+					width="140">初始化用户表</div>
+				<div field="inituserfield" headerAlign="center" align="left"
+					width="140">初始化用户字段</div>
+				<div field="tableback" headerAlign="center" align="left" width="140">是否支持消息撤回</div>
+				<div field="ordernumber" headerAlign="center" align="center"
+					width="60">排序</div>
+				<div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+				<!-- 				<div width="60" align="center" headerAlign="center"
+					renderer="onImportRenderer">导入</div> -->
+				<div width="100" align="center" headerAlign="center"
+					renderer="onConfigRenderer">额外配置</div>
+			</div>
+		</div>
+
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('messageschannellistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+		// 绘制行导入按钮
+		var onImportRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-copy", "importUser",
+					"channelid");
+		};
+		function importUser(channelid) {
+			epoint.confirm('确认导入', '', function() {
+				importFrameUser(channelid);
+			});
+		}
+		function importFrameUser(channelid) {
+			epoint.execute("importFrameUser?channelid=" + channelid, '',
+					importcallback);
+		}
+		// 弹出新增窗口
+		function openAdd() {
+			epoint.openDialog('新增记录',
+					"framemanager/messages/channel/messageschanneladd",
+					searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改记录',
+					"framemanager/messages/channel/messageschanneledit?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		var onConfigRenderer = function(e) {
+			if (e.record.extendconfigpage) {
+				var url = e.record.extendconfigpage;
+				url = "<a style=\"cursor:pointer\" onclick=\"openExtendConfig('"
+						+ e.record.rowguid
+						+ "','"
+						+ e.record.extendconfigpage
+						+ "')\" >" + "配置";
+				return url;
+			}
+		};
+
+		function openExtendConfig(channelguid, extendconfigpage) {
+			if (extendconfigpage == null || extendconfigpage == '') {
+				extendconfigpage = "framemanager/messages/channel/channeldefaultconfig";
+			}
+			epoint.openDialog('渠道个性配置', extendconfigpage + "?channelguid="
+					+ channelguid, null, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+		function importcallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 类型channelID下拉选关闭方法
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>部门新增</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew">保存并新增</a> <a class="mini-button" id="addClose"
+			onclick="saveAndClose">保存并关闭</a>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10" showtype="tooltip">注意事项</a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>部门代码 仅作录入，无业务功能 ，即部门代码 无任何与之相关的服务方法 或者处理逻辑</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form" style="margin-right: 60px">
+				<div role="row">
+					<div role="control" label="上级目录">
+						<input id="parentOuName" bind="parentOuName"
+							class="mini-buttonedit" emptyText="根" allowInput="false"
+							onbuttonclick="selectOu" selectOnFocus="true" />
+						<!-- 隐藏域，用于绑定上级部门guid -->
+						<input bind="parentOUGuid" id="parentOuguid" class="mini-hidden" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="部门类型">
+						<div name="ouType" bind="isIndependence" text="独立部门"
+							class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="部门名称" starred="true">
+						<input id="ouName" bind="frameOu.ouname"
+							onvalidation="validLength" class="mini-textbox" required="true"
+							requiredErrorText="部门名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="部门简称">
+						<input id="oushortName" bind="frameOu.oushortName"
+							onvalidation="validLength" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="部门代码">
+						<input id="oucode" bind="frameOu.oucode" class="mini-textbox"
+							vtype="maxLength:100" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="排序号">
+						<input id="orderNumber" bind="frameOu.orderNumber"
+							class="mini-textbox" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="联系电话">
+						<input id="tel" bind="frameOu.tel" class="mini-textbox"
+							vtype="maxLength:100" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="流转类型">
+						<div name="subWebFlow" bind="isSubWebFlow" text="独立流转"
+							class="mini-checkbox"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="邮政编码">
+						<input id="postalCode" bind="frameOu.postalCode"
+							class="mini-textbox" vtype="postCode" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="传真">
+						<input id="ouFax" bind="frameOuExtendInfo.ouFax"
+							class="mini-textbox" onvalidation="onFaxValidation" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="地址">
+						<input id="address" bind="frameOu.address" class="mini-textarea"
+							onvalidation="validLength" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="描述">
+						<input id="description" bind="frameOu.description"
+							class="mini-textarea" onvalidation="validLength" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[
+
+		//初始化请求
+		epoint.initPage('frameouaddaction', '', initCallBack);
+
+		//初始化
+		function initCallBack(e) {
+			if (e.soa) {
+				epoint.alertAndClose(e.soa, '', null, null, 'info');
+			}
+			if (e.parentOuName) {//初始化 文本
+				mini.get("parentOuName").setText(e.parentOuName);
+				mini.get("parentOuName").setValue(e.parentOuName);
+			}
+		}
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+
+		function selectOu(e) {
+			var url = 'framemanager/orga/orga/ou/selectou';
+			if (isSub) {
+				url += '?isSub=' + isSub + '&type=1';
+			}
+			epoint.openDialog('选择上级部门', url, function(param) {
+				if (param) {
+					s = param.split(";");
+					if ('1' == isSub && s[1] == 'f9root') {//独立部门模式下不允许选择根节点
+						epoint.showTips("不允许选择根节点", {state : 'warning'});
+					} else if (s[1] == 'f9root') {
+						mini.get("parentOuName").setText('根');
+						mini.get("parentOuName").setValue('根');
+						mini.get("parentOuguid").setValue('');
+					} else if (s[0] != 'close') {
+						mini.get("parentOuName").setText(s[0]);
+						mini.get("parentOuName").setValue(s[0]);
+						mini.get("parentOuguid").setValue(s[1]);
+					}
+
+				}
+			}, {
+				width : 400,
+				height : 500
+			});
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				//if(data.msg=='新增成功'){
+				if (data.success) {
+					// 清空表单
+					epoint.showTips(data.msg, {state : 'success'});
+					epoint.clear('fui-form');
+					mini.get("parentOuguid").setValue(data.parentOUGuid);
+					mini.get("parentOuName").setText(data.parentOuName);
+					mini.get("parentOuName").setValue(data.parentOuName);
+					
+				}else{
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				//if(data.msg=='新增成功'){
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,{state : 'danger'});
+				}
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		//isFax
+		function isFax(v) {
+			var re = new RegExp(/^((\d{3,4}-)?\d{7,8})$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//fax验证
+		function onFaxValidation(e) {
+			if (e.isValid) {
+				if (e.value && isFax(e.value.trim()) == false) {
+					e.errorText = "请输入正确的传真号";
+					e.isValid = false;
+				}
+			}
+		}
+
+		//长度验证
+		function validLength(e) {
+			var name = "";
+			if ("ouName" == e.sender.id) {
+				name = "部门名称";
+			}
+			if ("oushortName" == e.sender.id) {
+				name = "部门简称";
+			}
+			if ("address" == e.sender.id) {
+				name = "地址";
+			}
+			if ("description" == e.sender.id) {
+				name = "描述文字";
+			}
+			if (e.isValid) {
+				if (e.value.length > 50) {
+					e.errorText = name + "长度不能超过50个字符"
+					e.isValid = false;
+				}
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

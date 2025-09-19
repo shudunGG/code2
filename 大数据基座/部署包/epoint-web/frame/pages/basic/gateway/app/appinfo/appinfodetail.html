@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>应用注册详情页面</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="应用名称">
+						<div id="appname" class="mini-outputtext" bind="dataBean.appname"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用标识">
+						<div id="appcode" class="mini-outputtext" bind="dataBean.appcode"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用回调地址">
+						<div id="callbackurl" class="mini-outputtext"
+							bind="dataBean.callbackurl"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用类别">
+						<div id="appclass" class="mini-outputtext" bind="appclassname"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用类型">
+						<div id="apptype" class="mini-outputtext" bind="apptypename"></div>
+					</div>
+				</div>
+				<div role="row" id="mobilepageurlrow">
+					<div role="control" label="移动跳转地址">
+						<div id="mobilepageurl" class="mini-outputtext"
+							bind="dataBean.mobilepageurl"></div>
+					</div>
+				</div>
+
+				<div role="row" id="approoturlrow">
+					<div role="control" label="PC跳转地址">
+						<div id="approoturl" class="mini-outputtext"
+							bind="dataBean.approoturl"></div>
+					</div>
+				</div>
+				<div role="row" id="appconfigurlrow">
+					<div role="control" label="PC跳转外网地址">
+						<div id="appconfigurl" class="mini-outputtext"
+							bind="dataBean.appconfigurl"></div>
+					</div>
+				</div>
+				<div role="row" id="apprealurlrow">
+					<div role="control" label="PC跳转域名">
+						<div id="apprealurl" class="mini-outputtext"
+							bind="dataBean.apprealurl"></div>
+					</div>
+				</div>
+				<div role="row" id="mobileisexternalrow">
+					<div role="control" label="移动应用类型">
+						<div id="External" class="mini-outputtext" bind="external"></div>
+					</div>
+				</div>
+				<div role="row" id="mobileplatformrow">
+					<div role="control" label="移动应用支持平台">
+						<div id="platform" class="mini-outputtext" bind="platform"></div>
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="应用key">
+						<div id="appkey" class="mini-outputtext" bind="dataBean.appkey"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用秘钥" style="width: 350px">
+						<div id="appsecret" class="mini-outputtext"></div>
+					</div>
+					<div class="mini-button" onclick="onSecret" id="onSecret">显示秘钥</div>
+					<div class="mini-button hidden" onclick="hideSecret"
+						id="hideSecret">隐藏秘钥</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用图标">
+						<div class="img-view" id="photo">
+							<img id="lblPicture" src="" width="50px" height="50px" alt="应用图标" /></i>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<div id="ordernum" bind="dataBean.ordernum"
+							class="mini-outputtext"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="应用摘要描述">
+						<div id="appdesc" class="mini-outputtext" bind="dataBean.appdesc"></div>
+					</div>
+				</div>
+
+				<div role="row" class="qrrow">
+					<div role="control" label="通用二维码">
+						<div class="qr-content">
+							<div id="qrcode"></div>
+						</div>
+					</div>
+				</div>
+				<div role="row" class="qrrow">
+					<div role="control" label="二维码地址">
+						<input class="mini-textbox" onvaluechanged="onValueChanged"
+							id="qrurl" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script
+		src="../../../../../../frame/pages/login/js/jquery.qrcode.min.js"></script>
+
+	<script>
+		// 初始化页面
+		epoint.initPage('appinfodetailaction', "", initCallback);
+		function initCallback(e) {
+			if (mini.get("apptype").getValue() == "PC端应用") {
+				$("#mobileplatformrow").hide();
+				$("#mobileisexternalrow").hide();
+				$(".qrrow").hide();
+			} else {
+				$("#mobileplatformrow").show();
+				$("#mobileisexternalrow").show();
+
+				mini.get('qrurl').setValue(Util.getRightUrl(e.qrurl, true));
+				var isIE = false;
+				var browser = navigator.appName;
+				var b_version = navigator.appVersion;
+				var version = b_version.split(";");
+				var trim_Version = version[1].replace(/[ ]/g, "");
+				if ((browser == "Microsoft Internet Explorer")
+						&& (trim_Version == "MSIE6.0"
+								|| trim_Version == "MSIE7.0" || trim_Version == "MSIE8.0")) {
+					isIE = true;
+				}
+				var renderType = "canvas";
+				if (isIE) {
+					var renderType = "table";
+				}
+				$('#qrcode').empty();
+				$('#qrcode').qrcode({
+					width : 250,//设置宽高 
+					height : 250,
+					render : renderType,
+					//这个地址是后台的扫码确认接口地址，结合实际代码修改
+					text : Util.getRightUrl(e.qrurl, true)
+				});
+
+			}
+
+			showPhoto(e.lblPicture);
+
+			if (e.appinfoicon) {
+				$("#bigicon1").attr("src", e.appinfoicon);
+			}
+			// 密钥显示
+			if (e.secret) {
+				mini.get('appsecret').setValue(e.secret);
+			}
+
+		}
+
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr("src", url);
+
+			} else {
+				$("#photo").hide();
+				$("lblPicture").attr("src", "");
+
+			}
+		}
+
+		// 显示秘钥
+		function onSecret() {
+			epoint.execute("onSecret", '', '', function(data) {
+				if (data && data.secret) {
+					mini.get('appsecret').setValue(data.secret);
+					$('#hideSecret').removeClass('hidden');
+					$('#onSecret').addClass('hidden');
+				}
+			});
+		}
+
+		// 隐藏秘钥
+		function hideSecret() {
+			epoint.execute("hideSecret", '', '', function(data) {
+				if (data && data.secret) {
+					mini.get('appsecret').setValue(data.secret);
+					$('#hideSecret').addClass('hidden');
+					$('#onSecret').removeClass('hidden');
+				}
+			});
+		}
+
+		//修改二维码地址后进行刷新
+		function onValueChanged(e) {
+			epoint.execute('add', '', [ e.value ], searchData);
+		}
+
+		function searchData() {
+			epoint.refresh([ 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

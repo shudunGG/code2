@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>节假日添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" state="primary" onclick="saveAndNew">保存并新建</a> <a
+			class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a> <a
+			class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content" style="overflow:auto">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节日名称" starred="true" >
+						<input bind="dataBean.festivalname" class="mini-textbox" 
+							required="true" style="width: 90%" requiredErrorText="节日名称不能为空" vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="节日日期" starred="true">
+						<input class="mini-datepicker" id="festivaltime" style="width: 90%"
+							onValuechanged="validateDate(this)" required="true"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="dataBean.festivaltime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="假期时间从" starred="true">
+						<input class="mini-datepicker" id="starttime" style="width: 90%"
+							onValuechanged="validateDate(this)" required="true"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="dataBean.starttime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="至" starred="true">
+						<input class="mini-datepicker" id="endtime" style="width: 90%"
+							onValuechanged="validateDate(this)" required="true"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="dataBean.endtime" /> <input
+							bind="startAndEndTime" id="startandendtime" class="mini-hidden" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="调休上班时间">
+						<input id="takeoffday" bind="dataBean.takeOffDay" class="mini-combobox" style="width: 90%"
+							action="getSelectTakeOffDayModel" multiSelect="true" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="当前节日年份">
+						<input id="currentyear" bind="dataBean.currentyear" style="width: 90%"
+							required="true" style="width: 90%" class="mini-outputtext" readOnly="true"
+							vtype="int;max:99999999" allowSort="true" />
+					</div>
+				</div>
+				<div style="height:300px"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		var currentyear;
+		// 初始化页面
+		epoint.initPage('festivaladdaction','',function(e){
+			if(e.currentyear){
+				mini.get("currentyear").setValue(e.currentyear);
+				currentyear=e.currentyear;
+			}
+		});
+
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					// 清空表单
+					epoint.clear('fui-form');
+					mini.get("currentyear").setValue(currentyear);
+					epoint.showTips(data.msg,  {state : 'success'});
+				}else{
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+				
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'danger'});
+				}
+			}
+		}
+		//　日期控件的验证
+		var start = mini.get("starttime");
+		var end = mini.get("endtime");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!", {state : 'warning'});
+						start.setValue(null);
+						return;
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!",  {state : 'warning'});
+						end.setValue(null);
+						return;
+					}
+				}
+				mini.get("takeoffday").setValue(null);
+				mini.get("startandendtime").setValue(start.text+";"+end.text);
+				epoint.refresh('fui-form');
+			}
+		}
+	</script>
+</body>
+</html>

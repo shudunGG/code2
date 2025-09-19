@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a> 
+		</div>
+		<!--帮助按钮 -->
+	</div>
+	
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+	  <div>
+	    <div style="margin: 0px auto; text-align: left; width: 750px">
+			<p><em>变量替换：</em>只有勾选了这个复选框，sql中的where条件才能实现动态参数替换，此时有两种用法</p>
+			<p>1）如果仅仅勾选“变量替换”，则sql语句中，只能使用变量来替换，而不能用传的参数，即只能用${PARAM}，而且，如果字段为字符型，还必须加单引号，即UPDATE语句需要写成如下：</p>
+ 			<p>UPDATE TABLE_NAME SET COLUMN_NAME = '123' WHERE COLUMN_NAME2 ='${PARAM}'</p><br>
+ 			<p>2）如果勾选了“执行每一行”，这时候，左下角的参数才可以编辑，则可以从上一个步骤的数据流或者数据作为条件</p><br>
+	     	<p><em>执行每一行：</em>勾选“执行每一行”后，就可以在UPDATE语句中使用?来代替变量名了。当然，前一种使用变量替换方式（${PARAM}），仍然可用。</p>
+	     	<p>注意条件的顺序必须和传入的参数字段一致，如果条件中重复使用了条一个值，则必将该字段复制成额外的一个列，然后传入</p>
+	    </div>
+	  </div>
+	</div>
+<div class="fui-content">
+	<div id="form" class="fui-form">
+		<div role="row" style="padding-top: 1px">
+			<div role="control" label="步骤名称" starred="true">
+				<input id="stepname" name="stepName" class="mini-textbox"  vtype="maxLength:20"
+					required="true" emptyText="请输入步骤名称" style="width: 80%" />
+			</div>
+		</div>
+		<!-- <div role="row">
+			<div role="control">
+				<span style="margin-left: 20px">要执行的SQL脚本。（用;分隔），问号将替换为参数。</span>
+			</div>
+		</div> -->
+		<div role="row">
+			<div role="control" label="javascript代码" starred="true">
+				<input id="javascript" name="javascript" class="mini-textarea" allowInput="true"
+					style="height: 200px; width: 80%" emptyText="请输入javascript代码" required="true" />
+			</div>
+		</div>
+		<!-- 保存页面数据 -->
+		<input id="tableData" name="tableData" class="mini-textbox hidden">
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="" style="padding-top: 1px;padding-left:17%;padding-bottom:2px;">
+		<div class="btn-group">
+			<a  id= "addButton" class="mini-button mini-btn-primary" onclick="add" 
+				style="margin-left: 20px">新增字段</a>
+				<a id="deletetype"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除选中</a>
+		</div>
+	</div>
+	<div class="mini-fit fui-content" style="padding-top: 1px">
+		<!-- 保存页面数据 -->
+		<input id="fieldtypeselect" class="mini-combobox hidden"
+			action="getTypeSelectItem" maxLength="50" style="width: 100%" /> 
+		<input id="nodeInfo" bind="nodeInfo" class="mini-textbox hidden">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			multiSelect="true" allowCellValid="true"
+			allowCellEdit="true" style="margin:auto;width:65%;height:100%" 
+			allowResize="true" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true" action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="55"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="name" headerAlign="center" width="150"
+					align="left">
+					字段名称<input field="fieldname" property="editor" required="true"
+						class="mini-textbox" maxLength="50" style="width: 100%" />
+				</div>
+				<div field="rename" headerAlign="center" width="150"
+					align="left">
+					改名为<input field="refieldname" property="editor" required="true"
+						class="mini-textbox" maxLength="50" style="width: 100%"  />
+				</div>
+				<div field="type" headerAlign="center" width="150" align="left">
+					类型<input field="fieldtype" property="editor" class="mini-combobox"
+						emptyText="请选择类型..." data="fieldtype" textField="text"
+						valueField="text"   maxLength="50" style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+
+
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var grid = mini.get("datagrid");
+		var stepNameForm = mini.get('stepname');
+
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+				nodeInfo = data;
+				nodeData = mini.decode(data.id);
+			epoint.initPage('execjavascriptaction?nodeInfoKey=' + nodeInfo.key,
+					{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))},
+					initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+			};
+            var length = grid.getData().length;
+			grid.addRow(newRow, length);
+
+			grid.beginEditRow(newRow);
+		}
+		
+		//表格下拉框内容
+		var fieldtype;
+		var combox_fieldtype = mini.get("fieldtypeselect");
+		combox_fieldtype.on("load", function(e) {
+			fieldtype = e.sender.data;
+		});
+		grid.reload();
+		
+		//删除选中
+		function deleteSelected() {
+			grid.removeRows(grid.getSelecteds(), false);
+			setGridData();
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute('saveAll', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+
+		function setGridData() {
+			var datas = grid.getData();
+			var array = [];
+			for (var i = 0; i < datas.length; i++) {
+				var row = datas[i];
+				array.push({
+					"name" : row.name,
+					"rename" : row.rename,
+					"type" : row.type
+				});
+			}
+			mini.get('tableData').setValue(JSON.stringify(array));
+		}
+
+	</script>
+</body>
+
+</html>

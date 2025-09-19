@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择人员</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+    <div class="fui-toolbar" id="fui-toolbar">
+        <div class="btn-group mr10">
+            <a class="mini-button" onclick="saveAndClose">确定选择</a>
+            <a class="mini-button" onclick="epoint.closeDialog">取消选择</a>
+        </div>
+    </div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+	<div id="tree" class="mini-tabstreeselect" action="getTreeModel" filterMode="server" loadWhenChecked="true"  selectedPanelTitle="已选表" canCheckParent="true" showBorder="true" checkRecursive="true">>
+			<div tabText="待选表"></div>
+		</div>
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		//初始化请求
+    	epoint.initPage('dxpmodeltablerelateaction');
+		
+		function beforenodeselect(e) {
+            //禁止选中 ckr=false节点
+            if (e.node.ckr == false) e.cancel = true;
+        }
+		
+		function saveAndClose() {
+			var treeId = 'tree';
+    		epoint.execute('save', treeId,saveCallback);
+    	}
+    	
+    	//回调
+    	function saveCallback(data){
+    		if (data.msg) {
+    			epoint.alertAndClose(data.msg, '', null,'', 'success');
+    		}
+    	}
+		
+	</script>
+
+
+</body>
+</html>

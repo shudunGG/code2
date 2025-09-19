@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据表结构</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<!-- <a class="mini-button" iconCls="icon-addcircle" onclick="add()">新增结构</a> -->
+			<a class="mini-button" iconCls="icon-save" onclick="saveAll()">保存</a>
+			<!-- <a class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录！', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelected);}">删除</a>
+			<a class="mini-button" iconCls="icon-start"
+				onclick="rebuildDatabase()">同步物理表结构</a><a class="mini-button"
+				iconCls="icon-refresh" onclick="sysStruct()">获取物理表结构</a> -->
+			<a class="mini-button" iconCls="icon-forward"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要导出的记录!', '', null, 'warning');} else {epoint.execute('eiatablestructlistaction.export','',exporttc)}">脚本导出</a>
+		</div>
+
+		<input id="database" autoLoad="false"
+			action="eiatablestructlistaction.getDsTypes" textField="text"
+			valueField="id" class="mini-combobox mr10" />
+
+		<!--帮助按钮 -->
+		<!-- <a role="helper" class="mr10">注意事项</a> -->
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			当前表<em>必须设置主键</em>，如果数据库该表已经有主键，无需设置；如果没有，请在这里勾选1个字段作为查询主键
+		</p>
+		<!-- <p>
+				按钮<em>同步物理表结构：</em>当我们数据库物理表被删除或者没有的时候，我们可以通过配置好的结构字段重新反转生成物理表
+			</p>
+			<p>
+				按钮<em>获取物理表结构：</em>如果我们的结构字段与我们的真实物理表不一致，我们可以通过这个按钮来进行差异性同步。同步的过程是读取物理表字段新增、修改、删除mis表中的字段
+			</p> -->
+	</div>
+
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="当前数据表名称">
+						<input bind="eiatablestructlistaction.tableInfo.tableName"
+							class="mini-outputtext" />
+
+					</div>
+					<div role="control" label="SQL数据表名称">
+						<input bind="eiatablestructlistaction.tableInfo.sqlTableName"
+							class="mini-outputtext" />
+					</div>
+				</div>
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="中文名称">
+						<input bind="eiatablestructlistaction.fieldChineseName"
+							class="mini-textbox" />
+
+					</div>
+					<div role="control" label="字段名">
+						<input bind="eiatablestructlistaction.fieldName"
+							class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+
+		<div id="tableid" class="mini-hidden" bind="tableInfo.tableid"></div>
+
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="fieldid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowCellValid="true"
+			allowCellEdit="true" allowCellSelect="true"
+			action="eiatablestructlistaction.getDataGridData" showFooter="false"
+			allowSortColumn="false">
+			<div property="columns">
+				<!-- <div type="checkcolumn" width="50"></div> -->
+
+				<div type="indexcolumn" headerAlign="center" width="50">序</div>
+
+				<div field="fieldchinesename" headerAlign="center" width="80"
+					vtype="required;maxLength:100">
+					中文名称 <input property="editor" class="mini-textbox"
+						style="width: 99%" />
+				</div>
+				<div field="fieldname" width="100" headerAlign="center">字段名</div>
+				<div field="fieldtype" width="120" headerAlign="center">数据类型</div>
+				<!-- 	<div field="fielddisplaytype" width="120" headerAlign="center">
+						显示类型
+					</div> -->
+				<!-- <div width="60" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div> -->
+				<!-- 	<div field="ordernumingrid" width="80" headerAlign="center" align="right" vType="maxLength:5;int;">
+					排序号 <input property="editor" class="mini-textbox" style="width: 99%" inputStyle="text-align:right" />
+				</div>
+				<div type="comboboxcolumn" field="controlwidth" width="80" autoShowPopup="true" headerAlign="center" align="center">
+					控件宽度 <input autoLoad="false" data="selectItems.controlwidth" property="editor" class="mini-combobox" style="width: 99%" />
+				</div>
+				<div field="todispingrid" width="50" headerAlign="center" align="center">
+					列表
+					<div class="mini-checkbox" property="editor"></div>
+				</div>
+				<div field="isquerycondition" width="50" headerAlign="center" align="center">
+					查询
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+				<!-- <div field="uniquefield" width="50" headerAlign="center" align="center">
+					索引
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+				<!-- 	<div field="isorderfield" width="50" headerAlign="center" align="center">
+					排序号
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+				<!-- <div field="mustfill" width="50" headerAlign="center" align="center">
+					必填
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+				<!-- <div field="dispIn" width="50" headerAlign="center" align="center">
+					页面
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+				<!-- 	<div field="isexportexcel" width="50" headerAlign="center" align="center">
+					导出
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+				<!-- <div field="isforeignkey" width="50" headerAlign="center" align="center">
+					主键
+					<div class="mini-checkbox" property="editor"></div>
+				</div> -->
+			</div>
+		</div>
+	</div>
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("eiatablestructlistaction", '', initDataBase);
+
+		var grid = mini.get("datagrid");
+		//冻结前几列
+		grid.setFrozenStartColumn(0);
+		grid.setFrozenEndColumn(6);
+
+		function initDataBase(e) {
+			mini.get("database").setValue("oracle");
+			mini.get("database").setText("Oracle");
+		}
+
+		var selectItems = {
+			'controlwidth' : [ {
+				id : 2,
+				text : '双倍宽'
+			}, {
+				id : 1,
+				text : '单倍宽'
+			} ]
+		};
+
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+
+		// 绘制修改按钮
+		var onEditRenderer = function(e) {
+			return '<span type="action" style=\"color:blue\" onclick="updateInfo(\''
+			+ e.row.fieldid + '\')">编辑</span>';
+		};
+
+		// 修改
+		function updateInfo(fieldid) {
+			console.log(fieldid)
+			epoint.openDialog('修改结构',
+					'frame/pages/eianalysemis/datasource/tablestructadd?fieldID='
+							+ fieldid, function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// 新增
+		function add() {
+			epoint.openDialog('添加结构',
+					'frame/pages/eianalysemis/datasource/tablestructadd?tableID='
+							+ mini.get("tableid").getValue(), function() {
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// 删除结构
+		function deleteSelected() {
+			epoint.execute('eiatablestructlistaction.deleteSelected',
+					'datagrid', msgCallBack);
+		}
+
+		// 保存结构
+		function saveAll() {
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('eiatablestructlistaction.saveAll', [ 'datagrid',
+					'fui-form' ], msgCallBack);
+		}
+
+		// 重建数据表
+		function rebuildDatabase() {
+			epoint.execute('eiatablestructlistaction.rebuildDatabase',
+					'datagrid', msgCallBack);
+		}
+
+		// 同步结构
+		function sysStruct() {
+			epoint.execute('eiatablestructlistaction.sysStruct', 'datagrid',
+					msgCallBack);
+		}
+
+		// 导出sql语句
+		function exporttc(data) {
+			var combox = mini.get("database");
+			epoint.openDialog(combox.getText() + '脚本导出',
+					"framemanager/metadata/mis/tableinfo/tablestructexport?tableID="
+							+ mini.get("tableid").getValue() + "&databaseType="
+							+ combox.getValue() + "&structID=" + data.structID,
+					'', {
+						'width' : 1000,
+						'height' : 400
+					});
+		}
+
+		// 回掉提醒
+		function msgCallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

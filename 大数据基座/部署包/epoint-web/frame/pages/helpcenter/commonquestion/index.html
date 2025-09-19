@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>帮助中心</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            "./css/common.css",
+            "./js/swiper/idangerous.swiper2.7.6.css",
+            './js/chosen/chosen.min.css',
+            "./css/index.css"
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <div class="content-wrap">
+            <div class="l logo-wrap clearfix">
+                <img src="./images/top/help-logo.png" alt="" class="logo">
+            </div>
+            <div class="r header-nav">
+                <ul class="nav-list clearfix">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./index">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./handbook">使用手册</a>
+                    </li>
+                    <li class="nav-item ">
+                        <a class="nav-link" href="./tool">常用工具</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./show">常见问题</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./notice">维护公告</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="top">
+        <div class="content-wrap">
+            <div class="search-box" id="search-box">
+                <div class="search-input-wrap" id="top-search">
+                    <select class="top-search-type" id="top-search-type" style="width: 80px;height:40px;line-height:40px;visibility: hidden;vertical-align: top;">
+                        <option value="handbook" selected>查手册</option>
+                        <option value="tool">查工具</option>
+                        <option value="question">查问题</option>
+                    </select>
+                    <input class="top-search-input" id="top-search-input" type="text" placeholder="搜索">
+                    <span class="search-btn" id="top-search-btn"></span>
+                </div>
+                <div id="feedbackBtn" style="display:none">
+                <a onclick="epoint.openDialog('问题反馈','frame/pages/helpcenter/commonquestion/input',null,{
+					'width' : 1200,
+					'height' : 700})" target="_blank" class="question-feedback">问题反馈</a>
+			   </div>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="content-wrap" id="main-content" style="min-height:calc(100% - 36px)">
+            <div class="swiper-container" style="margin-left: -20px; margin-right: -20px;">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide ">
+                        <div class="content-block handbook">
+                            <img src="./images/index/handbook.png" alt="" class="content-block-icon" />
+                            <p class="content-block-title">使用手册</p>
+                            <ul class="content-block-prev-list" id="handbook-list">
+                            </ul>
+                            <a class="content-block-viewmore" href="./handbook">查看更多</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide ">
+                        <div class="content-block tool">
+                            <img src="./images/index/tool.png" alt="" class="content-block-icon" />
+                            <p class="content-block-title">常用工具</p>
+                            <ul class="content-block-prev-list" id="tool-list">
+                            </ul>
+                            <a href="./tool" class="content-block-viewmore">查看更多</a>
+                        </div>
+                    </div>
+                    <div class="swiper-slide ">
+                        <div class="content-block question">
+                            <img src="./images/index/question.png" alt="" class="content-block-icon" />
+                            <p class="content-block-title">常见问题</p>
+                            <ul class="content-block-prev-list" id="question-list">
+                            </ul>
+                            <a href="./show" class="content-block-viewmore">查看更多</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  div class="footer">
+            <p>服务热线：0518-58188000</p>
+        </div-->
+    </div>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        SrcBoot.output([
+            './js/swiper/idangerous.swiper2.7.6.min.js',
+            './js/chosen/chosen.jquery.min.js'
+        ]);
+    </script>
+    <script>
+        if (Util.browsers.isIE8) {
+            var $mianContent = $('#main-content');
+            $mianContent.css('min-height', $$mianContent.parent().height() - 36);
+        }
+        var mySwiper = new Swiper('.swiper-container', {
+            slidesPerView: 3,
+            calculateHeight: true
+        });
+        $('#top-search-type').chosen({
+            disable_search_threshold: 10
+        });
+        // 获取列表
+        var PREV_ITEM_TPL = '<li class="prev-item" data-id="{{id}}" data-url="{{url}}">{{text}}</li>';
+        
+        var checkSystemParamForProcess = function () {
+            return Util.ajax({
+                url: Util.getRightUrl("rest/feedbackdatademoaction/getProcessGuidFromSystemParam?isCommondto=true",""),
+            }).done(function (data) {
+            	if(data && data.processGuid){
+                    document.getElementById("feedbackBtn").style.display = "block";
+                    document.getElementById('search-box').style.width = '525px';
+                    document.getElementById('search-box').style.marginLeft = '-262.5px';
+            	}
+            });
+        };
+        
+        checkSystemParamForProcess();
+        
+
+        function getRootPath() {
+    		var loc = Util.getSafeLocation(), host = loc.hostname, protocol = loc.protocol, port = loc.port
+    				? (':' + loc.port)
+    				: '', path = '/' + loc.pathname.split('/')[1] + '/';
+
+    		var rootPath = protocol + '//' + host + port + path;
+
+    		return rootPath;
+    	};
+        
+        function getAndRender(url, $container) {
+            return Util.ajax({
+                url: Util.getRightUrl(url,""),
+                data:{
+                	projectHead: getRootPath()
+                }
+            }).done(function (data) {
+            	var dataJson;
+            	if(data && data.hotFourInfoData){
+            		dataJson = JSON.parse(data.hotFourInfoData);
+            	}else if(data && data.hotTwoQuestionData){
+            		dataJson = JSON.parse(data.hotTwoQuestionData);
+            	}
+                var html = '';
+                $.each(dataJson, function (i, item) {
+                    html += Mustache.render(PREV_ITEM_TPL, item);
+                });
+                $(html).appendTo($container.empty());
+
+            });
+        }
+        // 获取手册、工具、问题的数据  手册工具4个 问题两个
+        getAndRender('rest/feedbackdatademoaction/getHotFourInfoList?type=1&isCommondto=true', $('#handbook-list'));
+        getAndRender('rest/feedbackdatademoaction/getHotFourInfoList?type=2&isCommondto=true', $('#tool-list'));
+//         getAndRender('rest/feedbackdatademoaction/getHotTwoQuestionList?isCommondto=true', $('#question-list'));
+
+        // 搜索的处理
+        var $searchInput = $('#top-search-input'),
+            $searchType = $('#top-search-type'),
+            typeToUrl = {
+                'handbook': './handbook',
+                'tool': './tool',
+                'question': './show'
+            };
+
+        function handleSearch() {
+            var kw = $.trim($searchInput.val());
+            if (kw) {
+            	kw = epoint.encodeUtf8(kw);
+                // 直接跳转到相应的页面 传递用户输入的关键字即可
+                location.href = typeToUrl[$searchType.val()] + '?kw=' + kw;
+            }
+        }
+        $searchInput.on('keypress', function (e) {
+            if (e.which === 13) {
+                handleSearch();
+            }
+        });
+        $('#top-search-btn').on('click', handleSearch);
+        
+        var frameFlag = "1";
+        var checkPreviewSystemParam = function () {
+            return Util.ajax({
+                url: Util.getRightUrl("rest/feedbackdatademoaction/checkPreviewSystemParam?isCommondto=true",""),
+            }).done(function (data) {
+            	if(data && data.flag && data.flag=="未配置"){
+            		frameFlag = "0";
+            	}
+            });
+        };
+        checkPreviewSystemParam();
+        
+        // 手册点击事件处理
+        var $handbookList = $('#handbook-list');
+        $handbookList.on('click', '.prev-item', function () {
+        	if(frameFlag == "1"){
+        		var $this = $(this);
+                window.open($this.data('url'));
+                setPageView($this);
+        	}else{
+        		epoint.alert("您没有配置预览地址，请先在系统参数中配置！");
+        	}
+        });
+        
+        // 使用工具点击事件处理
+        var $toolList = $('#tool-list');
+        $toolList.on('click', '.prev-item', function () {
+        	if(frameFlag == "1"){
+                var $this = $(this);
+                // 预览
+                window.open($this.data('url'));
+                setPageView($this);
+        	}else{
+        		epoint.alert("您没有配置预览地址，请先在系统参数中配置！");
+        	}
+        });
+        
+        // 事件处理
+        /*
+        var $questionList = $('#question-list');
+        $questionList.on('click', '.prev-item', function () {
+            var $this = $(this);
+            // 预览
+            window.open($this.data('url'));
+        });*/
+        
+        //点击预览后对访问量加1
+        function setPageView(obj) {
+            return Util.ajax({
+                url: Util.getRightUrl("rest/feedbackdatademoaction/setPageView?isCommondto=true",""),
+                data:{
+                	cInfoGuid: obj.data('id')
+                }
+            }).done(function (data) {
+            });
+        }
+        
+    </script>
+</body>
+
+</html>

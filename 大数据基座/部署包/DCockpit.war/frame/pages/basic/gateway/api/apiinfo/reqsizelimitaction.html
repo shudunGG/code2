@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>请求大小限制策略</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10" id="add">
+			<a class="mini-button" id="addClose" onclick="saveAndClose">新增并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<div class="btn-group mr10" id="edit">
+			<a class="mini-button" id="editClose" onclick="editAndClose">保存并关闭</a>
+			<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+	<div class="fui-content">
+
+		<!-- 内容区域 -->
+		<div role="accordion" id="req">
+			<div role="head" title="请求大小限制"></div>
+			<div role="body">
+				<!-- 内容区域 -->
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div role="row" id="chooseApp">
+							<div role="control" label="选择应用">
+								<input class="mini-buttonedit" style="width: 80%" id="Subscribe"
+									allowInput="false" allowInput="false"
+									onbuttonclick="onSubscribe" /> 
+								<input class="mini-hidden" id="selectReqAm" bind="selectReqAm">
+								<input class="mini-hidden" id="selectReqAmGuid" bind="selectReqAmGuid">
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="最大允许负载">
+								<input id="allowedpayloadsize" class="mini-textbox"
+									vType="int" bind="dataBean.allowedpayloadsize"
+									style="width: 80%" /> &nbsp;(MB)
+							</div>
+						</div>					
+						<input class="mini-hidden" id="datagrid"> 
+						<input class="mini-hidden" id="consumerName">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="apiguid" bind="apiguid">
+	
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../fui/js/jsboot.js"></script>
+	<script>
+		function saveAndClose() {
+			var name = mini.get("consumerName").getValue();
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', name, closeCallback);
+			}
+		}
+
+		function editAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					//console.log(data.param);
+					epoint.alertAndClose(data.msg, '', null, {
+						backParam : {
+							'param' : data.param,
+						}
+					}, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+
+		function onSubscribe() {
+			var apiguid = mini.get("apiguid").value;
+			//用于查看是否是默认all
+			var selectreqamguid = mini.get("selectReqAmGuid").value;
+			var datagrid = mini.get("datagrid").value;
+			epoint.openTopDialog('选择应用',
+					"frame/pages/basic/gateway/api/apiinfo/apiauth?apiguid="
+							+ apiguid + "&flag=transformation&amguid="
+							+ selectreqamguid + "&datagrid=" + datagrid,
+					function(data) {
+						if (data.text) {
+							mini.get("Subscribe").setText(data.text);
+							mini.get("selectReqAm").setValue(data.text);
+						}
+						if (data.guid) {
+							mini.get("selectReqAmGuid").setValue(data.guid);
+						}
+					}, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		//修改参数
+		function pageLoad(data) {
+			// 初始化页面
+			epoint.initPage('reqsizelimitaction', '', function(data1) {
+				if (data1.method) {
+					if (data1.method == "add") {
+						$("#edit").hide();
+						mini.get("Subscribe").setText("All");
+						mini.get("selectReqAm").setValue("All");
+						mini.get("selectReqAmGuid").setValue("All");
+					}
+					if (data1.method == "edit") {
+						$("#add").hide();
+						$("#chooseApp").hide();
+					}
+				}
+
+				if (data1.apiguid) {
+					mini.get("apiguid").setValue(data1.apiguid);
+				}
+				var value = data.value;
+				if (value) {
+					mini.get("Subscribe").setText(value.consumerName);
+					mini.get("selectReqAm").setValue(value.consumerName);
+					mini.get("selectReqAmGuid").setValue(value.consumerId);
+					
+					mini.get("allowedpayloadsize").setValue(value.config.allowedpayloadsize);
+
+				}
+			});
+
+			var datagrid = data.datagrid;
+			if (datagrid) {
+				var gridguid = "";
+				var gridName = "";
+				for (var i = 0; i < datagrid.length; i++) {
+					if ("All" == datagrid[i].consumerName) {
+						gridName = datagrid[i].consumerName;
+					}
+					if (i != datagrid.length - 1) {
+						gridguid += datagrid[i].consumerId + ";";
+					} else {
+						gridguid += datagrid[i].consumerId;
+					}
+				}
+				mini.get("datagrid").setValue(gridguid);
+				mini.get("consumerName").setValue(gridName);
+			}
+		}
+	</script>
+</body>
+</html>

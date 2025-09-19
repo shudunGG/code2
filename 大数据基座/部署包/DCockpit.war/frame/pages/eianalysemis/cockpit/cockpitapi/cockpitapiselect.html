@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>服务管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="服务名称">
+							<input class="mini-textbox" bind="dataBean.serviceName" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="serviceName" headerAlign="center" width="80" renderer="onNameRenderer">服务名称</div>
+					<div field="requestType" headerAlign="center" width="60"
+						data-options="{code:'请求类型'}">请求类型</div>
+					<div field="apiurltype" headerAlign="center" width="60"
+						data-options="{code:'服务源类型'}">服务源类型</div>
+					<div field="contentType" headerAlign="center" width="100"
+						data-options="{code:'Content-Type'}">Content-Type</div>
+					<div field="apiUrl" headerAlign="center" width="100">接口源地址</div>
+					<div field="OrderNum" headerAlign="center" align="center"
+						width="60">排序号</div>
+				</div>
+			</div>
+		</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitapiinfolistaction', null, function(data) {
+		});
+
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function columnCallBack() {
+			epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+		}
+		function onNameRenderer(e) {
+			return '<a onClick="closeCallback(\''+e.row['rowguid']+'\')">'+e.value+'</a>';
+		}
+		function closeCallback(data) {
+			epoint.closeDialog(data);
+		}
+	</script>
+</body>
+</html>

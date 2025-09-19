@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>调度配置</title>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+
+<div class="fui-content">
+    <div class="fui-form" id="fui-form1">
+        <div role="form">
+            <div id="form" class="fui-form">
+                <div role="form">
+                    <div role="row">
+                        <div role="control" label="类型">
+                            <input id="schedulerType" bind="scheduler.schedulertype" action="getSchedulerTypeSelectItem"
+                                   class="mini-combobox" textField="text" valueField="value" required="true"
+                                   requiredErrorText="类型不能为空" onvaluechanged="onSchedulerTypeChanged"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="以秒计算的间隔">
+                            <input id="intervalSeconds" bind="scheduler.intervalseconds"
+                                   minValue="0" maxValue="1000000000"
+                                   class="mini-spinner" minValue="0"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="以分钟计算的间隔">
+                            <input id="intervalMinutes" bind="scheduler.intervalMinutes"
+                                   minValue="0" maxValue="1000000000"
+                                   class="mini-spinner" minValue="0"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="时间">
+                            <input id="hour" bind="scheduler.hour" class="mini-spinner"
+                                   minValue="0" maxValue="23" style="width: 50%;"/><input
+                                id="minutes" bind="scheduler.minutes" class="mini-spinner"
+                                minValue="0" maxValue="59" style="width: 50%;"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="星期">
+                            <input id="weekDay" bind="scheduler.weekday"
+                                   class="mini-combobox" textField="text" valueField="id"
+                                   action="getWeekDaySelectItem"
+                                   required="true" requiredErrorText="星期不能为空"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="日期">
+                            <input id="dayOfMonth" bind="scheduler.dayofmonth"
+                                   class="mini-spinner" minValue="1" maxValue="31"/>
+                        </div>
+                    </div>
+                    <div role="row">
+                        <div role="control" label="cron表达式">
+                            <input id="cron" bind="scheduler.cron"
+                                   class="mini-textbox" required="true" requiredErrorText="cron能为空"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-group" style="width: 180px; margin: 10px auto;">
+        <a class="mini-button mr10" onclick="save()">确定</a>
+        <a class="mini-button" onclick="epoint.closeDialog(0)">取消</a>
+    </div>
+</div>
+
+<script src="../../rest/resource/jsboot"></script>
+<script>
+    epoint.initPage('taskconfigaction', null, initCallBack);
+
+
+    function initCallBack() {
+        specialControlStyle(mini.get('schedulerType').getValue());
+    }
+
+    function onSchedulerTypeChanged(e) {
+        specialControlStyle(e.value);
+    }
+
+    function save() {
+        if (epoint.validate()) {
+            epoint.execute('save', '@all', saveCallback);
+        }
+    }
+
+    function saveCallback(data) {
+        if (data.failed) {
+            epoint.alert(data.failed);
+            return;
+        }
+        if (data.msg) {
+            epoint.alertAndClose(data.msg);
+        }
+    }
+
+    /**
+     * 根据调度类型的不同开放不同的配置
+     *
+     * @param schedulerTypeValue
+     */
+    function specialControlStyle(schedulerTypeValue) {
+        if (schedulerTypeValue == '0' || schedulerTypeValue == '0.0') {
+            disables(['intervalSeconds', 'intervalMinutes', 'hour',
+                'minutes', 'weekDay', 'dayOfMonth', 'cron']);
+        } else if (schedulerTypeValue == '1' || schedulerTypeValue == '1.0') {
+            disables(['hour', 'minutes', 'weekDay', 'dayOfMonth', 'cron']);
+            enables(['intervalSeconds', 'intervalMinutes']);
+        } else if (schedulerTypeValue == '2' || schedulerTypeValue == '2.0') {
+            disables(['intervalSeconds', 'intervalMinutes', 'weekDay',
+                'dayOfMonth', 'cron']);
+            enables(['hour', 'minutes']);
+        } else if (schedulerTypeValue == '3' || schedulerTypeValue == '3.0') {
+            disables(['intervalSeconds', 'intervalMinutes', 'dayOfMonth', 'cron']);
+            enables(['hour', 'minutes', 'weekDay']);
+        } else if (schedulerTypeValue == '4' || schedulerTypeValue == '4.0') {
+            disables(['intervalSeconds', 'intervalMinutes', 'weekDay', 'cron']);
+            enables(['hour', 'minutes', 'dayOfMonth']);
+        } else if (schedulerTypeValue == '5' || schedulerTypeValue == '5.0') {
+            disables(['intervalSeconds', 'intervalMinutes', 'hour',
+                'minutes', 'weekDay', 'dayOfMonth']);
+            enables(['cron']);
+        }
+    }
+
+    function disables(ids) {
+        var l = ids.length;
+        if (l > 0) {
+            for (var i = 0; i < l; i++) {
+                disable(ids[i]);
+            }
+        }
+    }
+
+    function disable(id) {
+        var t = mini.get(id);
+        t.disable();
+    }
+
+    function enables(ids) {
+        var l = ids.length;
+        if (l > 0) {
+            for (var i = 0; i < l; i++) {
+                enable(ids[i]);
+            }
+        }
+    }
+
+    function enable(id) {
+        var t = mini.get(id);
+        t.enable();
+    }
+</script>
+</body>
+</html>

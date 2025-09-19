@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>地址组设置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add">确定添加</a> <a class="mini-button"
+				iconCls="icon-save" onclick="saveAll">保存修改</a>
+		</div>
+	</div>
+
+
+
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="分组名称" starred="true">
+						<input bind="addressgrouplistaction.frameMyAddressGroup.groupName"
+							class="mini-textbox" required="true"
+							requiredErrorText="分组名称不能为空" vtype="maxLength:10" validateOnLeave="true" />
+					</div>
+					<div role="control" label="排序号">
+						<input
+							bind="addressgrouplistaction.frameMyAddressGroup.orderNumber"
+							class="mini-textbox" vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="groupguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="addressgrouplistaction.getDataGridData"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="10" headerAlign="center">序</div>
+				<div field="groupName" headerAlign="center">
+					分组名称 <input property="editor" class="mini-textbox"/>
+				</div>
+				<div width="20" field="sum" headerAlign="center" align="center">包含地址簿数量</div>
+				<div width="20" field="orderNumber" headerAlign="center"
+					align="center" vtype="int;range:0,99999999">
+					排序值 <input property="editor" class="mini-textbox" vtype="int" />
+				</div>
+				<div width="20" align="center" headerAlign="center"
+					renderer="onDelRenderer">删除</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+
+
+<script src="../../../../rest/resource/jsboot"></script>
+
+<!-- 配置变量 -->
+<script>
+	//<![CDATA[  
+	//初始化页面
+	epoint.initPage("addressgrouplistaction");
+
+	// 绘制行删除按钮
+	var onDelRenderer = function(e) {
+		return epoint.renderCell(e, "action-icon icon-remove", "deleteSelect",
+				"groupguid");
+	};
+
+	//新增按钮回调
+	// 新增操作的回调
+	function newCallback(data) {
+		if (data.msg) {
+			epoint.alert(data.msg);
+			if (data.success) {
+				// 清空表单
+				epoint.clear('fui-form');
+				epoint.refresh("datagrid");
+			}
+		}
+	}
+
+	//新增按钮
+	function add() {
+		if (epoint.validate()) {
+			epoint.execute('add', 'fui-form', newCallback);
+		}
+	}
+
+	//删除按钮
+	function deleteSelect(groupguid) {
+		epoint.confirm("删除分组会将组内地址簿一并删除，确定删除选中记录吗？", "", function(action) {
+			epoint.execute("delete", "", [ groupguid ], function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg);
+					epoint.refresh("datagrid");
+				}
+			});
+		});
+	}
+
+	//保存回调事件
+	function saveCallback(data) {
+		epoint.alert(data.msg);
+		epoint.refresh("datagrid");
+	}
+
+	//保存修改
+	function saveAll() {
+		var grid = mini.get("datagrid");
+		var alert=0;
+		var rows = grid.findRows(function(row) {
+			if (row.groupName != null && row.groupName.length > 10){
+				epoint.alert('分组名小于10个字符！');
+				alert+=1;
+			}
+				
+		});//sqw 2017-5-15 判断分组名是否超过了50个字符
+		
+			grid.validate();
+			if (grid.isValid() == false) {
+
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			var ids = grid.getSelectedIds();
+			if (ids.length > 0&&alert==0) {
+				epoint.execute('saveAll', 'datagrid', saveCallback);
+			}
+	
+	}
+
+	//]]>
+</script>
+</html>

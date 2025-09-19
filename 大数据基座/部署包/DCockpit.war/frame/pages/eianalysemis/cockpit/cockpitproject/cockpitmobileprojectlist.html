@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>专题管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="主题与专题分类"></div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getTreeModel" style="height: 100%"></div>
+		</div>
+	</div>
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增专题</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选定 </a> <a class="mini-button" onclick="startChange">批量启用</a> <a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要停用的专题!');} else {epoint.confirm('确认要停用吗?','',stopChange);}">批量停用</a>
+					<a id="updateApiCode" class="mini-button hidden"
+					onclick="updateApiCode">版块生成ApiCode</a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="专题名称">
+							<input class="mini-textbox" bind="dataBean.projectName" />
+						</div>
+						<div role="control" label="是否启用">
+							<input id="search_Status" class="mini-combobox" valueField="id"
+								textField="text" data="[{id:'1',text:'启用'},{id:'0',text:'停用'}]"
+								bind="dataBean.status" showClose="true"
+								oncloseclick="onCloseClick" />
+						</div>
+						<input id="ouguid" class="mini-hidden" bind="ouguid" /> <input
+							id="columnguid" class="mini-hidden" bind="dataBean.columnguid" />
+						<input id="projectcateguid" class="mini-hidden"
+							bind="dataBean.projectcateguid" /> <input id="nodetype"
+							class="mini-hidden" /> <input id="nodeid" class="mini-hidden" />
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center"
+						align="center">序</div>
+					<div field="projectName" headerAlign="center" align="center"
+						width="120" renderer="onNameRenderer">专题名称</div>
+					<div field="apicode" headerAlign="center" align="center" width="80">ApiCode</div>
+					<div field="normsetname" headerAlign="center" align="center"
+						width="50">指标分类</div>
+					<div field="sourcetypetext" headerAlign="center" align="center"
+						width="50">来源</div>
+					<div field="statustext" headerAlign="center" align="center"
+						width="50">状态</div>
+					<div field="OrderNum" headerAlign="center" align="center"
+						width="50" allowSort="true">排序号</div>
+					<div name="operate" type="actioncolumn" headerAlign="center"
+						align="center" renderer="onSubit"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var cockpitguid;
+		epoint.initPage('cockpitmobileprojectlistaction', '@all',
+				function(data) {
+					// mini.get("nodetype").setValue(type);
+					// mini.get("nodeid").setValue(id);
+					if (data.isShowModelSyncButton == 1) {
+						$('#updateApiCode').removeClass('hidden');
+					}
+				});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 弹出新增窗口
+		function openAdd() {
+			var ouguid = mini.get("ouguid").getValue();
+			var nodeid = mini.get("nodeid").getValue();
+			var nodetype = mini.get("nodetype").getValue();
+			if (!nodeid || !nodetype || nodetype == 'root') {
+				epoint.alert("请先选择部门、主题或专题分类");
+				return;
+			}
+			epoint.openDialog('新增专题', "./cockpitmobileprojectadd?guid=" + nodeid
+					+ "&type=" + nodetype + "&ouguid=" + ouguid, searchData, {
+				'width' : 1000,
+				'height' : 800
+			});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			var e = tree.getSelectedNode();
+			if(!e){
+				epoint.refresh([ 'datagrid', 'fui-form' ]);
+				return;
+			}
+			if (e) {
+				var id = e.id;
+				mini.get("projectcateguid").setValue("");
+				mini.get("ouguid").setValue("");
+				if (e.isOU == 'true') {
+					mini.get("ouguid").setValue(id);
+					mini.get("nodeid").setValue(id);
+					mini.get("nodetype").setValue("ou");
+				} else {
+					mini.get("projectcateguid").setValue(id);
+					mini.get("nodeid").setValue(id);
+					mini.get("nodetype").setValue("cate");
+				}
+			}
+			epoint.refresh([ 'datagrid', 'fui-form']);
+		}
+
+		function callBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg);
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		// 弹出修改窗口
+		function openEdit(guid) {
+			epoint.openDialog("修改专题",
+					'./cockpitmobileprojectadd?isedit=isedit&projectguid='
+							+ guid, callBack, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', function(data){
+				if(data.msg){
+					epoint.alert(data.msg, '', searchData());
+				}
+			});
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			mini.get("projectcateguid").setValue("");
+			mini.get("ouguid").setValue("");
+			if (e.node.isOU == 'true') {
+				mini.get("ouguid").setValue(id);
+				mini.get("nodeid").setValue(id);
+				mini.get("nodetype").setValue("ou");
+			} else {
+				mini.get("projectcateguid").setValue(id);
+				mini.get("nodeid").setValue(id);
+				mini.get("nodetype").setValue("cate");
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		var onSubit = function(e) {
+			var status = e.row.status;
+			//草稿                      //审核不通过
+			if (status == 10 || status == 30 || status == 20) {
+				return '<a href="javascript:openEdit(\'' + e.record.rowguid
+				+ '\')" style="color:blue;">编辑</a>'
+				+ "&nbsp;&nbsp;"
+				+ '<a href="javascript:deleteConfirm(\'' + e.record.rowguid
+				+ '\')" style="color:red;">删除</a>'
+				+ "&nbsp;&nbsp;"
+				+ '<a href="javascript:openProject(\'' + e.record.rowguid
+				+ '\')" style="color:blue;">配置</a>';
+			}
+			//启用
+			else if (status == 1) {
+				return '<a href="javascript:pause(\'' + e.record.rowguid
+				+ '\')" style="color:blue;">停用</a>';
+			}
+			//停用
+			else if (status == 0) {
+				return '<a href="javascript:start(\'' + e.record.rowguid
+				+ '\')" style="color:blue;">启用</a>'
+				+ "&nbsp;&nbsp;"
+				+ '<a href="javascript:openEdit(\'' + e.record.rowguid
+				+ '\')" style="color:blue;">编辑</a>'
+				+ "&nbsp;&nbsp;"
+				+ '<a href="javascript:openProject(\'' + e.record.rowguid
+				+ '\')" style="color:blue;">配置</a>'
+				+ "&nbsp;&nbsp;"
+				+ '<a href="javascript:deleteConfirm(\'' + e.record.rowguid
+				+ '\')" style="color:red;">删除</a>';
+			}
+		}
+
+		function openProject(guid) {
+			epoint
+					.openDialog("配置内容-板块配置",
+							'../cockpitmobileplate/cockpitmobileplatelist?guid='
+									+ guid, callBack, {
+								'width' : 1200,
+								'height' : 800
+							});
+		}
+
+		//单条删除
+		function deleteConfirm(id) {
+			epoint.confirm('确认要删除吗？', '', function() {
+				epoint.execute('delete', '', [ id ], function(data) {
+					console.log(data.msg);
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			});
+		}
+
+		//停用
+		function pause(id) {
+			epoint.confirm('确认要停用吗？', '', function() {
+				epoint.execute('pause', '', [ id ], function(data) {
+					if (data.msg) {
+						epoint.alert(data.msg, '', searchData());
+					}
+				});
+			});
+		}
+
+		//启用
+		function start(id) {
+			epoint.execute('start', '', [ id ], function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', searchData());
+				}
+			});
+		}
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function startChange() {
+			if(mini.get('datagrid').getSelecteds()==0){
+				epoint.alert('请选择需要启用的专题!');
+			} 
+			else {
+				epoint.execute("startChange", '@all', function(data){
+					if(data.msg){
+						epoint.alert(data.msg);
+					}
+					searchData();
+				});
+			}
+		}
+		
+		function stopChange() {
+			epoint.execute("stopChange", '', searchData);
+		}
+
+		function onNameRenderer(e) {
+			return '<a href="javascript:openDetail(\'' + e.record.rowguid
+					+ '\')" style="color:blue;text-decoration:underline;">'
+					+ e.value + '</a>';
+		}
+
+		function openDetail(guid) {
+			epoint.openDialog('详细信息',
+					'./cockpitmobileprojectdetail?projectguid=' + guid,
+					searchData, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+		
+		function updateApiCode() {
+			epoint.execute("updateApiCode", null, function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg);
+				}
+			});
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>AM操作日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 左右布局页面的右侧内容 -->
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="epoint.closeDialog" state="primary">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div width="150" field="recorddate"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}">操作时间</div>
+				<div width="100" field="type">操作类型</div>
+				<div width="100" field="statusname">状态</div>
+				<div width="100%" field="description">描述</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apisyncloglistaction');
+
+		var grid = mini.get('datagrid');
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

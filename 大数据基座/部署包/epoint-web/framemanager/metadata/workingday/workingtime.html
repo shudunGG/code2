@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>工作日列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="edit" id="btnAddRecord" state="primary"> 修改</a>
+	</div>
+	<div class="fui-condition" opened="true">
+		<!-- 条件区域 -->
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="修改时间范围">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" width="30.5%"
+							dateFormat="yyyy-MM-dd" align="center" bind="fromtime" /> <input
+							class="mini-outputtext" value="至" width="16.5%" style="margin-left: 90px"/> <input
+							class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" width="30.5%"
+							dateFormat="yyyy-MM-dd" align="center" bind="endtime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="上午上班时间">
+						<input bind="amonduty" class="mini-timespinner" format="HH:mm"
+							width="200px" />
+					</div>
+					<div role="control" label="上午下班时间">
+						<input bind="amoffduty" class="mini-timespinner" format="HH:mm"
+							width="200px" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="下午上班时间">
+						<input bind="pmonduty" class="mini-timespinner" format="HH:mm"
+							width="200px" />
+					</div>
+					<div role="control" label="下午下班时间">
+						<input bind="pmoffduty" class="mini-timespinner" format="HH:mm"
+							width="200px" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="dateguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<!-- 				<div type="checkcolumn" width="40"></div> -->
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="wdate" width="140"
+					data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd">日期</div>
+				<div field="amonduty" width="100">上午上班时间</div>
+				<div field="amoffduty" width="100">上午下班时间</div>
+				<div field="pmonduty" width="100">下午上班时间</div>
+				<div field="pmoffduty" width="100">下午下班时间</div>
+			</div>
+		</div>
+		<input id="currentyear" class="mini-hidden" />
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('workingtimeaction', '', function(e) {
+			if (e.currentyear) {
+				mini.get("currentyear").setValue(e.currentyear);
+			}
+		});
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				searchData();
+			}
+		}
+		var grid = mini.get('datagrid');
+
+		function edit() {
+			if (epoint.validate()) {
+				epoint.execute('edit', '', function(e) {
+					if (e.success) {
+						epoint.showTips(e.msg,  {state : 'success'});
+						epoint.refresh([ 'datagrid','fui-form' ], '', true)
+					} else if (e.msg) {
+						epoint.showTips(e.msg, {state : 'warning'});
+					}
+				});
+			}
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.showTips("起始时间不能大于终止时间!",  {state : 'warning'});
+						start.setValue(null);
+					} else {
+						epoint.showTips("终止时间不能小于起始时间!",  {state : 'warning'});
+						end.setValue(null);
+					}
+				}
+			}
+		}
+	</script>
+</body>
+</html>

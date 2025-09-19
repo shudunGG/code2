@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增策略</title>
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.id_connection_row .form-control {
+	width: 70%;
+}
+
+li {
+	float: left;
+	width: 33.33%;
+	cursor: pointer;
+}
+li.active {
+	color: #2590eb;
+	font-weight: bold;
+}
+
+ul {
+	width: 90%;
+}
+
+
+</style>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog(0)">取消</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="名称" starred="true" >
+						<input id="templateName" class="mini-textbox" bind="dataBean.templateName"
+							required="true" requiredErrorText="名称不能为空!"
+							vtype="maxLength:50" maxLengthErrorText="不能超过50字" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模板类型" starred="true">
+						<div name="type" showNullItem="true" 
+							bind="dataBean.templateType" required="true" requiredErrorText="模板类型不能为空!"
+							action="getTemplateTypeItems" class="mini-radiobuttonlist"
+							value="01" textField="text" valueField="id"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="模板内容"  starred="true" >
+						<textarea class="mini-textarea" bind="dataBean.templateContent" requiredErrorText="模板内容不能为空!"
+							id="content" vtype="maxLength:1000" height="90px" required="true"
+							maxLengthErrorText="不能超过1000字"></textarea>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<ul>
+						<li data-id="{name}">用户名：{name}</li>
+						<li data-id="{type}">告警类型：{type}</li>
+						<li data-id="{date}">告警时间：{date}</li>
+						<li data-id="{content}">告警内容：{content}</li>
+						<li data-id="{flowname}">任务名称：{flowname}</li>
+						<li data-id="{nodename}">节点名称：{nodename}</li>
+						</ul>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="启动">
+						<input id="start" class="mini-checkbox" text="" bind="dataBean.status" width="13px"/>
+					</div>
+				</div> 
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxpalarmtemplateaddaction');
+		
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+		
+		$('li').on('click',function(e){
+			var that = $(this), id = that.data("id"),$content=mini.get('content');
+			var input = document.getElementsByTagName('textarea')[0];
+			addText(input,$content,id);
+		}).on('mouseover',function(e){
+			var that = $(this);
+			that.addClass("active").siblings().removeClass("active");
+		}).on('mouseout',function(e){
+			var that = $(this);
+			that.removeClass("active");
+		});
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg.indexOf('成功')!=-1) {
+				epoint.alertAndClose(data.msg,'','','success');
+			} else {
+				epoint.alert(data.msg);
+			}
+		}
+		
+		function addText(inputdom,minidom,text){
+			var val = minidom.getValue();
+	        if(inputdom.selection){
+	        	inputdom.focus()
+	            inputdom.selection.createRange().text = text;  
+	        } else {
+	            var cp = inputdom.selectionStart;
+	            var ubbLength = inputdom.value.length;
+	            var s = inputdom.scrollTop;
+	            var value = inputdom.value.slice(0,inputdom.selectionStart) + text + inputdom.value.slice(inputdom.selectionStart, ubbLength);
+	            minidom.setValue(value);
+	        };
+		}
+		
+		
+	</script>
+</body>
+</html>

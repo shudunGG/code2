@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据查看</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar" id="fui-toolbar" style="display:none">
+		<a class="mini-button hidden" onclick="add" id="add">新增</a>
+		<a class="mini-button hidden" onclick="edit" id="edit">修改</a>
+		<a class="mini-button hidden" onclick="deleteSelect" id="delete">删除</a>
+	</div>
+	<div class="fui-content" id="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc" 
+			style="width: 100%; height: 100%;" idField="rowguid" contextMenu="gridMenu" 
+			action="getTableData" showPager="false" allowCellSelect="false"
+			allowCellEdit="false" allowCellValid="true" multiSelect="true">
+		</div>
+		
+		<ul id="gridMenu" class="mini-contextmenu" onbeforeopen="onBeforeOpen">              
+	        <li name="copy"  onclick="copy">复制</li>
+	        <li name="paste"  onclick="paste">粘贴</li>
+    	</ul>
+    	<input bind="tableName" id="tableName" class="mini-hidden" />
+	</div>
+	
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script src="../js/eputil.js"></script>
+	
+	<script>
+	//<![CDATA[ 
+		var grid = mini.get('datagrid');
+		var fatherTableId = Util.getUrlParams("fatherTableId");
+		var recordGuid = Util.getUrlParams("recordGuid");
+		var tableId = Util.getUrlParams("tableId");
+		var addUrl = "framemanager/metadata/mis/datamanage/commonform/commonformtable";
+		var detailUrl = "framemanager/metadata/mis/datamanage/commonform/commonformtabledetail";
+		
+		//初始化页面
+		epoint.initPage("subsetrecordmanagelistaction", "", function(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+			} else {
+				drawDynamicColumn(data.columns);
+			}
+			if(recordGuid && recordGuid!='null'){
+				$('#fui-toolbar').show();
+			}
+			
+			if(data.right){
+				var right = data.right;
+				if(right.add && right.add==true){
+					$('#add').removeClass('hidden');
+				}
+				if(right.edit && right.edit==true){
+					$('#edit').removeClass('hidden');
+				}
+				if(right.delete && right.delete==true){
+					$('#delete').removeClass('hidden');
+				}
+			}		
+		});
+		
+		function onBeforeOpen(e) {
+		    var menu = e.sender;
+		    var row = grid.getSelected();
+		    if (!row) {
+		        e.cancel = true;
+		        //阻止浏览器默认右键菜单
+		        e.htmlEvent.preventDefault();
+		        return;
+		    }
+		    var copyItem = mini.getbyName("copy", menu);
+		    var pasteItem = mini.getbyName("paste", menu);
+		    if(parent.copyData[tableId] == undefined){
+		    	 pasteItem.disable();
+		    }else{
+		    	if(grid.isEditingRow(row)){
+		    		pasteItem.enable();
+		    	}
+		    }
+		}
+		
+		function copy(e){
+		   var row = grid.getSelected();
+		   delete row.rowguid;
+		   //delete row.a0100;
+		   //delete row.sorting;
+		   delete row._id;
+		   delete row._uid;
+		   parent.copyData[tableId]= row;
+		}
+		
+		function paste(e){
+			 var row = grid.getSelected();
+			 grid.updateRow(row,parent.copyData[tableId]);
+			 grid.beginEditRow(row);
+		}
+		
+		function add() {
+			var length = grid.getData().length;
+			var url = addUrl;
+			//如果表单配置了addUrl地址，直接取配置的，否则打开默认通用页面
+			epoint.execute("getPersonalUrlByType","",["add"],function(data){
+				if(data && data.url){
+					url = data.url;
+				}
+				epoint.openTopDialog('信息维护', url +"?tableId=" + tableId + "&tableName=" + mini.get("tableName").getValue()+ "&fatherTableId=" + fatherTableId +"&parentRowGuid=" + recordGuid, function(data) {
+					searchData();
+					}, {
+						'width' : 1000,
+						'height' : 600
+				});
+			});
+		}
+		
+		function edit(){
+			var rows = grid.getSelecteds();
+			var url = addUrl;
+			if(rows.length > 0){
+				//如果表单配置了addUrl地址，直接取配置的，否则打开默认通用页面
+				epoint.execute('getPersonalUrlByType','',["edit"],function(data){
+					if(data && data.url){
+						url = data.url;
+					}
+					if (rows.length == 1) {
+						var guid= rows[0].rowguid;
+						epoint.openTopDialog('信息维护', url +"?tableId=" + tableId + "&tableName=" + mini.get("tableName").getValue() +"&rowGuid=" +guid + "&fatherTableId=" + fatherTableId + "&parentRowGuid=" + recordGuid , function(data) {
+							searchData();
+							}, {
+								'width' : 1000,
+								'height' : 600
+						});
+					}else if(rows.length>1){
+						epoint.alert("请选择一条记录进行修改!");
+					}
+				});
+			}else{
+				epoint.alert("请选择要修改的记录!");
+			}
+		}
+		
+		 function deleteSelect() {
+			 if (grid.getSelecteds().length <= 0){
+				 epoint.alert("请选择要删除的记录!");
+			 }else {
+				 epoint.confirm("确认要删除吗？", "提示", function() {
+					 var rows = grid.getSelecteds();
+					 for(var i=0;i<rows.length;i++){
+						 var row = rows[i];
+						 if(!row.rowguid){
+							 grid.removeRow(row,false);
+						 }
+					 }
+					if(grid.getSelecteds().length == 0){
+						return false;
+					}
+					epoint.execute("deleteSelect", '', null, function(result) {
+						if (result.msg) {
+							epoint.alert(result.msg, null, null, 'info');
+							searchData();
+						}
+					});
+				});
+			}
+		}
+		 
+		//行双击跳转详情表
+		 grid.on("rowdblclick",function(e){
+		 	var url = detailUrl;
+		 	epoint.execute('getPersonalUrlByType', '', ["detail"], function (data){
+		 		if(data && data.url){
+		 			url = data.url;
+		 		}
+		 		epoint.openTopDialog('详细信息表', url +"?tableId=" + tableId + "&tableName=" + mini.get("tableName").getValue() +"&rowGuid=" + e.record.rowguid,
+		 				function(data) {}, {
+		 					'width' : 1000,
+		 					'height' : 600
+		 		});
+		 	});
+		 });
+		
+		// 绘制动态列
+	    function drawDynamicColumn(columns) {
+			grid.setColumns(columns);
+			searchData();
+		}
+
+		// 表格的搜索
+		function searchData() {
+			grid.load();
+		}
+		
+		//]]>
+	</script>
+</body>
+</html>

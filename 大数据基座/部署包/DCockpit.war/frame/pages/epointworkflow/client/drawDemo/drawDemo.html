@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>流程图</title>
+    <meta charset="UTF-8">
+    <style type="text/css">
+
+    </style>
+    <link rel="stylesheet" href="css/jRange.css">
+    <link rel="stylesheet" href="css/main.css">
+
+<body>
+    <div id="sample" class="sample">
+        <!-- 头部区域 -->
+        <div class="header clearfix" id="header">
+            <!-- 模板节点切换 -->
+            <div class="head-site l">
+                <span class="module l head-site-item" href="javascript:;"><i data-type="module" class="icon-item module-icon"></i>模板</span>
+                <span class="node l head-site-item active" href="javascript:;"><i data-type="node" class="icon-item node-icon"></i>节点</span>
+            </div>
+            <!-- 图标功能区域 -->
+            <div class="head-functions clearfix">
+                <span class="icon-save-to icon-item" data-type="savetemp">
+                    另存为模板
+                </span>
+                <span class="icon-save icon-item" data-type="save">
+                    保存流程
+                </span>
+                <!-- <i class="icon-item save-temp-icon" data-type="savetemp" title="另存为模板"></i>
+      <i class="icon-item save-icon" data-type="save" title="保存"></i> -->
+                <i class="icon-item undo-icon" data-type="undo" title="撤销"></i>
+                <i class="icon-item redo-icon" data-type="redo" title="前进"></i>
+                <!-- <i class="icon-item coordinate-icon" data-type="coordinate"></i>
+      <i class="icon-item align-icon" data-type="algin"></i>
+      <i class="icon-item vertical-icon" data-type="vertical"></i> -->
+
+                <!-- <div onclick="save()" class="l icon-btn">保存</div>
+      <div class="l icon-btn">撤销</div>
+      <div class="l icon-btn">前进</div>
+      <div class="l icon-btn">全屏</div> -->
+            </div>
+            <!-- 放大缩小及缩略图 -->
+            <div class="head-scale-box r">
+                <div class="head-move l">
+                    <i class="icon-item min-icon" data-type="min"></i>
+                    <div class="head-scale">
+                        <!-- <input class="head-range" id="range-scale" type="range" value="1" name="points" min="0.1" step="0.1" max="10" /> -->
+                        <input class="head-range" id="range-scale" type="hidden" value="1" />
+                    </div>
+                    <i class="icon-item max-icon" data-type="max"></i>
+                </div>
+                <div class="head-overview l">
+                    <i class="icon-item view-icon" data-type="view"></i>
+                </div>
+            </div>
+            <!-- 鸟瞰图 -->
+            <div id="myOverviewDiv" class="myOverviewDiv">
+
+            </div>
+        </div>
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 节点列表 -->
+            <div class="palette pannel-node active" id="palette">
+                <div class="nano pannel-list">
+                    <div id="myPaletteDiv" class="myPaletteDiv nano-content"></div>
+                </div>
+            </div>
+            <div class="module-list pannel-module">
+                <div class="module-scroll">
+                    <ul id="module-ul">
+
+                    </ul>
+                </div>
+            </div>
+            <!-- 画布 -->
+            <div id="myDiagramDiv" class="myDiagramDiv"></div>
+            <div class="name-tip" id="name-tip"></div>
+        </div>
+        <!-- 右侧信息面板 -->
+        <div class="attr-panel" id="attr-panel">
+            <div class="clearfix attr-head">
+                <span class="attr-name"></span>
+                <div class="r attr-cancel">取消</div>
+                <div class="r attr-confirm">确定</div>
+            </div>
+            <div class="attr-content">
+                <iframe class="attr-iframe" id="attr-iframe" src="about:blank" frameborder="0"></iframe>
+            </div>
+        </div>
+        <!-- 蒙板 -->
+        <div class="cover" id="cover"></div>
+        <!-- 右键菜单 -->
+        <div id="contextMenu" class="contextMenu">
+            <ul>
+                <li data-type="set" class="cxm"><i class="icon-item set-icon"></i>设置属性</li>
+                <li data-type="delete" class="cxm"><i class="icon-item delete-icon"></i>删除</li>
+            </ul>
+        </div>
+
+        <!-- 添加模板 -->
+        <div class="add-template" id="add-template" style="display: none;">
+            <div class="tmp-header">
+                <span class="tmp-title">添加模板</span>
+                <i class="tmp-close"></i>
+            </div>
+            <div class="tmp-content">
+                <p>是否将当前流程存为模板? </p>
+                <div class="tmp-name-box">
+                    <input type="text" class="tmp-name" id="tmp-name" placeholder="自定义流程" />
+                </div>
+            </div>
+            <div class="tmp-footer clearfix">
+                <div class="tmp-cancle r">取消</div>
+                <div class="tmp-save r">保存</div>
+            </div>
+        </div>
+
+        <!-- 模板编辑 -->
+        <div class="add-template edit-template" id="edit-template" style="display: none;">
+            <div class="tmp-header">
+                <span class="tmp-title">模板编辑</span>
+                <i class="tmp-close"></i>
+            </div>
+            <div class="tmp-content">
+                <p>模板名称</p>
+                <div class="tmp-name-box">
+                    <input type="text" class="tmp-name" id="edit-name" placeholder="自定义流程" />
+                </div>
+            </div>
+            <div class="tmp-footer clearfix">
+                
+                <div class="tmp-cancle r">取消</div>
+                <div class="tmp-save r">保存</div>
+                <div class="tmp-delete r">删除模板</div>
+            </div>
+        </div>
+        <!-- 切换模板 -->
+        <div class="change-template" id="change-template" style="display: none;">
+            <div class="tmp-header">
+                <span class="tmp-title">使用模板</span>
+                <i class="tmp-close"></i>
+            </div>
+            <div class="tmp-content">
+                <p>该操作会覆盖当前流程，是否使用当前模板?</p>
+            </div>
+            <div class="tmp-footer clearfix">
+                <div class="tmp-cancle r">取消</div>
+                <div class="tmp-save r">确定</div>
+            </div>
+        </div>
+
+    </div>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/jquery.nicescroll.min.js"></script>
+    <script src="./js/jquery.jRange.js"></script>
+    <script src="./js/go.js"></script>
+    <script src="./js/DrawCommandHandler.js"></script>
+    <script src="./js/LinkShiftingTool.js"></script>
+
+    <script>
+        var domain = "";
+        var apiConfig = {
+            flowData: 'rest/activitytemplatedemoaction/getJsonFormXmlOrFromSearch?isCommondto=true', //已有的流程图信息接口
+            nodeList: 'rest/activitytemplatedemoaction/getManualActivityList?isCommondto=true', //节点列表接口
+            saveFlow: 'rest/activitytemplatedemoaction/saveActivityProcess?isCommondto=true', //保存流程图接口		
+            templateData: 'rest/activitytemplatedemoaction/getTemplateList?isCommondto=true', //流程图模板接口
+            tempDetail: 'rest/activitytemplatedemoaction/getTemplateData?isCommondto=true', //流程图模板详情数据
+            saveTempData: 'rest/activitytemplatedemoaction/saveTemplate?isCommondto=true', //保存流程图模板
+            deleteTemp: 'rest/activitytemplatedemoaction/deleteTemplate?isCommondto=true', // 删除模板
+            editTemp: 'rest/activitytemplatedemoaction/editTemplateName?isCommondto=true' // 修改模板名称
+        }
+    </script>
+    <script type="text/javascript" src="./js/drawDemo.js"></script>
+
+    </head>
+</body>
+
+</html>

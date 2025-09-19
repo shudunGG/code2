@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<link rel="stylesheet"  href="css/buttonstyle.css"></link>
+<title>Test</title>
+<style>
+  html,body {
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+</style>
+</head>
+
+<body>
+
+	<!-- toolbar area -->
+	<div id="toolbar">
+	    <input type="button" class="mini-button" id="saveBtn" onclick="add();" value="save" /> 
+		<input type="button" class="mini-button" id="getDataBtn" onclick="getFormData();" value="data" />
+	</div>
+
+	<pre id="output" style="margin:0;"></pre>
+	<!-- content area -->
+	<div id="fui-content" style="width: 100%; height:620px; background-color: transparent; overflow: auto;"></div>
+
+    <script src="../../fui/js/libs/jquery-1.11.1.min.js"></script>
+	<script src="js/epointsform.js"></script>
+
+	<script>
+		//<![CDATA[ 
+		/*function adjustHeight() {
+			var $toolbar = $('#toolbar'),
+	        $content = $('#fui-content');
+			$content.css('height',$('body').height() - $toolbar.height());
+		}
+		
+		$(adjustHeight);
+		$(window).on('resize',adjustHeight);*/
+		           
+		var json = {};
+		json.rowGuid = ""; //"e1592b43-fab2-4981-bc1c-cfe9aa25d078"/fbfcfc8f-540f-422d-9d7c-2994e1629f33
+		json.isShowButton = false;
+		json.isMobile = true;
+		json.versionId = "";
+		//json.epointUrl = "http://192.168.200.180:8088/EpointSForm";
+
+		/**
+		 * Initialize the page，get the iframe
+		 *
+		 * @param tableId  form tableId
+		 * @param divId  iframe parent area id
+		 * @param formType  form type  add：add/edit page；detail：search page
+		 * @param param  json，Mosaic Url UseParam(If epointUrl empty, defaults to the current system address ) {epointUrl:'http://ip:port/applicationName',rowGuid:'',isShowButton:false}
+		 * @param successCallBack  Initialize successful callback events 
+		 * @param failedCallBack   Initialization failed callback event 
+		 */
+		epointsform.init(epointsform.getUrlParams("tableId") ? epointsform.getUrlParams("tableId"): 10, "fui-content", "add", json,
+				initSuccessCallBack, initFailedCallBack);
+
+		function add() {
+			epointsform.validate(validateSuccessCallBack,
+					validateFailedCallBack);
+		}
+
+		function validateSuccessCallBack(tag) {
+			// Verify success 
+			if (tag) {
+				/**
+				 * Add / modify saved forms 
+				 *
+				 * @param saveSuccessCallBack  Successful callback event 
+				 * @param saveFailedCallBack   Failed callback event 
+				 */
+				epointsform.save(saveSuccessCallBack, saveFailedCallBack);
+			}
+		}
+
+		function validateFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function saveSuccessCallBack(rowGuid) {
+			console.log(rowGuid);
+		}
+
+		function saveFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function getFormData() {
+			/**
+			 * Get form data 
+			 *
+			 * @param getFormDataSuccessCallBack  Successful callback event
+			 * @param getFormDataFailedCallBack   Failed callback event
+			 */
+			epointsform.getFormData(getFormDataSuccessCallBack,
+					getFormDataFailedCallBack);
+		}
+
+		function getFormDataSuccessCallBack(formData) {
+			console.log(formData);
+		}
+
+		function getFormDataFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function initSuccessCallBack(formData) {
+			console.log(formData);
+			for (i = 0, len = formData.length; i < len; i++) {
+				if (formData[i].fieldCNName == 'ere') {
+					formData[i].value = 'test';
+				}
+			}
+			/**
+			 * @param formData Initialization data 
+			 * @param initFormDataSuccessCallBack  The form data callback event was successfully initialized
+			 * @param initFormDataFailedCallBack   Failed to initialize the form data callback event 
+			 */
+			epointsform.initFormData(formData, initFormDataSuccessCallBack,
+					initFormDataFailedCallBack);
+		}
+
+		function initFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function initFormDataSuccessCallBack() {
+		}
+
+		function initFormDataFailedCallBack(err) {
+			console.log(err);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

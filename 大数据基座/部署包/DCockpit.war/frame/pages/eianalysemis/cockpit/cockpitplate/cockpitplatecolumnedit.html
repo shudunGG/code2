@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增主题</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose" onclick="saveAndClose()">保存并关闭</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="主题名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.ColumnName" required="required" requiredErrorText="主题名称不能为空" emptyText="请填写主题名称..." vtype="maxLength:50;" />
+					</div>
+					<div role="control" label="是否启用">
+						<div id="status" name="status" bind="dataBean.status" class="mini-checkbox switch"></div>
+					</div>
+				</div>
+				<!-- <div role="row">
+					<div role="control" label="主题图标">
+						<input class="mini-textbox" bind="dataBean.ColumnIcon" emptyText="请填写主题图标..." />
+					</div>
+				</div> -->
+				<div role="row">
+					<div role="control" label="主题图标">
+						<div id="uploader" class="mini-webuploader" pickerText="图标上传"
+							action="cockpitplatecolumneditaction.getIconModel"  
+							limitType="jpeg,jpg,gif,png,bmp" auto="true" fileNumLimit="1"  
+							onfilesuccess="OnPictureSuccess" fileSizeLimit="100k"></div>
+						<div class="img-view" id="picture" style="display: none;"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主题url">
+						<input class="mini-textbox" bind="dataBean.ColumnUrl" emptyText="请填写主题url..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主题排序">
+						<input class="mini-textbox" bind="dataBean.OrderNum" emptyText="请填写主题排序..." vtype="int;range:0,99999;" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主题描述">
+						<input class="mini-textarea" bind="dataBean.remark" emptyText="请填写主题描述..." />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var uploader = mini.get("uploader");
+		
+		// 初始化页面
+		epoint.initPage('cockpitplatecolumneditaction', null, function(data) {
+			if (data.obj) {
+				showPicture(data.obj);
+			}
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+		
+		//展示图标
+		function OnPictureSuccess(args) {
+			if (args.data.extraDatas.obj) {
+				showPicture(args.data.extraDatas.obj);
+			}
+		}
+		
+		//展示图标
+		function showPicture(tb) {
+			console.log(tb);
+			$(".mini-uploader-list").empty();
+			$("#picture").show();
+			$("#picture").html('<img id="tb" src="" width="120px" height="180px" alt="图标" /> <i class="action-icon icon-error" style="position: absolute; left: 110px; top: 0px;" onclick="delPicture(\''+tb.filepath+'\');" ></i>');
+			$("#tb").attr("src", tb.picture);
+			mini.get("uploader").setVisible(false);
+		}
+		
+		//删除图标
+		function delPicture(filepath) {
+			epoint.execute('deletePicture', '', filepath, function(data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					$("#picture").hide();
+					mini.get("uploader").setVisible(true);
+					epoint.refresh('uploader');
+				}
+			});
+		}
+	</script>
+</body>
+</html>

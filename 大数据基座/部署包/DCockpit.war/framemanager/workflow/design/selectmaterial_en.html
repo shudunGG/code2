@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Activities to choose material</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="saveBtn">sure add</a>
+		</div>
+	</div>
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- The form area -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="materialGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true" action="selectmaterialaction.getDefaultModel"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">
+					order
+				</div>
+				<div field="materialName" width="200" headerAlign="center"
+					align="center">The name of the</div>
+				<div field="materialType" width="200" headerAlign="center"
+					align="center">type</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//Initialization request 
+		epoint.initPage('selectmaterialaction');
+		//callback
+		function callback(args) {
+			if (args.msg) {
+				epoint.alertAndClose(args.msg, '', null, null, 'info');
+			}
+		}
+		//Confirm the choice
+		function saveBtn() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+
+			if (ids.length > 0) {
+				epoint.execute("saveMaterial", "", [ ids
+						.join(',') ], function(data) {
+					if (data.msg) {
+						epoint.alertAndClose(data.msg, '', null, null, 'info');
+					}
+				});
+
+			} else {
+				epoint.alert("Please choose to save the record!", '', null, 'warning');
+			}
+		}
+	</script>
+</body>
+
+</html>

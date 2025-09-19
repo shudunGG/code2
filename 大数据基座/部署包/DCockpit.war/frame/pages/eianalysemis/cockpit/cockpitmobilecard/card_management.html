@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>卡片模板</title>
+    <script src="../../../../fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            '../css/common.css',
+            './css/card_management.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <!-- 条件区域 -->
+    <div class="fui-condition">
+        <div class="condition clearfix">
+            <div class="condition-left l clearfix" id="operate">
+                <div id="uploader" class="mini-webuploader" action="cockpitcardtemplatelistjsaction.getFileUploadModel" fileNumLimit="1" fileSingleSizeLimit="51200000"
+				limitType="zip" showDefaultUI="true" auto="true" mimeTypes="application/zip" pickerText="批量上传" 
+				OnFileSuccess="OnFileSuccess"  onUploadSuccess="onUploadSuccess"
+				>
+				</div>
+                <!-- <a class="mini-button">同步卡片模板</a> -->
+                <a class="mini-button" id="startorder" onclick="startOrder">开始排序</a>
+                <div class="operate-btn-extend clearfix " id="orderextend">
+                    <a class="mini-button" onclick="saveOrder">保存排序</a>
+                    <a class="mini-button" onclick="cancelOrder">取消排序</a>
+                </div>
+            </div>
+            <div class="condition-right r">
+                <div class="search-box l">
+                    <input type="text" class="search-input" id="search-name" placeholder="请输入关键字">
+                    <a class="ico-search" href="javascript:;" id="search"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fui-content">
+        <div class="main" style="height: calc(100% - 40px);">
+            <ul class="card-items clearfix" id="card-items">
+            </ul>
+        </div>
+        <div class="pager-container">
+            <div class="mini-pagination" totalCount="0" onpagechanged="onPageChanged" sizeList="[5,10,20,100]" id="cardpageer"
+                showPageSize="true" showPageIndex="true" showPageInfo="true" buttons="#buttons">
+            </div>
+        </div>
+    </div>
+
+    <script type="text/html" id="card-items-tmpl">
+        {{#result}}
+        <li class="card-item l ">
+            <img class="card-item-img" src="{{img}}" title="{{name}}" />
+            <span class="card-item-btn {{status}}">{{statusshow}}</span>
+            <div class="card-item-name">{{name}}</div>
+            <div class="card-item-extend clearfix">
+                <a class="extend-btn {{status}} l" href="javascript:;" data-id="{{guid}}">{{statusBtnShow}}</a>
+                <a class="extend-btn view l" href="javascript:;" data-id="{{guid}}">查看</a>
+                <a class="extend-btn delete l" href="javascript:;" data-id="{{guid}}">删除</a>
+            </div>
+            <div class="order-area clearfix">
+                <input class="order-ipt" type="text" maxlength="3" data-id="{{guid}}" text="{{ordernum}}" value="{{ordernum}}" data-oldvalue="{{ordernum}}" onkeyup="value=value.replace(/^(0+)|[^\d]+/g,'')"/>
+            </div>
+        </li>
+        {{/result}}
+    </script>
+
+
+    <!-- 接口配置 -->
+    <script>
+        function getRootPath(){
+            var curWwwPath = window.document.location.href;
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName
+                .substring(0, pathName.substr(1).indexOf('/') + 1);
+            return (localhostPaht + projectName);
+
+            // return 'http://zs-bigdata.epoint.com.cn/eiAnalyse_em/rest/';
+            // return 'http://localhost:8080/eiAnalyse/rest/';
+        }
+        var actionUrl = "../../../../../rest/cockpitcardtemplatelistjsaction/";
+        window.pageConfig = {
+            // getCardListUrl: 'getCardListUrl', // 获取卡片列表
+            getCardListUrl: getRootPath() + '/rest/cockpitcardtmpl/getCardList',
+            // getCardListUrl: epoint.dealRestfulUrl(actionUrl + "getCardTemplateListByChartName"),
+            // editOrderNumUrl: 'editOrderNumUrl', // 保存排序
+            editOrderNumUrl: getRootPath() + '/rest/cockpitcardtmpl/sort',
+            // enableItemUrl: 'enableItemUrl', // 启用按钮
+            enableItemUrl: getRootPath() + '/rest/cockpitcardtmpl/start',
+            // disableItemUrl: 'disableItemUrl', // 停用按钮
+            disableItemUrl: getRootPath() + '/rest/cockpitcardtmpl/pause',
+            // deleteItemUrl: 'deleteItemUrl', // 删除按钮
+            deleteItemUrl: getRootPath() + '/rest/cockpitcardtmpl/delete'
+        }
+    </script>
+
+    <script src="../../../../fui/js/jsboot.js"></script>
+    <script src="../../bigscreen/js/util.js"></script>
+
+    <!-- 模拟数据 -->
+   <!--  <script src="..//_test/mock.min.js"></script>
+    <script src="./_test/test_card_management.js"></script>  -->
+
+    <script>
+        SrcBoot.output([
+            '../js/remfit.js',
+            '../js/util.js',
+            './js/card_management.js',
+        ]);
+    </script>
+    <script>
+        Util.hidePageLoading();
+    </script>
+    <script type="text/javascript">
+    	  epoint.initPage('cockpitcardtemplatelistjsaction','',function(data){
+    	  }) 
+		    function OnFileSuccess(data){
+		    	var extraDatas = data.data.extraDatas;
+				  if(extraDatas.error){
+					  epoint.alert(extraDatas.error);
+				  }
+		    }
+    	  function onUploadSuccess(){
+    		  getCardList();
+    	  }
+    </script>
+</body>
+
+</html>

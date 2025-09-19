@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>缓存查询</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style>
+#font {
+	width: 350px;
+	height: 20px;
+	font-weight: bold;
+	font-size: 14px;
+	line-height: 30px;
+}
+</style>
+</head>
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="tabs1" class="mini-tabs" activeIndex="0"
+			style="width: 100%; height: 100%;" plain="false">
+			<div name="usertabs" title="用户">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control">
+								<div id="font">查询条件</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input id="userSearch" width="59%" class="mini-textbox"
+									emptyText="请填入userGuid/loginID" onenter="searchUserCache" /> <a
+									style="margin-left: 10px;" class="mini-button"
+									onclick="searchUserCache" width="10%">查询</a>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									用戶缓存数据:<span id="userInfoCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="userInfo" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									用戶拓展缓存数据:<span id="userExtendCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="userExtendInfo" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">用戶角色缓存数据</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="roleRelationInfo" />
+							</div>
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+			<div name="outabs" title="部门">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control">
+								<div id="font">查询条件</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input id="ouSearch" width="59%" class="mini-textbox"
+									onenter="searchOuCache" emptyText="请填入ouGuid" /> <a
+									style="margin-left: 10px;" class="mini-button"
+									onclick="searchOuCache" width="10%">查询</a>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									部门缓存数据:<span id="ouInfoCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="ouInfo" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									部门拓展缓存数据:<span id="ouExtendCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="ouExtendInfo" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div name="outabs" title="角色">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control">
+								<div id="font">查询条件</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input id="roleSearch" width="59%" class="mini-textbox"
+									onenter="searchRoleCache" emptyText="请填入roleGuid/roleTypeGuid" />
+								<a style="margin-left: 10px;" class="mini-button"
+									onclick="searchRoleCache" width="10%">查询</a>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									角色缓存数据:<span id="roleInfoCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="roleInfo" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									用户角色缓存数据:<span id="userRoleCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="userRole" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div name="outabs" title="模块">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control">
+								<div id="font">查询条件</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input id="moduleSearch" width="59%" class="mini-textbox"
+									onenter="searchModuleCache" emptyText="请填入moduleGuid" /> <a
+									style="margin-left: 10px;" class="mini-button"
+									onclick="searchModuleCache" width="10%">查询</a>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									模块缓存数据:<span id="moduleInfoCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="moduleInfo" />
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<div name="outabs" title="群组">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control">
+								<div id="font">查询条件</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input id="groupSearch" width="59%" class="mini-textbox"
+									onenter="searchGroupCache" emptyText="请填入groupGuid" /> <a
+									style="margin-left: 10px;" class="mini-button"
+									onclick="searchGroupCache" width="10%">查询</a>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<div id="font">
+									群组缓存数据:<span id="groupInfoCount" style="margin: 10px"></span>(条)数据
+								</div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<input class="mini-textarea" style="width: 70%; height: 200px;"
+									id="groupInfo" />
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("cachequeryaction");
+
+		//用户
+		function searchUserCache() {
+			var info = mini.get("userSearch").value;
+			epoint.execute('searchUserCache', "", info, function(data) {
+				if (data.userInfo) {
+					mini.get("userInfo").setValue(data.userInfo);
+				}
+				if (data.userExtend) {
+					mini.get("userExtendInfo").setValue(data.userExtend);
+				}
+				if (data.roleRelationInfo) {
+					mini.get("roleRelationInfo")
+							.setValue(data.roleRelationInfo);
+				}
+				$("#userInfoCount").text(data.userInfoCount);
+				$("#userExtendCount").text(data.userInfoCount);
+			});
+		}
+
+		//部门
+		function searchOuCache() {
+			var info = mini.get("ouSearch").value;
+			epoint.execute('searchOuCache', "", info, function(data) {
+				if (data.ouInfo) {
+					mini.get("ouInfo").setValue(data.ouInfo);
+				}
+				if (data.ouExtend) {
+					mini.get("ouExtendInfo").setValue(data.ouExtend);
+				}
+				$("#ouInfoCount").text(data.ouInfoCount);
+				$("#ouExtendCount").text(data.ouExtendCount);
+			});
+		}
+
+		//角色
+		function searchRoleCache() {
+			var info = mini.get("roleSearch").value;
+			epoint.execute('searchRoleCache', "", info, function(data) {
+				if (data.roleInfo) {
+					mini.get("roleInfo").setValue(data.roleInfo);
+				}
+				$("#roleInfoCount").text(data.roleInfoCount);
+				if (data.userRole) {
+					mini.get("userRole").setValue(data.userRole);
+				}
+				$("#userRoleCount").text(data.userRoleCount);
+			});
+		}
+
+		//模块
+		function searchModuleCache() {
+			var info = mini.get("moduleSearch").value;
+			epoint.execute('searchModuleCache', "", info, function(data) {
+				if (data.moduleInfo) {
+					mini.get("moduleInfo").setValue(data.moduleInfo);
+				}
+				$("#moduleInfoCount").text(data.moduleInfoCount);
+			});
+		}
+
+		//群组
+		function searchGroupCache() {
+			var info = mini.get("groupSearch").value;
+			epoint.execute('searchGroupCache', "", info, function(data) {
+				if (data.groupInfo) {
+					mini.get("groupInfo").setValue(data.groupInfo);
+				}
+				$("#groupInfoCount").text(data.groupInfoCount);
+			});
+		}
+		//]]>
+	</script>
+
+</body>
+</html>

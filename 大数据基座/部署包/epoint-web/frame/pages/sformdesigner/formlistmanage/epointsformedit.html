@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>修改表单信息</title>
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+
+				<div role="row">
+					<div role="control" label="数据表来源">
+						<div id="mistable" name="level"
+							data="[{text:'自动生成',id:'auto'},{text:'mis表选取',id:'mis'},{text:'自定义数据表',id:'custom'}]"
+							textField="text" valueField="id" value="auto"
+							bind="dataBean.tablesource" class="mini-radiobuttonlist"
+							style="width: 100%" onvaluechanged="mistablechangtype"
+							enabled="false"></div>
+					</div>
+
+				</div>
+				<div role="row" id="treeform" style="display: none">
+					<div role="control">
+						<input id="formTree" class="mini-treeselect"
+							bind="dataBean.tableid" action="getTreeModal" multiSelect="false"
+							required="true" onbeforenodeselect="beforenodeselect"
+							enabled="false" />
+					</div>
+				</div>
+				<div role="row" id="sqlform" style="display: none">
+					<div role="control">
+						<input class="mini-textbox" bind="mistablename" id="misname"
+							emptyText="请输入数据表英文名" onvalidation="onChineseValidation"
+							vtype="maxLength:30" enabled="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="表单名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.formname"
+							required="true" vtype="maxLength:50" />
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="表单模版" starred="true">
+						<div class="mini-combobox" repeatItems="2" id="templateguid"
+							bind="sformTemplate" textField="text" valueField="id"
+							allowInput="true" value="1" action="getsformTemplates"
+							required="true" enabled="false"></div>
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="子系统分类">
+						<input id="tabletypeTree" class="mini-treeselect"
+							bind="dataBean.tabletype" action="getTreeData"  showClose="true"
+							multiSelect="false" onbeforenodeselect="tabletypeselect" oncloseclick="onCloseClick" />
+					</div>
+				</div>
+
+
+				<div role="row">
+					<div role="control" label="排序号">
+						<input class="mini-textbox" bind="dataBean.ordernum"
+							vtype="int;range:0,99999999" id="ordernum" />
+					</div>
+				</div>
+				<div role="row" id="form2">
+					<!-- 	<input class="mini-hidden" bind="dataBean.tabletype" /> -->
+					<!-- <input class="mini-hidden" bind="dataBean.sqltablename"
+						enabled="false" /> -->
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar bottom">
+		<a class="mini-button" state="primary" id="addClose"
+			onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+			onclick="epoint.closeDialog">取消</a>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script
+		src="../../../../frame/fui/js/epoint/uc/oauploader/oauploader.js"></script>
+	<script>
+		epoint.initPage('epointsformeditaction', '', function(data) {
+			if (data.name) {
+				mini.get("formTree").setText(data.name);
+			}
+			mini.get('templateguid').setValue(data.templateGuid);
+			mini.get('templateguid').setText(data.templateName);
+			mini.get('misname').setValue(data.sqltablename);
+			mistablechangtype();
+
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg,  {state : 'warning'});
+				}
+
+			}
+		}
+
+		function tabletypeselect(e) {
+			if (e.record._pid == "-1") {
+				e.cancel = true;
+			}
+		}
+
+		function mistablechangtype() {
+			var mistable = mini.get("mistable").getValue();
+			if (mistable == "auto") {
+				document.getElementById("treeform").style.display = "none";
+				document.getElementById("sqlform").style.display = "none";
+			} else if (mistable == "mis") {
+				document.getElementById("treeform").style.display = "block";
+				document.getElementById("sqlform").style.display = "none";
+			} else {
+				document.getElementById("treeform").style.display = "none";
+				document.getElementById("sqlform").style.display = "block";
+			}
+
+		}
+		
+		function onCloseClick(e) {
+			  var obj = e.sender;
+			  obj.setText("");
+			  obj.setValue("");
+			}
+	</script>
+</body>
+</html>

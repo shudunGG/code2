@@ -1,0 +1,1 @@
+select count(*)  from user_tab_columns where table_name = upper('Frame_UserRole_Snapshot') and column_name = upper('ouguid');

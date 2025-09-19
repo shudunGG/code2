@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>统一认证配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../../fui/js/cssboot.js"></script>
+
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="saveConfig()">
+			保存配置</a>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-accordions">
+			<div role="accordion">
+				<div role="head" title="统一认证配置"></div>
+				<div role="body">
+					<!-- 内容区域 -->
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="认证类型" style="width: 65%">
+									<input class="mini-radiobuttonlist" id="verificationtype"
+										bind="appinfo.verificationtype" action="getVerificationType"
+										onvaluechanged="changedType" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">本地认证表示该应用使用本地登录页面进行登录，rest认证表示用户访问该应用时会自动引导用户访问统一认证平台登录页面进行登录，rpc认证同rest认证，但如果是微服务部署模式，请勾选此选项。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="服务端地址" style="width: 65%">
+									<input class="mini-textbox" id="serverurl" maxLength="2000"
+										vtype="maxLength:2000;" onvalidation="realurlvalid"
+										bind="appinfo.serverurl" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">统一认证平台部署地址，需要配置到应用名称，比如：http://oa.epoint.com.cn/epoint-sso-web</div>
+							</div>
+							<div role="row" class="isOpenMoreNetwork">
+								<div role="control" label="服务端内网地址" style="width: 65%">
+									<input class="mini-textbox" id="serverintraneturl"
+										maxLength="500" vtype="maxLength:500;"
+										bind="appinfo.serverintraneturl" />
+								</div>
+							</div>
+							<div role="row" class="isOpenMoreNetwork">
+								<div role="control" style="width: 65%; color: #A9A9A9">统一认证平台部署服务器如果分内外网，则需要在此配置其内网地址，比如：http://192.168.112.44:8050/epoint-sso-web，那相应的，其外网地址就配置在服务端地址中。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="客户端回调地址" style="width: 65%">
+									<input class="mini-textbox" id="callbackurl" maxLength="2000"
+										vtype="maxLength:2000;" onvalidation="realurlvalid"
+										bind="appinfo.callbackurl" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">客户端应用回调地址，默认取应用注册时的回调地址，为该应用的部署地址，只需配置到域名即可，有端口则加上端口，比如：http://oa.epoint.com.cn:8088</div>
+							</div>
+							<div role="row" class="isOpenMoreNetwork">
+								<div role="control" label="客户端回调内网地址" style="width: 65%">
+									<input class="mini-textbox" id="redirectintraneturl"
+										maxLength="500" vtype="maxLength:500;"
+										bind="appinfo.redirectintraneturl" />
+								</div>
+							</div>
+							<div role="row" class="isOpenMoreNetwork">
+								<div role="control" style="width: 65%; color: #A9A9A9">如果客户端应用可以从2个网络端来访问，比如内网和外网，则在此可以配置客户端应用的内网回调路径，也只需配置到域名，有端口则加上端口，比如：http://192.168.112.41:8088，那相应的，其外网回调路径就配置在客户端回调地址中。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="页面展示方式" style="width: 80%">
+									<input class="mini-radiobuttonlist" id="display"
+										onvaluechanged="chooseDispaly" style="width: 60%"
+										bind="appinfo.display" action="getDisplay" /> <input
+										class="mini-textbox" bind="customdisplay" id="customdisplay"
+										maxLength="50" vType="maxLength:50;"
+										style="width: 150px; display: none;" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">认证授权页面展示方式，page表示全屏形式的认证授权页面，适用于web应用（默认），popup表示弹框形式的认证授权页面，适用于桌面软件应用和web应用。mobile适用于
+									Iphone/Android等智能移动终端上的应用，corpwechat表示客户端应用作为移动端容器接入企业微信，ppwechat表示客户端应用作为移动端容器接入微信公众号。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="单点登出功能" style="width: 65%">
+									<input class="mini-checkbox" id="ssoenabled" trueValue="1"
+										falseValue="0" bind="appinfo.ssoenabled" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">勾选此项后，其余接入统一认证系统的应用登出后，该应用将会登出。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="接口工程" style="width: 65%">
+									<input class="mini-checkbox" id="intefaceproject" trueValue="1"
+										falseValue="0" bind="appinfo.intefaceproject" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">勾选此项后，该应用只将接口认证委托给统一认证平台，而登录认证则使用本地认证方式。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="授权范围" style="width: 65%">
+									<input class="mini-combobox" id="scope" bind="appinfo.scope"
+										multiSelect="true" action="getAuthScope" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">授权权限列表，表示用户对该应用认证授权通过后，该应用获得的一系列数据访问操作权限。</div>
+							</div>
+							<div role="row">
+								<div role="control" label="多网络环境" style="width: 65%">
+									<input class="mini-checkbox" id="moreNetwork"
+										onvaluechanged="chooseMoreNetwork" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" style="width: 65%; color: #A9A9A9">如果客户端应用可以从多个网络端来访问，内网和外网2种逻辑网络区分无法满足实际情况，则可以自定义添加多种网络环境，比如政务内网、政务外网、互联网。每一种网络环境都必须配置相对应的客户端地址和服务端地址。</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true" id="morePages"
+				style="display: none">
+				<div role="head" title="多网络模式"></div>
+				<div role="body">
+					<!-- 内容区域 -->
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div id="container">
+								<div role="row" id="child0">
+									<div role="control" label="服务端地址" style="width: 300px"
+										starred="true">
+										<input class="mini-textbox" id="serverurl0" maxLength="1999"
+											vtype="maxLength:1999;" required="true"
+											onvalidation="realurlvalid" requiredErrorText="服务端地址不能为空" />
+									</div>
+									<div role="control" label="客户端回调地址" style="width: 300px"
+										starred="true">
+										<input class="mini-textbox" id="redirecturl0" maxLength="2000"
+											vtype="maxLength:2000;" required="true"
+											onvalidation="realurlvalid" requiredErrorText="客户端回调地址不能为空" />
+									</div>
+									<div style="margin-left: 20px">
+										<a href='javascript:addClick();' style="width: 20px"
+											class="action-icon icon-addcircle"></a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appssosettingaction', "", initCallBack);
+
+		function initCallBack(data) {
+			if (data) {
+				if (data.display == "custom") {
+					$("#customdisplay").show();
+				} else {
+					$("#customdisplay").hide();
+				}
+
+				if (data.networkCount) {
+					mini.get("moreNetwork").setValue(true);
+					$("#morePages").show();
+					$(".isOpenMoreNetwork").each(function(i) {
+						$(this).hide();
+					});
+					//创建输入框
+					for (var k = 2; k < data.networkCount; k++) {
+						addClick();
+					}
+					var serverurl = "";
+					if (data.serverUrl) {
+						serverurl = data.serverUrl;
+						mini.get("serverurl").setValue(serverurl[0]);
+					}
+					var callbackurl = data.callbackUrl;
+					mini.get("callbackurl").setValue(callbackurl[0]);
+					//第二个开始就是拓展出来的
+					for (var k = 0; k < data.networkCount - 1; k++) {
+						if (data.serverUrl) {
+							mini.get("serverurl" + k)
+									.setValue(serverurl[k + 1]);
+						}
+						mini.get("redirecturl" + k)
+								.setValue(callbackurl[k + 1]);
+					}
+				}
+			}
+			var type = mini.get("verificationtype");
+			changedType(type);
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('fui-form');
+		}
+
+		function saveConfig() {
+			if (epoint.validate()) {
+				var serverurl = mini.get("serverurl").getValue();
+				var redirecturl = mini.get("callbackurl").getValue();
+
+				// 判断是否开启了多网络模式
+				if (mini.get("moreNetwork").getValue() == "true") {
+					var len = $("#container").children().length;
+					for (var j = 0; j < len; j++) {
+						var child = $("#container").children()[j];
+						//获取下标
+						var index = $(child).attr("id").slice(5);
+						var value1 = mini.get("serverurl" + index).getValue();
+						if (value1) {
+							if (j != i) {
+								serverurl += ",";
+							}
+							serverurl += value1;
+						}
+
+						var value2 = mini.get("redirecturl" + index).getValue();
+						if (value2) {
+							if (j != i) {
+								redirecturl += ",";
+							}
+							redirecturl += value2;
+						}
+					}
+				}
+
+				if (serverurl.length > 2000) {
+					epoint
+							.showTips(
+									"服务端地址过长，如果是开启了多网络模式，服务端地址是将多网络配置的服务端地址一起进行计算的，总长不能超过2000！",
+									{
+										state : 'danger'
+									});
+				} else if (redirecturl.length > 2000) {
+					epoint
+							.showTips(
+									"客户端回调地址过长，如果是开启了多网络模式，客户端回调地址是将多网络配置的客户端回调地址一起进行计算的，总长不能超过2000！",
+									{
+										state : 'danger'
+									});
+				} else {
+					epoint.execute('saveConfig', '',
+							[ serverurl, redirecturl ], callback);
+				}
+			}
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg,{state : 'success'});
+					searchData();
+			}
+		}
+
+		function changedType(e) {
+			if (e.value != 0) {
+				mini.get("serverurl").set({
+					required : true,
+					starred : true,
+					requiredErrorText : "服务器地址不能为空!"
+				});
+				mini.get("callbackurl").set({
+					required : true,
+					starred : true,
+					requiredErrorText : "客户端回调地址不能为空!"
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html()
+									&& ($(this).html() == "客户端回调地址：" || $(this)
+											.html() == "服务端地址：")) {
+								$(this).addClass("required");
+								$(this).addClass("starred");
+							}
+						});
+			} else {
+				mini.get("serverurl").set({
+					required : false,
+					starred : false
+				});
+				mini.get("callbackurl").set({
+					required : false,
+					starred : false
+				});
+				$(".form-label").each(
+						function(i) {
+							if ($(this).html() && $(this).html() == "客户端回调地址："
+									|| $(this).html() == "服务端地址：") {
+								$(this).removeClass("required");
+								$(this).removeClass("starred");
+							}
+						});
+				mini.get("moreNetwork").setValue(false);
+				chooseMoreNetwork(mini.get("moreNetwork"));
+			}
+		}
+
+		//多网络环境勾选
+		function chooseMoreNetwork(e) {
+			if (e.value == "true") {
+				// 检查是否是本地模式，如果是本地模式，则弹出提醒，不用配多网络
+				var type = mini.get("verificationtype").value;
+				if (type == "0") {
+					epoint.showTips("本地模式无法配置多网络！",{state : 'danger'});
+					this.setValue(false);
+					return;
+				}
+
+				$("#morePages").show();
+				$(".isOpenMoreNetwork").each(function(i) {
+					$(this).hide();
+				});
+				$(".fui-content").scrollTop($(".fui-accordions").height());
+			} else {
+				$("#morePages").hide();
+				$(".isOpenMoreNetwork").each(function(i) {
+					$(this).show();
+				});
+				//删除标签
+				$("#container").children(".isadd").remove();
+			}
+		}
+
+		var i = 1;
+		//点击添加div
+		function addClick() {
+			var id = "child" + i;
+			var childdiv = '<div id='+id+' class="form-row isadd"><label class="form-label">服务端地址：</label><div label="服务端地址" style="width: 300px" class="form-control span2" starred="true"><span class="mini-textbox" id="serverurl'+i+'" onvalidation="realurlvalid" required="true" requiredErrorText="服务端地址不能为空" style="border-width: 0px;"><span class="mini-textbox-border mini-corner-all"><input type="text" class="mini-textbox-input" autocomplete="off" placeholder=""></span><input type="hidden"></span></div><label class="form-label">客户端回调地址：</label><div starred="true" label="客户端回调地址" style="width: 300px" class="form-control span2"><span class="mini-textbox" id="redirecturl'+i+'" onvalidation="realurlvalid" required="true" requiredErrorText="客户端地址不能为空" style="border-width: 0px;"><span class="mini-textbox-border mini-corner-all"><input type="text" class="mini-textbox-input" autocomplete="off" placeholder=""></span><input type="hidden"></span></div><div style="margin-left: 20px"><a href="javascript:addClick();" style="width: 20px" class="action-icon icon-addcircle"></a> <a href="javascript:deleteClick('
+					+ i
+					+ ');" style="width: 20px" class="action-icon icon-minuscircle"></a></div></div>'
+			$("#container").append(childdiv);
+			mini.parse();
+			$(".form-label").each(
+					function(i) {
+						if ($(this).html()
+								&& ($(this).html() == "客户端回调地址：" || $(this)
+										.html() == "服务端地址：")) {
+							$(this).addClass("required");
+							$(this).addClass("starred");
+						}
+					});
+			i++;
+		}
+
+		//点击删除div
+		function deleteClick(i) {
+			var id = "child" + i;
+			$("#" + id).remove();
+		}
+
+		//地址验证
+		function realurlvalid(e) {
+			var type = mini.get("verificationtype").value;
+			if (type != "0") {
+				var re = new RegExp(
+						"^([hH][tT]{2}[pP]://|[hH][tT]{2}[pP][sS]://)(([A-Za-z0-9-~]+).)+([A-Za-z0-9-~\\/])+$");
+				if (!re.test(e.value)) {
+					e.errorText = "地址有误，请重新填写！";
+					e.isValid = false;
+				}
+			}
+		}
+
+		function chooseDispaly(e) {
+			if (e.value == "custom") {
+				$("#customdisplay").show();
+			} else {
+				$("#customdisplay").hide();
+			}
+		}
+	</script>
+</body>
+
+</html>

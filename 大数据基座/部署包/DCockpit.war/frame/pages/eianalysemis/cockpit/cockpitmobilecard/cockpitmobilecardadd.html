@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增版块</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style type="text/css" media="screen">
+.adddprow {
+	background: #eeeeee;
+}
+
+.resolution {
+	width: 100%;
+}
+
+.resolution .mini-textbox {
+	width: 70%;
+}
+
+.operate-minus {
+	margin-left: 10px;
+	border: 2px solid #DDDDDD;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.operate-plus {
+	cursor: pointer;
+}
+
+.operate.text-center {
+	margin-top: 5px;
+	border: 1px dashed #DDDDDD;
+}
+</style>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+			<a class="mini-button" iconCls="icon-doc" id="addView"
+				onclick="saveAndView">预览</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="卡片名称" starred="true">
+									<input class="mini-textbox" bind="dataBean.cardName"
+										required="required" requiredErrorText="卡片名称不能为空"
+										vtype="maxLength:50;" emptyText="请填写版块名称..." />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row" id="model">
+								<div role="control" label="卡片模板">
+									<input bind="dataBean.cardModelGuid" id="cardModel" 
+										oncloseclick="onCloseClick" showClose="true"
+										action="getCardModel" class="mini-combobox" 
+										onvaluechanged="changeParam" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row">
+								<div role="control" label="卡片简述">
+									<input class="mini-textarea" bind="dataBean.remark"
+										emptyText="请填写卡片简述..." vtype="maxLength:9999;" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="负责人" starred="true">
+									<input id="liableperson" class="mini-textbox" maxlength="100"
+										bind="dataBean.liableperson" required="required" requiredErrorText="负责人不能为空"/>
+								</div>
+								<div role="control" label="联系电话" starred="true">
+									<input class="mini-textbox" bind="dataBean.telephone"
+										required="required" requiredErrorText="联系电话不能为空"
+										vtype="mobile">
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="卡片排序">
+									<input class="mini-textbox" bind="dataBean.orderNum"
+										emptyText="请填写卡片排序..." vtype="int;range:0,99999;" />
+								</div>
+								<div role="control" ></div>
+							</div>
+							<div role="row">
+								<div role="control" label="运行状态" starred="true">
+									<div id="status" class="mini-radiobuttonlist" required="required"
+										bind="dataBean.status" requiredErrorText="运行状态必须选择"
+										data="[{text:'启用',id:'1'},{text:'停用',id:'0'}]"
+										textField="text" valueField="id"></div>
+								</div>
+								<div role="control" label="是否重要卡片" starred="true">
+									<div id="process" class="mini-radiobuttonlist"
+										required="required" bind="dataBean.process"
+										requiredErrorText="审核必须选择"
+										data="[{text:'是',id:'1'},{text:'否',id:'0'}]" textField="text"
+										valueField="id"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="数据绑定"></div>
+				<div role="body">
+					<div class="fui-form" id="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="关联指标">
+									<!-- 按钮 -->
+									<div class="toolbar"
+										style="background: none;">
+										<div class="btn-group">
+											<a class="mini-button" iconCls="icon-addcircle"
+												id="requestAdd" onclick="add();">关联</a> <a
+												class="mini-button" iconCls="icon-minuscircle"
+												id="requestDelete"
+												onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择想要删除的指标！');} else {epoint.confirm('是否确定删除？','',deleteSelected);}">删除</a>
+											<!-- <a class="mini-button" iconCls="icon-save" id="requestSave"
+												onclick="saveNorm()">保存</a> -->
+										</div>
+									</div>
+									<div id="datagrid" name="datagrid" class="mini-datagrid"
+										idField="rowguid" multiSelect="true" action="getDataGridData"
+										style="width: 100%; height: auto;" allowResize="true"
+										showPager="false" allowCellValid="true" allowCellEdit="true"
+										allowCellSelect="true" editNextOnEnterKey="true"
+										editNextRowCell="true">
+										<div property="columns">
+											<div type="checkcolumn" width="50" name="check"></div>
+											<div type="indexcolumn" headerAlign="center" width="50">序</div>
+											<div field="normname" width="150" headerAlign="center"
+												align="center" vtype="required;maxLength:50">
+												指标名称 <input id="normname" property="editor"
+												class="mini-buttonedit" allowInput="false" 
+													onbuttonclick="selectStandard" 
+													style="width: 100%;" maxLength="50" />
+											</div>
+											<div field="normTypeText" width="80" headerAlign="center"
+												align="center">指标类型</div>
+											<div field="label" headerAlign="center" width="100%"
+												vtype="maxLength:800" maxLength="800" align="center"
+												name='label'>
+												说明 <input property="editor" class="mini-textbox"
+													style="width: 100%;" vtype="maxLength:800" maxLength="800" />
+											</div>
+											<div field="orderNum" width="80" align="center" 
+												headerAlign="center" required="true" vtype="int;range:0,99999999" requiredErrorText="排序请输入数字"
+												name='orderNum'>排序<input property="editor" class="mini-textbox"  
+													style="width: 100%;" /></div>
+											<div type="actioncolumn" headerAlign="center" align="center"
+												renderer="onSubit">维度/映射配置</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="卡片区域总结"></div>
+				<div id="fui-form" class="fui-form">
+					<div role="form">
+						<div id="bigscreen">
+							<div role="row">
+								<div role="control" label="卡片区域总结">
+									<div id="bgrow">
+										<div class="adddprow form-row">
+											<div class="resolution">
+												<span>总结区域：</span> <input class="mini-textbox" name="dpurl" />
+											</div>
+										</div>
+									</div>
+									<div class="operate text-center" id="addone">
+										<span class="operate-plus">+ 增加一条</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/templ" id="row-tpl-2">
+		<div class="adddprow form-row" >
+			<div class="resolution">
+				<span>总结区域：</span> <input class="mini-textbox" name="dpurl" />
+			</div>
+		</div>
+    </script>
+	<script type="text/templ" id="row-tpl-1">
+		<div class="adddprow form-row" >
+			<div class="resolution">
+				<span>总结区域：</span> <input class="mini-textbox" name="dpurl" />
+				<a class="mini-button mini-btn-danger operate-minus" iconCls="icon-minuscircle"></a>
+			</div>
+		</div>
+    </script>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../cockpitnorm/js/ace.js"></script>
+	<script>
+		var uploader = mini.get("uploader");
+		var guid = Util.getUrlParams('guid');
+		var rowguid = "";
+		var grid = mini.get("datagrid");
+		var $bigscreen = $('#bigscreen');
+		var $bgrow = $("#bgrow");
+		var rowTpl = $('#row-tpl-1').html();
+		var rowTpl2 = $('#row-tpl-2').html();
+		var bigscreen;
+		// 初始化页面
+		epoint.initPage('cockpitmobilecardaddaction', null, function(data) {
+			if (data.dataBean) {
+				mini.get('cardModel').setEnabled(false);
+			} else {
+				//mini.get('process').setValue("0");
+			}
+			var cardModel = mini.get('cardModel').getValue();
+			if (cardModel == '') {
+				//grid.hideColumn('label');
+				//grid.hideColumn('orderNum');
+				$('#addView').css('display', 'none');
+			} else {
+				$('#addone').css('display', 'none');
+				grid.hideColumn('check');
+			}
+			if (data.rowguid) {
+				rowguid = data.rowguid;
+			}
+			if (data.plateguid) {
+				guid = data.plateguid;
+			} else {
+				//mini.get('status').setValue("0");
+
+			}
+			if (data.cardmodelguid) {
+				//grid.showColumn('label');
+				//grid.showColumn('orderNum');
+				$('#requestAdd').css('display', 'none');
+				$('#requestDelete').css('display', 'none');
+			}
+			if (data.cardareasummary) {
+				var json = JSON.parse(data.cardareasummary);
+				var len = json.length;
+				for (var i = 0; i < len; i++) {
+					if (mini.getsbyName('dpurl').length < len) {
+						// 直接将模板加到页面上
+						if (cardModel == '') {
+							$bgrow.append(rowTpl);
+						} else {
+							$bgrow.append(rowTpl2);
+						}
+
+						// 解析里面的控件
+						mini.parse($bgrow[0]);
+						epoint.refresh('bgrow');
+					}
+					$('#bgrow').each(function() {
+						mini.getsbyName('dpurl')[i].setValue(json[i]);
+					});
+				}
+			}
+		});
+	
+		// 点击关闭按钮
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			$('#addView').css('display', 'none');
+			$('#requestAdd').css('display', 'block');
+			$('#requestDelete').css('display', 'block');
+			$('#addone').css('display', 'block');
+			epoint.execute('closeClick', '', rowguid, function(data){
+				var i = 0;
+				$('.adddprow').each(function(i) {
+					$(this).remove();
+				});
+				$('#addone').css('display', 'block');
+				searchData();
+			});
+		}
+		
+		function changeParam(e) {
+			if (e.value) {
+				$('#addView').css('display', 'block');
+				$('#requestAdd').css('display', 'none');
+				$('#requestDelete').css('display', 'none');
+				$('#addone').css('display', 'none');
+				epoint.execute('change', 'fui-form', e.value, function(data) {
+					if (data.descNum) {
+						$('.adddprow').each(function(i) {
+							$(this).remove();
+						});
+						var num = data.descNum;
+						for (var i = 0; i < num; i++) {
+							// 直接将模板加到页面上
+							$bgrow.append(rowTpl2);
+							// 解析里面的控件
+							mini.parse($bgrow[0]);
+							epoint.refresh('bgrow');
+						}
+					}
+					searchData();
+				});
+			} else {
+				$('#requestAdd').css('display', 'block');
+				$('#requestDelete').css('display', 'block');
+				grid.showColumn('check');
+			}
+		}
+
+		function change() {
+			epoint.refresh([ 'belongOuGuid', 'plate' ], function() {
+			});
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var data = JSON.parse(grid.data);
+				var len = data.length;
+				var msg = true;
+				for (var i = 0; i < len; i++) {
+					console.log(data[i].rowguid);
+					console.log(data[i].normguid);
+					var normguid = data[i].normguid;
+					if (normguid == '') {
+						msg = false;
+					}
+				}
+				if (msg) {
+					getScreen();
+					epoint
+							.execute(
+									'save',
+									'fui-form',
+									[ bigscreen ],
+									function(data) {
+										if (data.error) {
+											epoint.alert(data.error);
+										} else {
+											if (data.checkguid) {
+												epoint
+														.openTopDialog(
+																'卡片结果审核',
+																"frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=492b9b41-d93f-4c1d-9381-4218f482efb5&checkGuid="
+																		+ data.checkguid,
+																function(data) {
+																	if (data.action != 'close') {
+																		epoint
+																				.closeDialog();
+																	}
+																},
+																{
+																	'width' : 1200,
+																	'height' : 800
+																});
+											} else {
+												if (data.msg) {
+													epoint
+															.alertAndClose(data.msg);
+												}
+											}
+										}
+									});
+				} else {
+					epoint.alert('请在数据绑定模块关联好指标！');
+				}
+			}
+		}
+
+		function processAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('process', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		//删除图标
+		function delPicture(filepath) {
+			epoint.execute('deletePicture', '', filepath, function(data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					$("#picture").hide();
+					mini.get("uploader").setVisible(true);
+					epoint.refresh('uploader');
+				}
+			});
+		}
+
+		function editNormData() {
+			epoint.execute("editNormData", '@none', mini.get("normSetGuid")
+					.getValue(), function(data) {
+				epoint.openDialog('指标结果',
+						"frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormresultlist?guid="
+								+ mini.get("normSetGuid").getValue()
+								+ "&batchGuid=" + data.batchguid, '', {
+							'width' : 1000,
+							'height' : 550
+						});
+			})
+		}
+
+		//新增关联指标
+		function add() {
+			if (epoint.validate()) {
+				var cardModel = mini.get('cardModel').getValue();
+				if (cardModel == "") {
+					epoint.openTopDialog('选择指标',
+							"../cockpitmobilecard/choosenorm?plateguid=" + guid
+									+ "&cardguid=" + rowguid, searchData, {
+								'width' : 1200,
+								'height' : 800
+							});
+				}
+			}
+		}
+
+		//保存关联指标
+		function saveNorm() {
+			if (epoint.validate()) {
+				epoint.execute('saveNorm', [ 'datagrid' ], rowguid, function(
+						data) {
+					epoint.alert(data.msg, '', searchData);
+				});
+			}
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		//选择指标
+		function selectStandard(e) {
+			var row = grid.getEditorOwnerRow(e.sender);
+			console.log(row);
+			epoint.openDialog("关联指标", "./choosenormlist?cardguid=" + rowguid
+					+ "&plateguid=" + guid + "&normtype=" + row.normtype
+					+ "&ordernum=" + row.orderNum, searchData, {
+				width : 1400,
+				height : 900
+			});
+		}
+
+		// 删除数据
+		function deleteSelected() {
+			epoint.execute("deleteSelected", '', function(data){
+				if(data.msg){
+					epoint.alert(data.msg);
+					searchData();
+				}
+			});
+		}
+
+		// 绑定加减号点击事件
+		$bigscreen.on('click', '.operate-plus', function() {
+			$bgrow.append(rowTpl);
+			mini.parse($bgrow[0]);
+		}).on('click', '.operate-minus', function(e) {
+			var $target = $(e.target), $row = $target.closest('.adddprow');
+			$row.remove();
+		});
+
+		function getScreen() {
+			if (epoint.validate()) {
+				// 拼接查询语句
+				var conditionArr = [];
+				$(".adddprow").each(function(i) {
+					var conditionMap = {};
+					var dpurl = $(this).find("input[name='dpurl']").val();
+					// 输入框均未输入值则不需要拼接，输入了值需要验证并拼接
+					if (i == 0 && dpurl == "") {
+						bigscreen += "";
+					} else {
+						conditionArr.push(dpurl);
+					}
+				});
+				bigscreen = JSON.stringify(conditionArr);
+			}
+		}
+
+		function isMobileOffice(v) {
+			var re = new RegExp(/^1(3|4|5|6|7|8|9)\d{9}$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		var onSubit = function(e) {
+			var normtype = e.row.normtype;
+			var normguid = e.row.normguid;
+			var cardmodelguid = mini.get('cardModel').getValue();
+			//多值指标
+			if (normtype == 2 && normguid != '') {
+				return epoint.renderCell(e, "action-icon icon-gear", "openDim");
+			}
+			//列表指标
+			else if(normtype == 4 && normguid != '' && cardmodelguid != ''){
+				return epoint.renderCell(e, "action-icon icon-gear", "mapping");
+			}
+		}
+
+		function openDim(e) {
+			epoint.openTopDialog('维度配置', "./cockpitdimconf?cardnormguid=" + e
+					+ "&cardguid=" + rowguid, searchData, {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+		
+		function mapping(e) {
+			var cardmodelguid = mini.get('cardModel').getValue();
+			epoint.openTopDialog('映射配置', "./cockpitmappingconf?cardnormguid=" + e
+					+ "&cardguid=" + rowguid + "&cardmodelguid=" + cardmodelguid, searchData, {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+		
+		grid.on("cellbeginedit", function(e) {
+			var record = e.record;
+			if (e.column.field == "normname") {
+				if (mini.get("normname")){
+					mini.get("normname").setText(record.normname);
+				}
+			}
+
+		});
+		
+		function saveAndView() {
+			if (epoint.validate()) {
+				var data = JSON.parse(grid.data);
+				var len = data.length;
+				var msg = true;
+				for (var i = 0; i < len; i++) {
+					console.log(data[i].rowguid);
+					console.log(data[i].normguid);
+					var normguid = data[i].normguid;
+					if (normguid == '') {
+						msg = false;
+					}
+				}
+				if (msg) {
+					getScreen();
+					epoint.execute('saveAndView','fui-form',[ bigscreen ],function(data) {
+						if(data.url){
+							epoint.openTopDialog('卡片预览', "../../../../../" + data.url
+									+ "?cardguid=" + rowguid, searchData, {
+								'width' : 350,
+								'height' : 500
+							});
+						}
+						else{
+							epoint.alert('该模板没有预览页面，无法预览！');
+						}
+					});
+				} else {
+					epoint.alert('请在数据绑定模块关联好指标！');
+				}
+			}
+		}
+	</script>
+</body>
+</html>

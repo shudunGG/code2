@@ -1,0 +1,108 @@
+#################################### 工作流相关配置参数 ####################################
+
+# 是否启用缓存，建议开发的时候配置成0，即不缓存，正式部署使用的时候配置成1
+Workflow_Cache_Enable=1
+
+#################################### redis相关配置参数 ####################################
+
+# redis服务配置，集群模式下面此参数必须配置(redis://host:port/dbIndex或者redis://user:password@host:port/dbIndex，如redis://192.168.203.100:6379/9。如果是redis集群格式为ip1:port1;ip2:port2...@password)
+# pika服务配置是兼容的，同样使用该参数，配置示例(pika://host:port/dbIndex或者pika://user:password@host:port/dbIndex，如pika://192.168.203.100:6379/9)
+# 阿里云redis服务配置(redis://host:port/dbIndex或者redis://user:password@host:port/dbIndex。示例redis://:o4XNenFy@r-vy21ef2f67cd8d04.redis.rds.cloud-inner.zj.gov.cn:6379/8)
+redisSetting={{ .Env.redissetting }}
+# redis连接池最大连接数,默认1000
+redisPoolMaxTotal=
+# redis连接池最大空闲连接数，默认100
+redisPoolMaxIdle=
+# 当redis池内没有返回链接时，最大等待时间（毫秒）默认30秒（30000）
+redis.pool.maxWait=
+# redis超时时间（毫秒）默认100秒（100000）
+redis.pool.readTimeOut=
+# 当调用borrow Object方法时，是否进行有效性检查，默认false，true-是，false-否
+redis.pool.testOnBorrow=
+# 当调用return Object方法时，是否进行有效性检查，默认false，true-是，false-否
+redis.pool.testOnReturn=
+# 额外redis订阅频道，多个频道以;间隔，当需要使用自定义频道时配置(名字不能包含中文)，如果不配，当配置redisSetting时默认开启框架缓存频道
+extendRedisChannel=
+# redis键值前缀，仅在redisSetting配置为集群地址或者同一个dbIndex时需要关注此参数，值只允许英文数字下划线组合，可选值：'contextname'(自动拼系统context名字,)，不配表示不加前缀，配置为其他值即为前缀值(处在相同范围的配置成同一个值，需要隔离互斥的配置成不同的值)
+# 注意后台会自动拼下划线'_'，例如配置为jweb，那么实际redis的key头都会自动拼上'jweb_'
+redisKeyPrefix=
+# redis订阅空间Scope范围，值只允许英文数字下划线组合。处在相同范围的配置成同一个值，需要隔离互斥的配置成不同的值；仅在redisSetting配置为集群地址或者同一个dbIndex时需要关注此参数
+# 例：A(a1,a2)B(b1,b2)C(c1,c2)3个系统，分别各自2台做集群缓存同步，那么在使用同一个redisSetting情况下，scope配置情况为：(a1,a2:scopea);(b1,b2:scopeb);(c1,c2:scopec)
+# 可选值：'contextname'(默认订阅频道名会自动拼系统context名字，extendRedisChannel中指定的频道不受影响)
+redisSubscriberScope=
+
+#################################### 个性化页面相关配置，详见在线文档：https://fdoc.epoint.com.cn/onlinedoc/rest/d/iiMbMb ####################################
+
+# 项目个性化产品、框架的页面前缀
+projectPagePath=
+# 产品个性化框架的页面前缀
+productPagePath=
+
+
+#################################### 框架安全控制相关配置参数 ####################################
+
+# 模块权限校验过滤器(com.epoint.basic.filter.ModulePermissionFilter)，详见在线文档：https://fdoc.epoint.com.cn/onlinedoc/rest/d/jMFb22
+modulepermissionfilter=com.epoint.basic.filter.ModulePermissionFilter
+
+#################################### 应用接入SOA时的相关配置参数，详见在线文档：https://fdoc.epoint.com.cn/onlinedoc/rest/d/QJzYv2 ####################################
+
+# SOA服务端地址(java soa示例：http://127.0.0.1:8080/epoint-web/rest/organization，dnet soa示例：http://192.168.202.69/SOAWebService/Organization.asmx?wsdl)
+# 微服务模式接入时配置格式<http://应用服务名称/应用的服务访问路径前缀>，如http://epointframe/epoint-web/rest
+SOAAddress=
+# 在SOA中注册的本应用的key和密码，中间分号;分隔
+SOA_Appkey_secret=
+# 如果对接的是dnet的soa，还有版本区分(7/8)，不填默认是8，如果接老版本dnet支撑平台请填7
+DnetSOAVersion=
+# FrameOU和FrameUser需要强制为1，其他看业务需要，如果需要从SOA端同步请设置为1
+FrameRole=
+FrameAddressGroup=
+# SOA数据是否入本地数据库（强烈不推荐使用，后面版本会废弃），如果入库请设置为1，数据库已有相同guid的数据会被更新成支撑平台的数据；由于要入库，请务必保证这些表字段不能缺少支撑平台里的字段
+# 只支持FrameOU、FrameUser入库，分别由以下参数控制
+soaFrameOUIntoDB=
+soaFrameUserIntoDB=
+# 在每次增量更新后执行外部方法，以满足个性化需求配置格式==>全类名:方法名
+customSoaSyncOutClass=
+# 统一消息接入SOA的配置地址（示例http://127.0.0.1:8080/epoint-web/rest/message）
+MessagesCenterSOAAddress=
+
+
+#################################### 统一消息相关配置参数 ####################################
+# 除了显示自己的appkey的remind消息，还需要显示其他系统的的消息，把其他应用的appkey配置如下参数，以';'隔开，仅当接入统一消息时生效
+extendRemindAppKey=
+
+#################################### 框架作为SOA服务端时的相关配置参数 ####################################
+
+# 作为支撑平台时，下面的参数必须配置为1
+enableSoaFlag=
+
+#################################### 其他临时配置参数 ####################################
+
+# 启动服务器时需要执行的方法，一般为缓存初始化。下面的是框架启动时需要初始化的内容,配置形式是类全路径:方法名,方法名缺省为initMemory,缺省可以不填
+# 如果不配置epointStartInit这个参数，那么框架默认会有几个启动项分别是缓存初始化(nocache)、quartz任务调度(notask)、框架内置任务|依托于前面的quartz(noschedule)、soa快照表检测(nosoasnapinit)
+# 这些启动项强制运行，如果你不需要，可以通过如下配置进行屏蔽：比如epointStartInit=nocache;notask，那么框架将不会启用缓存以及quartz任务调度
+epointStartInit=
+
+
+# 国际化，目前暂时有en(英文)、zh_CN(中文)两个值可选，当你配置了下面的参数时，用户管理界面将以名、姓、中间名展示
+local=
+
+# 调用框架的基类redirect方法，重定向地址的传输协议。http或https或不填
+protocol=
+
+# http连接池大小，不配默认200
+httpclient.pool.maxtotal=
+
+# 框架不可逆加解密类型切换入口，不可逆加密：SM2、SM4、AES、DES、RSA、SM3、SM2_SIGN、Digest（内部提供MD5、SHA1、SHA256加密方式，默认SHA1），默认使用SM3
+encryption.irreversible.type=
+# 框架不可逆算法参数，如：SM2的公钥密钥，AES的key及iv，配置规则：若有公钥私钥，则（公钥;密钥），若有key及iv，则（key;iv）,中间以“;”分隔
+# 有公钥无私钥：pubkey，无公钥有私钥：;prikey；有key无iv：key；有iv无key，则直接将iv作为key使用：iv；若不指定key，则无需配置
+encryption.irreversible.params=
+# 框架可逆加解密类型切换入口，可逆加解密：SM2、SM4、AES、DES、RSA，默认使用SM4
+encryption.reversible.type=
+# 框架可逆算法参数，如：SM2的公钥密钥，AES的key及iv，配置规则：若有公钥私钥，则（公钥;密钥），若有key及iv，则（key;iv）,中间以“;”分隔
+# 有公钥无私钥：pubkey，无公钥有私钥：;prikey；有key无iv：key；有iv无key，则直接将iv作为key使用：iv；若不指定key，则无需配置
+encryption.reversible.params=
+
+#用于应用参数--个性化加解密
+sm2publickey=
+

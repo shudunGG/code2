@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Excle导入历史详情页面</title>
+<!-- 请修改相对路径 -->
+<script src="../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content" id ="importHistoryDetail">
+		
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../rest/resource/jsboot"></script>
+
+	<script>
+		// 初始化页面
+		epoint.initPage('excelimporthistorydetailaction','',renderHistroyDetail);
+		
+		function renderHistroyDetail(detail_Obj) {
+	        var detail = epoint.decodeJson(detail_Obj.detail),
+	            html = [],
+	            i = 0,
+	            l;
+
+	        if (detail) {
+	            for (l = detail.length; i < l; i++) {
+	                html.push(generateSheetDetail(detail[i]));
+	            }
+	        }
+	        var histroyDetailEl = document.getElementById("importHistoryDetail");
+	        histroyDetailEl.innerHTML = "<div class='mini-dataimport-detail-content'>"+html.join('')+"</div>";
+	    }
+		
+	    function generateSheetDetail(options) {
+	        var i, len, arr,
+	            isCheckEnd = true,
+	            isSaveEnd = true;
+	        var list = ['<div class="dataimport-status-item">'];
+	        list.push('<h3 class="dataimport-status-title">' + options.sheetName + '</h3>');
+	        list.push('<h4 class="dataimport-status-type">校验结果：</h4>');
+	        list.push('<p class="dataimport-status-count">总计：' + options.checkCount + '条，成功：' + options.checkSuccessCount + '，失败：' + options.checkErrorCount + '条。');
+	        if ((arr = options.checkMsg) && (len = arr.length)) {
+	            list.push('<div class="dataimport-status-detail">');
+	            for (i = 0; i < len; i++) {
+	                list.push('<p>' + arr[i] + '</p>');
+	            }
+	            list.push('</div>');
+	        } else {
+	            isCheckEnd = false;
+	        }
+
+	        if (options.saveCount) {
+	            if (!isCheckEnd) {
+	                list.push('</p>');
+	                isCheckEnd = true;
+	            }
+	            list.push('<h4 class="dataimport-status-type">导入结果：</h4>');
+	            list.push('<p class="dataimport-status-count">总计：' + options.saveCount + '条，成功：' + options.saveSuccessCount + '，失败：' + options.saveErrorCount + '条。');
+
+	            if ((arr = options.saveMsg) && (len = arr.length)) {
+	                list.push('<a href="javascript:void(0);" class="dataimport-status-toggle">展开详情</a></p>');
+	                list.push('<div class="dataimport-status-detail">');
+	                for (i = 0; i < len; i++) {
+	                    list.push('<p>' + arr[i] + '</p>');
+	                }
+	                list.push('</div>');
+	            } else {
+	                isSaveEnd = false;
+	            }
+	        }
+
+	        if ((arr = options.taskMsg) && (len = arr.length)) {
+	            list.push('<a href="javascript:void(0);" class="dataimport-status-toggle">展开详情</a></p>');
+	            list.push('<div class="dataimport-status-detail">');
+	            for (i = 0; i < len; i++) {
+	                list.push('<p>' + arr[i] + '</p>');
+	            }
+	            list.push('</div>');
+	        } else if (!isCheckEnd || !isSaveEnd) {
+	            list.push('</p>');
+	        }
+
+	        list.push('</div>');
+
+	        return list.join('');
+	    }
+	</script>
+</body>
+</html>

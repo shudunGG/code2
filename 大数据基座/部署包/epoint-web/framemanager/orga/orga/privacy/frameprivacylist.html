@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>隐私列表</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- 左右布局页面的左侧内容 -->
+	<div class="fui-left" id="fui-left">
+		<!-- 左侧的标题
+             @local 国际化的标识
+             表示从语言包中的'sysParamCategory'取值
+         -->
+		<div role="head" title="隐私分类">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" onclick="openType()"
+					tooltip="分类设置"></a>
+			</div>
+		</div>
+
+		<!-- 左侧的内容区域 -->
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<!-- toolbar区域 -->
+	<div class="fui-right" id="fui-right">
+		<div class="fui-toolbar">
+			<a id="addUser" class="mini-button" state="primary" onclick="addUser">新增隐私</a> <a
+				id="deleteUser" class="mini-button" state="danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认删除？','',deleteSelected);}">删除选定</a>
+		</div>
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="版本">
+							<input bind="dataBean.privacyVersion" class="mini-textbox"
+								id="privacyVersion" />
+						</div>
+						<div role="control" label="状态">
+							<input bind="dataBean.privacyStatus" class="mini-combobox"
+								showNullItem="true" action="getPublishItem" />
+						</div>
+					</div>
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="privacyType" id="leftTreeNodeGuid"
+						class="mini-hidden" />
+					<!--<input bind="transferOuguid" id="ouguid"
+						class="mini-hidden" /> -->
+				</div>
+			</div>
+			<!-- 搜索按钮 -->
+			<a role="searcher" callback="searchData"></a> <a role="reset"
+				callback="resetCallback"></a> <a role="close"
+				callback="closeCallback"></a>
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				sortField="publishTime" sortOrder="desc" showPager="true"
+				action="getDataGridData" allowCellSelect="true"
+				allowCellValid="true" allowCellEdit="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="privacyVersion" width="100">版本</div>
+					<div field="showText" width="100%">隐私信息</div>
+					<div field="privacyType" width="200">隐私分类</div>
+					<div field="status" renderer="onPrivacyStatusRender" width="80">状态</div>
+					<div name="publishTime" field="publishTime"
+						data-options="{'format':'yyyy-MM-dd HH:mm:ss'}" width="200"
+						allowSort="true" sortOrder="asc">修订时间</div>
+					<div icon="icon-copy" width="60" renderer="onCopyRender">复制</div>
+					<div icon="icon-search" width="60" renderer="onDetailRender">预览</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- </div> -->
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		//初始化页面
+		epoint.initPage('frameprivacylistaction');
+
+		$(document).ready(function() {
+			// 将导出按钮文字设置为“导出”
+			$("#dataexport").find(".mini-button-text").text("导出")
+			$("#dataexport").click(function(e) {
+				$("#dataexport").find(".mini-button-text").text("导出")
+			});
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('leftTreeNodeGuid').setValue(id == 'f9root' ? "" : id);
+			//刷新表格
+			searchData();
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//新增用户
+		function addUser() {
+			var privacytypetreeselect = mini.get('leftTreeNodeGuid').getValue();
+			epoint.openDialog("新增隐私",
+					'framemanager/orga/orga/privacy/frameprivacy?privacytype='
+							+ privacytypetreeselect, addCallBack, {
+						'width' : 970,
+						'height' : 580
+					});
+		}
+
+		var onCopyRender = function(e) {
+			return epoint.renderCell(e, "action-icon icon-copy", "copyPrivacy",
+					"rowGuid");
+		};
+
+		function copyPrivacy(rowGuid) {
+			epoint.openDialog('复制隐私',
+					'framemanager/orga/orga/privacy/frameprivacy?privacyguid='
+							+ rowGuid, addCallBack, {
+						'width' : 970,
+						'height' : 580
+					});
+		}
+
+		var onDetailRender = function(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"viewPrivacy", "rowGuid");
+		};
+
+		function viewPrivacy(rowGuid) {
+			epoint.openDialog('预览隐私',
+					'framemanager/orga/orga/privacy/frameprivacydetail?rowguid='
+							+ rowGuid, addCallBack, {
+						'width' : 970,
+						'height' : 580
+					});
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param, {state : 'success'});
+				}
+				//刷新表格
+				searchData();
+			}
+		}
+
+		//重新绘制用户名称列
+		function onPrivacyVersionRender(e) {
+			var url = e.value;
+			var rowGuid = e.row['rowGuid'];
+			url = "<a style=\"cursor:pointer\" onclick=\"updatePrivacy('"
+					+ rowGuid + "')\" >" + e.value + "</a>";
+			return url;
+		}
+
+		//修改用户js
+		function updatePrivacy(rowGuid) {
+			epoint.openDialog("修改隐私",
+					'framemanager/orga/orga/privacy/frameprivacy?rowGuid='
+							+ rowGuid, editCallBack, {
+						'width' : 970,
+						'height' : 580
+					});
+		}
+
+		//绘制状态列
+		function onPrivacyStatusRender(e) {
+			var url = e.value;
+			var rowGuid = e.row['rowGuid'];
+			var state = e.row['status'];
+			var privacyTypeSelect=e.row['privacyType'];
+			if(url=="草稿"){
+				url = "<a style=\"cursor:pointer\" onclick=\"changeStatus('"
+					+ rowGuid + "', '" + state + "', '" + privacyTypeSelect+ "')\" >" + e.value + "</a>";
+			}
+			return url;
+		}
+
+		// 修改发布状态
+		function changeStatus(rowguid, status,privacyTypeSelect) {
+			var desci;
+			if (status != '发布') {
+				desci = "将覆盖原发布信息，是否确认覆盖发布？该发布信息默认帮您同意！";
+				epoint.confirm(desci, '', function() {
+					epoint.execute('publishPrivacy', '', '[' + rowguid + ','
+							+ status +','+ privacyTypeSelect + ']', msgCallBack)
+				});
+			}
+
+		}
+
+		//修改回调
+		function editCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param,  {state : 'success'});
+				}
+				//刷新表格
+				searchData();
+			}
+		}
+
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', [ 'datagrid', 'fui-form' ],
+					msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (msg.indexOf("成功")!=-1) {
+					epoint.showTips(msg,  {state : 'success'});
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				} else {
+					epoint.showTips(msg, {state : 'warning'});
+				}
+			}
+			searchData();
+		}
+
+		function onFileSuccess(e) {
+			if (e.data && e.data.extraDatas.msg) {
+				epoint.showTips(e.data.extraDatas.msg,  {state : 'info'});
+				epoint.refresh([ 'tree' ]);
+			}
+		}
+
+		// 弹出分类管理窗口
+		function openType() {
+			epoint.openDialog('隐私分类管理',
+					"framemanager/orga/orga/privacy/frameprivacytypelist",
+					isRefreshTree, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		// 刷新tree
+		function isRefreshTree(value) {
+			if (value) {
+				epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+			}
+		}
+		//]]>
+	</script>
+
+
+</body>
+</html>

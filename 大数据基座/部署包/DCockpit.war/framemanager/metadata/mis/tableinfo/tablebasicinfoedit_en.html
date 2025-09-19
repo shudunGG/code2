@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Add the data table</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="add"
+				onclick="update('1')">save changes</a> <a class="mini-button"
+				iconCls="icon-refresh" id="add" onclick="update('2')">Save and synchronize</a><a
+				class="mini-button" id="addCancel" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">Cancel the add</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<!-- The form layout -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 2column -->
+				<div role="row">
+					<div role="control" label="table Chinese name" starred="true">
+						<input class="mini-textbox"
+							bind="tablebasicinfoeditaction.tableBasicInfo.tableName"
+							required="true" requiredErrorText="Table name in ChineseCan't be empty"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="SQL table name" starred="true">
+						<input id="sqlTableName"
+							bind="tablebasicinfoeditaction.tableBasicInfo.sqlTableName"
+							class="mini-textbox" emptyText="dataThe name of the table" required="true"
+							requiredErrorText="SQLThe name of the tableCan't be empty" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="order no">
+						<input bind="tablebasicinfoeditaction.tableBasicInfo.ordernum"
+							class="mini-textbox" vType="maxLength:5;int" />
+					</div>
+					<div role="control"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		// Initialize the page
+		epoint.initPage('tablebasicinfoeditaction');
+
+		// save and close
+		function update(type) {
+			if (epoint.validate()) {
+				if (type == '1') {
+					epoint.execute('tablebasicinfoeditaction.update',
+							'fui-form', [ type ], closeCallback);
+				} else {
+					epoint.confirm('Modify the information synchronous changedataLibrary information tables,Are you sure to modify?', '', function() {
+						epoint.execute('tablebasicinfoeditaction.update',
+								'fui-form', [ type ], closeCallback);
+					});
+				}
+			}
+		}
+
+		// The callback for the close operation
+		function closeCallback(data) {
+			if (data.strScript) {
+				//if (data.strScript[0].indexOf("successful") != -1) {
+				if(data.success){
+					epoint.alertAndClose(data.strScript, '', null, null, 'success');
+				} else {
+					epoint.alert(data.strScript, '', null, 'error');
+				}
+			}
+		}
+	</script>
+</body>
+
+</html>

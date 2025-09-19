@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>活动时限设置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="saveModify" iconCls="icon-save">确认保存</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="启用时限控制">
+						<input id="chkTimeLimit" bind="chkTimeLimit" class="mini-checkbox"
+							style="width: 20%" onvaluechanged="onValueChangedTimeLimit" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="允许时限">
+						<input id="txtTimeLimit" bind="txtTimeLimit" class="mini-textbox"
+							style="width: 20%" required="true" />
+						<div id="timeLimitUnit" name="timeLimitUnit" showNullItem="false"
+							bind="workflowActivity.timeLimitUnit"
+							action="activitymanualtimelimitaction.getTiemUnitList"
+							class="mini-combobox" textField="text" valueField="id"
+							style="width: 30%" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="超时提醒方式">
+						<input id="chkOverTimeRemindType" bind="overTimeRemindType"
+							action="activitymanualtimelimitaction.getChkOverTimeRemindType"
+							textField="text" valueField="id" class="mini-checkboxlist"
+							style="width: 100%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="超时提醒内容">
+						<input id="overTimeRemindContent"
+							bind="workflowActivity.overTimeRemindContent"
+							class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="超时后的自动处理动作">
+						<input id="rdoOverTimeTransaction"
+							bind="overTimeTransaction"
+							action="getRdoOverTimeTransactionList" textField="text"
+							valueField="id" class="mini-radiobuttonlist" style="width: 100%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="超时通知其他人员">
+						<a id="btnSetOverTimePerson" class="mini-button"
+							onclick="SetOverTimePerson" style="width: 20%">设置人员</a>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="启用预警">
+						<input id="chkWarning" bind="chkWarning" class="mini-checkbox"
+							style="width: 20%" onvaluechanged="onValueChangedWarning" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="提前预警时间">
+						<input id="txtWarningTime" bind="txtWarningTime"
+							class="mini-textbox" style="width: 20%" required="true"
+							requiredErrorText="@local.paramValEmptyErr" />
+						<div id="earlyWarningTimeUnit" name="earlyWarningTimeUnit"
+							showNullItem="false" bind="workflowActivity.earlyWarningTimeUnit"
+							action="getEarlyWarningTimeUnitList" class="mini-combobox"
+							textField="text" valueField="id" style="width: 30%" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="预警提醒方式">
+						<input id="chkEarlyWarningRemindType"
+							bind="earlyWarningRemindType"
+							action="getChkEarlyWarningRemindType" textField="text"
+							valueField="id" class="mini-checkboxlist" style="width: 100%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="预警提醒内容">
+						<input id="earlyWarningRemindContent"
+							bind="workflowActivity.earlyWarningRemindContent"
+							class="mini-textbox" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input class="mini-hidden" id="activityGuid" bind="activityGuid" />
+	
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('activitymanualtimelimitaction', '', initCallBack);
+
+		// 初始化操作的回调
+		function initCallBack(data) {
+			var checkedTimeLimit = mini.get("chkTimeLimit").getChecked();
+			if (checkedTimeLimit) {
+				controlTimeLimit(true);
+				mini.get("chkWarning").setEnabled(true);
+			} else {
+				controlTimeLimit(false);
+				//启用预警
+				mini.get("chkWarning").setValue(false);
+				mini.get("chkWarning").setEnabled(false);
+				controlWarning(false);
+			}
+			var checkedWarning = mini.get("chkWarning").getChecked();
+			controlWarning(checkedWarning);
+
+		}
+		// 保存操作的回调
+		function callback(data) {
+			//超时后的自动处理动作
+			var isMessageWaring = mini.get("rdoOverTimeTransaction").value;
+			var checkedTimeLimit = mini.get("chkTimeLimit").getChecked();
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					if (isMessageWaring != '0' && checkedTimeLimit == true) {
+						epoint.alert('提示：自动处理实现需要预设处理人', '提示', '', 'warning');
+					}
+				}, 'info');
+			}
+		}
+		// 保存操作
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('activitymanualtimelimitaction.saveConfig',
+						'fui-form', callback);
+			}
+		}
+		//设置人员
+		function SetOverTimePerson() {
+			var activityGuid = mini.get("activityGuid").getValue();
+			var url = "framemanager/workflow/design/activitymanualtimelimitovertimepersonlist?activityGuid="
+					+ activityGuid;
+			epoint.openDialog("设置人员", url, "", {
+				width : 800,
+				height : 500
+			});
+		}
+
+		//允许时限复选框事件
+		function onValueChangedTimeLimit() {
+			var checked = this.getChecked();
+			//alert(checked);
+			if (checked) {
+				controlTimeLimit(true);
+				mini.get("chkWarning").setEnabled(true);
+			} else {
+				controlTimeLimit(false);
+				//启用预警
+				mini.get("chkWarning").setValue(false);
+				mini.get("chkWarning").setEnabled(false);
+				controlWarning(false);
+			}
+
+		}
+		//提前预警复选框事件
+		function onValueChangedWarning() {
+			var checked = this.getChecked();
+			controlWarning(checked);
+		}
+		function controlTimeLimit(value) {
+			//时限时间
+			mini.get("txtTimeLimit").setEnabled(value);
+			mini.get("timeLimitUnit").setEnabled(value);
+			//超时提醒方式
+			mini.get("chkOverTimeRemindType").setEnabled(value);
+			//超时提醒内容
+			mini.get("overTimeRemindContent").setEnabled(value);
+			//超时后的自动处理动作
+			mini.get("rdoOverTimeTransaction").setEnabled(value);
+			//超时通知其他人员
+			mini.get("btnSetOverTimePerson").setEnabled(value);
+		}
+		function controlWarning(value) {
+			//提前预警时间
+			mini.get("txtWarningTime").setEnabled(value);
+			mini.get("earlyWarningTimeUnit").setEnabled(value);
+			//预警提醒方式
+			mini.get("chkEarlyWarningRemindType").setEnabled(value);
+			//预警提醒内容
+			mini.get("earlyWarningRemindContent").setEnabled(value);
+		}
+		//]]>
+	</script>
+</body>
+</html>

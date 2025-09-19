@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>角色类别管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns">
+		<a id="addtype" class="mini-button" state="primary" onclick="add">新增类别</a>
+		<a id="savetype" class="mini-button" onclick="saveModify">保存修改</a> <a
+			id="deletetype" class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('将会删除类别下的所有角色和岗位，确认删除?','',deleteSelected);}">删除选中</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="roleTypeGuid" multiSelect="true" allowCellValid="true"
+			allowCellEdit="true" style="width: 100%; height: 100%;"
+			allowResize="true" showPager="true" action="getDataGridData"
+			allowCellSelect="true" editNextOnEnterKey="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="roleTypeName" name="RoleTypeName"
+					vtype="required;maxLength:50" width="100%">
+					角色类别名称<input property="editor" class="mini-textbox" maxLength="50"
+						style="width: 100%" />
+				</div>
+				<div field="orderNumber" vtype="int;range:0,99999999" width="200"
+					maxLength="8">
+					排序号<input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right"
+						style="width: 100%;" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+
+		//初始化页面
+		epoint.initPage('frameroletypelistaction', '', initGrid);
+
+		var grid = mini.get("datagrid");
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+
+		//soa需要隐藏列
+		function initGrid(e) {
+			if (e.enableSOA == true) {//要隐藏掉增删改操作
+				$('#btns').hide();
+				mini.get('addtype').setVisible(false);
+				mini.get('deletetype').setVisible(false);
+				mini.get('savetype').setVisible(false);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//新增类别
+		function add() {
+			var newRow = {
+			//lx : "保留非全局角色"
+			};
+			grid.addRow(newRow, 0);
+
+			grid.beginEditCell(newRow, "RoleTypeName");
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if (msg.indexOf("成功") == -1) {
+				//	epoint.alert(msg, '', '', 'warning');
+				//} else {
+				//	epoint.alert(msg, '', searchData());
+				//}
+				if (data.success) {
+					epoint.showTips(msg, {state : 'success'});
+					searchData();
+				} else {
+					epoint.showTips(msg, {state : 'warning'});
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			var rows = grid.getSelecteds();
+			for (var i = 0; i < rows.length; i++) {
+				if (rows[i]._state && rows[i]._state == 'added') {
+					grid.removeRow(rows[i], false);
+				}
+			}
+			var ids = grid.getSelectedIds();
+			if (ids.length == 0) {
+				epoint.showTips('删除成功',  {state : 'success'});
+			} else {
+				epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				//alert("请校验输入单元格内容");
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', 'datagrid', msgCallBack);
+			searchData();
+		}
+
+		//]]>
+	</script>
+
+
+</body>
+</html>

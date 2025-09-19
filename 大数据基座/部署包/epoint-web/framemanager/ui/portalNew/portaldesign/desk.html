@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>门户展示</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output(['framemanager/ui/portalNew/mCustomScrollbar/jquery.mCustomScrollbar.min.css',
+            './css/desk.css',
+            './css/ruler.css'
+        ]);
+    </script>
+    <style>
+      /* 个性化单独的 两个组件 */
+        #element-65beef16-5472-4f21-a454-f8e5306c39f3 {
+            box-shadow: none !important;
+            background-color: rgba(255,255,255,0.16) !important;
+        }
+        #element-body-65beef16-5472-4f21-a454-f8e5306c39f3 {
+            background-color: transparent !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main relative" id="main">
+        <!-- 右侧内容 -->
+        <div class="container-panel" id="container-panel">
+            <div class="painting-area" id="painting-area">
+                <div class="grid-container gridster row-line ui-droppable" id="grid-container">
+                    <ul>
+
+                    </ul>
+                </div>
+                <div class="clock"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="x-tmpl-mustache" id="element-content-tpl">
+        <ul class="element-body-list">
+            {{#itemList}}
+            <li class="todo-item">
+                <a href="javascript:;" class="todo-item-link" title="{{title}}" data-url="{{url}}" data-id="{{id}}">{{content}}</a>
+                <span class="todo-item-date">{{date}}</span>
+            </li>
+            {{/itemList}}
+        </ul>
+    </script>
+
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+        var domain = "rest/portaldeskaction/",
+            portalGuid = Util.getUrlParams('portalGuid'), // 门户ID
+            portalConfig = {
+                deskSave: domain + 'deskSave?isCommondto=true',
+                getElementDataUrl: domain + 'getElementData?isCommondto=true', // 获取元件中的列表和数量
+                getTemplateList: domain + 'getTemplateList?isCommondto=true', // 模板数据获取地址
+                setEleVisible: domain + 'setElementVisible?isCommondto=true', // 设置元件仓库模板是否可见
+                getTemplateById: domain + 'getTemplateById?isCommondto=true', // 根据id 查询模板数据
+                saveToTemplate: domain + 'saveToTemplate?isCommondto=true'
+            };
+    </script>
+
+    <script>
+        SrcBoot.output([
+            './js/jquery.gridster.min.js',
+            './js/jquery.ruler.js',
+            './js/common.js',
+            './js/desk.js'
+        ]);
+    </script>
+    <script>
+    	var sum_app = 0;
+        epoint.initPage('portaldeskaction', '@all', function (data) {
+            $('#title').html(data.title || '首页');
+
+            var pageData = data.pageData,
+                $clock = $('.clock'),
+                $container = $('#painting-area');
+
+            if (pageData.widthType == '2') {
+                $container.css('width', pageData.pageWidth + 'px');
+            } else {
+                $container.css('width', pageData.pagePercent + '%');
+            }
+
+            setTimeout(resetBaseDimensions, 200);
+
+         // if (!pageData.canMove && !pageData.canScale && !pageData.canShow) {
+            if (!pageData.canMove) {
+            	$clock.hide();
+            } else {
+                $clock.show();
+            }
+
+            commonUtil.loadTemp({
+                templ: './tpl/element.tpl',
+                callback: function () {
+                    // 初始化内容
+                    var tableData = data.tableData;
+                    gridster.remove_all_widgets();
+                    // 行列排序
+                    tableData.sort(
+                        function(a, b) {
+                        if(typeof a.col == "string") {
+                            a.col = +a.col
+                        }
+                        if(typeof b.col == "string") {
+                            b.col = +b.col
+                        }
+                        if(typeof a.row == "string") {
+                            a.row = +a.row
+                        }
+                        if(typeof b.row == "string") {
+                            b.row = +b.row
+                        }
+                        if (a.col === b.col) {
+                            return a.row - b.row;
+                        }
+                        return a.col > b.col ? 1 : -1;
+                    });
+                    $.each(tableData, function (index, item) {
+                    	if(item.visible) {
+                            sum_app++;
+                        }
+                        ElementManage.addElementItem(item, true);
+                    });
+
+                    gridster.disable();
+                }
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>

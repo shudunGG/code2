@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<title>待办事宜</title>
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<script>
+	document.write("<script src='../../../../fmui/js/cssboot.js?"
+			+ Math.random() + "'></scr" + "ipt>");
+</script>
+
+<script>
+	SrcBoot.output([ '../../../../fmui/showcase/comdto/css/common.css',
+			'../../../../fmui/showcase/comdto/css/todo_list.css' ]);
+</script>
+
+
+</head>
+
+<body class="ejs-f9-content">
+	<div class="page-loading"></div>
+	<!-- <header class="mui-bar mui-bar-nav">
+        <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+        <h1 class="mui-title">列表模版页</h1>
+    </header> -->
+	<!-- 内容区域 -->
+	<div class="mui-content">
+		<!-- 搜索框控件 -->
+		<div class="em-srhbar">
+			<span class="btn-search mui-icon mui-icon-search em-srhbar-icon"></span>
+			<input id="search" type="text"
+				class="em-srhbar-input ep-mui-searchbar" onSearch="onSearchCallback"
+				placeholder="请输入搜索关键字">
+		</div>
+		<!--数据列表-->
+		<div class="mui-scroll-wrapper em-handle-div">
+			<ul id="datagrid" class="ep-mui-list mui-table-view "
+				tplId="tpl-pullrefresh" idField="messageitemguid" extraId="search"
+				action="mobilehandlelistaction.getDataGridData" pageSize="15"
+				defaultPage="0" validateLevel="1"
+				fields="topic,beiZhu,targetdispname,fromDispName,generateDate,messageitemguid,pageUrl"
+				requestType="POST" onitemclick="listItemClick">
+			</ul>
+		</div>
+		<!--数据列表-->
+		<div class="mui-scroll-wrapper em-handled-div mui-hidden">
+			<ul id="datagrid_handled" class="ep-mui-list mui-table-view "
+				tplId="tpl-pullrefresh" idField="messageitemguid" extraId="search"
+				action="mobilehandlelistaction.getDoneDataGridData" pageSize="15"
+				defaultPage="0" validateLevel="1"
+				fields="topic,beiZhu,targetdispname,fromDispName,generateDate,messageitemguid,pageUrl,doneDate,handelName"
+				requestType="POST" onitemclick="listItemClick">
+			</ul>
+		</div>
+	</div>
+
+
+	<script type="text/template" id="tpl-pullrefresh">
+     <li class="mui-table-view-cell" pageUrl="{{pageUrl}}"  canhandle="{{canhandle}}">
+                <div class="em-todo-top-title">
+                    <span class="em-todo-title em-todo-title-only">{{topic}}</span>
+                </div>
+                <div>
+                    <span class="em-todo-proposer">上一步：{{fromDispName}}</span>
+                    <span class="em-todo-time">{{generateDate}}</span>
+                </div>
+            </li>
+  </script>
+
+	<script>
+		document.write("<script src='../../../../fmui/js/jsboot.js?"
+				+ Math.random() + "'></scr" + "ipt>");
+	</script>
+	<script>
+		Util.loadJs(initPage);
+
+		function initPage() {
+			epointm.initPage('mobilehandlelistaction', null, null, null, {
+				method : 'GET'
+			});
+		}
+		ejs.navigator.setMultiTitle({
+			titles : [ '待办', '已办' ],
+			success : function(result) {
+				switch (result.which) {
+				case 0:
+					document.querySelector('.em-handled-div').classList
+							.add('mui-hidden')
+					document.querySelector('.em-handle-div').classList
+							.remove('mui-hidden')
+					break;
+				case 1:
+					document.querySelector('.em-handle-div').classList
+							.add('mui-hidden')
+					document.querySelector('.em-handled-div').classList
+							.remove('mui-hidden')
+					break;
+
+				default:
+					break;
+				}
+			},
+			error : function(error) {
+			}
+		});
+
+		window.listItemClick = function(e, id, extras) {
+			// var pageUrl = Util.getRightUrl(this.getAttribute('pageUrl'));
+			// var pageUrl = Util.getProjectBasePath() + this.getAttribute('pageUrl');
+			var pageUrl = this.getAttribute('pageUrl');
+
+			ejs.page.open({
+				pageUrl : pageUrl,
+				success : function(result) {
+					epm.get('datagrid').refresh();
+					epm.get('datagrid_handled').refresh();
+
+				},
+				error : function(error) {
+				}
+			});
+		};
+
+		// 搜索回调函数
+		window.onSearchCallback = function() {
+			// 触发下拉刷新
+			epm.get('datagrid').refresh();
+		};
+
+		/**
+		 * 跳转页面
+		 * @param {String} url 跳转地址
+		 * @param {Object} extras url 拼接的参数
+		 */
+		window.openPage = function(url, extras) {
+
+			if (extras && typeof extras === 'string') {
+				extras = epm.parseJSON(extras);
+			}
+			ejs.page.open(url, extras);
+
+		};
+	</script>
+</body>
+
+</html>

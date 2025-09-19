@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>保存</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<style>
+body, html {
+	overflow: auto !important;
+}
+.form-control.span2 {
+    width: 23%;
+}
+</style>
+<body>
+
+	<!-- 	<div class="page-loading"></div> 
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btns">
+		<div class="btn-group mr10">
+			<a id="savetype" class="mini-button mini-btn-primary"
+				onclick="saveModify">保存并关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<!-- <a role="helper" style="margin-right:-5px" showtype="tooltip"></a> -->
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<div></div>
+	</div>
+
+	<div id="form" class="fui-form">
+		<div role="row">
+			<div role="control" label="步骤名称" starred="true"> 
+				<input id="stepname" name="stepName" class="mini-textbox"  vtype="maxLength:20"
+					required="true" emptyText="请输入步骤名称" style="width: 75%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="值的名称" starred="true">
+				<input id="valuename"  name="valuename"  class="mini-textbox"
+					required="true" emptyText="请输入值的名称" style="width: 75%" />
+			</div>
+		</div>
+		<div role="row">
+			<div role="control" label="生成序列方式" starred="true">
+				<input id="createsequencemethod" class="mini-combobox"
+					requiredErrorText="生成序列方式不能为空" name="createsequencemethod" 
+					data="[{text:'使用DB来获取sequence',id:'0'},{text:'使用计数器来计算sequence',id:'1'}]"
+					required="true" emptyText="请选择生成序列方式" style="width: 75%" />
+			</div>
+		</div>
+		<div role="row" id="row1">
+			<div role="control" label="数据库连接" >
+				<input id="dburl"  class="mini-combobox" action="getDataSourceList"
+					required="true" name="dburl"   textField="text"
+						valueField="id" emptyText="请选数据库连接" />
+			</div>
+			<div role="control" label="模式名称" >
+				<input id="schemaname" class="mini-combobox"  name="schemaname"  textField="text"
+						valueField="text"  emptyText="请选择模式名称" />
+			</div>
+		</div>
+		<div role="row" id="row2">
+			<div role="control" label="Sequence名称" starred="true">
+				<input id="dbsquencename" class="mini-combobox"  name="dbsquencename"  textField="text"
+						valueField="text"
+					required="true" emptyText="请选择Sequence名称"  />
+			</div>
+			<div role="control">
+			</div>
+		</div>
+		<div role="row" id="row3">
+			<div role="control" label="计数器名称">
+				<input id="sequencename" class="mini-textbox"  name="sequencename"/>
+			</div>
+			<div role="control" label="起始值" starred="true">
+				<input id="startValue" name="startValue" class="mini-textbox" required="true"
+					vtype="int" emptyText="请输入起始值" />
+			</div>
+		</div>
+		<div role="row" id="row4">
+			<div role="control" label="增长根据" starred="true">
+				<input id="incrementby" name="incrementby" class="mini-textbox" vtype="int"
+					required="true" emptyText="请输入增长根据" />
+			</div>
+			<div role="control" label="最大值" starred="true">
+				<input id="maxvalue" name="maxvalue" class="mini-textbox"
+					vtype="int" required="true" emptyText="请输入最大值" />
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepname');
+
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('addsequenceaction?nodeInfoKey=' + nodeInfo.key,
+					{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepname;
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			var createsequencemethod=nodeData.createsequencemethod;
+			if(createsequencemethod){
+				if(createsequencemethod=='0'){
+					$('#row1').show();
+					$('#row2').show();
+					$('#row3').hide();
+					$('#row4').hide();
+				}else {
+					$('#row1').hide();
+					$('#row2').hide();
+					$('#row3').show();
+					$('#row4').show();
+				}
+			}else{
+				$('#row1').show();
+				$('#row2').show();
+				$('#row3').hide();
+				$('#row4').hide();
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate()) {
+				// 把表格的数据拿出来放到隐藏域中
+				var nodeForm = getForm();
+				epoint.execute('saveAll', '@none', [ nodeInfo, nodeForm ],
+						function(data) {
+							if (data.success == 'success') {
+								epoint.closeDialog(nodeForm);
+							} else {
+								epoint.alert(data.msg, '', null, 'warning');
+							}
+						});
+			}
+		}
+		
+		mini.get('createsequencemethod').on('valuechanged',function(data){
+			if(data.value=='0'){
+				$('#row1').show();
+				$('#row2').show();
+				$('#row3').hide();
+				$('#row4').hide();
+				mini.get('sequencename').setValue('');
+				mini.get('startValue').setValue('');
+				mini.get('incrementby').setValue('');
+				mini.get('maxvalue').setValue('');
+			}else {
+				$('#row1').hide();
+				$('#row2').hide();
+				$('#row3').show();
+				$('#row4').show();
+				mini.get('dburl').setValue('');
+				mini.get('schemaname').setValue('');
+				mini.get('dbsquencename').setValue('');
+				mini.get('sequencename').setValue('');
+				mini.get('startValue').setValue('1');
+				mini.get('incrementby').setValue('1');
+				mini.get('maxvalue').setValue('999999999');
+			}
+		});
+		
+		mini.get('dburl').on('valuechanged',function(data){
+			epoint.execute('getSchemaNameList','@none',data.value,function(e){
+				mini.get('schemaname').setData(e);
+			});
+		});
+		
+		mini.get('schemaname').on('valuechanged',function(data){
+			var dsid=mini.get('dburl').getValue();
+			epoint.execute('getSequenceNameList','@none',[data.value,dsid],function(e){
+				mini.get('dbsquencename').setData(e);
+			});
+		});
+		
+		
+	</script>
+</body>
+
+</html>

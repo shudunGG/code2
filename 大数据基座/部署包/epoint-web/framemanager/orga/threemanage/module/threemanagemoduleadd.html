@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>模块表单</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+
+    <style>
+        .bg-color-list {
+                width: 100%;
+            }
+    
+            .bg-color-item {
+                float: left;
+                margin-top: 1px;
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+                border: 2px solid transparent;
+                opacity: .6;
+                position: relative;
+                cursor: pointer;
+            }
+    
+            .bg-color-item+.bg-color-item {
+                margin-left: 4px;
+            }
+    
+            .bg-color-item:hover,
+            .bg-color-item.active {
+                box-shadow: 0 0 3px rgba(0, 0, 0, .15);
+                opacity: 1;
+            }
+            .bg-color-item:hover:after,
+            .bg-color-item.active:after {
+                content: "";
+                display: block;
+                height: 100%;
+                width: 100%;
+                background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJCAYAAAAGuM1UAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFHGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDIgNzkuMTYwOTI0LCAyMDE3LzA3LzEzLTAxOjA2OjM5ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOCAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDE4LTA5LTIxVDE2OjE2OjA2KzA4OjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAxOC0wOS0yMVQxNjoxNzoxMiswODowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAxOC0wOS0yMVQxNjoxNzoxMiswODowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2YjQxZjFiNC03NmUyLTc5NGMtOTBhYy1kN2MyNGYzNGQ3NzMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NmI0MWYxYjQtNzZlMi03OTRjLTkwYWMtZDdjMjRmMzRkNzczIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NmI0MWYxYjQtNzZlMi03OTRjLTkwYWMtZDdjMjRmMzRkNzczIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo2YjQxZjFiNC03NmUyLTc5NGMtOTBhYy1kN2MyNGYzNGQ3NzMiIHN0RXZ0OndoZW49IjIwMTgtMDktMjFUMTY6MTY6MDYrMDg6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE4IChXaW5kb3dzKSIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5jstTzAAAAgElEQVQYGWP4//8/A5E4CojZiFHICMQ9/yFgDSHFTEA8Har4ExA7wCQ8gXg2EDMjKQaxF0MVvwNic5A4SIILiB9DJdaB3AnF66BiL4FYH2YQzDQNJE3boPg/VEwD2ZnI7lUE4nv/EeAeVIwBlwYQlgLi61AshS0gsIWMGBRjDTkAVihc1I/Fdr4AAAAASUVORK5CYII=")center no-repeat;
+                
+            }
+    </style>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" state="primary"
+			onclick="if (epoint.validate()) {epoint.execute('addModule','',newCallback);}">保存并新建</a>
+		<a class="mini-button" id="addClose"
+			onclick="if (epoint.validate()) {epoint.execute('addModule','',closeCallback);}">保存并关闭</a>
+		<a class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+    <div class="fui-content">
+        <div id="fui-form" class="fui-form">
+            <div role="form">
+                <!-- 2列 -->
+                <div role="row" id="parentModuleRow">
+                    <div role="control" label="上级模块">
+                        <input id="parentModule" bind="parentModuleName" allowInput="false" class="mini-buttonedit"
+                            style="width: 90%" onbuttonclick="selectModule" selectOnFocus="true" />
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="模块名称" starred="true">
+                        <input id="editModuleName" bind="frameModule.moduleName" class="mini-textbox" required="true"
+                            style="width: 90%" vtype="maxLength:100"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="模块菜单名称">
+                        <input bind="frameModule.moudleMenuName" class="mini-textbox" style="width: 90%" vtype="maxLength:100"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="模块地址">
+                        <input bind="frameModule.moduleUrl" class="mini-textbox" style="width: 90%" />
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="排序号">
+                        <input bind="frameModule.orderNumber" class="mini-textbox" style="width: 90%" vtype="int;range:0,99999999"/>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="禁用">
+                        <div class="mini-checkbox" bind="isDisable" readOnly="false"></div>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="弹出窗口">
+                        <div class="mini-checkbox" bind="isBlank" readOnly="false"></div>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="是否在菜单中隐藏">
+                        <div class="mini-checkbox" bind="notShowInMenu" readOnly="false"></div>
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="大图片">
+                        <input id="bigIconAddress" bind="bigIconAddress" allowInput="false" class="mini-buttonedit"
+                            style="width: 90%" onbuttonclick="openicon('big')" selectOnFocus="true" />
+                    </div>
+                </div>
+                <div role="row">
+                    <div role="control" label="图标背景颜色">
+                        <div id="bg-color-select" class="bg-color-list clearfix"></div>
+                        <input id="bg-color-hidden" class="mini-hidden" value="#3391e5" bind="picbackgroundcolor" />
+                    </div>
+                </div>
+
+                <!-- div role="row">
+						<div role="control" label="小图片">
+							<input id="smallIconAddress" bind="frameModule.smallIconAddress" allowInput="false"
+							class="mini-buttonedit" style="width:90%" onbuttonclick="openicon('small')" selectOnFocus="true" />
+						</div>
+					</div-->
+            </div>
+            <input bind="oldParentModuleCode" id="oldParentModuleCode" class="mini-hidden" />
+        </div>
+    </div>
+
+    <input bind="parentModuleCode" id="parentModuleCode" class="mini-hidden" />
+    <input id="parentModuleBack" class="mini-hidden" />
+
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script type="text/javascript">
+        //<![CDATA[
+
+        var $bgSelectWrap = $('#bg-color-select');
+        var bgColor = mini.get('bg-color-hidden');
+        var colorsArr = ['#3391e5', '#58cece', '#f16caa', '#7d9459', '#298aae', '#ffce3d', '#fe5d58'];
+        var COLOR_ITEM_TPL =
+            '<span class="bg-color-item" id="bg-color-item-{{id}}" style="background-color:{{text}};" title="{{text}}"></span>';
+        var colorHTML = [];
+        $.each(colorsArr, function (i, item) {
+            colorHTML.push(Mustache.render(COLOR_ITEM_TPL, {
+                id: item.substr(1),
+                text: item
+            }));
+        });
+        $(colorHTML.join('')).appendTo($bgSelectWrap.empty());
+
+        $bgSelectWrap.on('click', '.bg-color-item', function () {
+            var $this = $(this);
+            var c = $this[0].title;
+            bgColor.setValue(c);
+            $this.addClass('active').siblings().removeClass('active');
+        });
+
+        function epoint_preload(controls) {
+            // 获取设置颜色
+            $.each(controls, function (i, item) {
+                if (item.id == 'bg-color-hidden') {
+                    try {
+                        var c = item.value || item.text;
+
+                        c && $bgSelectWrap.find('#bg-color-item-' + c.substr(1)).addClass('active').siblings().removeClass(
+                            'active');
+                    } catch (error) {
+
+                    }
+                }
+            })
+        }
+
+        // 初始化页面
+        epoint.initPage('threemanagemoduleaddaction', '', initCallBack);
+
+        //由list页面传参时进行触发
+        function initCallBack(param) {
+            mini.get("parentModule").setText(
+                mini.get("parentModule").getValue());
+            mini.get("bigIconAddress").setText(
+                mini.get("bigIconAddress").getValue());
+        }
+
+        function selectModule(e) {
+            epoint.openDialog('选择上级模块',
+                "framemanager/orga/uiset/menu/module/selectmodule?threemanage=1",
+                selectModuleOperJS, {
+                    'width': 300,
+                    'height': 400
+                });
+        }
+
+        function selectModuleOperJS(rtnValue) {
+            if (rtnValue && rtnValue != 'close') {
+                var s = rtnValue.split(";");
+                if (s[0] != "") {
+                    mini.get("parentModule").setText(s[0]);
+                    mini.get("parentModule").setValue(s[0]);
+                    mini.get("parentModuleCode").setValue(
+                        s[1] == 'undefined' ? '' : s[1]);
+                }
+            }
+        }
+
+        function openicon(type1) {
+            type = type1;
+            epoint.openDialog('选择图标',
+                "framemanager/orga/uiset/menu/module/selectoa8icon?type=" +
+                type1, openiconOperJS, {
+                    'width': 1000,
+                    'height': 420
+                });
+        }
+
+        function openiconOperJS(rtnValue) {
+            if (rtnValue && rtnValue != 'close') {
+                if (type == "big") {
+                    mini.get("bigIconAddress").setText(rtnValue);
+                    mini.get("bigIconAddress").setValue(rtnValue);
+                } else {
+                    //mini.get("smallIconAddress").setText(rtnValue);
+                    //mini.get("smallIconAddress").setValue(rtnValue);
+                }
+            }
+        }
+
+        function newCallback(data) {
+            var parentModuleBack = mini.get("parentModuleBack");
+            var parentModule = mini.get("parentModule");
+            if (data.msg) {
+                epoint.showTips(data.msg,  {state : 'success'});
+                parentModuleBack.setValue(parentModule.getValue());
+                epoint.clear('fui-form');
+                parentModule.setText(parentModuleBack.getValue());
+                parentModule.setValue(parentModuleBack.getValue());
+            }
+        }
+
+        function closeCallback(data) {
+            if (data.msg) {
+                epoint.closeDialog(data.msg);
+            }
+        }
+
+        //]]>
+    </script>
+</body>
+
+</html>

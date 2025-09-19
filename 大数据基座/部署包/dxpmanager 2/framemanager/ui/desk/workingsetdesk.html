@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>工作平台桌面应用查看</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+
+<style>
+.search-btn .mini-buttonedit-icon {
+	background-position: -109px -154px;
+	background-image: url(../../image/home/icon-13x13.png);
+	background-repeat: no-repeat;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<!-- 左侧的内容区域 -->
+		<div role="head" title="应用注册"></div>
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- 条件区域 -->
+		<div class="fui-condition" style="display:none">
+			<div class="fui-form" id="fui-form">
+				<input bind="classguid" id="classguid" class="mini-hidden" />
+			</div>
+		</div>
+		<!-- 内容区域 -->
+		<div id="datagrid" class="mini-treegrid" sortOrder="desc"
+			idField="appguid" multiSelect="true" style="height: 100%;"
+			treeColumn="appname" allowResize="true" action="getModuleGrid"
+			dataField="data">
+			<div property="columns">
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div name="appname" field="appname" width="80" headerAlign="center"
+					allowSort="true" sortOrder="desc">应用名称</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[
+		//初始化请求
+		epoint.initPage('workingsetdeskaction');
+		var classguid = mini.get('classguid');
+		var tree = mini.get('tree');
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			//将左侧树点击的节点id放到隐藏域中
+			classguid.setValue(id);
+			//刷新表格
+			searchData();
+		});
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

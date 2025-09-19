@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>类型转换</title>
+    <!-- 请修改相对路径 -->
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<!-- 必须有，加载时的loading效果 -->
+<div class="page-loading"></div>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <div class="btn-group mr10">
+        <a class="mini-button mini-btn-primary" id="save"
+           onclick="saveModify">保存修改</a> <a
+            class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+    </div>
+</div>
+
+<!-- 内容区域 -->
+<div class="fui-content">
+    <div id="form" class="fui-form" >
+        <div role="form">
+            <div role="row">
+                <div role="control" label="步骤名称" starred="true">
+                    <input id="stepName" name="stepName" class="mini-textbox"
+                           required="true" emptyText="请输入步骤名称" vtype="maxLength:20" requiredErrorText="步骤名称不能为空"/>
+                </div>
+            </div>
+            <div role="row">
+                <div role="control" label="参数值">
+                    <input id="fieldlist" name="fieldlist" class="mini-hidden">
+                </div>
+            </div>
+            <div role="row" style="width:90%;float:right">
+                <div id="defaultModel" class="mini-datagrid" idField="rowguid"
+                     showPager="false" action="getDataGridData">
+                    <div property="columns">
+                        <div width="35" headerAlign="center" name="field" field="field"
+                             align="center">
+                            字段名称 <input property="editor" class="mini-combobox"
+                                        data="Genderstime1" style="width: 90%;"
+                                        inputStyle="text-align:left" required="true"
+                                        onValueChanged="fieldChanged" 
+                                        requiredErrorText="字段名称不能为空!"/>
+                        </div>
+                        <div width="35" headerAlign="center" align="center"
+                             name="chinesename" field="chinesename">
+                            中文名称<input property="editor" class="mini-textbox chinesename-operate-select"
+                                       style="width: 90%;" inputStyle="text-align:left"
+                                       required="true" readonly="true"
+                                       requiredErrorText="中文名称不能为空!"/>
+                        </div>
+                        <div width="25" headerAlign="center" align="center"
+                             name="type" field="type">
+                            数据类型<input property="editor" class="mini-textbox type-operate-select"
+                                       style="width: 90%;" inputStyle="text-align:left"
+                                       required="true" readonly="true"
+                                       requiredErrorText="数据类型不能为空!"/>
+                        </div>
+                        <div width="20" headerAlign="center" align="center"
+                             name="rename" field="rename" visible="false">
+                            转换别名<input property="editor" class="mini-textbox"
+                                       style="width: 90%;" inputStyle="text-align:left"
+                                       onvalidation="englishjy"/>
+                        </div>
+                        <div width="20" headerAlign="center" align="center"
+                             field="newcolumnname" visible="false">
+                            转换中文名<input property="editor" class="mini-textbox"
+                                        style="width: 100%;" inputStyle="text-align:left"
+                                        required="true" requiredErrorText="转换中文名不能为空!"/>
+                        </div>
+                        <div width="40" headerAlign="center" align="center"
+                             name="convertype" field="convertype" type="comboboxcolumn">
+                            转换规则选择<input property="editor" class="mini-combobox convertype-operate-select"
+                                         style="width: 90%;" inputStyle="text-align:left"
+                                         onValueChanged="convertypeChanged" data="convertypeData"
+                                         required="true" requiredErrorText="转换规则不能为空!"/>
+                        </div>
+                        <div width="35" headerAlign="center" align="center"
+                             name="dateformat" field="dateformat" type="comboboxcolumn">
+                            日期转换格式<input property="editor" class="mini-combobox dateformat-operate-select"
+                                         style="width: 90%;" inputStyle="text-align:left"
+                                         data="dateformatData"/>
+                        </div>
+                        <div width="15" headerAlign="center" align="center"
+                             name="decimalstr" field="decimalstr">
+                            保留小数点位数<input property="editor" class="mini-textbox decimalstr-operate-select"
+                                          style="width: 90%;" inputStyle="text-align:left" vtype="int;range:0,27"/>
+                        </div>
+
+                        <div name="add" width="15" headerAlign="center" align="center"
+                             renderer="onaddRenderer1">新增
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/jsboot.js"></script>
+<script src="js/fieldcheck.js"></script>
+<script>
+		// 初始化页面
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var grid1 = mini.get("defaultModel");
+		var Genderstime1;
+		var convertypeData;
+		var dateformatData;
+		var emptyfilljson;
+		var nodeData;
+		var nodeInfo;
+		var grid1 = mini.get('defaultModel');
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modelconverttypeaction?stepId=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (e.Genderstime1) {
+				Genderstime1 = e.Genderstime1;
+			}
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {
+			dateformatData = "[{text : 'yyyy/MM/dd',id : 'yyyy/MM/dd'},{text:'yyyy/MM/dd HH:mm:ss',id:'yyyy/MM/dd HH:mm:ss'},"
+				+ "{text : 'yyyyMMdd',id : 'yyyyMMdd'},{text:'yyyyMMddHHmmss',id:'yyyyMMddHHmmss'}"
+				+ ",{text : 'yyyy-MM-dd',id : 'yyyy-MM-dd'},{text : 'yyyy-MM-dd HH:mm:ss',id : 'yyyy-MM-dd HH:mm:ss'},"
+				+ "{text : 'MM/dd/yyyy',id : 'MM/dd/yyyy'},{text : 'MM/dd/yyyy HH:mm:ss',id : 'MM/dd/yyyy HH:mm:ss'},{text : 'MM-dd-yyyy',id : 'MM-dd-yyyy'}"
+				+ ",{text : 'MM-dd-yyyy HH:mm:ss',id : 'MM-dd-yyyy HH:mm:ss'}]";
+			
+			for(var i=0,length=grid1.data.length;i<length;i++){
+				grid1.beginEditRow (i);
+			}
+		}
+
+		function setGridData() {
+			var rows = grid1.findRows();
+			$.each(rows, function(i, o) {
+				grid1.commitEditRow(o);
+			});
+			var dataStr = JSON.stringify(grid1.getData());
+			mini.get('fieldlist').setValue(dataStr);
+		}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate('@all', false)) {
+				setGridData();
+				var griddata=grid1.getData();
+				for(var i=0;i<griddata.length;i++){
+				    for(var j=i+1;j<griddata.length;j++){
+                        if(griddata[i].field==griddata[j].field){
+                            epoint.alert(griddata[i].field+'不能重复转换！');
+                            loadParam();
+                            return;
+                        }
+				    }
+				}
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		// 绘制新增的按钮
+		var onaddRenderer1 = function(e) {
+			var row = e.rowIndex;
+			var uid = e.record._uid;
+			if (row == 0) {
+				return epoint.renderCell(e, "action-icon icon-addcircle",
+						"add1");
+			} else {
+				var s = '<a href="javascript:deleteinfo1(\'' + uid
+						+ '\')" class="action-icon icon-minuscircle"></a>';
+				return s;
+			}
+		};
+
+		// 新增一行调用的方法
+		function add1() {
+			var newRow = {
+				name : "New Row"
+			};
+			grid1.addRow(newRow);
+			grid1.beginEditRow(newRow);
+		}
+
+		// 删除一行调用的方法
+		function deleteinfo1(row_uid) {
+			var row = grid1.getRowByUID(row_uid);
+			grid1.removeRow(row, true);
+		}
+		
+		// 字段选择
+ 		function fieldChanged(e){
+			var rowid = e.sender.ownerRowID - 1;
+			var record = grid1.getRow(rowid);
+			var stype = e.selected.type;
+			var chinesename=e.selected.chinesename;
+
+			var $parent = $(e.sender.el).parent().parent();
+			var $chinesename = mini.byClass('chinesename-operate-select',
+								$parent);
+			mini.get($chinesename).setValue(chinesename);
+			var $type = mini.byClass('type-operate-select',
+								$parent);
+			mini.get($type).setValue(stype);
+            stype=stype.toLowerCase();
+			if (stype == "string" || stype == "nvarchar2" || stype == "nvarchar"|| stype == "varchar") {
+				convertypeData = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'},{text:'字符串到数值(Integer)',id:'1'},{text:'字符串到数值(Double)',id:'2'},{text:'字符串到数值(Long)',id:'3'},{text:'字符串到日期',id:'4'}]";
+			} else if (stype == "date" || stype == "datetime" || stype == "timestamp") {
+				convertypeData = "[{text:'不转换',id:'-1'},{text :'转换为标准字符串',id : '0'},{text : '日期类型到字符串',id : '6'}]";
+			} else if (stype == "numeric" || stype == "bigint" || stype == "int" || stype == "decimal" || stype == "double" || stype == "float" || stype == "integer") {
+				convertypeData = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'},{text:'数值到字符串',id:'5'}]";
+			} else {
+				convertypeData = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'}]";
+			}
+
+			var $convertype = mini.byClass('convertype-operate-select',
+								$parent);
+			mini.get($convertype).setData(convertypeData);
+
+			//grid1.getCellEditor('convertype', rowid).setData(convertypeData);
+		}
+ 		
+		// 规则选择
+ 		function convertypeChanged(e){
+			var rows = grid1.findRows();
+			$.each(rows, function(i, o) {
+			    grid1.commitEditRow(o);
+                grid1.beginEditRow (o);
+			});
+		}
+ 		
+ 		grid1.on('cellbeginedit', function(e) {
+			var record = e.record;
+			if (e.column.field == "convertype") {
+				var stype = record.type;
+				if(stype){
+                    stype=stype.toLowerCase();
+                    var data;
+                    if (stype == "string" || stype == "nvarchar2" || stype == "nvarchar"|| stype == "varchar") {
+                        data = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'},{text:'字符串到数值(Integer)',id:'1'},{text:'字符串到数值(Double)',id:'2'},{text:'字符串到数值(Long)',id:'3'},{text:'字符串到日期',id:'4'}]";
+                    } else if (stype == "date" || stype == "datetime" || stype == "timestamp") {
+                        data = "[{text:'不转换',id:'-1'},{text :'转换为标准字符串',id : '0'},{text : '日期类型到字符串',id : '6'}]";
+                    } else if (stype == "numeric" || stype == "bigint" || stype == "int" || stype == "decimal" || stype == "double" || stype == "float" || stype == "integer") {
+                        data = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'},{text:'数值到字符串',id:'5'}]";
+                    } else {
+                        data = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'}]";
+                    }
+				}else{
+				   data = "[{text:'不转换',id:'-1'},{text:'转换为标准字符串',id:'0'}]";
+				}
+				e.editor.setData(data);
+			} else if (e.column.field == "dateformat") {
+				var data = "[{text : 'yyyy/MM/dd',id : 'yyyy/MM/dd'},{text:'yyyy/MM/dd HH:mm:ss',id:'yyyy/MM/dd HH:mm:ss'},"
+				+ "{text : 'yyyyMMdd',id : 'yyyyMMdd'},{text:'yyyyMMddHHmmss',id:'yyyyMMddHHmmss'}"
+				+ ",{text : 'yyyy-MM-dd',id : 'yyyy-MM-dd'},{text : 'yyyy-MM-dd HH:mm:ss',id : 'yyyy-MM-dd HH:mm:ss'},"
+				+ "{text : 'MM/dd/yyyy',id : 'MM/dd/yyyy'},{text : 'MM/dd/yyyy HH:mm:ss',id : 'MM/dd/yyyy HH:mm:ss'},{text : 'MM-dd-yyyy',id : 'MM-dd-yyyy'}"
+				+ ",{text : 'MM-dd-yyyy HH:mm:ss',id : 'MM-dd-yyyy HH:mm:ss'}]";
+				var convertype = record.convertype;
+				if (convertype != '4') {
+					e.cancel = true;
+				} else {
+					e.editor.request = true;
+					e.editor.setData(data);
+				}
+			} else if (e.column.field == "decimalstr") {
+				var convertype = record.convertype;
+				if (convertype != '2' && convertype != '3') {
+					e.cancel = true;
+				} else {
+					e.editor.request = true;
+				}
+			}
+		});
+		
+		grid1.on('cellcommitedit', function(e) {
+			var record = e.record;
+			if (e.editor && e.column.field == "convertype") {
+				grid1.updateRow(record, {
+					decimalstr : "",
+					dateforamt : "",
+				});
+			}
+		});
+		
+		function englishjy(e) {
+			var retainedFields = ['like','as'];
+			if(retainedFields.indexOf(e.value) != -1){
+				e.errorText = "转换别名不能为数据库保留字："+retainedFields;
+				e.isValid = false;
+				return;
+			}
+			var reg =  new RegExp("^[a-zA-Z][a-zA-Z0-9_]*$");
+			var v = reg.test(e.value);
+			if (!v) {
+				e.errorText = "转换别名必须以字母开头，英文、数字、下划线作为字段组合名称!";
+				e.isValid = false;
+			}
+		}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../../../frame/fui/js/cssboot.js"></script>
+    <script>
+        SrcBoot.output([
+            '../../css/common.css',
+            './css/common.css',
+            './css/add-development.css'
+        ]);
+    </script>
+    <title>模型开发</title>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+    <!-- 缩小状态添加state-mini -->
+    <div class="main-box ">
+        <div class="left-nav">
+            <div class="search-container">
+                <div class="search-box">
+                    <input id="search" type="text" placeholder="请输入关键词">
+                    <a href="javascript:;" id="search-btn"></a>
+                </div>
+            </div>
+            <div class="tab left-tab" id="tab">
+
+            </div>
+            <!-- 搜索结果容器 -->
+            <div class="search-result hidden">
+                <ul class="json-list result-json" id="search-result">
+
+                </ul>
+                <a class="back-btn" href="javascript:;">返回</a>
+            </div>
+
+            <a class="left-control" href="javascript:;"></a>
+        </div>
+
+        <div class="design-main">
+            <!-- 头部 -->
+            <div class="design-header clearfix" id="design-header">
+                <div class="design-functions l">
+                    <ul class="clearfix">
+                        <li class="l func-item">
+                            <div class="l icons-func func-prev unprev" title="Ctrl+z"></div>
+                            <div class="l icons-func func-next unnext" title="Ctrl+y"></div>
+                        </li>
+                        <li class="l func-item">
+                            <div class="icons-func func-release" title="Ctrl+s" id="func-release">保存</div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- <div class="design-help r">操作说明</div> -->
+            </div>
+            <!-- 内容 -->
+            <div class="design-container">
+                <!-- 用法简介 -->
+                <!-- <div class="design-item-tips hidden" id="design-item-tips">
+                </div> -->
+                <div class="design-panel" id="design-panel">
+                    <div class="design-name hidden">模型名称: <span id="design-name"></span></div>
+                    <div class="design-diagram design-tip" id="myDiagramDiv">
+
+                    </div>
+                    <div class="design-btns">
+                        <ul>
+                            <li data-ref="plus" class="btns-icons btn-plus"></li>
+                            <li data-ref="reduce" class="btns-icons btn-reduce"></li>
+                            <!-- <li data-ref="location" class="btns-icons btn-location"></li>
+                            <li data-ref="full" class="btns-icons btn-fullscreen"></li> -->
+                        </ul>
+                    </div>
+                    <!-- 右键菜单 -->
+                    <div id="contextMenu" class="contextMenu">
+                        <ul>
+                            <li data-type="main" class="cxm cxm-open"><i class="icon-item set-icon"></i>预览SQL</li>
+                        	<li data-type="previewdata" class="cxm cxm-open"><i class="icon-item set-icon"></i>预览数据</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- 底部容器 -->
+                <div class="booter-bar tab" id="tab2">
+                    <ul class="hd tool-top clearfix">
+                        <li class="preview">预览</li>
+                        <li class="journal">日志</li>
+                    </ul>
+                    <div class="bd">
+						<div id="datagridview" style="overflow: auto;height:220px" class="mini-datagrid" showPager="false" allowAlternating="true">
+							<!-- <div property="columns">
+								<div type="indexcolumn" width="55" headerAlign="center">序</div>
+								<div field="stepname" headerAlign="center" width="120">
+								步骤名称
+								</div>
+								<div field="comment" headerAlign="center" width="120">
+								注释
+								</div>
+								<div field="result" headerAlign="center" width="120">
+								结果
+								</div>
+								<div field="reasaon" headerAlign="center" width="120">
+								原因
+								</div>
+								<div field="filename" headerAlign="center" width="120">
+								文件名
+								</div>
+								<div field="count" headerAlign="center" width="120">
+								数量
+								</div>
+								<div field="logdate" headerAlign="center" width="120">
+								日志日期
+								</div>
+							</div> -->
+						</div>
+						<div id="bdl" style="border:0px solid gray;width:100%;height:219px;overflow: scroll;">
+                            <p class="state-empty">
+                               	 暂无执行日志
+                            </p>
+                        </div>
+						<!-- <div class="bdl">
+                            预览内容
+                        </div> -->
+                    </div>
+                     <ul class="preview-tool hidden">
+                        <li id="stepname">当前预览步骤：<span></span></li>
+                        <li id="previewcount">总数量：<span></span></li>
+                    </ul>
+                    <a class="action-icon icon-remove clear-log hidden" href="javascript:;" title="清空日志"></a>
+                    <a class="control-tool" href="javascript:;"></a>
+                </div>
+            </div>
+            <!-- 操作说明 -->
+            <div id="operation-description" class="mini-window" title="" style="width:540px;height:55%;display: none;"
+                showMaxButton="false" showCollapseButton="false" showShadow="true" showToolbar="false" showFooter="true"
+                showModal="true" allowResize="false" allowDrag="true">
+
+                <div property="footer"
+                    style="text-align:right;height: 32px;background-color: #edeef0;padding:5px;padding-right:15px;">
+                    <!-- <input type='button' value='Hide' onclick="hideWindow()" style='vertical-align:middle;'/> -->
+                    <div class="ws-btn-confirm r" id="od-confirm">我知道了</div>
+                </div>
+                <div class="od-container">
+                    <p>
+                    	暂时省略
+                    </p>
+                </div>
+            </div>
+            <!-- 运行后的悬浮提示 -->
+            <div class="success-tip" id="tip-box">
+                <p class="tip-name">执行成功</p>
+                <p class="tip-value">
+                    用时：<span id="time-value"></span>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 提示 -->
+    <div class="tip-wrap">
+        <p>提示文字内容</p>
+    </div>
+
+    <!-- 左侧导航模板 -->
+    <script type="text/template" id="list-temp">
+        <div class="nav-hd">
+                {{#hdList}}
+                <div class="hdl" data-target="{{target}}"><img src="{{typeicon}}" alt=""><span>{{name}}</span></div>
+                {{/hdList}}
+            </div>
+            <div class="bd-content">
+                {{#navList}}
+                <div class="bdl" data-target="{{target}}">
+                    {{#typetitle}}
+                    <div class='typelist-wrap'>
+                        <h4 class='type-title'>{{title}}</h4>
+                        <ul class="json-list {{#hasChild}}hidden{{/hasChild}}">
+                            {{#list}}
+                            <li class="tree-item">
+                                <div title="{{name}}" data-name="{{name}}" data-icon="{{icon}}" data-grouptype="{{grouptype}}" data-modeltype="{{modeltype}}" data-maxInputLinks="{{maxInputLinks}}" data-tableid="{{tableid}}"
+                                     data-tablename="{{tablename}}"  data-url="{{url}}" data-introduce="{{introduce}}"  data-maxlinks="{{maxLinks}}" data-type="{{type}}"
+                                     data-id="{{guid}}" draggable="true"  class="tree-text">
+                                    <div class="l img-wrap {{#hasChild}}nochild{{/hasChild}}">
+                                        <img src="{{iconsmall}}" alt="">
+                                    </div>
+                                    <span>{{name}}</span>
+                                </div>
+                            </li>
+                            {{/list}}
+                        </ul>
+                    </div>
+                    {{/typetitle}}
+                </div>
+                {{/navList}}
+            </div>
+    </script>
+
+    <!-- 搜索结果 -->
+    <script type="text/template" id="result-temp">
+        {{#list}}
+        <li class="tree-item">
+            <div title="{{name}}" data-title="" data-name="{{name}}" data-icon="{{icon}}"
+                data-url="{{url}}"  data-introduce="{{introduce}}"  data-tablename="{{tablename}}"  data-maxlinks="{{maxLinks}}" data-tableid="{{tableid}}" data-maxinputlinks="{{maxInputLinks}}" data-type="{{type}}"
+                data-id="{{guid}}" data-grouptype="{{grouptype}}" data-modeltype="{{modeltype}}" draggable="true" class="tree-text">
+                <div class="l img-wrap">
+                    <img src="{{iconsmall}}" alt="">
+                </div>
+                <span>{{{textname}}}</span>
+            </div>
+        </li>
+        {{/list}}
+
+    </script>
+
+    <script src="../../../frame/fui/js/jsboot.js"></script>
+
+    <script src="js/mustache.min.js"></script>
+    <script src="js/go.js"></script>
+    <script src="js/jquery-tab.js"></script>
+    <script src="../../js/jquery.nicescroll.min.js"></script>
+    <script src="js/IndexWebsocket.js"></script>
+
+    <script>
+    	var callBackData;
+        var nodeGuid;
+        var flowGuid;
+        var flowType;
+        var indexWebSocket;
+   		var log = $('#bdl');
+   		var livyPath;
+   		var xms;
+   		var xmx;
+   		var flowName;
+   		var isErrorStep;
+   		var hdpType;
+   		var dsId;
+   		var prestoDsId;
+	    epoint.initPage('dxpmodeldesignjobaction','',function(data){
+	    	nodeGuid = data.nodeGuid;
+	    	flowGuid = data.flowGuid;
+	    	flowName = data.flowName;
+	    	dsId=data.dsId;
+	    	prestoDsId=data.prestoDsId;
+	    	flowType=data.flowType;
+	    	if (data.property) {
+	    		callBackData = JSON.parse(data.property);
+			}else{
+				callBackData = {
+						changeName:flowName
+				}
+			}
+	    	load();
+	    	livyPath = data.livyPath;
+	    	xms = data.xms;
+	    	xmx = data.xmx;
+	    	hdpType = data.hdpType;
+	    	$designName.text(data.flowName);
+	    	var sessionId = data.sessionId;
+	    	//websocket每个任务调试的唯一编号需动态传入
+	    	indexWebSocket = new IndexWebSocket(sessionId+flowGuid,log,data.contextPath+"/websocket/pushlog");
+	    });
+	    var grid = mini.get("datagridview");
+		// 初始化回掉，动态生成列
+		function callbackinit(data) {
+
+			//adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+			if (data) {
+				drawDynamicColumn(data);
+				//grid.reload();
+				grid.setData(epoint.decodeJson(data.tableData));
+			}
+		}
+
+		// 绘制动态列
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = eval('(' + tmp + ')');
+			grid.set(columns);
+		}
+		var designUrl = epoint.dealRestfulUrl("../../../rest/dxpmodeldesignjobaction/getDesignData");
+		var getLeftTransMenu = epoint.dealRestfulUrl("../../../rest/dxpmodeldesignjobaction/getEiaLeftMenu");
+		var getStepInfoUrl = epoint.dealRestfulUrl("../../../rest/dxpmodeldesignjobaction/getStepInfo");
+    </script>
+
+    <script>
+        var domain = "test/",
+        	newTimer, saveTimer,
+            workDescription, //作业描述
+            workName; //作业名称
+            var kettlePort;
+    		var batchNum;
+    		var nodeData;
+    		var stepId;
+
+        var designConfig = {
+        	leftMenu: getLeftTransMenu, //左侧菜单
+            attrType: 1, //拖拽还是其他生成
+            isNewSave: true, //是否第一次保存
+            maxHistoryLength: 20, //能保存历史记录的次数
+            ctxMenu: [ // 右键菜单
+                {
+                    name: '主输出步骤',
+                    type: 'main'
+                },
+                {
+                    name: '错误处理步骤',
+                    type: 'wrong'
+                }
+            ],
+            // 运行运行按钮点击事件
+            onLogClick: function (data, dom) {
+            	var isTransModel = false;
+            	var nodeDataArray = data.nodeDataArray;
+            	for(var i=0,length=nodeDataArray.length;i<length;i++){
+            		if(nodeDataArray[i].modeltype == 2){
+            			// 训练模型不需要输出组件
+            			isTransModel = true;
+            		}
+            	}
+
+            	var modelJson = data.toJSON();
+
+            	if(modelJson.indexOf('com.epoint.dxp.development.model.flow.steps.TableInputStep')==-1){
+            		epoint.alert('流程中不存在数据来源组件，无法保存！');
+            		return;
+            	}
+            	if(!isTransModel && modelJson.indexOf('com.epoint.dxp.development.model.flow.steps.TableOutputStep')==-1 && modelJson.indexOf('com.epoint.dxp.development.model.flow.steps.TableExternalOutputStep')==-1 && modelJson.indexOf('com.epoint.dxp.development.model.flow.steps.CharsViewStep')==-1 && modelJson.indexOf('com.epoint.dxp.development.model.flow.steps.WritedataOverwriteStep')==-1){
+            		epoint.alert('流程中不存在数据目标组件，无法保存！');
+            		return;
+            	}
+            	nodeData = data;
+                if (dom.hasClass('cancel-btn')) {
+                	epoint.execute('stopJob', '',function(result){
+                		if(result.msg == 'success'){
+                			epoint.alert('停止成功');
+                		}else{
+                			epoint.alert('停止失败', '', null, 'warning');
+                		}
+                	});
+                    dom.removeClass('cancel-btn');
+                    dom.text('运行');
+                } else {
+    	            log.html('');
+                	//初始化执行步骤
+                	 if (callBackData) {
+                      	var property= {
+                      			changeName:callBackData.changeName,
+                      			paramData:callBackData.paramData
+                      	}
+                      	var myDiagramData = JSON.parse(myDiagram.model.toJSON());
+                      	myDiagramData.property = property;
+      				}
+                	$('.journal').click();
+                	dom.addClass('cancel-btn');
+	                dom.text('取消');
+                	//调用后台运行任务
+                	epoint.execute('runFLow', '', JSON.stringify(myDiagramData),function(result){
+                	},true);
+                }
+            },
+            //发布按钮
+            onSendClick: function (data) {
+            	var dataObj = JSON.parse(data)
+            	var isTransModel = false;
+            	var nodeDataArray = dataObj.nodeDataArray;
+            	for(var i=0,length=nodeDataArray.length;i<length;i++){
+            		if(nodeDataArray[i].modeltype == 2){
+            			// 训练模型不需要输出组件
+            			isTransModel = true;
+            		}
+            	}
+
+            	if(data.indexOf('com.epoint.dxp.development.model.flow.steps.TableInputStep')==-1){
+            		epoint.alert('流程中不存在数据来源组件，无法保存！');
+            		return;
+            	}
+            	if(!isTransModel && data.indexOf('com.epoint.dxp.development.model.flow.steps.TableOutputStep')==-1 && data.indexOf('com.epoint.dxp.development.model.flow.steps.TableExternalOutputStep')==-1 && data.indexOf('com.epoint.dxp.development.model.flow.steps.CharsViewStep') && data.indexOf('com.epoint.dxp.development.model.flow.steps.WritedataOverwriteStep')==-1){
+            		epoint.alert('流程中不存在数据目标组件，无法保存！');
+            		return;
+            	}
+            	if (callBackData) {
+                	var property= {
+                			changeName:callBackData.changeName,
+                			paramData:mini.decode(callBackData.paramData)
+                	}
+                	var tempData = JSON.parse(data)
+                	tempData.property = property;
+                	tempData.xms = xms;
+                	tempData.hdpType = hdpType;
+                	tempData.xmx = xmx;
+                	tempData.livyPath = livyPath;
+                	data = JSON.stringify(tempData)
+				}
+                epoint.confirm("确认发布吗", "提示", function() {
+					//调用后台发布转换
+					epoint.execute('publishJob','',[data],function(result){
+						//发布成功或者失败提示
+						if(result == 'success'){
+							epoint.alert('发布成功');
+							document.getElementById('design-name').innerHTML=callBackData.changeName;
+						}else{
+							epoint.alert(result, '', null, 'warning');
+						}
+					});
+                });
+
+            },
+            //单击选中,执行步骤预览
+/*             onSelect:function(data){
+            	if(stepId&&stepId==data.key){
+					return;
+            	}
+            	if(data.type=='com.epoint.dxp.development.model.flow.steps.TableOutputStep'||data.type=='com.epoint.dxp.development.model.flow.steps.TableExternalOutputStep'){
+            		//输出组件不进行预览
+            		return;
+            	}
+            	if(log.html().indexOf('暂无执行日志')!=-1){
+	            	log.html('');
+            	}
+            	grid.loading();
+            	epoint.execute("getTablePreView", '',data, function(msg) {
+            	    console.log(msg);
+            		if(msg){
+	            		callbackinit(msg);
+		            	$('.preview').click();
+	            		stepId=data.key;
+	            		if($('.preview-tool').hasClass('hidden')){
+	            			$('.preview-tool').removeClass('hidden');
+	            		}
+	            		$('#stepname span').html(data.name);
+	            		$('#stepname').attr('title',data.name);
+	            		$('#previewcount span').html(msg.count);
+	            		$('#previewcount').attr('title',msg.count);
+	            		myDiagram.model.setDataProperty(
+	            				data,
+                  				"count",
+                  				msg.count+"条"
+                  		);
+            		}
+            		grid.unmask();
+            	},true);
+            }, */
+            // 保存页面
+            onSaveFrame : function(data, isEmpty) {
+            	if(data.indexOf('com.epoint.dxp.development.flow.steps.ErrorEntryStep')!=-1){
+            		epoint.alert('存在未识别的组件，无法保存！');
+            		return;
+            	}
+					if (isEmpty) {
+						mini.showTips({
+							content : "暂无数据",
+							state : "danger",
+							x : "center",
+							y : "center",
+							timeout : 3000
+						});
+					} else {
+						data = JSON.parse(data);
+						data.name = workName;
+						data.description = workDescription;
+
+						//存储属性值
+						data.property = callBackData;
+						data.xms = xms;
+						data.hdpType = hdpType;
+						data.xmx = xmx;
+						data.livyPath = livyPath;
+						data = JSON.stringify(data);
+						//调用后台接口保存配置信息
+						epoint.execute('saveData', '',data, function(msg) {
+							if(msg == 'success'){
+								mini.showTips({
+			                        content: "保存成功!",
+			                        state: "success",
+			                        x: "center",
+			                        y: "center",
+			                        timeout: 3000
+			                    });
+								 document.getElementById('design-name').innerHTML=callBackData.changeName;
+							}else{
+								mini.showTips({
+			                        content: "保存失败",
+			                        state: "danger",
+			                        x: "center",
+			                        y: "center",
+			                        timeout: 3000
+			                    });
+							}
+						});
+					}
+				},
+				//属性按钮
+		 	onPropertyClick : function() {
+					 if (callBackData) {
+						 epoint.openDialog("模型属性", "./modelproperty?property=" + JSON.stringify(callBackData) +
+								 "&livyPath=" + livyPath +  "&xms="+ xms + "&xmx="+ xmx + "&flowName="+ flowName + "&hdpType=" + hdpType+"&dsId="+dsId+"&prestoDsId="+prestoDsId,
+								 callback, {
+								'width' : 1000,
+								'height' : 600
+							})
+					 }
+				},
+					//sql预览
+					onSqlPreviewClick:function(){
+						 if (callBackData) {
+		                      	var property= {
+		                      			changeName:callBackData.changeName,
+		                      			paramData:callBackData.paramData
+		                      	}
+		                      	var myDiagramData = JSON.parse(myDiagram.model.toJSON());
+		                      	myDiagramData.property = property;
+		      			}
+						epoint.execute('getFinalSql','',JSON.stringify(myDiagramData),function(data){
+							epoint.openDialog('SQL预览','dxp/datamodel/modelassembly/sqlpreview','', {
+							    width: 800,
+							    height: 500,
+							    param: {
+							        sql: data
+							    }
+							});
+						});
+					},
+					//sql预览
+					onAssemblySqlPreviewClick:function(data){
+						if(data.modeltype=='1' || data.modeltype=='2'){
+		            		//算法组件不支持SQL预览
+		            		mini.showTips({
+								content : "算法组件不能进行SQL预览！",
+								state : "danger",
+								x : "center",
+								y : "center",
+								timeout : 3000
+							});
+		            		return;
+		            	}else{
+		            		epoint.openDialog('SQL预览','dxp/datamodel/modelassembly/checksqlpreview?flowGuid='+flowGuid+"&stepId="+data.key,'', {
+							    width: 800,
+							    height: 500,
+							    param: {
+							        sql: data
+							    }
+							});
+		            	}
+
+					},
+					//预览数据
+					onAssemblyDataPreviewClick(data){
+		            	if(data.type=='com.epoint.dxp.development.model.flow.steps.TableOutputStep'
+		            			||data.type=='com.epoint.dxp.development.model.flow.steps.TableExternalOutputStep'
+		            			||data.type=='com.epoint.dxp.development.model.flow.steps.WritedataOverwriteStep'){
+		            		//输出组件不进行预览
+		            		 mini.showTips({
+								content : "输出组件不能进行预览！",
+								state : "danger",
+								x : "center",
+								y : "center",
+								timeout : 3000
+							});
+		            		return;
+		            	}else if(data.type=='com.epoint.dxp.development.model.flow.steps.CharsViewStep'){
+		            		//预览图表输出
+		            		epoint.openDialog('预览','dxp/datamodel/modelflow/modelresultviewchart?flowGuid='+data.key,'',{
+		                        'width': 800,
+		                        'height': 520
+		                    });
+		            		return;
+		            	}else if(data.modeltype=='1'){
+		            		//算法组件预览
+		            		epoint.openDialog('预览','dxp/datamodel/modelflow/modelresultviewalgorithm?stepId='+data.key+'&modelGuid='+flowGuid,'',{
+		                        'width': 800,
+		                        'height': 520
+		                    });
+		            		return;
+		            	}else if(data.modeltype=='2'){
+		            		//训练算法不支持预览
+		            		mini.showTips({
+								content : "训练算法不能进行预览！",
+								state : "danger",
+								x : "center",
+								y : "center",
+								timeout : 3000
+							});
+		            		return;
+		            	}
+		            	if(log.html().indexOf('暂无执行日志')!=-1){
+			            	log.html('');
+		            	}
+		            	grid.loading();
+		            	epoint.execute("getTablePreView", '',[data], function(msg) {
+		            		if(!msg.msg){
+			            		callbackinit(msg);
+				            	$('.preview').click();
+			            		stepId=data.key;
+			            		if($('.preview-tool').hasClass('hidden')){
+			            			$('.preview-tool').removeClass('hidden');
+			            		}
+			            		$('#stepname span').html(data.name);
+			            		$('#stepname').attr('title',data.name);
+			            		$('#previewcount span').html(msg.count);
+			            		$('#previewcount').attr('title',msg.count);
+			            		myDiagram.model.setDataProperty(
+			            				data,
+		                  				"count",
+		                  				msg.count+"条"
+		                  		);
+		            		}else{
+		            			myDiagram.model.setDataProperty(
+			            					data,
+			                  				"count",
+			                  				"0条"
+			                  		);
+		            		}
+		            		grid.unmask();
+		            	},true);
+					},
+
+            // 开始拖拽
+            onDropStart: function (data) {
+            	var myDiagramData = JSON.parse(myDiagram.model.toJson());
+            	var nodeNameNew = data.name;
+            	var nodeKeyNew = data.key;
+            	var id={};
+            	var sql='';
+            	console.log(data);
+            	if(data.type=="com.epoint.dxp.development.model.flow.steps.TableInputStep"){
+            		//输入类型
+            		id.tableName=data.tablename;
+            		sql="select * from "+data.tablename;
+            		id.sql=sql;
+            		id.tableid=data.tableid;
+            		data.id=epoint.encodeJson(id);
+            	}else if(data.type != "com.epoint.dxp.development.flow.steps.TransEntryStep"){
+	            	nodeNameNew = data.name+myDiagramData.nodeDataArray.length;
+	            	nodeKeyNew = uuid();
+	            	data.name = nodeNameNew;
+	            	data.key = nodeKeyNew;
+	            	data.id='';
+            	}else{
+            		data.id='';
+            	}
+            	//调用后台，先创建一个stepmeta
+            	epoint.execute("createEasyStep", '',[data], function(msg) {
+            		if(msg.result != '1'){
+            			epoint.alert(msg, '', null, 'warning');
+            		}else{
+            			// 这个地方的newData格式需要和下面的 onAddNodeData 回调中的 newData 格式一致
+                        var newData = $.extend({}, data, {
+                        	name:nodeNameNew,
+                        });
+                        designUtil.model.addNodeData(newData);
+            			if(msg.sql){
+	            			/* epoint.execute("getCount", '',[newData], function(e) {
+		            			// 这个地方的newData格式需要和下面的 onAddNodeData 回调中的 newData 格式一致
+		            			console.log(e);
+		            			console.log(msg);
+	            				newData.id.sql=msg.sql;
+	            				myDiagram.model.setDataProperty(
+	            						newData,
+	                      				"count",
+	                      				e+"条"
+	                      		);
+	            				myDiagram.model.setDataProperty(
+	            						newData,
+	                      				"id",
+	                      				newData.id
+	                      		);
+	                		},true) */
+	                		if(log.html().indexOf('暂无执行日志')!=-1){
+				            	log.html('');
+			            	}
+			            	grid.loading();
+			            	epoint.execute("getTablePreView", '',[newData], function(tabledata) {
+			            		if(!tabledata.msg){
+				            		callbackinit(tabledata);
+					            	$('.preview').click();
+				            		stepId=newData.key;
+				            		if($('.preview-tool').hasClass('hidden')){
+				            			$('.preview-tool').removeClass('hidden');
+				            		}
+				            		$('#stepname span').html(newData.name);
+				            		$('#stepname').attr('title',newData.name);
+				            		$('#previewcount span').html(tabledata.count);
+				            		$('#previewcount').attr('title',tabledata.count);
+				            		myDiagram.model.setDataProperty(
+				            				newData,
+			                  				"count",
+			                  				tabledata.count+"条"
+			                  		);
+				            		var id=JSON.parse(newData.id);
+				            		id.sql=tabledata.sql;
+				            		id.prestosql=tabledata.prestoSql;
+				            		myDiagram.model.setDataProperty(
+		            						newData,
+		                      				"id",
+		                      				JSON.stringify(id)
+		                      		);
+			            		}else{
+			            			myDiagram.model.setDataProperty(
+			            					newData,
+			                  				"count",
+			                  				"0条"
+			                  		);
+			            		}
+			            		grid.unmask();
+			            	},true);
+            			}
+            		}
+            	});
+            },
+            // 节点之间进行连线后
+            onLinked: function (opt) {
+            	//连线直接创建一个TransHopMeta
+                var _count = opt.count, // 当前被连接的节点的连接数
+                    _toNode = opt.toNode, // 被连接的节点
+                    _fromNodeKey = opt.fromNodeKey, // 连线的起点
+                    _firstNodeKey = opt.firstNodeKey, // 第一条连线
+                    _toNodeMax = Number(_toNode.data.maxLinks), // 被连接的节点最小连线数
+                    _toNodeMin = Number(_toNode.data.minLinks), // 被连接的节点最大连线数
+                    _fromNode = opt.fromNode, // fromjiedian
+                    _fromCount = opt.fromCount, // fromjiedian
+                    _fromFirstNodeKey = opt.fromFirstNodeKey,
+                    _toNodeKey = _toNode.data.key,
+                    _toNodeMaxInput = Number(_toNode.data.maxInputLinks); //被连最大数 0618
+
+                    if (_toNode.data.maxInputLinks && _count > _toNode.data.maxInputLinks) {
+                        designUtil.removeLink(_fromNodeKey, _toNode.data.key);
+                        mini.showTips({
+							content : "已经达到最大输入连接数，请删除一条输入连线后再试！",
+							state : "danger",
+							x : "center",
+							y : "center",
+							timeout : 3000
+						});
+
+                        return;
+                    }
+                    if(_fromNode.data.type!="com.epoint.dxp.development.model.flow.steps.TableInputStep"&&_fromNode.findLinksConnected().count==1){
+                    	 designUtil.removeLink(_fromNodeKey, _toNode.data.key);
+                         mini.showTips({
+ 							content : "起始节点没有输入源",
+ 							state : "danger",
+ 							x : "center",
+ 							y : "center",
+ 							timeout : 3000
+ 						});
+                         return;
+                    }
+
+                    if(_fromNode.data.modeltype=='2'){
+                   	 designUtil.removeLink(_fromNodeKey, _toNode.data.key);
+                        mini.showTips({
+							content : "训练算法模型无法连接其他组件",
+							state : "danger",
+							x : "center",
+							y : "center",
+							timeout : 3000
+						});
+                        return;
+                   }
+
+                   if(_fromNode.data.modeltype==1&&_toNode.data.type!="com.epoint.dxp.development.model.flow.steps.WritedataOverwriteStep"){
+                     	 designUtil.removeLink(_fromNodeKey, _toNode.data.key);
+                          mini.showTips({
+  							content : "普通算法模型只能连接算法输出组件",
+  							state : "danger",
+  							x : "center",
+  							y : "center",
+  							timeout : 3000
+  						});
+                          return;
+                    }
+
+               /*      console.log(opt.fromCount);
+                if (Number(_fromNode.data.maxLinks)>=0) {
+                    // 当前连接数大于最大连接数则移除与其最早连接的那个节点间的连线
+                    if (opt.fromCount > Number(_fromNode.data.maxLinks)) {
+                        // console.log('超过上限啦max');
+                        // 移除第一个连线
+                         //弹窗
+                        epoint.alert('已经达到最大输出连接数!');
+                        designUtil.removeLink(_fromNode.data.key, _fromFirstNodeKey);
+						return;
+                    }
+                } */
+
+                epoint.execute("createEasyJobHop", '',[_fromNodeKey,_toNodeKey], function(msg) {
+            		if(msg != '1'){
+            			epoint.alert(msg, '', null, 'warning');
+            		}
+            	});
+
+            },
+            // 双击节点
+            onNodeDoubleClick: function (opt) {
+                nodeData = opt.nodeData;
+                linkCount = opt.linkCount;
+                if(nodeData.type!="com.epoint.dxp.development.model.flow.steps.TableInputStep"&&linkCount<nodeData.maxInputLinks){
+                	 mini.showTips({
+							content : "请选择"+nodeData.maxInputLinks+"个输入源",
+							state : "warning",
+							x : "center",
+							y : "center",
+							timeout : 3000
+						});
+                	 return ;
+                }
+                //挤入操作类型
+                designConfig.attrType = 2;
+                if(nodeData.url){
+                	var url= nodeData.url+"?nodeGuid="+nodeGuid+"&flowGuid="+flowGuid+"&dsId="+prestoDsId+"&flowtype="+flowType;
+                	if(nodeData.tablename){
+                		url+="&tablename="+nodeData.tablename;
+                	}
+                	epoint.openDialog(nodeData.name, Util.getRightUrl(url),
+                              function (param) {
+                                  //判断弹窗是否直接关闭
+                                  if (param != 'close') {
+                                	  myDiagram.startTransaction('edit');
+                                      myDiagram.model.setDataProperty(nodeData, "edit", "edit");
+                                      myDiagram.model.setDataProperty(nodeData, "id", param);
+                                      var stepValue = JSON.parse(param);
+                                      myDiagram.model.setDataProperty(nodeData, "name", stepValue.stepName);
+                                      myDiagram.commitTransaction('edit');
+                                      if(nodeData.type!="com.epoint.dxp.development.model.flow.steps.TableOutputStep"
+                                    		  &&nodeData.type!='com.epoint.dxp.development.model.flow.steps.TableExternalOutputStep'
+                                    		  &&nodeData.type!='com.epoint.dxp.development.model.flow.steps.CharsViewStep'
+                                    		  &&nodeData.type!='com.epoint.dxp.development.model.flow.steps.WritedataOverwriteStep'
+                                    		  &&nodeData.modeltype!='1'
+                                    		  &&nodeData.modeltype!='2'){
+                                    	  //非输出组件
+                                    	  epoint.execute("getCountByKey", '',[nodeData.key], function(msg) {
+                                        	  if(msg!=''){
+                                          		msg=msg+"条";
+                                          	}
+                                      		myDiagram.model.setDataProperty(
+                                      				nodeData,
+                                      				"count",
+                                      				msg
+                                      		);
+                                          },true);
+                                    	  stepId='0';
+                                    	 // designConfig.onSelect(nodeData);
+                                    	if(log.html().indexOf('暂无执行日志')!=-1){
+                    			           	log.html('');
+                    		            }
+                                      	grid.loading();
+                                      	epoint.execute("getTablePreView", '',[nodeData], function(msg) {
+                                      		if(!msg.msg){
+                          	            		callbackinit(msg);
+                          	            		stepId=nodeData.key;
+                          	            		if($('.preview-tool').hasClass('hidden')){
+                          	            			$('.preview-tool').removeClass('hidden');
+                          	            		}
+
+                          	            		$('#stepname span').html(nodeData.name);
+                          	            		$('#stepname').attr('title',nodeData.name);
+                          	            		$('#previewcount span').html(msg.count);
+                          	            		$('#previewcount').attr('title',msg.count);
+                          	            		myDiagram.model.setDataProperty(
+                          	            				nodeData,
+                                            				"count",
+                                            				msg.count+"条"
+                                            		);
+                                      		}else{
+			            			myDiagram.model.setDataProperty(
+			            					nodeData,
+			                  				"count",
+			                  				"0条"
+			                  		);
+			            		}
+                                      		grid.unmask();
+                                      	},true);
+                                      }
+                                  }
+                              });
+                }
+
+            },
+            canDelete: function (data) {
+             	//调用后台，删除组件或变迁
+            	epoint.execute("deleteStepOrHop", '',[selectedObj.data], function(msg) {
+            		if(msg.result != '1'){
+            			epoint.alert(msg, '', null, 'warning');
+            		}else{
+            			for(var i=0;i<msg.nextstep.length;i++){
+		            		var toNode = myDiagram.findNodeForKey(msg.nextstep[i]);
+	                    	console.log(toNode.data.key);
+	            			if(toNode.data.type!="com.epoint.dxp.development.model.flow.steps.TableOutputStep"&&toNode.data.type!='com.epoint.dxp.development.model.flow.steps.TableExternalOutputStep'&&toNode.data.type!='com.epoint.dxp.development.model.flow.steps.CharsViewStep'){
+	            				//非输出组件
+	                    		epoint.execute("getCountByKey", '',[toNode.data.key], function(count) {
+	                        		if(count!=''){
+	                        			count=count+"条";
+	                            	}
+	                        		myDiagram.model.setDataProperty(
+	                        				toNode.data,
+	                        				"count",
+	                        				count
+	                        		);
+	                        	},true);
+	                    	}
+            			}
+            		}
+            	});
+            },
+            // 右键菜单点击事件
+            onCtxMenuClick: function (opt) {
+                var type = opt.type,
+                    nodeData = opt.nodeData,
+                    linkCount = opt.linkCount;
+                if (type == 'main') {
+
+                } else if (type == 'wrong') {
+
+
+                }
+
+            }
+
+        }
+      	//定时调用后台获取执行步骤信息
+        function getStepInfo(kettlePort,batchNum,nodeData){
+        	Util.ajax({
+                url: getStepInfoUrl,
+                data: {port:kettlePort,batchNum:batchNum},
+                async:true
+            }).done(function (result) {
+            	if(result){
+            		gridStep.clearRows();
+            		gridStep.addRows(result,result.length);
+        		}
+            });
+
+        }
+
+        //转换执行完最后一次调用后台获取步骤信息
+        function getLastStepInfo(kettlePort,batchNum,nodeData){
+        	Util.ajax({
+                url: getStepInfoUrl,
+                data: {port:kettlePort,batchNum:batchNum},
+                async:true
+            }).done(function (result) {
+            	if(result){
+            		gridStep.clearRows();
+            		gridStep.addRows(result,result.length);
+        		}
+            });
+
+        }
+
+
+		//属性返回参数
+		function callback(data) {
+			if (data && "close" != data) {
+				callBackData = {
+					changeName : data.changeName,
+				}
+				livyPath = data.livyPath;
+		   		xms = data.xms;
+		   		xmx = data.xmx;
+		   		hdpType = data.hdpType;
+			}
+		}
+
+		function uuid() {
+		    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		        return v.toString(16);
+		    });
+		}
+
+		  $('.clear-log').on('click',function(){
+		        log.html('');
+		  });
+				</script>
+    <script src="js/add-hiveflowdevelopment.js"></script>
+</body>
+
+</html>

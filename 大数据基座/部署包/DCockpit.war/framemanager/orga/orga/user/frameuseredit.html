@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>用户修改</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet"
+	href="../../../../frame/pages/basic/gateway/app/appinfomanage/css/roleSelect.css" />
+<style>
+.mini-webuploader {
+	height: 17px;
+	vertical-align: text-top;
+}
+
+.mini-uploader-btns .webuploader-pick {
+	line-height: 17px;
+	background: transparent;
+	color: #d2322d;
+	font-weight: bold;
+	padding: 0 4px;
+}
+
+.single-tab {
+	height: initial;
+	overflow-y: initial;
+}
+
+.truncate {
+	max-width: 110px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存修改</a> <a
+				class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="用户基本信息"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<label class="form-label required">用户登录名:</label>
+								<div class="form-control span2" starred="true">
+									<input bind="loginId" id="loginId" class="mini-textbox"
+										required="true" requiredErrorText="登录名不能为空"
+										vtype="maxLength:50" />
+								</div>
+								<label class="form-label required">用户姓名:</label>
+								<div id="userName" class="form-control span2" starred="true">
+									<input id="displayName" bind="frameUser.displayName"
+										class="mini-textbox" required="true"
+										requiredErrorText="姓名不能为空" vtype="maxLength:50" />
+								</div>
+							</div>
+							<div id="mzx" role="row">
+								<div role="control" label="名" starred="true">
+									<input bind="frameUser.firstname" class="mini-textbox"
+										required="true" requiredErrorText="名不能为空" vtype="maxLength:50" />
+								</div>
+								<div role="control" label="中间名">
+									<input bind="frameUser.middlename" class="mini-textbox"
+										vtype="maxLength:50" />
+								</div>
+								<div role="control" label="姓">
+									<input bind="frameUser.lastname" class="mini-textbox"
+										vtype="maxLength:50" />
+								</div>
+							</div>
+							<div id="shiqu" role="row">
+								<div role="control" label="时区">
+									<input name="timezonelist" bind="frameUser.timezone"
+										action="getTimezoneList" allowInput="false" autoLoad="false"
+										class="mini-combobox" emptyText="请选择..." />
+								</div>
+								<div role="control" label="首选语言">
+									<input name="prelangList" bind="frameUser.prelang"
+										value="zh_CN" action="getPrelangList" allowInput="false"
+										autoLoad="false" class="mini-combobox" emptyText="请选择..." />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="所在部门" starred="true">
+									<input id="selectedOUname" bind="belongOuName"
+										allowInput="false" class="mini-buttonedit" emptyText=""
+										required="true" requiredErrorText="请选择所在部门"
+										onbuttonclick="selectOuOrUser('ou','selectedOUname','ouguid');"
+										selectOnFocus="true" />
+									<!-- 隐藏域 -->
+									<input bind="frameUser.ouGuid" id="ouguid" class="mini-hidden" />
+								</div>
+								<div role="control" label="兼职部门">
+									<input id="otherOUname" bind="otherouname"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="selectOuOrUser('secondou','otherOUname','otherouguid');"
+										selectOnFocus="true" />
+									<!-- 隐藏域 -->
+									<input bind="otherouguid" id="otherouguid" class="mini-hidden" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="直接上级">
+									<input id="leaderUser" bind="leaderName"
+										class="mini-buttonedit" emptyText="" allowInput="false"
+										onbuttonclick="selectOuOrUser('leader','leaderUser','leaderGuid');"
+										selectOnFocus="true" showClose="true"
+										oncloseclick="clearLeader" />
+									<!-- 隐藏域 -->
+									<input bind="frameUser.leaderGuid" id="leaderGuid"
+										class="mini-hidden" />
+								</div>
+								<div role="control" label="职务">
+									<input id="titleName" bind="frameUser.title"
+										class="mini-textbox" vtype="maxLength:50" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="办公电话">
+									<input id="telephoneOffice" bind="frameUser.telephoneOffice"
+										class="mini-textbox" />
+								</div>
+								<div role="control" label="短号码">
+									<input id="mobile1" bind="userExtendInfo.shortMobile"
+										class="mini-textbox" vtype="int" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="家庭电话">
+									<input id="telephoneHome" bind="frameUser.telephoneHome"
+										class="mini-textbox" onvalidation="onTelHomeValidation" />
+								</div>
+								<div role="control" label="手机号码">
+									<input id="mobile" bind="frameUser.mobile" class="mini-textbox"
+										vtype="mobile" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="排序值">
+									<input id="orderNumber" bind="frameUser.orderNumber"
+										class="mini-textbox" vtype="int;range:0,99999999" />
+								</div>
+								<div role="control" label="CA证书号">
+									<input id="userkey" bind="userExtendInfo.usbkey"
+										maxLength="100" class="mini-textbox" vtype="maxLength:100;" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="性别">
+									<div class="mini-radiobuttonlist" bind="frameUser.sex"
+										data="[{text:'男',id:'男'},{text:'女',id:'女'}]" value="男"
+										textField="text" valueField="id"></div>
+								</div>
+								<div role="control" label="ad">
+									<input id="ad" bind="frameUser.adloginid" maxLength="200"
+										vtype="maxLength:200;" class="mini-textbox" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="是否同步第三方">
+									<div id="issyncthirdparty" class="mini-radiobuttonlist"
+										bind="frameUser.issyncthirdparty"
+										data="[{text:'是',id:'1'},{text:'否',id:'0'}]" value="0"
+										textField="text" valueField="id"></div>
+								</div>
+							</div>
+							<div role="row" id="isSheMi">
+								<div role="control" label="密级选择" starred="true">
+									<div id="framemj" class="mini-combobox"
+										bind="frameUser.framemj" required="true"
+										requiredErrorText="密级不能为空" action="getSecretLevelInfo"></div>
+								</div>
+								<div role="control" label=""></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="用户拓展信息"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="用户生日">
+									<input class="mini-datepicker" id="birthday"
+										data-options="{'format': 'yyyy-MM-dd'}"
+										;
+										bind="userExtendInfo.birthday" allowInput="false" />
+								</div>
+								<div role="control" label="身份证号">
+									<input id="identityCardNum"
+										bind="userExtendInfo.identityCardNum" class="mini-textbox"
+										vtype="idCard" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="QQ号码">
+									<input id="qq" bind="userExtendInfo.qqnumber"
+										class="mini-textbox" onvalidation="onQQValidation" />
+								</div>
+								<div role="control" label=""></div>
+							</div>
+							<div role="row">
+								<div role="control" label="E_Mail">
+									<input id="email" bind="frameUser.email" class="mini-textbox"
+										vtype="email" />
+								</div>
+								<div role="control" label="地址">
+									<input id="postalAddress" bind="userExtendInfo.postalAddress"
+										class="mini-textbox" vtype="maxLength:200" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="邮编">
+									<input id="postalCode" bind="userExtendInfo.postalCode"
+										class="mini-textbox" vtype="postCode" />
+								</div>
+								<div role="control" label="传真">
+									<input id="fax" bind="frameUser.fax" class="mini-textbox"
+										onvalidation="onFaxValidation" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="NTX-IPA分机号">
+									<input id="nTX_EXTNumber" bind="userExtendInfo.ntxExtnumber"
+										class="mini-textbox" vtype="maxLength:100" />
+								</div>
+								<div role="control" label="NTX-IPA密码">
+									<input id="nTX_Password" bind="userExtendInfo.ntxPassword"
+										class="mini-textbox" vtype="maxLength:100" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="备注">
+									<input id="description" bind="frameUser.description"
+										maxLength="200" class="mini-textbox" vtype="maxLength:200" />
+								</div>
+								<div role="control" label="使用IP地址">
+									<input id="loginIP" bind="userExtendInfo.loginIp"
+										class="mini-textbox" onvalidation="onIPValidation" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="照片">
+									<div style="position: relative; float: left;">
+										<span id="photo1" class="text-minor">暂无个人图片， </span>
+										<div id="uploader" class="mini-webuploader"
+											action="frameusereditaction.getFileUploadModel"
+											fileSingleSizeLimit="2048" limitType="jpeg,jpg,gif,png"
+											mimeTypes="image/*" showDefaultUI="false" auto="true"
+											pickerText="请上传" onfilesuccess="OnPhotoSuccess"></div>
+										<span class="text-minor" style="width: 300px" id="photo3">（最佳图片尺寸：120px<em>*</em>180px）
+										</span>
+									</div>
+									<div class="img-view" id="photo">
+										<img id="lblPicture" src="" width="120px" height="180px"
+											alt="个人头像图片" /> <i
+											class="action-icon icon-removecirclefilled"
+											style="position: absolute; left: 120px; top: 12px;"
+											onclick="delPhoto();"></i>
+									</div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true" id="role-right">
+				<div role="head" title="用户角色分配"></div>
+				<div role="body">
+					<div class="fui-form" id="role-contain">
+						<div id="multi-tabs" class="hidden multi-tabs">
+							<div id="tabs1" class="mini-tabs" tabAlign="fit" activeIndex="0"
+								style="width: 100%; height: 100%;" plain="false">
+								<div title="授权角色">
+									<div class="role-tab">
+										<div class="role-box" id=""></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="single-tab" class="single-tab hidden">
+							<div class="role-tab">
+								<div class="role-box" id="role-box2"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 内容模板 -->
+	<script type="x-tmpl-mustache" id="role-template">
+        <ul>
+            {{#list}}
+            <li class="role-classify {{#isChecked}}select-all{{/isChecked}}">
+                <div class="role-title">
+                    <div data-id="{{id}}" data-title="{{{title}}}" class="role-title-check {{#isSearch}}search-title{{/isSearch}} {{#isHideCheck}}no-check{{/isHideCheck}} {{#isChecked}}active{{/isChecked}} l">
+                        {{^isSearch}}<i class="role-icons l"></i>{{/isSearch}}
+                        <span class="l">{{{title}}}</span>
+                    </div>
+                    <i class="role-arrow r"></i>
+                </div>
+                <div class="role-list-content">
+                    <ul class="clearfix role-list">
+                        {{#children}}
+                        <li class="role-item l">
+                            <div data-id="{{id}}" data-title="{{{title}}}" title="{{{title}}}" id="check-{{id}}" class="role-check {{#isSearch}}search-check{{/isSearch}} {{#isHideCheck}}no-check{{/isHideCheck}} {{#isChecked}}active{{/isChecked}} clearfix">
+                                <i class="role-icons l"></i>
+                                <span class="l truncate">{{{title}}}</span>
+                            </div>
+                        </li>
+                        {{/children}}
+                    </ul>
+                </div>
+            </li>
+            {{/list}}
+        </ul>
+    </script>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var roleConfig = {
+			// 角色列表
+			roleList : epoint.dealRestfulUrl('frameusereditaction/getRoleData')
+		}
+		var cacheRoleCollection = [];
+	</script>
+	<script src="./js/roleSelect.js"></script>
+
+
+	<script>
+		//<![CDATA[
+
+		//初始化请求
+		epoint.initPage('frameusereditaction', '', initCallback);
+
+		function initCallback(e) {
+			if (e.soa) {
+				epoint.alertAndClose(e.soa, '', null, null, 'info');
+			}
+			if (e.threemanage) {
+				epoint.alertAndClose(e.threemanage, '', null, null, 'info');
+			}
+			if (e) {
+				if (e.isEnableInter) {
+					Util.form.hideField("#userName");
+					//同时要去除控件的 required验证
+					mini.get("displayName").setRequired(false);
+				} else {
+					$("#mzx").hide();
+					$("#shiqu").hide();
+				}
+				if (e.belongOuName) {//初始化所属
+					mini.get('selectedOUname').setText(e.belongOuName);
+					mini.get('selectedOUname').setValue(e.belongOuName);
+				}
+				if (e.otherouname) {//初始化兼职
+					mini.get('otherOUname').setText(e.otherouname);
+					mini.get('otherOUname').setValue(e.otherouname);
+				}
+				if (e.leaderName) {//初始化直属上级
+					mini.get('leaderUser').setText(e.leaderName);
+					mini.get('leaderUser').setValue(e.leaderName);
+				}
+				showPhoto(e.lblPicture);
+
+				//初始化角色区域
+				cacheRoleCollection = JSON.parse(JSON
+						.stringify(e.uirepeat.list));
+				// 				var repeat = mini.get('repeat');
+				// 				repeat.setData(data);
+				// 				//将checkboxlist id存入隐藏域
+				// 				mini.get("controlIds").setValue(data["controlIds"]);
+				// 是否隐藏角色授权
+				if (e.disableRoleRight) {
+					$("#role-right").addClass("hidden");
+				}
+				if (e.isSheMi == 'false') {//要隐藏掉增删改操作
+					document.getElementById('isSheMi').style.display = "none";
+				}
+
+				if (e.isCopy == 1) {
+					mini.get("loginId").disable();
+				}
+			}
+		}
+
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+
+		var selectouuserType = "";
+		var selectouuserNameId = "";
+		var selectouuserGuidId = "";
+		//选择部门
+		function selectOu(labelId, guidId) {
+			selectouuserType = "single";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			epoint.openDialog("选择部门",
+					'framemanager/orga/orga/ou/selectou?type=1',
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		//选择多个部门
+		function selectManyOu(labelId, guidId, ouguids, showsub) {
+			selectouuserType = "multi";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguids) {
+				ouguids = mini.get(selectouuserGuidId).value;
+			}
+			epoint.openDialog("选择部门",
+					'framemanager/orga/orga/ou/selectouwithcheckbox?otherouguid='
+							+ ouguids + '&showsub=' + showsub,
+					dealSelectOuUserBackValue, {
+						'width' : 650,
+						'height' : 550
+					});
+		}
+		//选择单个用户
+		function selectUser(labelId, guidId, ouguid) {
+			selectouuserType = "single";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguid) {
+				ouguid = "";
+			}
+			epoint.openDialog("选择人员",
+					'framemanager/orga/orga/ou/selectouuser?ouguid=' + ouguid,
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		//独立单位选择所属部门
+		function selectSubOuRefreshPanel(labelId, guidId) {
+			selectouuserType = "single";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			epoint.openDialog("选择部门",
+					'framemanager/orga/orga/ou/selectou?isSub=1',
+					dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		//独立单位选择兼职
+		function selectManySubOu(labelId, guidId, ouguids, showsub) {
+			selectouuserType = "multi";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguids) {
+				ouguids = mini.get(selectouuserGuidId).value;
+			}
+			epoint.openDialog("选择部门",
+					'framemanager/orga/orga/ou/selectouwithcheckbox?isSub=1&otherouguid='
+							+ ouguids + '&showsub=' + showsub,
+					dealSelectOuUserBackValue, {
+						'width' : 700,
+						'height' : 550
+					});
+		}
+
+		//独立单位选择直属上级
+		function selectSubUser(labelId, guidId, ouguid) {
+			selectouuserType = "single";
+			selectouuserNameId = labelId;
+			selectouuserGuidId = guidId;
+			if (!ouguid) {
+				ouguid = "";
+			}
+			epoint.openDialog("选择人员",
+					'framemanager/orga/orga/ou/selectouuser?isSub=1&ouguid='
+							+ ouguid, dealSelectOuUserBackValue, {
+						'width' : 300,
+						'height' : 400
+					});
+		}
+
+		function dealSelectOuUserBackValue(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				var s;
+				//如果是单选只有1个节点，节点的属性以;分割
+				if (selectouuserType == "single") {
+					s = rtnValue.split(";");
+				}
+				//多选的话多个节点以:分割
+				else {
+					s = rtnValue.split(":");
+					if (s.length == 1) {
+						s = rtnValue.split("_SPLIT_");
+						var name1 = s[1];
+						var guid1 = s[0];
+						s[0] = name1;
+						s[1] = guid1;
+					}
+				}
+				if (s[1] != 'f9root') {
+					mini.get(selectouuserNameId).setText(s[0]);
+					mini.get(selectouuserNameId).setValue(s[0]);
+					mini.get(selectouuserGuidId).setValue(s[1]);
+					//mini.get(selectouuserGuidId).validate();
+					// 如果当前为重新选择部门的话，需要刷新一下角色选择信息
+					if (selectouuserNameId == "selectedOUname") {
+						var ouguid = mini.get("ouguid").getValue();
+						epoint.execute("refreshRoleSelect", "", [ ouguid ],
+								function(data) {
+									if (data.uirepeat) {
+										refreshRoleList(data.uirepeat.list);
+									}
+								});
+					}
+				} else {//弹出提示
+					epoint.alert("根节点不允许选择", '', null, 'warning');
+				}
+			}
+		}
+
+		function selectOuOrUser(select, label, value) {
+			//如果是独立部门管理
+			if (isSub && isSub == "1") {
+				//打开所属部门
+				if (select == "ou") {
+					selectSubOuRefreshPanel(label, value);
+				}
+				//打开兼职部门
+				else if (select == "secondou") {
+					selectManySubOu(label, value, "", "1");
+				}
+				//打开上级领导
+				else if (select == "leader") {
+					selectSubUser(label, value);
+				}
+			}
+			//后台管理
+			else {
+				if (select == "ou") {
+					selectOu(label, value);
+				} else if (select == "secondou") {
+					selectManyOu(label, value, "", "1");
+				} else if (select == "leader") {
+					selectUser(label, value);
+				}
+			}
+		}
+
+		//清空领导人
+		function clearLeader(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+			mini.get("leaderGuid").setValue("");
+		}
+
+		//isQQ
+		function isQQ(v) {
+			var re = new RegExp(/[1-9][0-9]{4,}/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//QQ验证
+		function onQQValidation(e) {
+			if (e.isValid) {
+				if (e.value && isQQ(e.value) == false) {
+					e.errorText = "请输入正确QQ号码";
+					e.isValid = false;
+				}
+			}
+		}
+		//isFax
+		function isFax(v) {
+			var re = new RegExp(/^((\d{3,4}-)?\d{7,8})$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//fax验证
+		function onFaxValidation(e) {
+			if (e.isValid) {
+				if (e.value && isFax(e.value) == false) {
+					e.errorText = "请输入正确的传真号";
+					e.isValid = false;
+				}
+			}
+		}
+
+		//isIP
+		function isIP(v) {
+			var re = new RegExp(
+					/^((25[0-5]|2[0-4]\d|[01]?\d\d?)($|(?!\.$)\.)){4}$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//Ip验证
+		function onIPValidation(e) {
+			if (e.isValid) {
+				if (e.value && isIP(e.value) == false) {
+					e.errorText = "请输入正确的IP地址";
+					e.isValid = false;
+				}
+			}
+		}
+
+		//头像上传成功
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+		}
+
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr('src', url);
+
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#photo").show();
+			} else {
+				$("#photo").hide();
+				$("#lblPicture").attr('src', '');
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+			}
+		}
+
+		//删除个性签名图片
+		function delPhoto() {
+			epoint.execute("btnDelPic_Click", "", function delPhotoCallback(
+					data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					showPhoto();
+				}
+			});
+		}
+
+		// 保存操作的回调
+		function saveCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				//if(msg.indexOf("成功") != -1){
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', null, 'error');
+				}
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				// 角色授权数据
+				var roleData = "";
+				$(cacheRoleCollection).each(function(index, item) {
+					if (!item.isChecked) {
+						$(item.children).each(function(i, el) {
+							if (el.isChecked) {
+								roleData += el.id + ",";
+							}
+						});
+					}
+				});
+				// 角色授权数据 end
+				roleData = roleData.substring(0, roleData.length - 1);
+				epoint.execute('update', '', roleData, saveCallback);
+			}
+		}
+
+		//办公电话验证
+		function isTelOffice(v) {
+			var re = new RegExp(
+					/^(([0\+]\d{2,3}-)?(0\d{2,3})-)?(\d{7,8})(-(\d{3,}))?$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//移动电话验证
+		function isMobileOffice(v) {
+			var re = new RegExp(/^1(3|4|5|6|7|8|9)\d{9}$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//家庭电话验证
+		function onTelHomeValidation(e) {
+			if (e.isValid) {
+				if (e.value
+						&& (isTelOffice(e.value) == false && isMobileOffice(e.value) == false)) {
+					e.errorText = "请输入正确的家庭号码";
+					e.isValid = false;
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Please get the machine code, buyLicense</title>
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+	<link rel="stylesheet" href="register.css" />    
+</head>
+<body>
+    <div class="page-loading"></div>
+	<div class="reg-code-cover"></div>
+	<div class="reg-code-panel in-center">
+			<h4 class="rcp-title mb20">System machine code</h4>
+			<div class="rcp-bd">
+				<p class="rcp-note mb15">Please according to this machine purchase formallyLicense, or apply for trialLicense</p>
+				<ul class="clearfix rcp-row mb10">
+					<li>Machine code:</li>
+					<li><div id="usbkeycode" class="mini-textbox" style="width:300px;" readonly="readonly" type="text" />
+					</li>
+				</ul>
+				<ul class="clearfix rcp-row mb20">
+					<li>License file upload:</li>
+					<li><div id="uploader" class="mini-webuploader" 
+					  action="registeraction.getFileUploadModel" auto="true" fileNumLimit="1" limitType="lic" onfilesuccess="OnFileSuccess"></div>
+					</li>
+				</ul>
+			</div>
+		</div>
+    
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+    <script type="text/javascript">
+    	 //Initialization request 
+        epoint.initPage('registeraction','',initCallback);
+    	 
+        function initCallback(e) {
+        	var diskSerial= Util.getUrlParams('diskSerial');
+        	if(diskSerial){
+        		mini.get('usbkeycode').setValue(diskSerial);
+        	}
+        }
+    
+    	// File upload success after the callback
+    	function OnFileSuccess(evt) {
+    		var data = evt.data;
+    		// Have the jump address jump
+    		if(data.extraDatas.url) {
+    			window.location.href = Util.getRootPath()+data.extraDatas.url;
+    		} else if(data.msg){
+    			// There are error message prompt
+    			epoint.alert(data.extraDatas.msg, null, null, 'info');
+    			mini.get('uploader').clearFile();
+    		}
+    	}
+
+    </script>
+	    
+</body>
+</html>

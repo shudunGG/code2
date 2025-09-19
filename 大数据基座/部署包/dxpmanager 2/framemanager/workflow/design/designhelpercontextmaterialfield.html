@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>相关数据</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+			idField="id" parentField="pid" action="getTreeData"
+			resultAsTree="false" showRadioButton="true"></ul>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('designhelpercontextmaterialfieldaction');
+
+		//树js对象
+		var tree = mini.get("tree");
+		if (tree) {
+			// 点击左侧树刷新右侧表格
+			tree.on("nodeselect", function(e) {
+				if (e.node && e.isLeaf) {
+					switch (e.selected.pid) {
+					case "Process":
+					case "ProcessVersion":
+					case "ProcessVersionInstance":
+					case "ActivityInstance":
+					case "Transition":
+					case "WorkItem":
+					case "ExecutionContext":
+					case "f9root":
+					case ""://上下文对象参数(仅支持单独配置)
+						parent.close(e.node.id + ";" + e.node.text );
+						break;
+					case "10"://自定义相关数据
+						parent.close(e.selected.pid + ";" + e.node.id + ";" + e.node.text);
+						break;
+					default:
+						//材料_
+						epoint.execute("getTableIDByMaterialGuid","",e.selected.pid,function(data){
+							if(data)
+							parent.close(e.selected.pid + ";" + data + ";" + e.node.id + ";" + e.node.text);
+						});
+						break;
+					}
+				}
+			});
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

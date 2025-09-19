@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+<title>日期选择控件</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+<meta name="generator" content="www.leipi.org" />
+<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+<!--[if lte IE 6]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-ie6.css">
+    <![endif]-->
+<!--[if lte IE 7]>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/ie.css">
+    <![endif]-->
+<link rel="stylesheet" href="leipi.style.css">
+<script type="text/javascript"
+	src="../../../../frame/fui/js/widgets/ueditor/dialogs/internal.js"></script>
+
+<script type="text/javascript">
+	/* Thank you by  
+	                                                                                                        http://www.alt-tag.com/blog/2006/02/ie-dom-bugs/ */
+	function createElement(type, name) {
+		var element = null;
+		try {
+			element = document
+					.createElement('<' + type + ' name="' + name + '">');
+		} catch (e) {
+		}
+		if (element == null) {
+			element = document.createElement(type);
+			element.name = name;
+		}
+		return element;
+	}
+</script>
+</head>
+
+<body>
+	<div class="content">
+		<table class="table table-bordered table-striped table-hover">
+			<input type="hidden" id="datafield" />
+			<tr>
+				<th><span>控件名称</span><span class="label label-important">*</span></th>
+			</tr>
+			<tr>
+				<td><input type="text" id="orgname" placeholder="必填项"></td>
+			</tr>
+			<tr>
+				<th><span>最多上传附件的个数</span></th>
+			</tr>
+			<tr>
+				<td><input id="MaxAttachCount" type="text" /></td>
+			</tr>
+			<tr>
+				<th><span>允许上传附件的文件类型(例：docx,txt)</span></th>
+			</tr>
+			<tr>
+				<td><textarea id="AllowFileList" cols="30" rows="5"></textarea></td>
+			</tr>
+		</table>
+	</div>
+	<script type="text/javascript">
+		var oNode = null, thePlugins = 'fileupload';
+		window.onload = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				oNode = UE.plugins[thePlugins].editdom;
+				var gTitle = oNode.getAttribute('title');
+				gTitle = gTitle == null ? '' : gTitle.replace(/&quot;/g, "\"");
+				$G('orgname').value = gTitle;
+				$G('datafield').value = oNode.getAttribute('datafield');
+				$G('MaxAttachCount').value = oNode
+						.getAttribute('MaxAttachCount');
+				$G('AllowFileList').value = oNode.getAttribute('AllowFileList');
+			} else {
+				parent.controlId += 1;
+				var df = "Ctrl" + parent.controlId
+				$G('datafield').value = df;
+			}
+		}
+		dialog.oncancel = function() {
+			if (UE.plugins[thePlugins].editdom) {
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+		dialog.onok = function() {
+			var gTitle = $G('orgname').value.replace(/\"/g, "&quot;");
+			if (gTitle == '') {
+				alert('请输入控件名称');
+				return false;
+			}
+			if (!oNode) {
+				try {
+					oNode = createElement('img', $G('datafield').value);
+					oNode.setAttribute('class', 'fileupload');
+					oNode.setAttribute('data-ctrl', 'fileupload');
+					oNode.setAttribute('datafield', $G('datafield').value);
+					oNode.setAttribute('datafieldcn', gTitle);
+					oNode.setAttribute('title', gTitle);
+					oNode.setAttribute('value', gTitle);
+					oNode.setAttribute('type', 'text');
+					oNode.setAttribute('readonly', 'readonly');
+					oNode.setAttribute('maxattachcount',
+							$G('MaxAttachCount').value);
+					oNode.setAttribute('allowfilelist',
+							$G('AllowFileList').value);
+					oNode.setAttribute('name', $G('datafield').value);
+					oNode.setAttribute('controltype', thePlugins);
+					editor.execCommand('insertHtml', oNode.outerHTML);
+				} catch (e) {
+					throw e;
+					return false;
+				}
+			} else {
+				oNode.setAttribute('class', 'fileupload');
+				oNode.setAttribute('data-ctrl', 'fileupload');
+				oNode.setAttribute('datafield', $G('datafield').value);
+				oNode.setAttribute('datafieldcn', gTitle);
+				oNode.setAttribute('title', gTitle);
+				oNode.setAttribute('value', gTitle);
+				oNode.setAttribute('type', 'text');
+				oNode.setAttribute('readonly', 'readonly');
+				oNode
+						.setAttribute('maxattachcount',
+								$G('MaxAttachCount').value);
+				oNode.setAttribute('allowfilelist', $G('AllowFileList').value);
+				oNode.setAttribute('name', $G('datafield').value);
+				oNode.setAttribute('controltype', thePlugins);
+				delete UE.plugins[thePlugins].editdom;
+			}
+		};
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+select count(*) from user_tab_columns where table_name = upper('workflow_workitem_history') and column_name = upper('ACTIVITYNAME') and data_length='500';

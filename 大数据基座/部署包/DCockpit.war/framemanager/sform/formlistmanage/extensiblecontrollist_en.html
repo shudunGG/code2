@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Extensible control management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="content-type" content="text/html" />
+		<script src="../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar content -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd();" id="btnAddRecord"> Add </a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Select the records you want to delete!', '', null, 'warning');} else {epoint.confirm('Are you sure you want to delete?','',deleteSelect);}">delete selected </a>
+			</div>
+		</div>
+
+		<!-- Condition area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="Control name">
+							<input id="search_Controlname" class="mini-textbox"
+							bind="extensiblecontrollistaction.searchString"
+							onkeypress="searchData();" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- Content area -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="controlguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">
+						order number
+					</div>
+					<div field="controlname" width="100%" headerAlign="center">
+						control name
+					</div>
+					<div field="controlenglishname" width="300" headerAlign="center">
+						control english name
+					</div>
+					<div field="allowfieldtype" width="300" align="center" headerAlign="center">
+						Control support type
+					</div>
+					<div field="ordernum" width="300" headerAlign="center" align="right">
+						order num
+					</div>
+					<div width="60" align="center" headerAlign="center" renderer="onEditRenderer">
+						edit
+					</div>
+				</div>
+			</div>
+		</div>
+
+        <script type="text/javascript">var miniLocal='en_US.js';</script>
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			// Init page
+			epoint.initPage('extensiblecontrollistaction');
+
+			// Add new control window
+			function openAdd() {
+				epoint.openDialog('adding record', "framemanager/sform/formlistmanage/extensiblecontroladd", function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 900,
+					'height' : 550
+				});
+			}
+			
+			// delete data
+			function deleteSelect() {
+				epoint.execute("deleteSelect", '', callback);
+			}
+			
+			// Line edit button
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			};
+
+			// Add edit property window
+			function openEdit(id) {
+				epoint.openDialog('edit record', "framemanager/sform/formlistmanage/extensiblecontroledit?guid=" + id, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 900,
+					'height' : 550
+				});
+			}
+
+			function callback(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', function(){
+						epoint.refresh(['datagrid', 'fui-form'],'',true);
+					}, 'info');
+				}
+			}
+
+			// fresh dategrid
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+		</script>
+	</body>
+</html>

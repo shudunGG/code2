@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用api注册待审核列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<!-- 
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+		</div>
+
+	</div> -->
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="申请人">
+						<input class="mini-textbox" bind="userName" />
+					</div>
+					<div role="control" label="应用名称">
+						<input class="mini-textbox" bind="appName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="API名称">
+						<input class="mini-textbox" bind="apiName" />
+					</div>
+					<div role="control"></div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40">序</div>
+				<div field="appname" width="200">应用名称</div>
+				<div field="apiname" width="200">API名称</div>
+				<div field="companyname" width="100%">企业名称</div>
+				<div field="applyusername" width="150">申请人</div>
+				<div field="commitdate" width="150"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">提交时间</div>
+				<div width="120" renderer="onDetailRender">操作</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiapplymanageaction');
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//
+		var onDetailRender = function(e) {
+			var rowguid = e.row['rowguid'];
+
+			// 审核
+			var forDetailHtml = '<a class="mini-button btn-in-column" id="btnDetail" onclick="detail(\''
+					+ rowguid
+					+ '\');"><div class="btn-in-column-text"> 审核 </div></a>';
+
+			var renderHtml = '<div>' + forDetailHtml + '</div>';
+			return renderHtml;
+		};
+
+		// 
+		function detail(id) {
+			epoint.openDialog('审核',
+					"frame/pages/basic/gateway/api/apiapply/subscribedetail?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 580
+					});
+		}
+	</script>
+</body>
+</html>

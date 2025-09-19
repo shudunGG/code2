@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>预警规则详情页面</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="规则描述">
+						<div class="mini-outputtext" bind="dataBean.rulename"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="预警类型">
+						<div class="mini-outputtext" bind="dataBean.warningtype"></div>
+					</div>
+					<div role="control" label="是否启用">
+						<div class="mini-outputtext" bind="dataBean.status"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="计算方式">
+						<div id="datagrid" class="mini-datagrid"
+							 allowResize="true"  showPager="false"
+							idField="rowguid" action="getDataGridData">
+							<div property="columns">
+								<div name="dimStruct" field="FieldNameEN" width="120" headerAlign="center">
+									维度字段 
+								</div>
+								<div name="dimStruct2" field="FieldNameEN2" width="120" headerAlign="center">
+									维度字段 2
+								</div>
+								<div name="dimStruct3" field="FieldNameEN3" width="120" headerAlign="center">
+									维度字段 3
+								</div>
+								<div name="dimStruct4" field="FieldNameEN4" width="120" headerAlign="center">
+									维度字段 4
+								</div>
+								<div name="dimStruct5" field="FieldNameEN5" width="120" headerAlign="center">
+									维度字段 5
+								</div>
+								<div name="rank" field="rank" width="100"
+									align="center" headerAlign="center">
+									排名
+								</div>
+								<div name="filterchange" field="filterchange" width="100"
+									 align="center" headerAlign="center">
+									变化名次
+								</div>
+								<div name ="compareWays" field="compareWays" width="100"
+									align="center" headerAlign="center">
+									比较方式
+								</div>
+								<div name="filter" field="filter"  width="100"
+									align="center" headerAlign="center">
+									过滤条件 
+								</div>
+								<div name="filtervalue" field="filtervalue" width="120" 
+								     align="center" headerAlign="center">
+									阀值 
+								</div>
+								<div name="percent" field="filtervalue" width="120" 
+								     align="center" headerAlign="center">
+									百分比 
+								</div>
+								<div name="roleguids" field="roleguids">预警角色</div>
+								<div name="userguids" field="userguids" >预警用户</div>
+								<!-- <div name="action" width="60" align="center" headerAlign="center"
+									renderer="onObjectRenderer">预警对象</div> -->
+								<!-- <div name="action1" width="60" align="center" headerAlign="center"
+									renderer="onDeteleRenderer">删除</div> -->
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<script>
+		var normtype;
+		var grid = mini.get("datagrid");
+		// 初始化页面
+		epoint.initPage('cockpitwarningruledetailaction',null,function(data){
+			normtype=data.normtype;
+			var type=data.type;
+			if(normtype == '1'){
+				if (type == "1") {
+					grid.hideColumn("compareWays");
+				}
+				grid.hideColumn("percent");
+				grid.hideColumn("rank");
+				grid.hideColumn("filterchange");
+				grid.hideColumn("dimStruct");
+				grid.hideColumn("dimStruct2");
+				grid.hideColumn("dimStruct3");
+				grid.hideColumn("dimStruct4");
+				grid.hideColumn("dimStruct5");
+				grid.hideColumn("action1");
+			}else{
+				if(normtype != '3'){
+					grid.hideColumn("dimStruct2");
+				}
+				if(type == "1"){
+					grid.hideColumn("rank");
+					grid.hideColumn("filterchange");
+					grid.hideColumn("compareWays");
+					grid.hideColumn("percent");
+				}else if(type == "2"){
+					grid.hideColumn("rank");
+					grid.hideColumn("filterchange");
+					grid.hideColumn("filtervalue");
+					
+				}else{
+					grid.hideColumn("percent");
+					grid.hideColumn("compareWays");
+					grid.hideColumn("filter");
+					grid.hideColumn("filtervalue");
+				}
+			}
+		});
+
+		mini.get("datagrid").on("load", function (e) {
+			var result = e.data;
+			if(result){
+				var ret = result[0];
+				if(ret.FieldNameEN2 == "" || ret.FieldNameEN2 == null){
+					grid.hideColumn("dimStruct2");
+				}
+				if(ret.FieldNameEN3 == "" || ret.FieldNameEN3 == null){
+					grid.hideColumn("dimStruct3");
+				}
+				if(ret.FieldNameEN4 == "" || ret.FieldNameEN4 == null){
+					grid.hideColumn("dimStruct4");
+				}
+				if(ret.FieldNameEN5 == "" || ret.FieldNameEN5 == null){
+					grid.hideColumn("dimStruct5");
+				}
+			}
+		});
+
+		var fConditonDatas=[{ id: '=', text: '=' }, { id: '!=', text: '!='}, { id: '>', text: '>'}, { id: '<', text: '<'}, { id: '>=', text: '>='}, { id: '<=', text: '<='}];
+		var compareWaysData=[{ id: '同比', text: '同比' }, { id: '环比', text: '环比'}];
+		var rankData=[{ id: '上升', text: '上升' }, { id: '下降', text: '下降'}];
+		
+	</script>
+</body>
+</html>

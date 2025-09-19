@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>选择人员</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../fui/js/cssboot.js"></script>
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="save">确定选择</a> <a class="mini-button" onclick="epoint.closeDialog">取消选择</a>
+		</div>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+
+		<!-- 表单布局 -->
+		<div class="fui-form">
+			<div role="form">
+				<div id="treelistselect" class="mini-tabstreeselect" filterMode="server"
+					action="getTreeData" loadWhenChecked="true" showBorder="true" width="100%">
+					<div tabText="人员列表"></div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+        //初始化页面
+        epoint.initPage ("addressuserselectaction");
+        
+        //保存回调事件
+        function saveCallback (data)
+        {
+        	
+		if (data.added) {
+				epoint.alert(data.added, null, null, 'info');
+			} else {
+				epoint.alertAndClose(data.msg, null, null, null, 'info');
+			}
+		}
+
+		//保存按钮
+		function save() {
+			var selectNodes = mini.get('treelistselect').getSelectedNodes();
+			var length = selectNodes.length;
+			if (length > 0) {
+				var userList = "";
+				var guidList = "";
+				for (var i = 0; i < length; i++) {
+					var node = selectNodes[i];
+					userList += node.text;
+					userList += ";";
+					guidList += node.value;
+					guidList += ";";
+				}
+				epoint.execute('save', '', [ epoint.encodeUtf(guidList),
+				   epoint.encodeUtf(userList) ], saveCallback);
+			} else {
+				epoint.alert('您还没有选择任何记录！', null, null, 'warning');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+
+</html>

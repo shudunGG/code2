@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>中文分词</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<a role="helper"></a>
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden" style="background-color: #3d4b64">
+		<!-- 内容 -->
+		<div class="fui-notice-inner text-left">
+			<p>
+				<em>分词字段：</em>用于分词的字段，一般为文本内容
+			</p>
+			<p>
+				<em>输出字段名称：</em>算法运行完成后输出的结果字段名称
+			</p>
+			<p>
+				<em>停用词库：</em>算法平台中加载的停用词库名称，一般默认为 "停用词库"
+			</p>
+		</div>
+		<span class="notice-close-btn"></span>
+	</div>
+	
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden" style="background-color: #3d4b64">
+		<!-- 内容 -->
+		<div class="fui-notice-inner text-left">
+			<p>
+				<em>停用词库：</em>对应统一算法平台中存放的停用词库名称，若无个性化内容，默认填写 "停用词库"
+			</p>
+		</div>
+		<span class="notice-close-btn"></span>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox"
+							required="true" emptyText="请输入步骤名称" vtype="maxLength:20"
+							requiredErrorText="步骤名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分词字段" starred="true">
+						<div id="participlefield" name="participlefield" class="mini-combobox" 
+							allowInput="false" action="getPreFields" showClose="false" 
+							required="true" requiredErrorText="分词字段不能为空"></div>
+					</div>
+					<div role="control" label="输出字段名称" starred="true">
+						<div id="outputcolname" name="outputcolname" class="mini-textbox" 
+							required="true" requiredErrorText="输出字段名称不能为空"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="停用词库" starred="true">
+						<div id="dictchoosehdfs" name="dictchoosehdfs" class="mini-textbox" 
+							required="true" requiredErrorText="停用词库不能为空"></div>
+					</div>
+					<div role="control">
+					</div>
+				</div>
+				<input id="json" name="json" class="mini-hidden">
+
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var cbl = mini.get("cbl");
+		var json;
+		var nodeData;
+		var nodeInfo;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modeltokenizeaction?stepId=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			if (e.json) {
+				json = e.json;
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {}
+
+		//保存修改
+		function saveModify() {
+			if (epoint.validate('@all', true)) {
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+	</script>
+</body>
+</html>

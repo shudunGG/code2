@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>版块管理列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openConf">配置</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="cardName" headerAlign="center" width="100"
+					renderer="onDetailRenderer">卡片名称</div>
+				<div field="apiCode" headerAlign="center" align="center" width="100">ApiCode</div>
+				<div field="statusText" headerAlign="center" align="center"
+					width="100">状态</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var guid = Util.getUrlParams('guid');
+		epoint.initPage('cockpitmobilecardconfaction', null,function(data) {
+			
+		});
+
+		function openConf(){
+			if(mini.get('datagrid').getSelecteds()==0)
+			{
+				epoint.alert('请选择要配置的记录!');
+			}
+			else{
+				epoint.execute("conf", '', closeCallback);
+			}
+		}
+		
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+	</script>
+</body>
+</html>

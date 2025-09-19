@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>查询区域条件配置</title>
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="btn">
+		<a class="mini-button" state="primary" id="addNew" onclick="save();">保存</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="查询条件名称" starred="true">
+					<input id="columnText" class="mini-textbox"
+						bind="dataBean.querytext" required="true"
+						requiredErrorText="查询条件不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="类型" starred="true">
+					<div class="mini-combobox" textField="text" id="cType"
+						valueField="id" bind="dataBean.ctype"
+						data="[{id:'Value',text:'固定值'},{id:'Range',text:'范围'}]"
+						onvaluechanged="changeType(this.value)" required="true"
+						requiredErrorText="类型不能为空!"></div>
+				</div>
+			</div>
+			<div role="row" id="dataArea" style="display: none">
+				<div role="control" label="数据表选择" starred="true">
+					<div id="dataTable" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.tableId" action="getTableList"
+						onvaluechanged="selectTableChange(this.value,'A')"></div>
+				</div>
+				<div role="control" label="表字段选择" starred="true">
+					<div id="dataField" class="mini-combobox" textField="text"
+						valueField="id" bind="dataBean.fieldId"></div>
+				</div>
+			</div>
+			<div role="row" id="queryTypeArea" style="display: none">
+				<div role="control" label="查询类型">
+					<div class="mini-combobox" textField="text" id="queryType"
+						valueField="id" bind="dataBean.querytype"
+						data="[{id:'Equal',text:'精确匹配'},{id:'Like',text:'模糊匹配'}]"></div>
+				</div>
+			</div>
+			<div role="row" id="rangeTypeArea" style="display: none">
+				<div role="control" label="范围类型">
+					<div class="mini-combobox" textField="text" id="rangeType"
+						valueField="id" bind="dataBean.rangetype"
+						data="[{id:'Time',text:'时间范围'},{id:'Value',text:'数值范围'}]"></div>
+				</div>
+			</div>
+			<div id="rangeSConfigArea" style="display: none">
+				<div role="row">
+					<div role="control" label="起始配置(表、字段、比较条件)">
+						<div id="startTableId" class="mini-combobox" textField="text"
+							valueField="id" bind="startTableId" action="getTableList"
+							onvaluechanged="selectTableChange(this.value,'B')"></div>
+						<div id="startFieldId" class="mini-combobox" textField="text"
+							valueField="id" bind="startFieldId"></div>
+						<div id="startCompare" class="mini-combobox" textField="text"
+							valueField="id" bind="startCompare"
+							data="[{text:'小于',id:'&lt;'},{text:'大于',id:'&gt;'},{text:'等于',id:'='},{text:'不等于',id:'!='}]"></div>
+					</div>
+				</div>
+				<div role="row" id="rangeEConfigArea" style="display: none">
+					<div role="control" label="结束配置(表、字段、比较条件)">
+						<div id="endTableId" class="mini-combobox" textField="text"
+							valueField="id" bind="endTableId" action="getTableList"
+							onvaluechanged="selectTableChange(this.value,'C')"></div>
+						<div id="endFieldId" class="mini-combobox" textField="text"
+							valueField="id" bind="endFieldId"></div>
+						<div id="endCompare" class="mini-combobox" textField="text"
+							valueField="id" bind="endCompare"
+							data="[{text:'小于',id:'&lt;'},{text:'大于',id:'&gt;'},{text:'等于',id:'='},{text:'不等于',id:'!='}]"></div>
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="排序码" starred="true">
+					<input id="orderNum" class="mini-textbox" bind="dataBean.ordernum"
+						vtype="int" required="true" requiredErrorText="排序码不能为空!" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('mobilequeryareaconfigaddaction', '', initCallback);
+
+		function initCallback(data) {
+			var cType = mini.get("cType").getValue();
+			changeType(cType);
+
+			if(data.tableName && data.fieldName){
+				mini.get('dataTable').setText(data.tableName);
+				mini.get('dataField').setText(data.fieldName);
+			}
+			if (data.startTableName && data.startFieldName) {
+				mini.get('startTableId').setText(data.startTableName);
+				mini.get('startFieldId').setText(data.startFieldName);
+			}
+			if (data.endTableName && data.endFieldName) {
+				mini.get('endTableId').setText(data.endTableName);
+				mini.get('endFieldId').setText(data.endFieldName);
+			}
+		}
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'info');
+			}
+		}
+
+		function selectTableChange(tabelId, type) {
+			if (tabelId) {
+				epoint.execute("dataTableValueChangeByType", 'fui-form', [ tabelId,
+						type ], mcallback);
+			}
+		}
+
+		function mcallback(data) {
+			if (data && data.fieldslist) {
+				if (data.type && data.type == "A") {
+					mini.get("dataField").setData(data.fieldslist);
+					mini.get("dataField").select(0);
+				} else if (data.type && data.type == "B") {
+					mini.get("startFieldId").setData(data.fieldslist);
+					mini.get("startFieldId").select(0);
+				} else if (data.type && data.type == "C") {
+					mini.get("endFieldId").setData(data.fieldslist);
+					mini.get("endFieldId").select(0);
+				}
+			}
+		}
+
+		//更改类型
+		function changeType(flag) {
+			if (flag == "Value") {
+				document.getElementById("dataArea").style.display = "block";
+				document.getElementById("queryTypeArea").style.display = "block";
+				document.getElementById("rangeTypeArea").style.display = "none";
+				document.getElementById("rangeSConfigArea").style.display = "none";
+				document.getElementById("rangeEConfigArea").style.display = "none";
+			} else {
+				document.getElementById("dataArea").style.display = "none";
+				document.getElementById("queryTypeArea").style.display = "none";
+				document.getElementById("rangeTypeArea").style.display = "block";
+				document.getElementById("rangeSConfigArea").style.display = "block";
+				document.getElementById("rangeEConfigArea").style.display = "block";
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

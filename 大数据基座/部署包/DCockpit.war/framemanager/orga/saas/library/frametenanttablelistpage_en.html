@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+	<head>
+		<title>Depots table</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="content-type" content="text/html" />
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="openAdd();" id="btnAddRecord" iconCls="icon-save"> add a record </a>
+				<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select a record to operate!', '', null, 'warning');} else {enableSelect();}" iconCls="icon-save" > disable/start using </a>
+				<a id="btnDel" class="mini-button"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}" iconCls="icon-minuscircle"> delete Selected </a>
+				<a class="mini-button" onclick="initTable" > initialize the </a>
+			</div>
+		</div>
+
+		<!-- conditions area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="source data name">
+							<input id="sourcetablename" class="mini-textbox"
+							bind="dataBean.sourcetablename"/>
+						</div>
+						<div role="control" label="belong the tenant">
+							<input class="mini-treeselect" action="getTreeModel" id="TreeModel" multiSelect="false" onbeforenodeselect="beforenodeselect"
+							bind="dataBean.tenantguid" textField="text" valueField="id" parentField="pid" showFilter="true" showRadioButton="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- content area -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">
+						order
+					</div>
+					<div field="sourcetablename" headerAlign="center" width="200">
+						source data table name
+					</div>
+					<div field="totablename" headerAlign="center" >
+						target data table name
+					</div>
+					<div field="dsname" headerAlign="center" width="120">
+						target data sources
+					</div>
+					<div field="tenantname" headerAlign="center" >
+						belongs to the tenant
+					</div>
+					<div field="isdel" width="80" align="center" headerAlign="center"
+					renderer="onStateRenderer">
+						state
+					</div>
+					<div width="80" align="center" headerAlign="center"
+					renderer="onEditRenderer">
+						edit
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+		<script>
+			//<![CDATA[
+			// Initialize thepage
+			epoint.initPage('frametenanttablelistaction');
+			
+			function beforenodeselect(e) {
+	            //Select the root node is prohibited
+	            if (e.node.id=='f9root') e.cancel = true;
+	        }
+
+			// drawstate
+			var onStateRenderer = function(e) {
+				if (e.value == '0') {
+					return 'To enable the';
+				} else {
+					return 'disable';
+				}
+			};
+
+			// drawedit
+			var onEditRenderer = function(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			};
+
+			// The new popup Windows
+			function openAdd() {
+				epoint.openDialog('newDepots tableconfiguration', "framemanager/metadata/saas/library/frametenanttable", function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 450
+				});
+			}
+
+			// disable/To enable the
+			function enableSelect() {
+				epoint.execute("enableSelect", '', msgCallBack);
+			}
+
+			// Initialize the
+			function initTable() {
+				epoint.execute("initTable", '', msgCallBack);
+			}
+
+			// The pop-upeditwindow
+			function openEdit(id) {
+				epoint.openDialog('editDepots tableconfiguration', "framemanager/metadata/saas/library/frametenanttable?guid=" + id, function(){
+					epoint.refresh(['datagrid', 'fui-form'],'',true);
+				}, {
+					'width' : 1000,
+					'height' : 450
+				});
+			}
+
+			// Back off to remind
+			function msgCallBack(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alert(msg, '', function(){
+							epoint.refresh(['datagrid', 'fui-form'],'',true);
+						}, 'success');
+					} else {
+						epoint.alert(msg, '', '', 'warning');
+					}
+				}
+			}
+
+			// delete data
+			function deleteSelect() {
+				epoint.execute("deleteSelect", '', msgCallBack);
+			}
+
+			// Search for tables
+			function searchData() {
+				epoint.refresh(['datagrid', 'fui-form']);
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

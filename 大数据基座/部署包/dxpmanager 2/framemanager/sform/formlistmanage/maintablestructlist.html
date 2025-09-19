@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>主表字段</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addTableStructBtn1" iconCls="icon-save"
+				onclick="add();">添加字段</a> <a class="mini-button "
+				iconCls="icon-addcircle" id="saveForm"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要保存的记录！', '', null, 'warning');} else {save();}">保存修改</a>
+
+
+			<!-- a class="mini-button" iconCls="icon-removecircle" id="delForm"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的记录！', '', null, 'warning');} else {del();}">删除选定</a-->
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">说明信息</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			当前表<em>必须设置主键</em>，如果数据库该表已经有主键，无需设置；如果没有，请在这里勾选1个字段作为查询主键
+		</p>
+		<p>
+			按钮<em>重建数据表：</em>当我们数据库物理表被删除或者没有的时候，我们可以通过配置好的结构字段重新反转生成物理表
+		</p>
+		<p>
+			按钮<em>同步结构：</em>如果我们的结构字段与我们的真实物理表不一致，我们可以通过这个按钮来进行差异性同步。同步的过程是读取物理表字段新增、修改、删除mis表中的字段
+		</p>
+	</div>
+
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<!-- 4列 -->
+				<div role="row">
+					<div role="control" label="当前数据表名称" starred="false">
+						<input bind="tableInfo.tableName" class="mini-output" />
+					</div>
+					<div role="control" label="SQL数据表名称" starred="false">
+						<input bind="tableInfo.sqlTableName" class="mini-output" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="字段中文名" starred="false">
+						<input bind="fieldChineseName" class="mini-textbox"
+							onkeypress="searchData();" />
+					</div>
+					<div role="control" label="字段英文名" starred="false">
+						<input bind="fieldName" class="mini-textbox"
+							onkeypress="searchData();" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="fieldid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			allowCellValid="true" action="getTableModal">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">序</div>
+				<div field="fieldchinesename" headerAlign="center" align="left"
+					width="100%">
+					显示名称<input property="editor" class="mini-textbox" minWidth="40"
+						inputStyle="text-align:left" />
+				</div>
+				<div field="fieldname" headerAlign="center" align="left" width="80">字段名</div>
+				<div field="fieldtype" headerAlign="center" align="left" width="60">数据类型</div>
+				<div field="fielddisplaytype" headerAlign="center" align="left"
+					width="60">显示类型</div>
+				<div headerAlign="center" align="center" renderer="edit" width="50">修改</div>
+				<div field="ordernumingrid" width="50" headerAlign="center"
+					align="right">
+					排序号<input property="editor" class="mini-textbox" minWidth="20"
+						inputStyle="text-align:right" vtype="int;range:0,99999999"/>
+				</div>
+				<div field="controlwidth" type="comboboxcolumn" width="50"
+					autoShowPopup="true" headerAlign="center" align="center">
+					控件宽度<input autoLoad="false" data="selectItems.controlwidth"
+						property="editor" class="mini-combobox" style="width: 99%" />
+				</div>
+				<div field="todispingrid" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">列表</div>
+				<div field="isquerycondition" type="checkboxcolumn"
+					headerAlign="center" width="55" align="center">查询</div>
+				<!--div field="uniquefield" type="checkboxcolumn" headerAlign="center"
+					width="35" align="center">索引</div-->
+				<div field="isorderfield" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">排序</div>
+				<div field="mustfill" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">必填</div>
+				<!--div field="dispInAdd" type="checkboxcolumn" headerAlign="center"
+					width="35" align="center">页面</div-->
+				<div field="isexportexcel" type="checkboxcolumn"
+					headerAlign="center" width="55" align="center">导出</div>
+				<!--div field="isforeignkey" type="checkboxcolumn" headerAlign="center"
+					width="55" align="center">主键</div-->
+			</div>
+		</div>
+	</div>
+
+	<input bind="tableInfo.tableID" id="tableID" class="mini-hidden" />
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('maintablestructlistaction');
+
+		var selectItems = {
+			'controlwidth' : [ {
+				id : 2,
+				text : '双倍宽'
+			}, {
+				id : 1,
+				text : '单倍宽'
+			} ]
+		};
+
+		function add() {
+			var tableID = mini.get("tableID").getValue();
+			epoint.openDialog("新增结构",
+					"framemanager/sform/formlistmanage/tablestructadd?tableID="
+							+ tableID, addCallBack, {
+						'width' : 1000,
+						'height' : 450
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function save() {
+			epoint.execute('saveAll', 'datagrid', msgCallBack);
+		}
+
+		function del() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "updateInfo",
+					"fieldid");
+		}
+
+		function updateInfo(fieldid) {
+			epoint.openDialog("修改字段",
+					"framemanager/sform/formlistmanage/tablestructedit?fieldID="
+							+ fieldid, addCallBack);
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.alert(msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

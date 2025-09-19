@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Configuration management</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+		<style>
+			.link:hover {
+				cursor: pointer;
+				color: red;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd()">new configuration</a>
+
+				<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}">delete selected</a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDataGridData"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+
+					<div type="indexcolumn" headerAlign="center" width="40">
+						order
+					</div>
+					<div field="tasktrigname" width="100%" headerAlign="center">
+						trigger configuration name
+					</div>
+					<div width="80" headerAlign="center" align="center" renderer="onEditRenderer">
+						edit
+					</div>
+					<div field="state" width="300" headerAlign="center" align="center" renderer="onStateRenderer">
+						state
+					</div>
+					<div width="80" headerAlign="center" align="center" renderer="onStartRenderer">
+						start
+					</div>
+					<div width="80" headerAlign="center" align="center" renderer="onStopRenderer">
+						stop
+					</div>
+					<div width="80" headerAlign="center" align="center" renderer="onPauseRenderer">
+						suspended
+					</div>
+					<div width="80" headerAlign="center" align="center" renderer="onResumeRenderer">
+						restore
+					</div>
+				</div>
+			</div>
+			<input class="mini-hidden" id="taskGuid" bind="taskGuid"/>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("frametasktriglistaction");
+
+			// Executive function values
+			function onExecuteTypeRenderer(e) {
+				if (e.value == '0') {
+					return 'manual';
+				} else {
+					return 'automatic';
+				}
+			}
+
+			// edit
+			function onEditRenderer(e) {
+				return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+			}
+
+			function openEdit(id) {
+				epoint.openDialog('editconfiguration', "framemanager/metadata/taskmanager/tasktrigger/frametasktrig?rowguid=" + id, searchData,{
+					'width' : 900,
+					'height' : 480
+				});
+			}
+
+			// state
+			function onStateRenderer(e) {
+				return "<font style=\"color:red\">" + e.value + "</red>";
+			}
+
+			// Start 
+			function onStartRenderer(e) {
+				return "<a class=\"link\" onclick=\"webmethodCall('" + e.record.rowguid + "','startOperation')\">start</a>";
+			}
+
+			// stop
+			function onStopRenderer(e) {
+				return "<a class=\"link\" onclick=\"webmethodCall('" + e.record.rowguid + "','stopOperation')\">stop</a>";
+			}
+
+			// suspended
+			function onPauseRenderer(e) {
+				return "<a class=\"link\" onclick=\"webmethodCall('" + e.record.rowguid + "','pauseOperation')\">suspended</a>";
+			}
+
+			// restore
+			function onResumeRenderer(e) {
+				return "<a class=\"link\" onclick=\"webmethodCall('" + e.record.rowguid + "','resumeOperation')\">restore</a>";
+			}
+
+			function openAdd() {
+				epoint.openDialog('The new configuration', "framemanager/metadata/taskmanager/tasktrigger/frametasktrig?taskguid=" + mini.get("taskGuid").getValue(), searchData,
+						{
+					'width' : 900,
+					'height' : 480
+				});
+			}
+
+			function deleteSelect() {
+				epoint.execute('deleteSelect', 'datagrid', msgcallback);
+			}
+
+			function webmethodCall(rowguid, method) {
+				epoint.execute(method, null, [rowguid], msgcallback);
+			}
+
+			function msgcallback(data) {
+				if (data && data.msg) {
+					epoint.alert(data.msg, '', searchData, 'info');
+				} else {
+					searchData();
+				}
+			}
+
+			// Search form
+			function searchData() {
+				epoint.refresh(['datagrid'],'',true);
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

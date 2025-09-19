@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>The project management</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="add">new project</a>
+			<a class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm the deletion?','',deleteSelected);}">delete selected</a>
+			<a class="mini-button" onclick="saveModify">save changes</a>
+		</div>
+	</div>
+	<!-- conditions area -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="project name" starred="true" >
+						<input id="chinesename" bind="dataBean.chineseName" class="mini-textbox"
+							required="true" requiredErrorText="Project name in Chinesemandatory"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="English name" starred="true" >
+						<input id="projectName" bind="dataBean.projectName" class="mini-textbox"
+							required="true" requiredErrorText="Project name in Englishmandatory"
+							vtype="maxLength:50" />
+					</div>
+					<div role="control" label="project path" starred="true" >
+						<input id="path" bind="dataBean.path" class="mini-textbox"
+							required="true" requiredErrorText="Project pathmandatory"
+							vtype="maxLength:150" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>		
+	<!-- content area -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="projectID" multiSelect="true" allowCellValid="true" allowCellEdit="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true" >
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">
+					order
+				</div>
+				<div field="chineseName" headerAlign="center" vtype="required"  width="100%" >
+					project name in Chinese<input property="editor" class="mini-textbox" maxLength="50" style="width: 100%"/>
+				</div>
+				<div field="projectName" headerAlign="center" vtype="required"  width="400" >
+					project name in English<input property="editor" class="mini-textbox" maxLength="50" style="width: 100%"/>
+				</div>
+				<div field="path" headerAlign="center" vtype="required"  width="400" >
+					project path<input property="editor" class="mini-textbox" maxLength="150" style="width: 100%"/>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//Initialize the page
+		epoint.initPage('sysprojectlistaction');
+		
+		var grid = mini.get("datagrid");
+		
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid'],'',true);
+		}
+		
+		//The new category
+		function add(){
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form',msgCallBack);
+			}
+		}
+		
+		
+		// Back to thediaoremind
+		function msgCallBack(data) {
+			var msg =data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData(),'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//delete selected
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+		
+		//save changes
+		function saveModify(){
+			grid.validate();
+            if (grid.isValid() == false) {
+                //alert("Please check the input cellscontent");
+                var error = grid.getCellErrors()[0];
+                grid.beginEditCell(error.record, error.column);
+                return;
+            }
+			epoint.execute('saveAll', 'datagrid',msgCallBack);
+		}
+		
+		//]]>
+	</script>
+
+
+</body>
+</html>

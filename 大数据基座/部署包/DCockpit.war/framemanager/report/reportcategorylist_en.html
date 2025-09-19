@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Statements classification</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<div class="page-loading"></div>
+
+
+	<!-- the left tree -->
+	<div class="fui-left">
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<!-- Right-side content area -->
+	<div class="fui-right">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addbtn" onclick="addCat();">new category</a> <a
+					class="mini-button" id="addbtn" onclick="saveCat();">save changes</a> <a
+					class="mini-button" id="addbtn" onclick="deleteCat();">delete selected</a>
+			</div>
+		</div>
+
+
+		<!-- conditions area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="parent name">
+							<div id="parentName" class="mini-output" value="All categories"></div>
+						</div>
+						<div role="control" label="categoryname" starred="true">
+							<div id="categoryname" class="mini-textbox"
+								bind="reportCategory.categoryname" required="true"
+								requiredErrorText="Category nameCan't be empty!"></div>
+						</div>
+						<div role="control" label="order no">
+							<div id="ordernum" class="mini-textbox"
+								bind="reportCategory.ordernum" vtype="int"></div>
+						</div>
+					</div>
+					<!-- Add a hidden field to the tree and the linkage of the table -->
+					<input bind="leftTreeNodeGuid" id="leftTreeNodeGuid"
+						class="mini-hidden" />
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- The list of area -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true"
+				allowCellEdit="true">
+				<!-- allowCellEdit="true" -->
+				<div property="columns">
+					<div type="checkcolumn" width="80"></div>
+					<div type="indexcolumn" width="80" headerAlign="center">
+						order
+					</div>
+					<div field="categoryname" headerAlign="center" width="100%">
+						childCategory name<input property="editor" class="mini-textbox" />
+					</div>
+					<div field="categorynum" headerAlign="center" width="250">childCategory number</div>
+					<div field="ordernum" headerAlign="center" width="150">
+						order no<input property="editor" class="mini-textbox" vtype="int" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+	</div>
+
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//Initialize the page
+        epoint.initPage ("reportcategorylistaction");
+        
+        //The treejsobject
+        var tree = mini.get ("tree");
+        
+        //Click on theThe treeNode to refresh the form
+        tree.on ("nodeselect", function (e)
+        {
+	        if (e.node)
+	        {
+		        //willthe left treeClick on theThe nodes of theidIn a hidden field
+		        mini.get ('leftTreeNodeGuid').setValue (e.node.id);
+		        mini.get ('parentName').setValue (e.node.text);
+	        }
+	        //Refresh the table
+	        epoint.refresh (['datagrid', 'fui-form']);
+        });
+        
+        // Search for tables
+        function searchData ()
+        {
+	        epoint.refresh ([
+	                'datagrid', 'fui-form', 'tree'
+	        ]);
+        }
+
+        //The new classification
+        function addCat ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("add", "fui-form", function (data)
+		        {
+			        epoint.alert (data.message, '', null, 'info');
+			        mini.get ("categoryname").setValue ("");
+			        mini.get ("ordernum").setValue ("");
+			        epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+		        });
+	        }
+        }
+
+        //Save the classification
+        function saveCat ()
+        {
+	        epoint.execute ("save", "datagrid", function (data)
+	        {
+		        epoint.alert (data.message, '', null, 'info');
+		        epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+	        });
+        }
+
+        //Delete the classification
+        function deleteCat ()
+        {
+	        if (mini.get ("datagrid").getSelectedIds ().length > 0)
+	        {
+		        epoint.confirm ("Are you sure to delete the selected record?", "", function (action)
+		        {
+			        epoint.execute ("delete", "datagrid", function (data)
+			        {
+				        epoint.alert (data.message, '', null, 'info');
+				        epoint.refresh (['datagrid', 'fui-form', 'tree'],'',true);
+			        });
+		        });
+	        }
+	        else
+	        {
+		        epoint.alert ("Please select records to delete!", '', null, 'warning');
+	        }
+        }
+	</script>
+</body>
+</html>

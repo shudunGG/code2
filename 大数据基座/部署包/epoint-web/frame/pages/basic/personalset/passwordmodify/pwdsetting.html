@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>密码设置</title>
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<script>
+		SrcBoot.output(['./pwdsetting.css'])
+	</script>
+</head>
+
+<body>
+	<div id="page-cover" style="position:fixed;top:0;left:0;width:100%;height: 100%;background: #fff"></div>
+	<script>
+        !function () {
+            var img = document.createElement('img');
+            img.onload = function () {
+                img.onload = null;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.position = 'absolute';
+                img.style.zIndex = '-1';
+                document.body.appendChild(img);
+                img = null;
+            };
+            img.onerror = function () {
+                img.onerror = null;
+                img = null;
+            };
+            img.src = window._rootPath + '/frame/fui/pages/themes/grace/skins/default/images/bg.png';
+        }();
+    </script>
+	<div class="pwd-cover">
+		<div class="pwd-container" id="pwd-container">
+			<div class="pwd-form-box" id="pwd-box">
+				<div class="first-entry-tips">
+					<span class="first-entry-tips-icon"></span>
+					<span class="first-entry-tips-text">为保障您的信息安全，初次使用请先设置密码</span>
+				</div>
+				<div class="pwd-box-step step-1">
+					<button id="set-btn" class="pwd-btn pwd-settings" type="button">设置密码</button>
+				</div>
+				<div class="pwd-box-step step-2">
+					<label class="pwd-form-row old-pwd">
+						<input class="pwd-form-input" id="oldpwd" type="password" placeholder="请输入原始密码" autocomplete="off" tabindex="1">
+						<span class="pwd-info oldpwd hidden"></span>
+					</label>
+					<label class="pwd-form-row new-pwd">
+						<input class="pwd-form-input" id="pwd-new1" type="password" placeholder="请输入密码" autocomplete="off" tabindex="2">
+						<span class="pwd-info pwd-new1 hidden"></span>
+					</label>
+					<div class="pwd-tips-row"></div>
+					<label class="pwd-form-row new-pwd">
+						<input class="pwd-form-input" id="pwd-new2" type="password" placeholder="请再次输入密码" autocomplete="off" tabindex="3">
+						<span class="pwd-info pwd-new2 hidden"></span>
+					</label>
+
+					<button class="pwd-btn enter-btn" id="enter-btn" type="button" tabindex="4">进入</button>
+				</div>
+				<button id="skip-btn" class="skip-edit hidden" type="button">暂不修改</button>
+			</div>
+		</div>
+	</div>
+	<script>
+        // 默认为首次进入的强制修改密码
+        //  url 中传递 resetpwd=true 表示重置密码
+        // 如果是修改密码
+        var isResetPwd = false;
+        if (/resetpwd=true/.test(location.search)) {
+            isResetPwd = true;
+            document.getElementById('pwd-container').className += ' reset-pwd';
+            document.getElementById('enter-btn').innerHTML = '修改';
+        }
+        document.body.removeChild(document.getElementById('page-cover'));
+    </script>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 获取密码规则的以及是否允许 暂不修改的 url 
+        // 返回格式为 {type:'值为0 1 2 3',fouceEdit: true/false}
+		var getPwdRuleUrl = epoint
+			.dealRestfulUrl('mypasswordmodifyaction/getPwdRuleUrl');
+
+		// 修改密码的请求的url 传递数据为 {oldPwd:'如果为用户手动修改会存在这个字段',newPwd:'用户新设置的密码'}
+		var savePwdUrl = epoint
+			.dealRestfulUrl('mypasswordmodifyaction/saveModify');
+
+		// 暂不修改的请求地址
+        var notToModifyUrl = epoint
+			.dealRestfulUrl('mypasswordmodifyaction/notModify');
+
+		// 重置密码完成后的后跳转
+		function redirectCallBack() {
+			var url = Util.getUrlParams('uri');
+			if (url&&url.indexOf('http') < 0) {
+				url = Util.getRootPath() + url;
+			}
+			Util.getSafeLocation().href = url;
+		}
+		// 用户点击修改密码 修改完成后 则关闭dialog
+		function afterUserPwdModify() {
+			epoint.closeDialog('save');
+		}
+	</script>
+	<script>
+		// 用户名密码RSA加密引入js文件
+		SrcBoot.output([ '../../../../fui/js/libs/sm2security.js' ]);
+	</script>
+	<script>
+		SrcBoot.output(['./pwdsetting.js'])
+	</script>
+
+</body>
+
+</html>

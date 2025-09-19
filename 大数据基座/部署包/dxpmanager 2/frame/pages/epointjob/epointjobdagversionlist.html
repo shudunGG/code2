@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>DAG流程实例列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="refreshLog">日志刷新</a>
+		<!-- <a
+			class="mini-button" onclick="openclearLog">清理</a> -->
+		<!--帮助按钮 -->
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			<span class="text-danger"> 暂无描述 </span>
+		</p>
+	</div>
+
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="row">
+				<div role="control" label="任务状态">
+					<input id="status" class="mini-combobox" bind="status"
+						action="getStatusList" emptyText="请选择..." showClose="false"
+						textField="text" valueField="id" />
+				</div>
+				<div role="control" label="调度时间">
+					<input id="starttime" class="mini-datepicker" bind="startDate"
+						format="yyyy-MM-dd HH:mm:ss" onValuechanged="validateDate(this)"
+						timeFormat="HH:mm:ss" showTime="true" showOkButton="false"
+						showClearButton="true" allowInput="false" style="width: 44%" /><span
+						style="width: 12%; text-align: center">至</span><input id="endtime"
+						class="mini-datepicker" bind="endDate"
+						format="yyyy-MM-dd HH:mm:ss" timeFormat="HH:mm:ss" showTime="true"
+						showOkButton="false" showClearButton="true" allowInput="false"
+						onValuechanged="validateDate(this)" style="width: 44%" />
+				</div>
+			</div>
+		</div>
+		<a id="logSearch" role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="dagVersionGuid" multiSelect="false"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="false" allowCellEdit="false" showPager="true"
+			action="getDataGridData" allowCellSelect="false">
+			<div property="columns">
+				<div type="indexcolumn" width="60">序</div>
+				<div field="dagVersionGuid" width="100%">dagVersionGuid</div>
+				<div field="dailyDagDate" width="130"  data-options="{'format': 'yyyy-MM-dd'}">业务时间</div>
+				<div field="timerTrigger" width="220" renderer="onTimerTriggerRenderer">调度类型</div>
+				<div field="startTime" width="160"
+					data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">调度时间</div>
+				<div field="endTime" width="160"
+					data-options="{'format': 'yyyy-MM-dd HH:mm:ss'}">结束时间</div>
+				<div field="processStatus" width="100" renderer="onStatusRenderer">状态</div>
+				<!-- <div width="80" headeralign="center" align="center" renderer="onDesignRenderer">流程版本</div> -->
+				<div field="planTriggerTime"  visible="false"></div>
+				<div field="dagInstanceGuid"  visible="false"></div>
+				<div field="dagType"  visible="false"></div>
+			</div>
+		</div>
+		<div id="win1" class="mini-window" title="清理日志"
+			style="width: 500px; height: 180px;" showMaxButton="false"
+			showCollapseButton="false" showShadow="true" showToolbar="false"
+			showFooter="false" showModal="false" allowResize="true"
+			allowDrag="true">
+			<div class="fui-form" id="fui-form-clearLog">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="清理方式" starred="true">
+							<input class="mini-combobox" showNullItem="false" bind=""
+								action="" emptyText="请选择..." showClose="false" textField="text"
+								allowInput="false" valueField="id" required="true" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="mini-button"
+				style="color: red; display: block; margin: 0 auto"
+				onclick="clearLog" width="80">删除日志</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//初始化页面		
+		epoint.initPage('epointjobdagversionlistaction', '@all', function(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '提示', null, 'info');
+			}
+		});
+
+		// 打开DAG流程实例展示页
+		function openShowPage(guid) {
+			epoint.openTopDialog("查看DAG流程实例",
+					'frame/pages/epointjob/chart/show?dagInstanceGuid=' + guid,
+					"");
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 弹出清理日志窗口
+		function openclearLog() {
+			epoint.openDiv('win1');
+		}
+
+		// 删除日志
+		function clearLog() {
+			epoint.confirm('确定要进   行日志的清空操作吗？', '清空确认', function() {
+				epoint.execute('clearLog', 'fui-form-clearLog', closeCallback);
+			});
+		}
+
+		// 删除操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.alert(data.msg, '', null, 'info');
+					epoint.closeDiv('win1');
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+
+		// 刷新日志
+		function refreshLog() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], "", true);
+		}
+
+		// 查看调度结果
+		function openTriggerMsg(dagInstanceGuid) {
+			var url = 'frame/pages/epointjob/epointjobschedulermsg?dagInstanceGuid='
+					+ dagInstanceGuid + '&msgType=0';
+			epoint.openDialog("查看调度结果", url, "", {
+				'width' : 800,
+				'height' : 600
+			});
+		}
+
+		function onStatusRenderer(e) {
+			var status = e.row.processStatus;
+			var statusMap = {
+				"0":"等待调度",
+				"14" : "调度中",
+				"25" : "调度失败",
+				"10" : "运行中",
+				"20" : "运行成功",
+				"21" : "运行失败"
+			};
+			var id = e.row.dagInstanceGuid;
+			if (status == 25) {
+				return '<a style="color:red;cursor:pointer" onclick="openTriggerMsg(\''
+						+ e.row.dagInstanceGuid + '\')">调度失败</a>';
+			} else if (status == 21) {
+				return '<a style="color:red;cursor:pointer" onclick="openShowPage(\''
+						+ e.row.dagInstanceGuid + '\')">运行失败</a>';
+			} else if (status == 20) {
+				return '<a style="color:green;cursor:pointer" onclick="openShowPage(\''
+						+ e.row.dagInstanceGuid + '\')">运行成功</a>';
+			} else if (status == 10) {
+				return '<a style="color:grey;cursor:pointer" onclick="openShowPage(\''
+						+ e.row.dagInstanceGuid + '\')">运行中</a>';
+			}
+			return statusMap[status];
+		}
+		
+		function onTimerTriggerRenderer(e){
+			var a = e.row.timerTrigger;
+			if(a == 0){
+				return '手动触发';
+			}
+			if(a == 1){
+				return '定时调度 ' + formatDate(new Date(new Number(e.row.planTriggerTime)));
+			}
+			if(a == 2){
+				return '定时调度';
+			}
+		}
+		
+		function formatDate(d){
+	        var year = d.getFullYear();  //获取年
+	        var month = d.getMonth() + 1;    //获取月
+	        var day = d.getDate(); //获取日
+	        var hours = d.getHours();
+	        var minutes = d.getMinutes();
+	        return year + "-" + month + "-" + day + " " + hours + ":" + minutes;
+		}
+		
+
+
+		function validateDate(e) {
+			//　日期控件的验证
+			var start = mini.get("starttime");
+			var end = mini.get("endtime");
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'starttime') {
+						epoint.alert("开始时间不能比结束时间晚!", '', null, 'warning');
+						end.setValue(null);
+					} else {
+						epoint.alert("结束时间不能比开始时间早!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+		
+		// 流程设计按钮渲染
+		function onDesignRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-paper",
+					"openDesigner", "dagVersionGuid,dagType");
+		}
+
+		// 弹出设计页面 
+		function openDesigner(e) {
+			epoint.openTopDialog('DAG流程版本',
+					'frame/pages/epointjob/chart/versiondesigner?dagVersionGuid=' + e.dagVersionGuid + '&dagType=' + e.dagType,
+					function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {state : 'info'});
+						}
+						epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+					});
+		}
+	</script>
+</body>
+</html>

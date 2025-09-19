@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>请获取机器码，购买License</title>
+    <link rel="stylesheet" type="text/css" href="./webuploader/webuploader.css">
+	<link rel="stylesheet" href="register.css" />
+</head>
+<body>
+	<div class="reg-code-cover"></div>
+	<div class="reg-code-panel in-center">
+			<h4 class="rcp-title mb20">系统机器码</h4>
+			<div class="rcp-bd">
+				<p class="rcp-note mb15">请依据此机器码购买正式License，或申请试用License</p>
+				<ul class="clearfix rcp-row mb10">
+					<li>机器码：</li>
+					<li>
+                        <div class="usbkeycode clearfix">
+                            <input id="usbkeycode-input" class="usbkeycode-input" type="text" />
+                        </div>
+					</li>
+				</ul>
+				<ul class="clearfix rcp-row mb10">
+					<li>上传授权文件：</li>
+					<li>
+                        <div id="upload" class="upload">选择文件</div>
+					</li>
+				</ul>
+                <div id="thelist" class="uploader-list"></div>
+			</div>
+		</div>
+    <script type="text/javascript" src="./webuploader/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="./webuploader/webuploader.min.js"></script>
+
+    <script type="text/javascript">
+        //获取url参数
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            var context = "";
+            if (r != null)
+                 context = decodeURIComponent(r[2]);
+            reg = null;
+            r = null;
+            return context == null || context == "" || context == "undefined" ? "" : context;
+        }
+        //格式化时间
+        function formatTime(time, format) {
+            var _this = time;
+            var date = {
+                  "M+": _this.getMonth() + 1,
+                  "d+": _this.getDate(),
+                  "h+": _this.getHours(),
+                  "m+": _this.getMinutes(),
+                  "s+": _this.getSeconds(),
+                  "q+": Math.floor((_this.getMonth() + 3) / 3),
+                  "S+": _this.getMilliseconds()
+             };
+             if (/(y+)/i.test(format)) {
+                    format = format.replace(RegExp.$1, (_this.getFullYear() + '').substr(4 -         RegExp.$1.length));
+             }
+             for (var k in date) {
+                 if (new RegExp("(" + k + ")").test(format)) {
+                    format = format.replace(RegExp.$1, RegExp.$1.length == 1? date[k] : ("00" + date[k]).substr(("" + date[k]).length));
+                 }
+              }
+              return format;
+        }
+        
+        var licName = GetQueryString('diskSerial'),
+            $theList = $('#thelist');
+
+        //机器码赋值
+        if(licName) {
+            $('#usbkeycode-input').val(licName);
+        }
+
+        //初始化上传
+    	var uploader = WebUploader.create({
+
+            // swf文件路径
+            swf: './webuploader/Uploader.swf',
+
+            // 文件接收服务端。
+            server: 'registeraction.action?cmd=getFileUploadModel',
+
+            // 选择文件的按钮。可选。
+            // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+            pick: {
+                id: '#upload'
+            },
+
+            auto:true,
+
+            // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+            resize: false,
+
+            accept: {
+                title: 'LIC',
+                extensions: 'lic'
+            },
+
+            formData: {
+                "commonDto":JSON.stringify([{
+                    "id":"upload",
+                    "type":"webuploader",
+                    "mapClass":"com.epoint.basic.faces.fileupload.WebUploader",
+                    "action":"registeraction.getFileUploadModel",
+                    "showDefaultUI":true,
+                }]), 
+                "upload_action": "upload",
+                "upload_fileCount": 1,
+                "upload_fileLoadedCount": 0,
+                "diskSerial": licName
+            }
+        });
+
+        $('#upload').on('click',function() {
+            $theList.html('');
+        });
+
+        //显示用户选择
+        uploader.on( 'fileQueued', function( file ) {
+            var size = Math.floor(file.size/1024*100)/100+'k';
+            var time = formatTime(new Date(), 'yyyy-MM-dd');
+
+            $theList.append( '<div id="' + file.id + '" class="item clearfix">' +
+                '<div class="info">' + file.name + ' ( ' + size + '/' + time + ' )</div>' +
+            '</div>' );
+        });
+
+        //文件上传进度
+        uploader.on( 'uploadProgress', function( file, percentage ) {
+            var $li = $( '#' + file.id, $theList ),
+                $percent = $('.progress .progress-bar', $li);
+
+            // 避免重复创建
+            if ( !$percent.length ) {
+                $percent = $('<div class="progress progress-striped active">' +
+                  '<div class="progress-bar" role="progressbar" style="width: 0%">' +
+                  percentage * 80 + '%'+
+                  '</div>' +
+                '</div>').appendTo( $li ).find('.progress-bar');
+            }
+
+            $li.find('p.state').text('上传中');
+
+            $percent.css( 'width', percentage * 80 + '%' );
+        });
+
+        uploader.on( 'uploadSuccess', function( file, res ) {
+            $theList.html('上传成功');
+            var data = res.controls[0] || {},
+                url = data.data.extraDatas.url || '';
+            if(url) {
+                window.location.href = url;
+            } else {
+                uploader.cancelFile(file);
+                uploader.reset();
+                $theList.html('<p class="faild">'+ data.data.extraDatas.msg +'</p>');
+            }
+            
+        });
+
+        uploader.on( 'uploadError', function( file ) {
+            $theList.html('<p class="faild">上传失败请重试！</p>');
+        });
+        
+        uploader.on("error", function (type) {
+            if (type == "Q_TYPE_DENIED") {
+                $theList.html('<p class="faild">请上传.lic格式文件！</p>');
+            }
+        });
+
+    </script>
+	    
+</body>
+</html>

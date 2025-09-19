@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>外部通讯录分类表列表</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <!-- 请修改相对路径 -->
+    <script src="../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+<div class="page-loading"></div>
+
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <div class="btn-group mr10">
+        <a class="mini-button" id="addNew" onclick="saveAndNew">添加分组</a>
+        <a class="mini-button" iconCls="icon-save"
+           onclick="saveAll()">保存修改</a>
+        <a id="btnDel" class="mini-button"
+           onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">删除选定</a>
+    </div>
+</div>
+
+
+<!-- 内容区域 -->
+
+<div id="fuiContent" class="fui-content">
+    <div class="mini-fit">
+        <div id="datagrid" class="mini-datagrid" idField="categoryguid"
+             action="getDataGridData" sortOrder="desc" showPager="true"
+             style="height: 100%;" allowResize="true" multiSelect="true"
+             allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+             editNextRowCell="true">
+            <div property="columns">
+                <div width="10" type="checkcolumn"></div>
+                <div width="10" type="indexcolumn" headerAlign="center">序</div>
+                <div field="categoryname" headerAlign="center" vtype="required" >
+                    分组名称 <input property="editor" class="mini-textbox" id="category"
+                                style="width: 100%;" minWidth="200"  vtype="required" maxLength="20"/>
+                </div>
+                <div width="20" field="ordernumber" headerAlign="center" align="center" vtype="int;range:0,99999999">
+                    排序号 <input property="editor" class="mini-textbox" id="number" vtype="int"  />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 请修改相对路径 -->
+<script src="../../../../rest/resource/jsboot"></script>
+<script>
+    //<![CDATA[
+    // 初始化页面
+    epoint.initPage('oabusinesscardcategorylistaction');
+
+    var grid = mini.get("datagrid");
+    // 添加文件夹
+    function saveAndNew() {
+        var newRow = {
+            name: "New Row"
+        };
+        grid.addRow(newRow, 0);
+    }
+
+    //保存方法
+    function saveAll() {
+
+        var grid = mini.get('datagrid');
+        var data = grid.getChanges();
+        var alldata = {
+            change: mini.decode(data)
+        }
+        console.log(alldata);
+        epoint.execute('addNew_hang', '', mini.encode(alldata), function (data) {
+            if(data.msg) {
+                epoint.alert(data.msg);
+                <!--searchData();-->
+            }else {
+                grid.validate();
+                if (grid.isValid() == false) {
+                    var error = grid.getCellErrors()[0];
+                    grid.beginEditCell(error.record, error.column);
+                    return;
+                } else {
+                    epoint.execute('saveAll', 'datagrid', newCallback);
+                }
+            }
+        });
+    }
+
+    // 删除数据
+    function deleteSelect() {
+        //前台动态添加数据未入库删除报错兼容
+        var newrow=grid.getSelecteds();
+        var rowjson=epoint.decodeJson(newrow);
+        var num=0;
+        for(var i=0;i<rowjson.length;i++){
+            if(rowjson[i].name=="New Row"){
+                num++;
+            }
+        }
+        if(num==rowjson.length){
+            grid.removeRows(grid.getSelecteds(),false);
+            return;
+        }
+        epoint.execute("deleteSelect", '', callback);
+    }
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid']);
+    }
+
+    function newCallback(data) {
+        if (data.success) {
+            epoint.showTips(data.success);
+        }
+        searchData();
+    }
+
+    function callback(data) {
+        if (data.msg) {
+            epoint.alert(data.msg, '', searchData);
+        }
+    }
+    //]]>
+</script>
+</body>
+</html>

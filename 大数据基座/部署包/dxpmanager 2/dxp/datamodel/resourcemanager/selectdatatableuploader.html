@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>导入文件选择</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+        SrcBoot.output(['./style/diyoauploader.css']);
+    </script>
+<style>
+@font-face {
+	font-family: "SourceHanSansCN-Regular";
+	src: url("./style/font/SourceHanSansCN-Regular.woff") format("woff"),
+		url("./style/font/SourceHanSansCN-Regular.ttf") format("truetype"),
+		url("./style/font/SourceHanSansCN-Regular.eot")
+		format("embedded-opentype");
+}
+
+button, input, textarea, select {
+	font-family: "SourceHanSansCN-Regular", Tahoma, Verdana;
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+html, body {
+	background: transparent;
+}
+
+body {
+	box-sizing: border-box;
+	font-family: arial, "SourceHanSansCN-Regular";
+}
+
+body {
+	box-sizing: border-box;
+	padding: 20px;
+}
+</style>
+
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+
+	<!-- 内容区域 -->
+	<div class="mini-fit">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row"></div>
+				<div role="row"></div>
+				<div role="row">
+					<div role="control" label="下载导入模版">
+						<a class="mini-button" style="float: left; width: 20%"
+							onclick="exportModel()" iconCls="icon-download">导入模版</a>
+					</div>
+				</div>
+				<!--<div role="row">
+					<div role="control" label="节点域" starred="true">
+						<input id="nodeGuid" bind="nodeGuid" class="mini-combobox"
+							required="true" requiredErrorText="节点域不能为空"
+							action="getNodeGuidList" width="80%" onvaluechanged="nodechange"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="目标库" starred="true">
+						<input id="targetds" action="getTargetDsList" allowInput="true"
+							bind="targetDs" required="true" class="mini-combobox main-input"
+							showClose="true" requiredErrorText="目标hive库不能为空" width="80%"/>
+					</div>
+				</div>-->
+				<!--<div role="row">
+					<div role="control" label="选择导入文件" starred="true">
+						<span id="filename" class="mini-hidden"></span>
+						<div id="uploader" class="mini-webuploader"
+							action="getFileUploadModel" limitType="csv,txt" auto="true"
+							fileNumLimit="1" onfilesuccess="UploadSuccess"
+							showDefaultUI="false" visible="false"
+							onbeforeFileQueued="checkfiletxtorcsv"
+							onuploadbeforesend="onUploadBeforeSend"></div>
+						<div id="uploaderexcel" class="mini-webuploader"
+							action="dxpmodeldatatablebasicinfolistaction.getDataImportModel9"
+							limitType="xls,xlsx" fileNumLimit="1" dataImport="true"
+							onfilesuccess="UploadSuccessExcel" auto="true" duplicate="true"
+							showDefaultUI="true"></div>
+					</div>
+
+				</div>-->
+				<div role="row">
+					<div role="control" label="选择导入文件" starred="true">
+						<span id="filename" class="mini-hidden"></span>
+						<div id="uploaderfile" class="mini-webuploader"
+							action="getFileUploadModel"
+							limitType="xls,xlsx,txt,csv" fileNumLimit="1" showDefaultUI="true"
+							auto="true" duplicate="true">
+						</div>
+					</div>
+
+				</div>
+				<div role="row">
+					<div role="control" label="文件类型" starred="true">
+						<div id="rbl" class="mini-radiobuttonlist" repeatItems="1"
+							repeatLayout="table" repeatDirection="vertical" textField="text"
+							valueField="id" value="xls;xlsx" required="true" requiredErrorText="请选择文件类型"
+							data="[{text:'Excel文件(.xls和.xlsx)',id:'xls;xlsx'},{text:'文本文件(.txt)',id:'txt'},{text:'csv文件',id:'csv'}]"
+							onvaluechanged="onFileType"></div>
+					</div>
+				</div>
+
+				<div role="row" style="display: none" id="isheadshow">
+					<div role="control" label="数据含列头" starred="true">
+						<div id="islietou" class="mini-checkbox" checked="true"
+							readOnly="false"></div>
+					</div>
+				</div>
+
+				<div role="row" id="rowfengefu">
+					<div role="control" label="字段分隔符" starred="true">
+						<input id="fenggefu" class="mini-combobox" width="20%"
+							required="true"
+							data="[{'id':'1','text':'空格'},{'id':'2','text':'制表符(\\t)'},{'id':'3','text':'管线分隔符(|)'},{'id':'4','text':'逗号(,)'},{'id':'5','text':'自定义'}]"
+							value="4" onvaluechanged="onFengGeChange" /> <input
+							id="customfengge" style="display: none; margin-left: 5px"
+							class="mini-textbox" width="20%" />
+					</div>
+				</div>
+				<div role="row" id="chineseName">
+					<div role="control" label="目标表中文名" starred="true">
+						<input id="chinesetablename" width="20%" bind="chinesetablename" class="mini-textbox" required="true"
+							requiredErrorText="目标表中文名不能为空" vtype="maxLength:50"/>
+					</div>
+				</div>
+				<div role="row" id="tableType">
+					<div role="control" label="类别">
+						<input id="tabletypeguid" width="20%" bind="tabletypeguid" class="mini-combobox main-input" action="getTypeList" 
+							showClose="true" autoClear="true"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar-bottom text-center">
+		<div class="btn-group mr10"
+			style="float: none; display: inline-block;">
+			<a class="mini-button mini-btn-primary" onclick="confirmadd">确认</a> <a
+				class="mini-button mini-btn-primary" onclick="clear">清空</a>
+		</div>
+	</div>
+	<form id="download_form" method="post" enctype="multipart/form-data">
+	</form>
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+
+
+	<script>
+		// 初始化页面
+		epoint.initPage('importfileaction', null, function(ret) {
+			if (mini.get("rbl").getValue() == 'xls;xlsx') {
+				$("#rowfengefu").hide();
+			}
+		});
+
+ 		function UploadSuccess(args) {
+			mini.get('filename').setValue(args.data.extraDatas.filename);
+			if (args.data.extraDatas.errmsg) {
+				mini.alert(args.data.extraDatas.errmsg);
+			}
+			if (args.data.extraDatas.success) {
+				epoint.closeDialog();
+				var ds = mini.get('fromDs').getValue();
+				epoint.openTopDialog('确认导入',
+						'./datatableuploader?uuid='
+								+ args.data.extraDatas.uuid +'&ds='+ds, callback, {
+							'width' : 700,
+							'height' : 550
+						});
+			}
+		}
+
+		function UploadSuccessExcel(args) {
+			if (args.data.extraDatas.errmsg) {
+				mini.alert(args.data.extraDatas.errmsg);
+				mini.get('uploaderexcel').clearFile();
+			}
+			if (args.data.extraDatas.success) {
+				epoint.alertAndClose(args.data.extraDatas.success, null, null,
+						'info');
+			}
+		}
+
+		function callback() {
+			epoint.clear('fui-form');// 清空表单
+		}
+		function clear(){
+			epoint.clear('fui-form');// 清空表单
+			mini.get('rbl').select(0);
+		}
+
+
+		function onFileType() {
+			if (mini.get("rbl").getValue() == 'xls;xlsx') {
+				$("#isheadshow").hide();
+				$("#rowfengefu").hide();
+			} else {
+				$("#isheadshow").show();
+				$("#rowfengefu").show();
+			}
+		}
+
+		function onFengGeChange() {
+			if (mini.get("fenggefu").getValue() == '5') {
+				$("#customfengge").show();
+			} else {
+				$("#customfengge").hide();
+			}
+		}
+
+		function checkfiletxtorcsv(e) {
+			var selectfiletype = mini.get("rbl").getValue();
+			if (selectfiletype.indexOf(e.file.ext) == -1) {
+				e.cancel = true;
+				epoint.alert("上传文件类型与所选文件类型不一致!");
+			}
+			if (mini.get("fenggefu").getValue() == '5'
+					&& !mini.get("customfengge").getValue()) {
+				e.cancel = true;
+				epoint.alert("自定义分隔符不能为空!");
+			}
+		}
+
+		//在文件上传时想要附带参数
+		function onUploadBeforeSend(e) {
+			e.data.fenggefu = mini.get("fenggefu").getValue();
+			e.data.customfengge = mini.get("customfengge").getValue();
+			e.data.islietou = mini.get("islietou").getValue();
+		}
+		
+		//模板下载
+		function exportModel() {
+			var data = {};
+			var downloadurl= "dxpmodeldatatablebasicinfolistaction.action?cmd=downloadModel";
+			var form = document.getElementById("download_form");
+			DownLoadFile({
+				url : downloadurl,
+				data : data
+			});
+		}
+				    
+			var DownLoadFile = function(options) {
+			var config = $.extend(true, {method : 'post'}, options);
+			var $iframe = $('<iframe id="down-file-iframe" />');
+			var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+			$form.attr('action', config.url);
+			for ( var key in config.data) {
+			$form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+			}
+			$iframe.append($form);
+			$(document.body).append($form);
+			$form[0].submit();
+			$form.remove();
+		}
+			
+        function selectType(e){
+	    	mini.get('fromDs').setValue('');
+	        epoint.refresh(['dataSourceType','fromDs']);
+		}
+
+
+		//节点选中
+		function nodechange(){
+			mini.get('targetds').setValue('');
+			epoint.refresh(['nodeGuid']);
+			epoint.refresh(['targetds','nodeGuid']);
+		}
+
+        function selectFromDs(e){
+	    	mini.get('fromDs').setValue(e.value);
+	    	epoint.refresh(['dataSourceType','fromDs']);
+	    	console.log(e.value);
+	    	//由于上传后台娶不到其他控件bind值，先加到viewdata中
+	    	epoint.execute('saveFromDs', 'fromDs',e.value, function(data) {});
+		}
+
+
+		function confirmadd(){
+			if(epoint.validate()){
+				var fileType = mini.get('rbl').getValue();
+			var islietou = mini.get('islietou').getValue();
+			var fenggefu = mini.get('fenggefu').getValue();
+			if(fenggefu == 5){
+				fenggefu = mini.get('customfengge').getValue();
+			}
+			epoint.execute('save', "", [fileType,islietou,fenggefu], function(data) {
+				if(data.error){
+					epoint.alert(data.error,'','','error');
+					return;
+				}
+				epoint.alert(data.msg,'',function(){
+					window.location.reload();
+				},'success');
+			});
+			}
+		}
+
+			
+	</script>
+
+	
+
+
+
+</body>
+</html>

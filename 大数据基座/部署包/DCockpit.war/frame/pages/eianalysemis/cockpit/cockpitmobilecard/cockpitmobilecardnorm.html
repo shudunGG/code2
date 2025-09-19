@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片指标配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar" id="toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" onclick="openAddRelate">新增关联</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="cancelRelate">取消关联</a>
+		</div>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="normname" headerAlign="center" width="100" align="center">指标名称</div>
+				<div field="normtype" headerAlign="center" width="100" align="center" data-options="{code:'jsc指标类型'}">指标类型</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		
+		// 卡片guid
+		var cardguid = Util.getUrlParams("cardguid");
+		var plateguid = Util.getUrlParams("plateguid");
+		// 初始化页面
+		epoint.initPage('cockpitmobilecardnormaction', '@all', function(data) {
+			if(data.hasModel){
+				$('#toolbar').css('display', 'none');
+			}
+		});
+
+		function openAddRelate(){
+			epoint.openDialog("选择指标", "./choosenorm?cardguid=" + cardguid + "&plateguid=" + plateguid, searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		function cancelRelate() {
+			if(mini.get('datagrid').getSelecteds()==0){
+				epoint.alert('请选择要取消关联得指标!');
+			} 
+			else {
+				epoint.execute("cancelRelate", '', searchData);
+			}
+			
+		}
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+	</script>
+</body>
+</html>

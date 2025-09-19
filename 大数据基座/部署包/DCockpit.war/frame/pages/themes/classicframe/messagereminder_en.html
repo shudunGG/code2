@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Message to remind</title>
+    <link rel="stylesheet" href="../css/msgreminder.min.css" />
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+    <div class="main-wrap" id="msg-center-page">
+        <div class="msg-panel-wrap">
+            <!-- Information list -->
+        </div>
+    </div>
+    <script type="text/javascript">
+    var miniLocal = 'en_US.js';
+    </script>
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script>
+    //<![CDATA[
+    var msgListUrl = epoint.dealRestfulUrl('f8messagesaction');
+    var msgType;
+    var msgItemGuid;
+
+    (function(win, $) {
+        var $page = $('#msg-center-page');
+
+        if (!$page.length) return;
+
+        var $win = $(win),
+            $wrap = $('.msg-panel-wrap', $page);
+
+        var M = Mustache,
+            template = '{{#data}}<div class="msg-panel"><h3 class="msg-panel-title">{{title}}</h3><ul class="msg-items">{{#items}}<li><div class="msg-title">{{{title}}}</div><div class="msg-time">{{{date}}}</div><div class="msg-option">{{{option}}}</div></li>{{/items}}</ul></div>{{/data}}';
+
+        $win.on('resize', function() {
+            var win_h = $win.height();
+
+            $wrap.css('height', win_h - 30 - 1);
+        }).trigger('resize');
+
+        win.getMessage = function() {
+            Util.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: msgListUrl,
+                data: {
+                    query: 'get-msgRemind-data'
+                },
+                success: function(data) {
+                    var htmlStr = M.render(template, {
+                        data: data
+                    });
+
+                    $wrap.html(htmlStr.replace(/★/g, '"'));
+                },
+                error: Util.noop,
+                complate: Util.noop
+            });
+        };
+
+    }(this, jQuery));
+
+
+    // If the parent windowmsgCenterStateforopened Said the message window on the display, need to load the message
+
+    if (parent.msgCenterState == 'opened') {
+        getMessage();
+    }
+
+    function RemindClick(messageType, ItmeGuid) {
+        msgType = messageType;
+        msgItemGuid = ItmeGuid;
+        epoint.confirm('If confirm to ignore this information', '', confirmRemind);
+    }
+
+    function confirmRemind() {
+        epoint.execute('f8messagesaction.updateNoRemind', '', [msgType, msgItemGuid], updateNoRemindCallback);
+    }
+
+    function updateNoRemindCallback(arReturn) {
+        if (arReturn == "1") {
+            //To refresh the message list
+            getMessage();
+        }
+    }
+
+    //The methodforA general method of the open window of provided according to differenttypeThe ability to use different opened the way to open the window
+    function openWindowAuto(url, type, title, width, height) {
+        url = url.replace(/★/g, "\"\"");
+        //Pop up adivbox
+        if ("popdiv" == type) {
+            if ("todo" == title) {
+                OpenWaitWindow(url);
+            } else {
+                epoint.openTopDialog(title, url, '', {
+                    'width': width,
+                    'height': height
+                });
+            }
+        }
+        //inboxOpen a racktab
+        else if ("framediv" == type) {
+            top.TabsNav.addTab({
+                'url': url,
+                'name': title,
+                'id': Math.round(Math.random() * 1000),
+                'maxIcon': true,
+                'closeIcon': true
+            });
+        }
+        //Open a new browser window
+        else if ("newwindow" == type) {
+            if (!url.startWith('http') && !url.startWith(Util.getRootPath())) {
+                url = Util.getRootPath() + url;
+            }
+            if (!width && !height) {
+                OpenMaxWindow(url);
+            } else {
+                OpenWindow(url, width, height);
+            }
+        }
+    }
+
+    function OpenWaitWindow(url, title) {
+        if (title == undefined || title == "") {
+            title = 'todoTo deal with';
+        }
+
+        top.epoint.openDialog(title, url, refreshWait);
+    }
+
+
+    function OpenWindow_Msg(url, type, title) {
+        //Pop up adivbox
+        if ("popdiv" == type) {
+            if ("todo" == title) {
+                OpenWaitWindow(url);
+            } else {
+                epoint.openDialog(title, url);
+            }
+        }
+        //inboxOpen a racktab
+        else if ("framediv" == type) {
+            top.TabsNav.addTab({
+                'url': url,
+                'name': title,
+                'id': Math.round(Math.random() * 1000),
+                'maxIcon': true,
+                'closeIcon': true
+            });
+        }
+        //Open a new browser window
+        else if ("newwindow" == type) {
+            OpenMaxWindow(url);
+        }
+    }
+
+    function refreshWait() {
+        top.TabsNav.refreshTabContent('tab-home');
+    }
+
+    //]]>
+    </script>
+</body>
+
+</html>

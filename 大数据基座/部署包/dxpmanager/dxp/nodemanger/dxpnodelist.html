@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>节点域管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button mini-btn-primary" iconCls="icon-addcircle" id="add"
+				onclick="addNode()">新增节点域</a> <a
+				class="mini-button mini-btn-danger" iconCls="icon-minuscircle" id="delete"
+				onclick="deleteNode()">删除节点域</a>
+		</div>
+	</div>
+	<div class="fui-condition">
+		<!-- 表单布局 -->
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="节点域名称">
+						<input bind="nodeName" id="flowName" class="mini-textbox"/>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 搜索按钮 -->
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" style="height: 100%;"
+			allowResize="true" multiSelect="true" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40" headerAlign="center"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="nodename" width="150" headerAlign="center"
+					align="center">节点域名称</div>
+				<div field="appname" width="80" headerAlign="center" align="center">调度应用名</div>
+				<div field="nodeservernum" width="50" headerAlign="center"
+					align="center">节点服务数</div>
+				<div field="nodeservererrornum" width="50" headerAlign="center"
+					align="center">节点异常服务数</div>
+				<div field="nodetasknum" width="50" headerAlign="center"
+					align="center">节点任务数</div>
+				<div field="createtime" width="60" headerAlign="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">创建日期</div>
+				<div width="50" headerAlign="center" align="center"
+					renderer="onRightRenderer">权限配置</div>
+				<div width="50" headerAlign="center" align="center"
+					renderer="onManagerRenderer">管理员配置</div>
+				<div width="50" headerAlign="center" align="center"
+					renderer="onServerRenderer">服务配置</div>
+				<div width="50" headerAlign="center" align="center"
+					renderer="onEditRenderer">操作</div>
+				<div field="nodetype" width="80" visible="false">节点域类型</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		var grid=mini.get('datagrid');
+		// 初始化页面
+		epoint.initPage('dxpnodelistaction','',function(data){
+			var isdetail=Util.getUrlParams('isdetail');
+			if(isdetail=='1'){
+				$('.fui-toolbar').hide();
+				mini.get('add').setVisible(false);
+				mini.get('delete').setVisible(false);
+				grid.hideColumn(0);
+				grid.hideColumn(8);
+				grid.hideColumn(9);
+				grid.hideColumn(10);
+				grid.hideColumn(11);
+			}
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function addNode() {
+			epoint.openDialog('新增节点域', "./dxpnodeadd", searchData, {
+				'width' : 1200,
+				'height' : 550
+			});
+		}
+
+		// 删除作业
+		function deleteNode() {
+			if (mini.get('datagrid').getSelecteds() == 0) {
+				epoint.alert('请选择要删除的节点域');
+			} else {
+				epoint.confirm('所有选中节点下数据源将同步删除，确认删除吗?', '', function() {
+					epoint.execute("deleteNode", '', callback);
+				});
+			}
+		}
+
+		function callback(data) {
+			searchData();
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			} else {
+				epoint.alert("删除失败");
+			}
+		}
+
+		function onNodeRenderer(e) {
+			var nodename = e.row.nodename;
+			return '<a href="javascript:void(0);" onclick="editNode(' + "'"
+					+ e.row.rowguid + "'" + ');" >' + nodename + '</a>';
+		}
+
+		function editNode(nodeguid) {
+			epoint.openDialog('修改节点域', "./dxpnodeedit?nodeguid=" + nodeguid,
+					searchData, {
+						'width' : 1200,
+						'height' : 550
+					});
+		}
+
+		var onRightRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"editNodeRight", "rowguid");
+		};
+		var onManagerRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear",
+					"editNodeManager", "rowguid");
+		};
+
+		function editNodeRight(nodeguid) {
+			epoint.openDialog('权限管理', "./dxpnoderightsetting?nodeguid="
+					+ nodeguid + "&type=ou", searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		function editNodeManager(nodeguid) {
+			epoint.openDialog('管理员配置', "./dxpnodemanagersetting?nodeguid=" + nodeguid
+					+ "&type=user", searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		//     function onServerRenderer(e) {
+		//         return '<a href="javascript:void(0);" onclick="editServer(' + "'"
+		//             + e.row.rowguid + "'" + ');" >' + "配置服务" + '</a>';
+		//     }
+		var onServerRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "editServer",
+					"rowguid");
+		};
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editNode",
+					"rowguid");
+		};
+		//     function onEditRenderer(e) {
+		//         return '<a href="javascript:void(0);" onclick="editNode(' + "'"
+		//             + e.row.rowguid + "'" + ');" >' + "修改" + '</a>';
+		//     }
+
+		function editServer(nodeguid) {
+			epoint.openDialog('服务管理', "./dxpnodedetaillist?nodeGuid="
+					+ nodeguid, searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+
+		function onCategoryRenderer(e) {
+			return '<a href="javascript:void(0);" onclick="editCategory(' + "'"
+					+ e.row.rowguid + "'" + ');" >' + "配置分类" + '</a>';
+		}
+
+		function editCategory(nodeguid) {
+			epoint.openDialog('作业分类', "./dataexjobcategorylist?nodeguid="
+					+ nodeguid, searchData, {
+				'width' : 1200,
+				'height' : 1000
+			});
+		}
+	</script>
+</body>
+</html>

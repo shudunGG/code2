@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>框架系统参数配置</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './framesetting.min.css' ]);
+</script>
+<style>
+.form-label {
+	text-align: left;
+	padding-left: 10px;
+}
+
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<!-- <span class="mini-button" id="save">保存配置</span> -->
+		<div class="tabs-header clearfix l" id="tabs-header"
+			data-group="config-tab">
+			<div class="tab-item l" data-target="safe">
+				<span class="modicon-73"></span>安全配置
+			</div>
+		</div>
+		<a role="helper" class="mr10">注意事项</a>
+
+		<div class="button-group r">
+			<input id="search-input" class="mini-autocomplete" textField="name"
+				valueField="uid" value="" showNullItem="false" remote="false"
+				allowInput="true" emptyText="搜索" loadingText="" />
+		</div>
+	</div>
+	<div class="fui-notice hidden">
+		<p>
+			此页面整理了新老版本的一些原来在系统参数或者epointframe.properties中配置的参数<br>
+			可以更方便清晰得使用框架的各个功能,如遇新老参数不明确,可以下载<a href="framesetting_document.xlsx">新老参数对照表</a>
+		</p>
+	</div>
+	<form id="download_form" method="post" enctype="multipart/form-data">
+	</form>
+	<div class="fui-content">
+		<input type="text" name="username" class="hidden-accessible" /> <input
+			type="password" class="hidden-accessible" />
+		<div class="tabs-wrap" id="tabs-wrap" data-group="config-tab">
+			<div class="tab-body clearfix" data-id="safe">
+				<div class="category-nav"></div>
+				<div class="config-content">
+					<div class="fui-block">
+						<div class="fui-block-hd">通用安全</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control">
+											<span class="text-assist">注:安全校验开启后,修改页面bind/表格/上传控件属性需要刷新缓存,开发环境可以关闭或手动刷新缓存&nbsp;&nbsp;
+												<a href="javascript:void(0);" onclick="onCloseClick()"
+												width="auto">全局开关</a>&nbsp;&nbsp;&nbsp;&nbsp;<a
+												href="javascript:void(0);"
+												onclick="epoint.confirm('确认要刷新缓存吗?','',refreshCache);"
+												width="auto">刷新校验缓存</a>
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="页面解析扩展文件夹">
+											<input class="mini-textarea"
+												bind="dataBean.security_resolvepage_pagefolder"
+												id="security_resolvepage_pagefolder" /> <span
+												class="text-assist">部分安全校验需要解析html页面,比如bind检测,文件数量检测等。框架默认会解析designstage;frame;framemanager;docs4个文件夹,如有其它文件夹,可在此配置（只需要webapp下第一层目录，多个以“;”分隔）</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="控件bind检测">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_resolvepage_enable"
+												id="security_resolvepage_enable" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="跳过bind检测">
+											<input class="mini-textarea"
+												bind="dataBean.security_resolvepage_skipactionname"
+												id="security_resolvepage_skipactionname" /> <span
+												class="text-assist">需要跳过bind检测的action名字,多个以“;”分隔</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="正数校验开关">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_vtype_positive"
+												id="security_vtype_positive" /> <span
+												style="margin-left: 8px" class="text-assist">开启此开关后，vtype设置了int、float都为正数范围</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="长度精确模式">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_vtype_length_accurate_enable"
+												id="security_vtype_length_accurate_enable" /><span
+												class="text-assist">开启此开关后，中文位数算作3位数，其他（数字英文标点符号）算1位，默认关闭中文和其他字符都算位1位</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="客户端校验检测">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_vtype_check_enable"
+												id="security_vtype_check_enable" /> <span
+												class="text-assist">该功能需要开启控件bind检测，开启后，服务端会根据页面设置的客户端校验规则
+												对请求数据再进行一次校验，防止不规范的请求对服务端数据造成破坏(不支持自定义规则)</span>
+										</div>
+									</div>
+
+									<div role="row">
+										<div role="control" label="文件类型数量检测">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_upload_filenum_check_enable"
+												id="security_upload_filenum_check_enable" /><span
+												style="margin-left: 8px" class="text-assist">启用后上传控件会在服务端对页面设置的fileNumberLimit、limitType属性进行检测,避免客户端绕过的上传攻击行为。
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="表格字段同步">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="全局启用"
+												bind="dataBean.security_datagrid_fieldsync"
+												id="security_datagrid_fieldsync" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="局部控制">
+											<input class="mini-textarea" text="个性化配置"
+												bind="dataBean.security_datagrid_fieldsyncvalue"
+												id="security_datagrid_fieldsyncvalue" /> <span
+												class="text-assist">和全局控制属性互斥,关闭全局控制后,如果需要单独设置某些页面,可以配置实体名称A;实体名称B
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="隐私模式">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_open_privacy"
+												id="security_open_privacy" />
+										</div>
+									</div>
+									<!-- <div role="row" class="bottom-space">
+								<div role="control" label="自检页面管理员访问验证">
+									<input class="mini-checkbox" width="auto" truevalue="1"
+										falsevalue="0" text="自检页面添加管理员用户访问权限验证"
+										bind="dataBean.checkisadmin" id="checkisadmin" />
+								</div>
+							</div> -->
+									<div role="row">
+										<div role="control" label="url参数加密">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_urlparam_encode_enable"
+												id="security_urlparam_encode_enable" /><span
+												style="margin-left: 8px" class="text-assist">启用后,url后面的参数，表单提交时的commondto参数值都将加密传输，避免明文传输带来的问题</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="url参数加密附带身份信息">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_urlparam_encode_with_loginid"
+												id="security_urlparam_encode_with_loginid" /><span
+												style="margin-left: 8px" class="text-assist">启用后,url加密内容会包含用户身份标识，访问时会进行身份校验</span>
+										</div>
+									</div>
+									<div role="row" class="bottom-space">
+										<div role="control" label="跳过 url参数加密">
+											<input class="mini-textarea"
+												bind="dataBean.security_urlparam_encode_skipurl"
+												id="security_urlparam_encode_skipurl" /> <span
+												class="text-assist">某些跳转到外部系统的url不能进行加密处理,通过此参数配置跳过,多个以;分割。
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="url拷贝防御">
+											<input class="mini-textarea"
+												bind="dataBean.security_urlcopydefense_list"
+												id="security_urlcopydefense_list" /> <span
+												class="text-assist">需要进行url拷贝防御的地址配置，多个以“;”分隔(当url参数加密勾选后开启防拷贝功能)。
+												如框架附件下载地址需要防拷贝的话可以配置:attachAction/getContent</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="跳过url拷贝防御">
+											<input class="mini-textarea"
+												bind="dataBean.security_urlcopydefense_skipip"
+												id="security_urlcopydefense_skipip" /> <span
+												class="text-assist">不进行url拷贝加密的ip地址，多个以;间隔</span>
+										</div>
+									</div>
+
+									<div role="row">
+										<div role="control" label="自动脱敏">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_dto_datamasking"
+												id="security_dto_datamasking" />
+										</div>
+									</div>
+
+									<div role="row">
+										<div role="control" label="请求方法拦截">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_request_methodintercept"
+												id="security_request_methodintercept" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="数据源防篡改">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_datasouce_tampered"
+												id="security_datasouce_tampered" /><span
+												style="margin-left: 8px" class="text-assist">启用后将会校验前端传递的控件值是否在后台允许的范围内,例如下拉列表后台数据有3个值,此时提交请求时的值不在这3个值中,将会抛出异常</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="重放攻击防护">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_replayattack_defense_enable"
+												id="security_replayattack_defense_enable" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="二维码过期时间">
+											<input class="mini-textbox narrow"
+												bind="dataBean.qrcode_timeout" id="qrcode_timeout"
+												vtype="int" />秒
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="查询请求方法头">
+											<input class="mini-textarea"
+												bind="dataBean.security_querymethodstart"
+												id="security_querymethodstart" /> <span class="text-assist">查询类请求方法头，默认"get",
+												"count", "list", "paginator", "check", "can", "is","search",
+												"query", "init"，
+												可配置额外的查询类特征，此参数目前影响异常处理类以及重放攻击逻辑判断如果多个额外的配置，以;进行间隔 </span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="只读项防篡改">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_readOnly_enable"
+												id="security_readOnly_enable" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">模块权限</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="白名单">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用" bind="dataBean.ui_whitelist_enable"
+												id="ui_whitelist_enable" /><span class="text-assist"
+												style="margin-left: 8px">开启白名单后,访问没有在模块管理中注册的页面地址都会被拦截</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">用户登录名</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="新用户登录名规则">
+											<input class="mini-textbox"
+												bind="dataBean.usermanage_user_loginid_pattern"
+												id="usermanage_user_loginid_pattern" /> <span
+												class="text-assist"> 新用户登录名校验规则，填写正则表达式，默认不校验<br />
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">用户密码</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="用户密码类型">
+											<div class="mini-radiobuttonlist" width="auto"
+												bind="dataBean.usermanage_user_password_type"
+												id="usermanage_user_password_type"
+												data="[{text:'默认',id:'0'},{text:'随机',id:'1'}]"
+												textField="text" valueField="id" value="0"></div>
+											<span class="text-assist">用户密码类型：默认密码，随机密码</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="用户默认密码">
+											<input class="mini-password"
+												bind="dataBean.usermanage_user_password_defaultvalue"
+												id="usermanage_user_password_defaultvalue" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="强制修改密码">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_user_password_forcechange"
+												id="usermanage_user_password_forcechange" /><span
+												style="margin-left: 8px" class="text-assist">启用后用户通过默认密码登陆后会跳转密码修改页面</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="允许暂不修改">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_user_password_notforceedit"
+												id="usermanage_user_password_notforceedit" /><span
+												style="margin-left: 8px" class="text-assist">强制修改密码启用后,是否在强制修改密码页面展示暂不修改按钮</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="密码复杂度">
+											<input class="mini-textbox"
+												bind="dataBean.usermanage_user_password_complex"
+												id="usermanage_user_password_complex" /> <span
+												class="text-assist"> 不填，默认最高复杂度<br />
+												填^.{8,}$，复杂度为长度不小于8位<br />
+												填^((?![a-z]+$)(?![A-Z]+$)(?!\d+$)(?![!@#$%^&*_]+$)).{8,}$，复杂度为长度不小于8位，且拥有小写、大写字母、数字、特殊字符4种组合中的2种：<br />
+												填^((?![a-z\d]+$)(?![A-Z\d]+$)(?![a-z!@#$%^&*_]+$)(?![a-zA-z]+$)(?![A-Z!@#$%^&*_]+$)(?![\d!@#$%^&*_]+$)).{8,}$，复杂度为长度不小于8位，且拥有小写、大写字母、数字、特殊字符4种组合中的3种：<br />
+												填^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*_-])(.{8,})$，复杂度为长度不小于8位，且拥有小写、大写字母、数字、特殊字符：<br />
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="密码复杂度提示">
+											<input class="mini-textbox"
+												bind="dataBean.usermanage_user_password_complex_msg"
+												id="usermanage_user_password_complex_msg" /><span
+												class="text-assist">密码复杂度不够时给用户的提示信息</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="新旧密码差异度检测">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_password_differ_enable"
+												id="security_password_differ_enable" /><span
+												style="margin-left: 8px" class="text-assist">默认开启新旧密码复杂度检查，差异数为2个字符及以上，示例：345Ws!（原）———>345Az!（新）</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="连续修改密码时间间隔校验">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.security_change_password_interval_enable"
+												id="security_change_password_interval_enable" /><span
+												style="margin-left: 8px" class="text-assist">默认为0不开启，设置1开启，开启后修改密码时间间隔超过30秒</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="密码有效天数">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.usermanage_user_password_validdays"
+												id="usermanage_user_password_validdays" /><span
+												class="text-assist">为0不过期,否则用户在天数过期后登陆会跳转强制修改密码页面</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="历史密码校验">
+											<input class="mini-textbox narrow"
+												bind="dataBean.usermanage_user_password_modifytimes"
+												id="usermanage_user_password_modifytimes" vtype="int" /><span
+												class="text-assist">用户修改密码时，校验与最近n次修改的密码是否重复</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="密码加密方式">
+											<input class="mini-textbox"
+												bind="dataBean.custom_pwd_encrypt_outclass"
+												id="custom_pwd_encrypt_outclass" /> <span
+												class="text-assist">
+												框架默认加密方式为sm3加密算法，同时支持启用国密sm2加密方式(配置参数值为sm2)、国密sm4加密方式(配置参数值为sm4)、md5的sha1加密方式(配置参数值为sha1)
+												<br>也可以自己写加密实现,自定义配置格式==>全类名(实现接口IIrreversibleEncryption)
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="密码加密密钥">
+											<input class="mini-textbox"
+												bind="dataBean.custom_pwd_encrypt_key"
+												id="custom_pwd_encrypt_key" /> <span class="text-assist">基础密钥，完整密钥通过这个以及其他位置的组合并经过一定的算法计算而成
+												<br>如SM2,SM4加密方式时可通过秘钥生成器生成符合要求的秘钥
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">手机校验</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="手机号唯一性">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_mobile_checkunique"
+												id="usermanage_mobile_checkunique" /><span
+												style="margin-left: 8px" class="text-assist">启用后新增修改用户的手机号不能重复</span>
+										</div>
+									</div>
+									<!--<div role="row">
+										<div role="control" label="手机号查阅">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="忽略特殊场景"
+												bind="dataBean.usermanage_user_mobile_issimple"
+												id="usermanage_user_mobile_issimple" /><span
+												class="text-assist">忽略后所有场景都按用户自己配置的手机号公开状态进行脱敏处理,否则,默认用户在以下三种场景可以直接查看他人手机号<br>场景1：系统管理员可以看到所有电话号码<br>
+												场景2：登录人员可以看到本部门所有人员手机号码 <br>场景3：登录人员可以看到自己兼职的部门内的人员手机号码
+											</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="默认脱敏处理">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.usermanage_user_mobile_defaultprivate"
+												id="usermanage_user_mobile_defaultprivate" /><span
+												class="text-assist">前提:忽略特殊场景或者查阅用户不满足特殊场景 <br>满足前提的情况下,当用户没有配置手机号公开/不公开时,手机号是否默认脱敏
+											</span>
+										</div>
+									</div> -->
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">登录安全</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="是否开启手机验证码">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.loginaccess_mobileverificationcode_enable"
+												id="loginaccess_mobileverificationcode_enable" /><span
+												style="margin-left: 8px" class="text-assist">当此次登录时间和上次登录时间超过以下配置的时间，那么如果开启了手机验证码功能，将会进行手机验证码的验证</span>
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="登录访问过期时间">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.loginaccess_timeout" id="loginaccess_timeout" />天
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="短信验证码过期时间">
+											<input class="mini-textbox narrow" vtype="int"
+												bind="dataBean.smsverificationcode_timeout"
+												id="smsverificationcode_timeout" />秒
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">频繁操作验证</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="是否开启频繁操作验证">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.operationratelimit_enable"
+												id="operationratelimit_enable" /><span
+												style="margin-left: 8px" class="text-assist">如果开启了频繁操作验证功能，将会进行对应地址(action请求对象、rest请求对象)及其方法的限频、验证</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">前端</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="jQuery版本隐藏">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.jquery_version_hide" id="jquery_version_hide" />
+										</div>
+									</div>
+									<div role="row">
+										<div role="control" label="特殊字符替换">
+											<input class="mini-checkbox" width="auto" truevalue="true"
+												falsevalue="false" text="启用"
+												bind="dataBean.special_character_replace"
+												id="special_character_replace" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="fui-block">
+						<div class="fui-block-hd">移动相关</div>
+						<div class="fui-block-bd">
+							<div class="fui-form">
+								<div role="form">
+									<div role="row">
+										<div role="control" label="是否使用不可逆加密">
+											<input class="mini-checkbox" width="auto" truevalue="1"
+												falsevalue="0" text="启用"
+												bind="dataBean.mobile_password_irreversible"
+												id="mobile_password_irreversible" /><span
+												style="margin-left: 8px" class="text-assist">移动端登录流程中，兼容低版本，开启后加密密码是不可逆方式</span>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ './framesetting.js' ]);
+		SrcBoot.output([ '../../../fui/js/libs/sm2security.js' ]);
+	</script>
+	<script>
+		//初始化请求
+		epoint
+				.initPage(
+						'framesettingaction',
+						'',
+						function() {
+							$
+									.each(
+											mini
+													.getChildControls($('#tabs-wrap')[0]),
+											function(i, ctr) {
+												ctr
+														.on(
+																'valueChanged',
+																function(ev) {
+																	if (!epoint
+																			.validate()) {
+																		return;
+																	}
+																	var saveId = ev.sender.id;
+																	var saveValue = ev.sender.value;
+																	var needEncrypt = [ "usermanage_user_password_defaultvalue" ];
+																	if (needEncrypt
+																			.indexOf(ev.sender.id) !== -1) {
+																		var value = encrypt(ev.sender.value);
+																		epoint
+																				.execute(
+																						'saveEncrypt',
+																						'',
+																						[
+																								ev.sender.id,
+																								value ],
+																						function(
+																								data) {
+																							if (data.success) {
+																								epoint
+																										.showTips(
+																												'保存成功',
+																												{
+																													state : 'success',
+																													iconCls : 'success'
+																												});
+																							} else {
+																								epoint
+																										.alert(
+																												data.msg,
+																												'',
+																												null,
+																												'info');
+																							}
+																						});
+																		return;
+																	}
+																	if (ev.sender.id == "loginaccess_mobileverificationcode_enable") {
+																		epoint
+																				.execute(
+																						'saveMobileVerificationCodeEnable',
+																						'',
+																						[
+																								ev.sender.id,
+																								ev.sender.value ],
+																						function(
+																								data) {
+																							if (data.success) {
+																								epoint
+																										.showTips(
+																												'保存成功',
+																												{
+																													state : 'success',
+																													iconCls : 'success'
+																												});
+																							} else {
+																								mini
+																										.get(
+																												"loginaccess_mobileverificationcode_enable")
+																										.setValue(
+																												"0");
+																								epoint
+																										.alert(
+																												data.msg,
+																												'',
+																												null,
+																												'info');
+																							}
+																						});
+																		return;
+																	}
+
+																	epoint
+																			.execute(
+																					'save',
+																					'',
+																					[
+																							saveId,
+																							saveValue ],
+																					function(
+																							data) {
+																						if (data.success) {
+																							epoint
+																									.showTips(
+																											'保存成功',
+																											{
+																												state : 'success',
+																												iconCls : 'success'
+																											});
+																						} else {
+																							epoint
+																									.alert(
+																											data.msg,
+																											'',
+																											null,
+																											'info');
+																						}
+																					});
+																});
+											});
+						});
+
+		// 客户端加密类型
+		function encrypt(str) {
+			if (str) {
+				str = Util.encryptSM2(str);
+			}
+			return str;
+		}
+
+		function removeColon() {
+			$('#config-content').find('.form-label').each(function(i, label) {
+				var $l = $(label);
+				var t = $l.text();
+				t = t.substring(0, t.length - 1);
+				$l.text(t);
+			});
+		}
+		removeColon();
+
+		ConfigManager.init();
+		/**
+		 * ConfigManager 下有如下 方法
+		 * init() 初始化方法 自动绑定事件 收集数据 生成左侧导航
+		 * getData() 根据页面表单数据收集搜索和导航数据
+		 * buildNav(forceUpdate) 依照数据构建生成左侧导航 参数 forceUpdate 会强制从新从页面表单收集数据
+		 */
+
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', '', 'success');
+				} else if (data.info) {
+					epoint.alert(msg, '', '', 'info');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		var tip = new mini.ToolTip();
+		tip.set({
+			target : document,
+			selector : '[data-tooltip], [title]'
+		});
+
+		$(document)
+				.ready(
+						function() {
+							// 为重放攻击添加注释
+							var labelEle = $(
+									"#security_replayattack_defense_enable")
+									.parent().prev();
+							var labelEleParent = $(
+									"#security_replayattack_defense_enable")
+									.parent().parent();
+							var labelText = labelEle.text();
+							var labelValue = labelText.substring(0,
+									labelText.length);
+							var labelSymbol = labelText.substring(
+									labelText.length, labelText.length);
+							var tipValue = "重放攻击的就是把以前窃听到的数据原封不动地重新发送给接收方，造成服务器的过量负担。<br>这种攻击会不断恶意或欺诈性地重复一个有效的数据传输，重放攻击可以由发起者，也可以由拦截并重发该数据的敌方进行。<br>本功能只针对包含commonDto或者isCommonDto=true的POST请求做判断";
+							var helpText = '<a class="action-icon icon-confirm" data-tooltip="' + tipValue + '" data-placement="top"  style="position: absolute;left: 30px;margin-top: 10px;"/>';
+							labelEle.text("");
+							labelEleParent.append(helpText);
+							labelEle.append(labelValue);
+							labelEle.append(labelSymbol);
+
+							// 为bind校验添加注释
+							var labelEle2 = $("#security_resolvepage_enable")
+									.parent().prev();
+							var labelEleParent2 = $(
+									"#security_resolvepage_enable").parent()
+									.parent();
+							var labelText2 = labelEle2.text();
+							var labelValue2 = labelText2.substring(0,
+									labelText2.length);
+							var labelSymbol2 = labelText2.substring(
+									labelText2.length, labelText2.length);
+							var tipValue2 = "F9框架属于前后分离框架，但同时我们的DTO层使得前后又有了一定的耦合性，<br>主要体现在控件数据值的绑定上面，一些攻击者可用通过篡改控件类型，bind属性，来达到注入攻击目的。<br>"
+									+ "在此大前提下，客户端传递过来的信息将不再可信，所以页面层的信息需要在服务端进行解析。<br>"
+									+ "此配置启用后<br>"
+									+ "在系统启动的时候会将页面所有输入型控件的bind属性存入缓存中<br>"
+									+ "在页面提交DTO请求时,如果数据不在缓存中的bind记录中,则抛出ComBindTamperedException异常<br>";
+							var helpText2 = '<a class="action-icon icon-confirm" data-tooltip="' + tipValue2 + '" data-placement="top" style="position: absolute;left: 30px;margin-top: 10px;"/>';
+							labelEle2.text("");
+							labelEle2.append(labelValue2);
+							labelEleParent2.append(helpText2);
+							labelEle2.append(labelSymbol2);
+
+							// 为文件数量检测添加注释
+							var labelEle3 = $(
+									"#security_upload_filenum_check_enable")
+									.parent().prev();
+							var labelEleParent3 = $(
+									"#security_upload_filenum_check_enable")
+									.parent().parent();
+							var labelText3 = labelEle3.text();
+							var labelValue3 = labelText3.substring(0,
+									labelText3.length);
+							var labelSymbol3 = labelText3.substring(
+									labelText3.length, labelText3.length);
+							var tipValue3 = "通过模拟请求 可以跳过 前端的数量拦截限制 上传超过指定数量的、非法类型附件<br>"
+									+ "此配置启用后,会在后台校验控件上传文件数量和类型<br>";
+							var helpText3 = '<a class="action-icon icon-confirm" data-tooltip="' + tipValue3 + '" data-placement="top" style="position: absolute;left: 30px;margin-top: 10px;"/>';
+							labelEle3.text("");
+							labelEle3.append(labelValue3);
+							labelEleParent3.append(helpText3);
+							labelEle3.append(labelSymbol3);
+
+							// 为url拷贝防御添加注释
+							var labelEle4 = $("#security_urlcopydefense_list")
+									.parent().prev();
+							var labelEleParent4 = $(
+									"#security_urlcopydefense_list").parent()
+									.parent();
+							var labelText4 = labelEle4.text();
+							var labelValue4 = labelText4.substring(0,
+									labelText4.length);
+							var labelSymbol4 = labelText4.substring(
+									labelText4.length, labelText4.length);
+							var tipValue4 = "配置在拷贝防御中的地址,请求地址后带的参数会自动加密<br>无法直接通过手动输入原先的明文地址进行访问，只能通过框架自动加密处理后的地址进行调用。<br>"
+									+ "一旦开启防拷贝之后，该地址将不允许免登录进行访问，因为地址里面会附带用户身份信息，没有登录的时候是无法进行相关防御的。<br>"
+									+ "如果之前某些场景下，需要这个地址可以免登录进行访问。比如在线预览服务，<br>"
+									+ "那么需要配置这个下载地址到我们的免登录里面，然后用户身份信息需要额外进行传递使用，这套机制在框架出厂已经打通。<br>"
+									+ " 但如果你有其它地址需要做类似防御，那么也得考虑这种问题场景。<br>"
+									+ "url拷贝防御的功能，开启之后对系统要求比较高，需要详细测试所有相关功能是否正常，谨慎使用。<br>"
+									+ " 如果有一些框架未考虑到，或者不能统一处理的场景，则自己调用工具方法进行处理。<br>"
+									+ "content = URLCopyDefense.encode(content);";
+							var helpText4 = '<a class="action-icon icon-confirm" data-tooltip="' + tipValue4 + '" data-placement="top" style="position: absolute;left: 30px;margin-top: 10px;"/>';
+							labelEle4.text("");
+							labelEle4.append(labelValue4);
+							labelEleParent4.append(helpText4);
+							labelEle4.append(labelSymbol4);
+
+							// 为请求方法拦截添加注释
+							var labelEle5 = $(
+									"#security_request_methodintercept")
+									.parent().prev();
+							var labelEleParent5 = $(
+									"#security_request_methodintercept")
+									.parent().parent();
+							var labelText5 = labelEle5.text();
+							var labelValue5 = labelText5.substring(0,
+									labelText5.length);
+							var labelSymbol5 = labelText5.substring(
+									labelText5.length, labelText5.length);
+							var tipValue5 = "一旦开启了防御，那么所有dto请求，即我们的action请求将仅允许POST方式，GET方式将被拦截。<br>"
+									+ "某些场景，需要支持GET方式，比如图片展示类的。可以通过在对应action的方法上面新增注解来支持，下面是一段示例代码：<br>"
+									+ "@RequestSupport(type = {RequestType.GET })<br>"
+									+ "public void getMyPicture() {<br>"
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;String cliengGuid = getRequestParameter(cliengGuid);<br>"
+									+ "&nbsp;&nbsp;&nbsp;&nbsp;getPicture(cliengGuid);<br>"
+									+ "&nbsp;&nbsp;}<br>";
+							var helpText5 = '<a class="action-icon icon-confirm" data-tooltip="' + tipValue5 + '" data-placement="top" style="position: absolute;left: 30px;margin-top: 10px;"/>';
+							labelEle5.text("");
+							labelEle5.append(labelValue5);
+							labelEleParent5.append(helpText5);
+							labelEle5.append(labelSymbol5);
+
+							// 为表格字段同步添加注释
+							var labelEle6 = $("#security_datagrid_fieldsync")
+									.parent().prev();
+							var labelEleParent6 = $(
+									"#security_datagrid_fieldsync").parent()
+									.parent();
+							var labelText6 = labelEle6.text();
+							var labelValue6 = labelText6.substring(0,
+									labelText6.length);
+							var labelSymbol6 = labelText6.substring(
+									labelText6.length, labelText6.length);
+							var tipValue6 = "开启后后台仅返回与表格列对应的数据,不会返回所有实体数据<br>"
+									+ "这个时候如果前台页面使用到一些额外的信息，主要是js里面，会造成功能无法使用报错。<br>"
+									+ "如果要开启此项安全防护能力，请安排测试系统中所有列表页面功能是否正常，重点是一些按钮点击事件。<br>"
+									+ "如果js中用到了表格列以外的字段,需要在后台获取表格控件方法(如getDataGridData)中加入如下代码<br>"
+									+ "&nbsp;&nbsp;Set<Field> fieldSet = new HashSet<Field>();<br>"
+									+ "&nbsp;&nbsp;fieldSet.add(new Field(XXXX));<br>"
+									+ "&nbsp;&nbsp;this.setAllowFieldSyncSet(fieldSet);<br>"
+									+ "或者添加 this.setIgnoreFieldSync(true);将所有字段都传到前端<br>"
+									+ "为了保障用户信息的安全性,框架会默认将用户信息（frameuser、viewframeuser）进行同步";
+							var helpText6 = '<a class="action-icon icon-confirm" data-tooltip="' + tipValue6 + '" data-placement="top" style="position: absolute;left: 30px;margin-top: 10px;"/>';
+							labelEle6.text("");
+							labelEle6.append(labelValue6);
+							labelEleParent6.append(helpText6);
+							labelEle6.append(labelSymbol6);
+
+						});
+
+		function onCloseClick() {
+			if (mini.get("security_resolvepage_enable").getValue() == "1"
+					|| mini.get("security_upload_filenum_check_enable")
+							.getValue() == "1"
+					|| mini.get("security_datagrid_fieldsync").getValue() == "1") {
+				mini.get("security_resolvepage_enable").setValue("0");
+				mini.get("security_upload_filenum_check_enable").setValue("0");
+				mini.get("security_datagrid_fieldsync").setValue("0");
+				epoint.execute('changeAllSecurity', '', '0', function() {
+					epoint.alert('操作成功,控件bind校验/文件数量检测/表格字段同步已关闭', null, null,
+							'success');
+				});
+			} else {
+				mini.get("security_resolvepage_enable").setValue("1");
+				mini.get("security_upload_filenum_check_enable").setValue("1");
+				mini.get("security_datagrid_fieldsync").setValue("1");
+				epoint.execute('changeAllSecurity', '', '1', function() {
+					epoint.alert('操作成功,控件bind校验/文件数量检测/表格字段同步已开启', null, null,
+							'success');
+				});
+			}
+		}
+
+		function refreshCache() {
+			epoint.execute('refreshCache', '', function() {
+				epoint.alert('刷新成功', null, null, 'success');
+			});
+		}
+	</script>
+</body>
+</html>

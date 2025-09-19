@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增专题</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../css/cockpitprojectlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose"
+				onclick="saveAndClose()">保存并关闭</a> <a class="mini-button"
+				iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="专题分类名称" starred="true">
+									<input class="mini-textbox" bind="dataBean.projectcateName"
+										required="required" requiredErrorText="专题名称不能为空"
+										emptyText="请填写专题名称..." vtype="maxLength:50;" />
+								</div>
+								<div role="control" label="ApiCode">
+									<input class="mini-textbox" readonly="true" emptyText="提交后自动生成"
+										bind="dataBean.apicode">
+								</div>
+							</div>
+							<div role="row" id="fbl">
+								<div role="control" label="父专题分类">
+									<input id="pcateguid" class="mini-treeselect" textField="text"
+										valueField="id" bind="dataBean.pcateguid"
+										oncloseclick="onCloseClick" showClose="true" required="false"
+										shownullitem="true" action="getTreeModel" />
+								</div>
+								<div role="control" label="排序号">
+									<input id="ordernum" class="mini-textbox"
+										bind="dataBean.ordernum" vtype="int;range:0,99999" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="是否启用" starred="true">
+									<div class="mini-radiobuttonlist" action="getStatusList"
+										id="status" bind="dataBean.status"></div>
+								</div>
+								<div role="control"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="绑定专题"></div>
+				<div role="body">
+					<div class="fui-toolbar" id="toolbar">
+						<div class="btn-group mr10">
+							<div class="mini-button" id="confignorm" onclick="confignorm">绑定专题</div>
+							<div class="mini-button" id="deletenorm" onclick="deleteNorm">解除绑定</div>
+						</div>
+						<input bind="dataBean.projectguid" id="projectguid"
+							class="mini-hidden" />
+					</div>
+					<div class="form-wrap">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="rowguid" multiSelect="true"
+							style="width: 100%; max-height: 300px;" allowResize="false"
+							showPager="false" action="getDataGridData" allowCellSelect="true"
+							allowCellEdit="true" editNextOnEnterKey="true">
+							<div property="columns">
+								<div type="checkcolumn" width="50"></div>
+								<div type="indexcolumn" width="80" headerAlign="center">序号</div>
+								<div field="projectname" width="85%" headerAlign="center">专题名称</div>
+								<div field="createou" width="85%" headerAlign="center">所属部门</div>
+								<div field="bindtime" data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd" width="85%" headerAlign="center">绑定时间</div>
+								<div field="ordernum" width="100" headerAlign="center"
+									align="center">排序号</div>
+								<div name="operate" type="actioncolumn" headerAlign="center"
+									align="center" renderer="onSubit">操作</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var type = Util.getUrlParams('type');
+		var cockpitguid = Util.getUrlParams('cockpitguid');
+		// 初始化页面
+		epoint.initPage('cockpitprojectcateaddaction', null, function(data) {
+			if (type == '2') {
+				$('#fbl').hide();
+			}
+			console.log(mini.get('projectguid').getValue());
+		});
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', '', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.msg.indexOf("成功") != -1) {
+					epoint.alertAndClose(data.msg);
+				} else {
+					epoint.alert(data.msg);
+				}
+			}
+		}
+
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function onInputValidation(e) {
+			var reg = /^[1-9]*[1-9][0-9]*$/;
+			if (e.value != '自适应') {
+				var arr = e.value.split("*");
+				if (arr.length == '2') {
+					for (var i = 0; i < arr.length; i++) {
+						if (!reg.test(arr[i])) {
+							e.errorText = "分辨率格式不正确";
+							e.isValid = false;
+							return;
+						}
+					}
+				} else {
+					e.errorText = "分辨率格式不正确";
+					e.isValid = false;
+				}
+			}
+		}
+
+		// 点击关闭按钮
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+
+		function confignorm() {
+			if (epoint.validate()) {
+				epoint.openDialog('绑定专题',
+						"./cockpitprojectcaterelatelist?cockpitguid="
+								+ cockpitguid + "&type=" + type, function(data) {
+							if (data != "close") {
+								var projectguid = mini.get('projectguid')
+										.getValue();
+								if (projectguid) {
+									data = projectguid + "," + data;
+								}
+								mini.get('projectguid').setValue(data);
+								epoint.refresh([ 'projectguid', 'datagrid' ],
+										'', true);
+							}
+						}, {
+							'width' : 1200,
+							'height' : 850
+						});
+			}
+		}
+
+		function deleteSelect(guid) {
+			epoint.confirm('确认要取消关联吗?', '', function() {
+				var normGuidArray = [];
+				var normguids = mini.get('projectguid').getValue();
+				if (projectguid) {
+					normGuidArray = normguids.split(",");
+				}
+				if (normGuidArray.indexOf(guid) > -1) {
+					normGuidArray.remove(guid);
+				}
+				if (normGuidArray.length > 0) {
+					var normguidsnew = '';
+					for (j = 0, len = normGuidArray.length; j < len; j++) {
+						normguidsnew = normguidsnew + normGuidArray[j] + ",";
+					}
+					normguidsnew = normguidsnew.substring(0,
+							normguidsnew.length - 1);
+					mini.get('projectguid').setValue(normguidsnew);
+					epoint.refresh([ 'projectguid', 'datagrid' ], '', true);
+				} else {
+					mini.get('projectguid').setValue('');
+					epoint.refresh([ 'projectguid', 'datagrid' ], '', true);
+				}
+			});
+		}
+		
+		function deleteNorm() {
+			if (mini.get('datagrid').getSelecteds().length === 0) {
+				epoint.alert('请选择要删除的记录!', '', null, 'warning');
+			} else {
+				epoint.confirm('确认要删除吗?', '', function(data) {
+					var selecteds = mini.get('datagrid').getSelecteds();
+					var normGuidArray = [];
+					var normguids = mini.get('projectguid').getValue();
+					if (normguids) {
+						normGuidArray = normguids.split(",");
+					}
+					for (j = 0, len = selecteds.length; j < len; j++) {
+						var rowguid = selecteds[j].rowguid;
+						if (normGuidArray.indexOf(rowguid) > -1) {
+							normGuidArray.remove(rowguid);
+						}
+					}
+					if (normGuidArray.length > 0) {
+						var normguidsnew = '';
+						for (j = 0, len = normGuidArray.length; j < len; j++) {
+							normguidsnew = normguidsnew + normGuidArray[j]
+									+ ",";
+						}
+						normguidsnew = normguidsnew.substring(0,
+								normguidsnew.length - 1);
+						mini.get('projectguid').setValue(normguidsnew);
+						epoint.refresh([ 'projectguid', 'datagrid' ], '', true);
+					} else {
+						mini.get('projectguid').setValue('');
+						epoint.refresh([ 'projectguid', 'datagrid' ], '', true);
+					}
+				});
+			}
+		}
+		
+		function onSubit(e) {
+			return '<span type="action" style=\"color:blue\" onclick="deleteSelect(\''
+			+ e.row.rowguid + '\')">解除绑定</span>';
+		}
+	</script>
+</body>
+
+</html>

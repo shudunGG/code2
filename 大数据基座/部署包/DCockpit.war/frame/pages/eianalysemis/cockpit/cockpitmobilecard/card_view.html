@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>卡片查看</title>
+<script src="../../../../fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ '../css/common.css', ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 底部toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="epoint.closeDialog()">关闭</a>
+		</div>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div class="fui-content">
+		<div role="head" title="基础信息"></div>
+		<div role="body">
+			<!-- 表单布局 -->
+			<div class="fui-form" data-vertical="true">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="模板名称" >
+							<div class="mini-outputtext" id="name" bind="dataBean.ChartName" showTitle="false" ></div>
+						</div>
+						<div role="control" label="小程序ID">
+							<div class="clearfix">
+								<div class="mini-outputtext l" id="applet-id" bind="dataBean.smallprogramid" showTitle="false"></div>
+							</div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="模板描述">
+							<div class="mini-outputtext" id="describe" bind="dataBean.Remark" showTitle="false"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div class="form-control span3" label="缩略图">
+							<label class="form-label" style="width: 16.6%;">缩略图:</label>
+							<div class="card-minipic" style="width: 23.3%;">
+								<div class="mini-outputtext" id="minipic" value="<img id='pic' src='' style='width:300px;'/>" autoEscape="false"></div>
+								<input id="chartIcon" class="mini-hidden" bind="dataBean.chartIcon" />
+							</div>
+						</div>
+<!-- 						<div class="form-control span3" label="详情图">
+							<label class="form-label" style="width: 16.6%;">缩略图:</label>
+							<div class="card-minipic" style="width: 23.3%;">
+								<div class="mini-outputtext" id="minipic" value="<img id='pic2' src='' style='width:300px;'/>" autoEscape="false"></div>
+								<input id="detailIcon" class="mini-hidden" bind="dataBean.detailIcon" />
+							</div>
+						</div> -->
+					</div>
+					<div role="row">
+						<div role="control" label="排序号" id="sortitem">
+							<input id="sortnum" class="mini-textbox sort-input" style="width: 50%;" vtype="int;range:0,999;" required="true" emptyText="请输入排序号" bind="dataBean.OrderNum"
+								allowInput="false" />
+							<p class="sort-btns" style="width: 20%; margin-top: 0px; margin-left: 20px;">
+								<a class="mini-button mini-btn-primary sort-btn" id="edit-sort">编辑</a> <a class="mini-button mini-btn-primary sort-btn hidden" id="save-sort">保存</a>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	</div>
+
+	<!-- 接口配置 -->
+	<script>
+		window.pageConfig = {}
+	</script>
+
+	<script src="../../../../fui/js/jsboot.js"></script>
+
+	<!-- 模拟数据 -->
+	<script src="../_test/mock.min.js"></script>
+	<script src="./_test/test_card_view.js"></script>
+
+	<script>
+		SrcBoot.output([ '../js/lib/clipboard.min.js', '../js/util.js',
+		// './js/card_view.js',
+		]);
+	</script>
+	<script>
+		Util.hidePageLoading();
+	</script>
+	<script>
+		var address = Util.getRootPath();
+		// 初始化页面
+		epoint.initPage('cockpitcardtemplatedetailjsaction', null, function(data) {
+			// $('#pic').attr('src',
+			// 		address
+			// 		+ "/frame/pages/eianalysemis/dxpdatasource/msg/images/"
+			// 		+ mini.get('chartIcon').getValue()
+			// 		);
+			$('#pic').attr("src", "../cockpitcard/images/" + data.guid + "/" + mini.get('chartIcon').getValue());
+			// $('#pic2').attr("src", "../cockpitcard/images/" + data.guid + "/" + mini.get('detailIcon').getValue());
+		});
+
+		// 编辑按钮点击事件
+		var $sortbtns = $('.sort-btns .mini-button'), sortnum = mini.get('sortnum'), $editsort = $('#edit-sort'), $savesort = $('#save-sort'), sortnumval;
+
+		$('#sortitem').on('click', '#edit-sort', function() {
+			sortnumval = sortnum.getValue();
+			$sortbtns.addClass('hidden');
+			$savesort.removeClass('hidden');
+			sortnum.setAllowInput(true);
+			sortnum.focus();
+
+		}).on('click', '#save-sort', function() {
+			var isValidate = epoint.validate('sortnum');
+			if (isValidate) {
+				$sortbtns.addClass('hidden');
+				$editsort.removeClass('hidden');
+				sortnum.setAllowInput(false);
+				epoint.execute("saveSortnum", '@all', null)
+			}
+		});
+	</script>
+</body>
+
+</html>

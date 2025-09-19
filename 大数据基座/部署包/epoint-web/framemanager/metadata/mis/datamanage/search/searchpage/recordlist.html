@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>数据查看</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style type="text/css">
+.item {
+	float: left;
+	width: 12%;
+	height: 40%;
+	border: solid 1px #ccc;
+	border-radius: 4px;
+	margin-left: 6.5%;
+	margin-top: 20px;
+}
+
+.item-action {
+	text-align: right;
+	padding-right: 6px;
+}
+
+.mini-layout-split-south .mini-layout-spliticon {
+	background: url(../image/opened.png) no-repeat;
+	width: 40px;
+	height: 8px;
+}
+
+.mini-layout-split-south .mini-layout-spliticon-collapse {
+	background: url(../image/closed.png) no-repeat;
+	width: 40px;
+	height: 8px;
+}
+</style>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="mini-layout" style="width: 100%; height: 100%"
+		splitSize="0">
+		<div title="north" region="north" height="40" showHeader="false">
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<div style="float: left">
+						<ul class="mini-menubar mymenu">
+							<li><span>子集查询</span>
+								<ul>
+									<li onclick="person.simpleSearch">简单查询</li>
+									<li onclick="person.commonSearch">高级查询</li>
+								</ul></li>
+							<li class="separator"></li>
+							<li><span>子集方案</span>
+								<ul>
+									<li onclick="person.showSchemeManage">显示方案管理</li>
+									<li onclick="person.orderSchemeManage">排序方案管理</li>
+									<li onclick="person.tableSchemeManage">表显示方案管理</li>
+								</ul></li>
+						</ul>
+					</div>
+					<div role="control" label="显示方案选择"
+						style="float: left; margin-left: 20px;">
+						<input id="schemeCombobox" class="mini-combobox" textField="text"
+							bind="schemeGuid" valueField="id" action="schemeModel"
+							onvaluechanged="person.showSchemeChange" emptyText="显示方案选择" />
+					</div>
+					<div role="control" label="排序方案选择"
+						style="float: left; margin-left: 20px;">
+						<input id="orderSchemeCombobox" class="mini-combobox"
+							textField="text" valueField="id" action="orderSchemeModel"
+							onvaluechanged="person.searchChange" emptyText="排序方案选择" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div title="center" region="center">
+			<div class="fui-toolbar">
+				<a class="mini-button" onclick="search" id="search">查找</a>
+				<a class="mini-button" onclick="person.clearCondition" id="clearCondition">清空查询条件</a>
+			</div>
+
+			<div class="fui-condition">
+				<div class="fui-form" id="fui-form">
+					<!-- 添加隐藏域，用于树与表格的联动 -->
+					<input bind="simpleCondition" id="simpleCondition" class="mini-hidden" /> 
+					<input bind="commonCondition" id="commonCondition" class="mini-hidden" />
+					<input bind="schemeGuid" id="schemeGuid" class="mini-hidden" /> 
+					<input bind="orderSchemeGuid" id="orderScheme" class="mini-hidden" />
+					<input bind="tableId" id="tableId" class="mini-hidden" />
+                    <input class="mini-hidden" id="params" bind="params" />
+				</div>
+				<a role="searcher" callback="searchData"></a>
+			</div>
+
+			<div class="mini-fit">
+				<div class="mini-layout" style="width: 100%; height: 100%"
+					id="layout" allowResize="true" splitSize="3">
+					<div title="center" region="center">
+						<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+							idField="recordguid" style="width: 100%; height: 100%;"
+							action="getDatagridData" allowCellSelect="true"
+							allowResize="false" allowCellEdit="false" allowCellValid="true"
+							multiSelect="true" headerContextMenu="#headerMenu"
+							contextMenu="#gridMenu"></div>
+
+						<ul id="headerMenu" class="mini-contextmenu"
+							onbeforeopen="onBeforeOpen">
+							<li name="frozen" iconCls="icon-lock" onclick="frozenColumns()">锁定列</li>
+							<li name="unFrozen" iconCls="icon-unlock"
+								onclick="unFrozenColumns()">解锁列</li>
+						</ul>
+
+						<div style="display: none; height: 100%;" id="datagridview"
+							class="mini-datagrid" idField="rowguid" allowResize="false"
+							showPager="true" action="getDataGridView" viewType="cardview"
+							showColumns="false"></div>
+					</div>
+					<div title="" region="south" height="400" expanded="true"
+						splitSize="8px;" showHeader="false" showSplitIcon="true">
+						<div id="tabs" class="mini-tabs" tabAlign="left"
+							contextMenu="#tabsMenu" style="height: 100%" tabPosition="bottom"></div>
+						<ul id="tabsMenu" class="mini-contextmenu"
+							onbeforeopen="onTabBeforeOpen"
+							style="height: 80%; overflow-y: auto">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script src="../js/person.js"></script>
+	<script src="../js/eputil.js"></script>
+	<script src="../../../../../../frame/fui/js/epoint/epoint.controlconfig.js"></script>
+	<script src="../../../../../../frame/fui/js/epoint/epoint.form.js"></script>
+
+	<script>
+		//<![CDATA[ 
+		var subUrl = "subsetrecordlist";
+		var personUrl = "recordlist?tableId=" + Util.getUrlParams("tableId");
+		var schemeType = "2";
+		var searchIndex = -1;
+		var textBatchSearch = "";
+		var uploadBatchSearch = "";
+		var fieldMaps = null;
+		var params = mini.get('params');
+
+		//初始化页面
+		epoint.initPage("recordlistaction", "", initCallBack);
+
+		function initCallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, null, null, 'info');
+			}
+			if (data.controls) {
+				appearCondition(data);
+				if(data.fields){
+					fieldMaps = data.fields;
+				}
+			}
+			if (data.columns) {
+				drawDynamicColumn(data.columns);
+				grid.hideColumn("check");
+			}
+			if (data.tabs) {
+				tabs.setTabs(data.tabs);
+				loadTabButton(data.tabs);
+			}
+		}
+
+		// 查找
+		function search() {
+			// 返回数组
+			var columnArr = [];
+			var columnList = grid.getColumns();
+			
+			// 遍历 json 数组
+			for ( var i in columnList) {
+				var editColumn = columnList[i];
+				if (editColumn.header!= null && editColumn.name != null && editColumn.cellCls == null) {
+					var item = {};
+					item.id = editColumn.name;
+					item.text = editColumn.header;
+					columnArr.push(item);
+				}
+			}
+			epoint.openDialog("查找", "framemanager/metadata/mis/datamanage/search/searchcommonitem", null, {
+				width : 500,
+				height : 350,
+				param : {
+					columnArr : columnArr
+				}
+			});
+		};
+
+		function onBeforeOpen(e) {
+			var row = grid.getSelected();
+			if (!row) {
+				e.cancel = true;
+				//阻止浏览器默认右键菜单
+				e.htmlEvent.preventDefault();
+				return;
+			}
+		}
+
+		//tab右击菜单
+		function onTabBeforeOpen(e) {
+			$("#tabsMenu").show();
+			var currentTab = tabs.getTabByEvent(e.htmlEvent);
+			if (!currentTab) {
+				e.cancel = true;
+				//阻止浏览器默认右键菜单
+				e.htmlEvent.preventDefault();
+				return;
+			}
+		}
+		
+		function loadTabButton(tabs) {
+			var buttonHtml = "";
+			for (var i = 0, len = tabs.length; i < len; i++) {
+				buttonHtml = buttonHtml
+						+ '<li><a style="color:black" href="javascript:changeTab(\''
+						+ i + '\')">' + tabs[i].name + '</a></li> ';
+			}
+			$("#tabsMenu").html(buttonHtml);
+		}
+
+		function changeTab(i) {
+			var tabs = mini.get("tabs");
+			var tabArray = tabs.tabs
+			tabs.activeTab(tabArray[i]);
+			$("#tabsMenu").hide();
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

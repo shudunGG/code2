@@ -1,0 +1,1 @@
+select count(1) from frame_module where MODULEGUID='9693710c-a9d2-436c-8dfe-60a00ce9a409';

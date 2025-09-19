@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Interface style</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script src="../../../../frame/fui/js/cssboot.js"></script>
+    <style type="text/css">
+    	.skin-item {
+    		float: left;
+    		width: 40px;
+    		height: 40px;
+    		margin-right: 5px;
+    		cursor: pointer;
+    		border: 2px solid transparent;
+    	}
+    	.skin-item.selected {
+    		border-color: #333;
+    	}
+    </style>
+</head>
+
+<body>
+    <!-- Wait for the tooltip -->
+    <div class="page-loading"></div>
+    <!-- Button area -->
+    <div class="fui-toolbar">
+        <div class="btn-group mr10">
+            <div class="mini-button mr10" onclick="save">save changes</div>
+        </div>
+    </div>
+    <!-- Content area -->
+    <div class="fui-content">
+        <div class="fui-accordions">
+            <div role="accordion" opened="true">
+                <div role="head" title="Message configuration">
+                </div>
+                <div role="body">
+                    <div class="fui-form">
+                        <div role="form">
+                            <div role="row">
+                                <div role="control" label="todo list online news">
+                                    <div class="mini-radiobuttonlist" repeatItems="2" bind="rdoMsgRe" textField="text" valueField="id" value="false" data="[{id:'0',text:'Do not remind'},{id:'1',text:'remind'}]"></div>
+                                </div>
+                                <div role="control" label="official email messages online">
+                                    <div class="mini-radiobuttonlist" repeatItems="2" bind="rdoMailRe" textField="text" valueField="id" value="false" data="[{id:'0',text:'Do not remind'},{id:'1',text:'remind'}]"></div>
+                                </div>
+                            </div>
+                            <div role="row">
+                                <div role="control" label="official mailing attention">
+                                    <div class="mini-radiobuttonlist" repeatItems="2" bind="remindmail" textField="text" valueField="id" value="false" data="[{id:'0',text:'Do not focus on'},{id:'1',text:'Focus on'}]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="accordion">
+                <div role="head" title="Interface configuration">
+                </div>
+                <div role="body">
+                    <div class="fui-form">
+                        <div role="form">
+                            <div role="row">
+                                <div role="control" label="select the skin">
+                                    <ul id="skinList" class="clearfix"></ul>
+                                </div>
+                            </div>
+                            <div role="row">
+							    <div role="control" label="note">
+							        <span class="text-danger">Change will not take effect immediately after the skin is saved, have to manually refresh the entire interface will only take effect!</span>
+							    </div>
+						    </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+    <script>
+    //<![CDATA[  
+    //Initialize the page
+    epoint.initPage("mypagesettingaction");
+    // epoint.initPage("mypagesettingaction", '', initBack);
+
+    // function initBack(data){
+    // 	mini.get("bigIconAddress").setText(mini.get("bigIconAddress").getValue());
+    // } 
+
+    //Save the callback event
+    function saveCallback(data) {
+        epoint.alert(data.msg, null, null, 'info');
+    }
+
+    //save
+    function save() {
+        epoint.execute("save", "", "", saveCallback);
+        saveSkin();
+    }
+
+
+    var $skinList = $('#skinList'),
+    	theme = $.cookie('_theme_'),
+    	curSkin = $.cookie('_' + theme + '_skin_') || 'default',
+    	templ = '<li class="skin-item {{#selected}}selected{{/selected}}" data-name="{{name}}" style="background: {{color}}"></li>';
+
+    var M = Mustache;
+
+    M.parse(templ);
+
+    // Initializes the skin selection list
+    function initSkinList() {
+    	var url = 'frame/fui/pages/themes/' + theme + "/skins/skins.json";
+
+    	Util.ajax({
+    		url: url,
+    		success: function(data) {
+    			var i = 0,
+    				l,
+    				html = [];
+    			if(data && data.length) {
+    				for(l = data.length; i < l; i++) {
+    					if(curSkin === data[i].name) {
+    						data[i].selected = true;
+    					}
+    					html.push(M.render(templ, data[i]));
+    				}
+
+    				$skinList.html(html.join(''));
+
+    				bindSkinListEvent();
+    			} else {
+    				Util.accordion.hideItem(1);
+    			}
+    		},
+    		statusCode: {
+    			// Is not found there is only onedefaultThe skin, then don't showInterface configurationitem
+                404: function() {
+                    Util.accordion.hideItem(1);
+                }
+            }
+    	});
+    }
+
+    // Binding skin selection list selection events
+    function bindSkinListEvent() {
+    	$skinList.on('click', '.skin-item', function() {
+    		var $item = $(this);
+
+    		if(!$item.hasClass('selected')) {
+    			$item.addClass('selected')
+    				.siblings('.selected')
+    				.removeClass('selected');
+
+    			curSkin = $item.data('name');
+    		}
+    	});
+    }
+
+    // saveSkin options
+    function saveSkin() {
+    	$.cookie('_' + theme + '_skin_', curSkin, { expires: 365, path: '/' });
+    }
+
+    initSkinList();
+
+    // function openicon() {
+    // 	epoint.openDialog('choosebackground', "framemanager/metadata/personalset/selectbg?path=f9/classic", openiconOperJS, {
+    // 		'width' : 1000,
+    // 		'height' : 420
+    // 	});
+    // }
+
+    // function openiconOperJS(rtnValue) {
+    // 	if (rtnValue && rtnValue != 'close') {
+    // 		mini.get("bigIconAddress").setText(rtnValue);
+    // 		mini.get("bigIconAddress").setValue(rtnValue);
+    // 	}
+    // }
+    //]]>
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>运行统计资源列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="saveAll();"
+			id="btnSaveRecord"> 保存修改 </a> <a class="mini-button"
+			onclick="reSubject();" id="btnReRecord"> 初始化统计资源 </a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			multiSelect="true" action="getDataGridData" style="height: 100%;"
+			allowResize="true" showPager="true" allowCellValid="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="displayname" width="100%">实例名称</div>
+				<div field="status" width="200">状态</div>
+				<div header="统计指标">
+					<div property="columns">
+						<div field="visittimes" width="120" type="checkboxcolumn"
+							truevalue="1" falsevalue="0">访问次数</div>
+						<div field="inputflow" width="120" type="checkboxcolumn"
+							truevalue="1" falsevalue="0">输入流量</div>
+						<div field="outputflow" width="120" type="checkboxcolumn"
+							truevalue="1" falsevalue="0">输出流量</div>
+						<div field="responsetime" width="120" type="checkboxcolumn"
+							truevalue="1" falsevalue="0">响应时间</div>
+						<div field="error" width="120" type="checkboxcolumn" truevalue="1"
+							falsevalue="0">异常分布</div>
+					</div>
+				</div>
+				<div width="120" renderer="onOperationRenderer">操作</div>
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiruntimestatisticssubjectlistaction');
+
+		function saveAll() {
+			epoint.execute('saveAll', '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		//绘制按钮
+		var onOperationRenderer = function(e) {
+			if (e.row.enabled == "1") {
+				var html = '&nbsp;<a href="javascript:void(0);" onclick="openStatus(\''
+						+ e.row.enabled
+						+ '\');" class="action-icon icon-stop" title="禁用"></a>&nbsp;';
+			}
+			if (e.row.enabled == "0") {
+				var html = '&nbsp;<a href="javascript:void(0);" onclick="openStatus(\''
+						+ e.row.enabled
+						+ '\');" class="action-icon icon-start" title="启用"></a>&nbsp;';
+			}
+			return html;
+		};
+
+		function openStatus(enabled) {
+			epoint.execute("modifyStatus", '', enabled, function() {
+				if ("1" == enabled) {
+					epoint.alert("禁用成功！", '', searchData);
+				}
+				if ("0" == enabled) {
+					epoint.alert("启用成功！", '', searchData);
+				}
+			});
+
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+
+		//初始化
+		function reSubject() {
+			epoint.execute('reSubject', '', function(data) {
+				epoint.alert(data.msg, '', searchData);
+			});
+		}
+	</script>
+</body>
+</html>

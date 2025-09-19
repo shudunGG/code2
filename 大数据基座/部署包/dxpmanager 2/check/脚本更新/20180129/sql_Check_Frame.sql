@@ -1,0 +1,1 @@
+SELECT count(*) from sys.key_constraints where parent_object_id=object_id('frame_ou_snapshot') and name='uq_frame_ou_snapshot' and type='UQ'

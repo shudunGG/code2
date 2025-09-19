@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>服务管理</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<div class="page-loading"></div>
+
+<!-- toolbar区域 -->
+<div class="fui-search" primaryControl="IP" opened="false">
+<!-- 表单布局 -->
+        <div class="fui-form" id="fui-form">
+            <div role="form">
+                <div role="row">
+                	<div role="control" label="节点服务IP">
+                    	<input bind="IP" id="IP" class="mini-textbox"/>
+                	</div>
+                </div>
+            </div>
+        </div>
+        <!-- 搜索按钮 -->
+        <a role="searcher" callback="searchData"></a>
+</div>
+
+<!-- 内容区域 -->
+<div id="fuiContent" class="fui-content">
+    <div id="datagrid" class="mini-datagrid" idField="rowguid"
+         action="getDataGridData" sortOrder="desc" showPager="true"
+         style="height: 100%;" allowResize="true" multiSelect="true" showModified="false">
+        <div property="columns">
+            <div type="indexcolumn" width="40" headerAlign="center">序</div>
+            <div field="serverip" width="150" headerAlign="center" align="center" >节点服务IP</div>
+            <div field="serverport" width="80" headerAlign="center" align="center">端口</div>
+            <div field="CPU" width="80" headerAlign="center" align="center" renderer="onTextRenderer">CPU使用率</div>
+            <div field="memory" width="80" headerAlign="center" align="center" renderer="onTextRenderer">内存使用率</div>
+            <div field="storage" width="80" headerAlign="center" align="center" renderer="onTextRenderer">存储使用率</div>
+            <div field="status" width="80" headerAlign="center" align="center" renderer="onStatusRenderer">状态</div>
+            <div field="errormsg" width="150" headerAlign="center" align="center">异常详情</div>
+        </div>
+    </div>
+</div>
+
+<script src="../../rest/resource/jsboot"></script>
+<script>
+    const nodeGuid = Util.getUrlParams('nodeGuid');
+    var dataGrid;
+    epoint.initPage('serviceinfolistaction', null, function () {
+        dataGrid = mini.get('datagrid');
+        getServerInfo();
+    });
+
+    function openAdd() {
+        epoint.openDialog('新增服务', './dxpnodedetailadd?nodeGuid=' + nodeGuid, searchData, {
+            'width': 800,
+            'height': 450
+        })
+    }
+
+    // 删除数据
+    function deleteSelect() {
+    	if (mini.get('datagrid').getSelecteds() == 0) {
+			epoint.alert('请选择要删除的服务');
+		} else {
+			epoint.confirm('确认删除吗？', '提示', function () {
+	            epoint.execute("deleteSelected", 'datagrid', searchData);
+	        });
+		}
+    }
+
+    function onEditRenderer(e) {
+    	return epoint.renderCell(e, "action-icon icon-edit", "editService",
+		"rowguid");
+    }
+
+    function editService(id) {
+    	console.log(id);
+        epoint.openDialog('修改服务', "./dxpnodedetailedit?id=" + id,
+            searchData, {
+                'width': 800,
+                'height': 450
+            });
+    }
+
+    // 表格的搜索
+    function searchData() {
+        epoint.refresh(['datagrid', 'fui-form']);
+    }
+
+    function onTextRenderer(e) {
+        if (!e.value) {
+            return "——";
+        } else {
+            if (e.value <= 50) {
+                e.cellStyle = 'color:#00a65a';
+            } else if (e.value <= 80) {
+                e.cellStyle = 'color:#f6cc8f';
+            } else {
+                e.cellStyle = 'color:#dd4b39';
+            }
+        }
+        return e.value + "%";
+    }
+
+    function onStatusRenderer(e) {
+        if (e.value == 0) {
+            e.cellStyle = 'color:red';
+            return "异常"
+        }
+        return "正常";
+    }
+
+    setInterval(getServerInfo, 2000);
+
+    function getServerInfo() {
+        let gridData = dataGrid.getData();
+        for (let record of gridData) {
+            let guid = record.rowguid;
+            let url = Util.getRootPath() + epoint.dealRestfulUrl('serviceinfolistaction/getRealTimeServerInfo');
+            // 使用ajax替换epoint.execute,execute方法会显示遮罩体验不好
+            Util.ajax({
+                url: url,
+                data: {cmdParams: guid},
+                success: function (data) {
+                    if (data) {
+                        let CPU = data.CPU;
+                        let memory = data.memory;
+                        let storage = data.storage;
+
+                        dataGrid.updateRow(record, {"CPU": CPU, "memory": memory, "storage": storage});
+                    }
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>

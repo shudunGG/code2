@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>分库分表</title>
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<!-- 必须有，加载时的loading效果 -->
+		<div class="page-loading"></div>
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" id="addNew" iconCls="icon-save" onclick="addNew">保存并新建</a>
+				<a class="mini-button" id="addClose" iconCls="icon-save" onclick="add">保存并关闭</a>
+				<a class="mini-button" id="save" iconCls="icon-save" onclick="saveModify">保存修改</a>
+				<a class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">关闭</a>
+			</div>
+		</div>
+		<div class="fui-content">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="源数据表名称" starred="true">
+						<div class="mini-autocomplete" textField="text" id="sourcetablename"
+						valueField="id" bind="dataBean.sourcetablename" required="true"
+						requiredErrorText="源数据表名称不能为空"
+						action="getComplete"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="分表后的目标数据表名称" starred="true">
+						<input bind="dataBean.totablename" class="mini-textbox" required="true"
+						requiredErrorText="目标数据表名称不能为空"/>
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="分库后的目标数据源标示" >
+						<input bind="dataBean.todbid" action="getTenantguidModel" emptyText="选择数据源..." showNullItem="true" nullItemText="选择数据源..."
+						textField="text" valueField="id" class="mini-combobox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属租户">
+						<input class="mini-treeselect" action="getTreeModel" multiSelect="true" showFilter="true"
+						style="width: 400px;" showFolderCheckBox="true" loadWhenChecked="true"
+						textField="text" valueField="id" parentField="pid" bind="dataBean.tenantguid"/>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="../../../../rest/resource/jsboot"></script>
+		<script type="text/javascript">
+			//<![CDATA[
+			// 初始化页面
+			epoint.initPage('frametenanttableaction', '', initCallBack);
+
+			var sourcetablename = mini.get("sourcetablename");
+			// 初始化操作的回调
+			function initCallBack(data) {
+				if (data.edit) {
+					//隐藏新增按钮
+					mini.get('addNew').setVisible(false);
+					mini.get('addClose').setVisible(false);
+					sourcetablename.setText(sourcetablename.getValue());
+				} else {
+					//隐藏修改按钮
+					mini.get('save').setVisible(false);
+				}
+			}
+
+			// 新增
+			function addNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+
+			// 新增
+			function add() {
+				if (epoint.validate()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				}
+			}
+
+			// 修改
+			function saveModify() {
+				if (epoint.validate()) {
+					epoint.execute('save', 'fui-form', closeCallback);
+				}
+			}
+
+			// 新增操作的回调
+			function newCallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					epoint.alert(data.msg, '', null, 'info');
+					if (data.success) {
+						// 清空表单
+						epoint.clear('fui-form');
+					}
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				var msg = data.msg;
+				if (msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null, 'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'error');
+					}
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>移动消息推送配置</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style>
+.form-label {
+	text-align: left;
+	padding-left: 10px;
+}
+
+[class^='mini-'].narrow, [class*='mini-'].narrow {
+	width: 350px;
+	margin-right: 10px
+}
+
+[class^='mini-'].upload, [class*='mini-'].upload {
+	width: 100px;
+	margin-right: 10px
+}
+
+.form-row.bottom-space {
+	margin-bottom: 20px
+}
+</style>
+</head>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" iconCls="icon-save" onclick="save">保存</a>
+		</div>
+		<a role="helper" class="mr10">注意事项</a>
+	</div>
+	<div class="fui-notice hidden">
+		<span style="color: red">使用移动端顶部通知推送必须在服务端能够telnet成功的地址有以下: </br>华为推送相关:&nbsp;&nbsp;https://login.cloud.huawei.com/
+			&nbsp;&nbsp; https://api.push.hicloud.com/
+			&nbsp;&nbsp;信鸽推送相关:&nbsp;&nbsp;http://openapi.xg.qq.com/ </br>IOS推送相关:&nbsp;&nbsp;gateway.push.apple.com
+			2195</br>如果地址不通需要联系网络管理人员开通
+		</span>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-block">
+			<div class="fui-block-hd">关联应用</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control" label="选择移动应用">
+								<input class="mini-combobox narrow" action="getSelectAppModel"
+									bind="appguid" id="appguid" onvaluechanged="refreshIOSCer()" /><span
+									class="text-assist">SOA模式下选择app对应接口工程在应用管理中注册的应用,配置后app会收到消息订阅中已订阅的应用发出的通知</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">IOS</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row">
+							<div role="control" label="证书">
+								<input class="mini-combobox narrow" action="getSelectCerModel"
+									bind="ios_cerguid" id="ios_cerguid" /><a
+									class="mini-button upload" plain="true"
+									iconCls="icon-addcircle" onclick="certfication()">证书管理</a><span
+									class="text-assist">证书请联系IOS开发负责人获取</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fui-block">
+			<div class="fui-block-hd">Android</div>
+			<div class="fui-block-bd">
+				<div class="fui-form">
+					<div role="form">
+						<div role="row" class="bottom-space">
+							<div role="control" label="app 包名">
+								<input id="apppkgname" bind="apppkgname"
+									class="mini-textbox narrow" /> <span class="text-assist">需要拉起的应用包名，必须和注册推送的包名一致。,默认com.epoint.base.oa</span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<span class="text-assist">注:信鸽注册请至&nbsp; <a
+									href="javascript:void(0);" onclick="openXG()" width="auto">信鸽推送官网</a>&nbsp;
+									注册登陆后,完成添加应用,将Access_ID和Secrey_Key配置在下方
+								</span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="信鸽 Secrey Key">
+								<input id="xg_secretkey" bind="xg_secretkey"
+									class="mini-textbox narrow" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="信鸽 Access ID">
+								<input id="xg_accessid" bind="xg_accessid"
+									class="mini-textbox narrow" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="信鸽 响铃">
+								<input class="mini-checkbox" width="auto" truevalue="1"
+									falsevalue="0" text="启用" id="xg_ring" bind="xg_ring"
+									class="mini-textbox" />
+							</div>
+						</div>
+						<div role="row" class="bottom-space">
+							<div role="control" label="信鸽 震动">
+								<input class="mini-checkbox" width="auto" truevalue="1"
+									falsevalue="0" text="启用" id="xg_vibrate" bind="xg_vibrate"
+									class="mini-textbox" />
+							</div>
+						</div>
+						<div role="row">
+							<div role="control">
+								<span class="text-assist">注:华为注册请至&nbsp; <a
+									href="javascript:void(0);" onclick="openHW()" width="auto">华为开发者联盟</a>
+									<br>登陆开发者联盟后进入PUSH控制台添加app成功后填写下列参数
+								</span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="华为  BadgeClass">
+								<input id="hw_badgeclass" bind="hw_badgeclass"
+									class="mini-textbox narrow" /><span class="text-assist">角标处理实现,联系安卓开发获取</span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="华为  App ID">
+								<input id="hw_appid" bind="hw_appid" class="mini-textbox narrow" /><span
+									class="text-assist">华为推送平台中注册完app后生成的appid</span>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="华为  App Secret">
+								<input id="hw_appsecret" bind="hw_appsecret"
+									class="mini-textbox narrow" /><span class="text-assist">华为推送平台中注册完app后生成的appsecret</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		// 初始化页面
+		epoint.initPage('mobilemessageconfigaction', '', function() {
+			if (!mini.get('appguid').getValue()) {
+				mini.get('appguid').setText('本地模式');
+			}
+		});
+
+		var attr = Util.getUrlParams('channelguid');
+
+		var channelguid = attr == undefined ? '' : attr;
+
+		function save() {
+			if (epoint.validate()) {
+				epoint.execute('save', '', null, function(e) {
+					if (e.success) {
+						epoint.alertAndClose(e.msg, '', null, null, 'success');
+					} else {
+						if (e.msg) {
+							epoint.alert(e.msg, '', null, 'error');
+						}
+					}
+				});
+			}
+		}
+
+		function certfication() {
+			epoint.openDialog('IOS证书管理',
+					"framemanager/messages/channel/messagesioscertification?appguid="
+							+ mini.get("appguid").getValue(), function() {
+						refreshIOSCer();
+					}, {
+						'width' : 1000,
+						'height' : 700
+					});
+		}
+
+		function refreshIOSCer() {
+			mini.get('ios_cerguid').setText('');
+			mini.get('ios_cerguid').setValue('');
+			epoint.refresh([ 'ios_cerguid', 'appguid' ]);
+		}
+
+		function openXG() {
+			window.open("https://xg.qq.com/");
+		}
+
+		function openHW() {
+			window
+					.open("https://developer.huawei.com/consumer/cn/console#/serviceCards/AppService");
+		}
+		//]]>
+	</script>
+</body>
+</html>

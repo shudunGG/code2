@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Link information</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="btnAddRecord" 
+			    onclick="openAdd();">Add a record</a> 
+			<a class="mini-button" iconCls="icon-minuscircle" id="btnDel"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelect);}">delete selected</a> 
+		</div>
+	</div>
+	
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="linkGuid" multiSelect="true" action="getDefaultModel"
+			showPager="true" style="width: 100%; height: 100%;"
+			allowResize="true" allowCellEdit="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">order</div>
+				<div field="linkName" width="80" headerAlign="center">The name of the link</div>
+				<div field="ljdkfs" width="80" headerAlign="center">Links open mode</div>
+				<div field="openfeatures" width="80" headerAlign="center">Character string</div>
+				<div field="linkUrl" width="80" headerAlign="center">The link address</div>
+				<div field="linkStyle" width="80" headerAlign="center">Style</div>
+				<div field="linkClass" width="80" headerAlign="center">Class</div>
+				<div field="orderNumber" width="40" headerAlign="center" align="right">order no
+				</div>
+				<div width="20" align="center" headerAlign="center" renderer="onEditRenderer">edit</div>
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="activityGuid" bind="activityGuid" />
+	<input class="mini-hidden" id="processVersionGuid" bind="processVersionGuid" />
+	
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('activitymanuallinkaction');
+		
+		function openAdd() {
+			var activityGuid = mini.get("activityGuid").getValue();
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			var settings = {
+				'width' : 1000,
+				'height' : 400
+			};
+			epoint.openDialog('Add a record',
+					'framemanager/workflow/design/activitymanuallinkselect?activityGuid=' + activityGuid, addCallBack, settings);
+		}
+
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+
+		// delete data
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// Draw Edit Columns button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editLink","linkGuid");
+		};
+
+		function editLink(linkGuid) {
+			var settings = {
+				'width' : 1000,
+				'height' : 400
+			};
+			epoint.openDialog('linkedit',
+					'framemanager/workflow/design/activitymanuallinkedit?linkGuid=' + linkGuid, addCallBack, settings);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ],'',true);
+		}
+		//]]>
+	</script>
+</body>
+</html>

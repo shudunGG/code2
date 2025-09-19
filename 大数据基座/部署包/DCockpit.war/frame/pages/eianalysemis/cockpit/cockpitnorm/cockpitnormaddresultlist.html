@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>指标结果添加列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="saveAndSubmit" onclick="saveAndSubmit">保存并送审</a>
+			<a class="mini-button" id="saveAndRefresh" onclick="saveAndRefresh">保存</a>
+		</div>
+		<div class="btn-group mr10" id="rowaction">
+			<a class="mini-button" id="newRow" onclick="newRow">新增行</a> <a
+				class="mini-button" id="deleteRow" onclick="deleteRow">删除选中行</a>
+		</div>
+		<div class="btn-group mr10 hidden" id="advancedList">
+			<span style="float: left">列名：</span> <input id="columnName"
+				class="mini-textbox" /> <a class="mini-button" id="newCol"
+				onclick="newCol">新增列</a><a class="mini-button" id="deleteCol"
+				onclick="deleteCol">删除列</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			multiSelect="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns"></div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var id = Util.getUrlParams('id');
+		epoint.initPage('cockpitnormaddresultlistaction', null, function(e) {
+			if (e.msg == "error") {
+				epoint.alertAndClose("数据异常");
+				return;
+			}
+			if (e.msg) {
+				epoint.alertAndClose(e.msg);
+				return;
+			}
+			if (e.isAdvancedList == true) {
+				$('#advancedList').removeClass('hidden');
+			}
+			if (e.needCheck == 'true') {
+				$('#saveAndRefresh').addClass('hidden');
+			} else {
+				$('#saveAndSubmit').addClass('hidden');
+			}
+			if (e.onlyOneLine == true) {
+				newRow();
+				$('#rowaction').addClass('hidden');
+			}
+			createGrid(e.columns);
+		});
+
+		function saveAndRefresh() {
+			var data = grid.getData();
+			var json = mini.encode(data);
+			epoint.execute("saveResult", 'datagrid', [ json ], function(data) {
+				if (data.error) {
+					epoint.alert(data.error);
+				}
+				if (data.msg) {
+					epoint.alertAndClose(data.msg);
+				}
+			});
+		}
+
+		function saveAndSubmit() {
+			var data = grid.getData();
+			var json = mini.encode(data);
+			epoint
+					.execute(
+							"submitApply",
+							'datagrid',
+							[ json ],
+							function(data) {
+								if (data.error) {
+									epoint.alert(data.error);
+								}
+								if (data.msg) {
+									epoint.alertAndClose(data.msg);
+								}
+								if (data.batchGuid) {
+									epoint
+											.openTopDialog(
+													'指标结果审核',
+													"frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=32757acc-0102-4822-bf41-6cfcb31e0e8d&checkGuid="
+															+ data.batchGuid,
+													function(data) {
+														if (data.action != 'close') {
+															epoint
+																	.closeDialog();
+														}
+													}, {
+														'width' : 1200,
+														'height' : 800
+													});
+								}
+							});
+		}
+
+		var grid = mini.get("datagrid");
+		function createGrid(columns) {
+			for (var i = 0; i < columns.length; i++) {
+				if (!columns[i].type) {
+					columns[i].editor = {
+						type : 'textbox'
+					}
+				} else {
+					if (columns[i].showTime) {
+						columns[i].editor = {
+							type : columns[i].type,
+							showTime : true,
+							format : 'yyyy-MM-dd HH:mm:ss'
+						}
+					} else {
+						columns[i].editor = {
+							type : columns[i].type
+						}
+					}
+				}
+			}
+			grid.setColumns(columns);
+		}
+
+		function newRow() {
+			var row = {};
+			grid.addRow(row, 0);
+		}
+
+		function deleteRow() {
+			var rows = grid.getSelecteds();
+			if (rows.length > 0) {
+				grid.removeRows(rows, false);
+			} else {
+				epoint.alert('请选中想要删除的行');
+			}
+		}
+
+		function newCol() {
+			var columnName = mini.get('columnName').getValue();
+			if (columnName) {
+				var columns = grid.getColumns();
+				for (var i = 0; i < columns.length; i++) {
+					if (columns[i].field == columnName) {
+						epoint.alert('该列名已存在');
+						return;
+					}
+				}
+				var column = {
+					field : columnName,
+					header : columnName,
+					width : '100%',
+					editor : {
+						type : 'textbox'
+					}
+				}
+				columns.add(column);
+				grid.setColumns(columns);
+			} else {
+				epoint.alert('请填写列名');
+			}
+		}
+
+		function deleteCol() {
+			var columnName = mini.get('columnName').getValue();
+			if (columnName) {
+				var columns = grid.getColumns();
+				var hasColumn = false;
+				for (var i = 0; i < columns.length; i++) {
+					if (columns[i].field == columnName) {
+						hasColumn = true;
+						columns.splice(i, 1);
+						break;
+					}
+				}
+				if (hasColumn) {
+					grid.setColumns(columns);
+				} else {
+					epoint.alert('该列名不存在');
+				}
+			} else {
+				epoint.alert('请填写要删除的列名');
+			}
+		}
+	</script>
+</body>
+</html>

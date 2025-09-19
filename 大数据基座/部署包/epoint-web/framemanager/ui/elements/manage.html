@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>代办事宜配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<!-- <script>
+        SrcBoot.output([
+            './manage.css'
+        ]);
+    </script> -->
+<style>
+.title-img-item {
+	width: 20px;
+	height: 20px;
+	margin: 10px;
+}
+
+html, body {
+	min-width: 580px;
+	overflow-x: auto;
+}
+
+.cate-header {
+	margin-top: 20px;
+	position: relative;
+	padding-left: 10px;
+	height: 40px;
+	line-height: 40px;
+	font-size: 16px;
+	font-size: .16rem;
+}
+
+.cate-header:before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 10px;
+	height: 20px;
+	display: block;
+	border-left: 4px solid;
+}
+
+.fui-content {
+	padding-left: 20px;
+}
+
+.form-control.span5 {
+	width: 420px;
+}
+
+.form-label {
+	text-align: left;
+	width: 100px;
+	color: #888
+}
+
+.ext-description {
+	color: #999;
+	width: auto;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-content">
+		<div class="cate-header fui-theme-main-color">标题区</div>
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="显示标题">
+						<span class="mini-checkbox switch" bind="dataBean.isShowTitle"
+							truevalue="1" falsevalue="0" style="width: 40px; float: left;"
+							onvaluechanged="onShowTitleBarChanged"></span> 
+<!-- 							<span -->
+<!-- 							class="ext-description">同类型的栏目建议统一配置，请查看 <a href="#" -->
+<!-- 							class="fui-theme-main-color" target="_blank">元件配置指南</a></span> -->
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="标题名称">
+						<input class="mini-textbox" bind="dataBean.title" />
+					</div>
+				</div>
+				<div role="row" id="title-settings-el">
+					<div role="control" label="标题图标">
+						<img id="lblPicture" src="" width="30px" height="30px"
+							style="width: 26px; height: 26px; float: left; margin-right: 10px;" />
+						<span class="link-btn fui-theme-main-color"
+							style="float: left; width: auto" onclick="showTitleImgList()">修改</span>
+						<span id="title-icon-hidden" class="mini-hidden"
+							bind="dataBean.icon"></span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<span class="link-btn fui-theme-main-color" style="color: blue;"
+							onclick="showHeaderExtCfg(this);">更多设置</span>
+					</div>
+				</div>
+				<div role="row" class="title-ext-setting hidden">
+					<div role="control" label="工具栏按钮">
+						<div class="mini-checkboxlist" repeatItems="3" textField="text"
+							valueField="value" value="more,refresh"
+							data="[{value:'more',text:'更多'},{value:'refresh',text:'刷新'}]"
+							bind="moreAndRefresh"></div>
+					</div>
+				</div>
+				<div role="row" class="title-ext-setting hidden">
+					<div role="control" label="更多打开方式" starred="true">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							valueField="value" value="dialog"
+							data="[{value:'dialog',text:'对话框'},{value:'tabsNav',text:'标签页'},{value:'blank',text:'新窗口'}]"
+							bind="dataBean.moreopenwith"></div>
+					</div>
+				</div>
+				<div role="row" class="title-ext-setting hidden">
+					<div role="control" label="标题字体颜色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							style="width: 150px;" value="#000000" bind="dataBean.fontcolor" />
+					</div>
+				</div>
+				<div role="row" class="title-ext-setting hidden">
+					<div role="control" label="标题背景颜色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							style="width: 150px;" value="#fff"
+							bind="dataBean.titlebackgroundcolor" />
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+		<div class="cate-header fui-theme-main-color">内容区</div>
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="信息条数">
+						<input changeOnMousewheel="false" class="mini-spinner"
+							minValue="1" maxValue="50" bind="dataBean.infocount"
+							style="width: 150px; margin-right: 10px;" /> 条
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="内容高度">
+						<input changeOnMousewheel="false" class="mini-spinner"
+							minValue="0" maxValue="1000" bind="dataBean.height"
+							style="width: 150px; margin-right: 10px;" /> <span
+							style="float: left; width: 40px;">像素</span> <span
+							class="ext-description"> 高度为0时根据配置的信息条数自动计算高度</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="">
+						<span class="link-btn fui-theme-main-color" style="color: blue;"
+							onclick="showContentExtCfg(this);">更多设置</span>
+					</div>
+				</div>
+				<div role="row" class="content-ext-setting hidden">
+					<div role="control" label="链接打开方式" starred="true">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							valueField="value" value="dialog" bind="dataBean.openwith"
+							data="[{value:'dialog',text:'对话框'},{value:'tabsNav',text:'标签页'},{value:'blank',text:'新窗口'}]">
+						</div>
+					</div>
+				</div>
+				<div role="row" class="content-ext-setting hidden">
+					<div role="control" label="显示边框">
+						<input class="mini-checkbox switch" id="show-border-switch"
+							style="width: 40px;" bind="noborder"
+							onvaluechanged="onBorderValueChanged" />
+					</div>
+				</div>
+				<div role="row" class="content-ext-setting hidden"
+					id="border-color-row">
+					<div role="control" label="边框颜色">
+						<input class="mini-colorpicker" allowInput="true" format="hex"
+							value="#ddd" style="width: 150px;" bind="dataBean.framecolor" />
+					</div>
+				</div>
+				<div role="row" class="content-ext-setting hidden">
+					<div role="control" label="背景颜色">
+						<input class="mini-colorpicker" style="width: 150px;"
+							allowInput="true" format="hex" value="#fff" bind="dataBean.backgroundcolor" />
+					</div>
+				</div>
+				<div role="row" class="content-ext-setting hidden">
+					<div role="control" label="待办类别">
+						<input id="messageType" bind="dataBean.extendcustomattr"
+							class="mini-radiobuttonlist" action="selectTypeModel" width="55%" />
+					</div>
+				</div>
+				<div role="row" class="content-ext-setting hidden">
+					<div role="control">已办和回收站不能同时选中</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div id="title-img-dialog" class="mini-window" title="标题图片选择"
+			style="width: 400px; height: 250px;" showMaxButton="true"
+			showCollapseButton="true" showShadow="true" showModal="false"
+			allowResize="true" allowDrag="true">
+			<div id="title-img-container">
+				<div class="img-list clearfix"></div>
+			</div>
+		</div>
+	</div>
+	<div class="fui-toolbar-bottom" style="text-align: center;">
+		<div class="btn-group" style="display: inline-block; float: none;">
+			<span class="mini-button" onclick="saveAndClose">保存并关闭</span> <span
+				class="mini-button" onclick="epoint.closeDialog">取消</span>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<script>
+		SrcBoot.output([ './todo/manage.js' ]);
+	</script>
+	<script>
+		Util.hidePageLoading();
+		// 元件ID
+		var elementID = Util.getUrlParams('elementID');
+
+		// // 页面初始化 回传元件ID
+		epoint.initPage('frameportalelementaction', {
+			elementID : elementID
+		}, initCallback);
+		// 使用数据初始化标题图片选择
+		function initCallback(data) {
+			adjustBorderColorVisible(data.noborder);
+			adjustTitleSettingsVisible(data.notitle);
+			if (data && data.imgList) {
+				// 渲染标题图片
+				renderTitleImgs(data.imgList)
+			}
+			if (data.iconUrl) {
+				$("#lblPicture").attr("src", Util.getRightUrl(data.iconUrl));
+				titleImgSelect.setValue(data.iconUrl);
+			}
+		}
+		function epoint_preload(controls) {
+			$.each(controls, function(i, item) {
+				// 更新展示图标图片
+				if (item.id == 'title-icon-hidden') {
+					// mini.get('title-icon-hidden').setValue(item.value);
+					$('#lblPicture').attr('src', Util.getRightUrl(item.value));
+				}
+				// 更新是否显示边框颜色
+				if (item.id == 'show-border-switch') {
+					adjustBorderColorVisible(item.value);
+				}
+			})
+		}
+
+		// =====================================
+		// 展示扩展标题配置
+		var $headerExtEls = $('.title-ext-setting');
+
+		function showHeaderExtCfg(el) {
+			$(el).closest('.form-row').remove();
+			$headerExtEls.removeClass('hidden');
+		}
+		// 展示扩展内容配置
+		var $contentExtEls = $('.content-ext-setting');
+
+		function showContentExtCfg(el) {
+			$(el).closest('.form-row').remove();
+			$contentExtEls.removeClass('hidden');
+		}
+
+		// =++===================================
+
+		// =====================================
+		// 边框选择变化时 调整颜色可见性
+		// 边框颜色
+		var $borderColorEl = $('#border-color-row');
+
+		function onBorderValueChanged(e) {
+			if (e.value == 'true') {
+				adjustBorderColorVisible(true);
+			} else {
+				adjustBorderColorVisible(false);
+			}
+		}
+
+		function adjustBorderColorVisible(show) {
+			if (show) {
+				$borderColorEl.show();
+			} else {
+				$borderColorEl.hide();
+			}
+		}
+		// =====================================
+		// 是否显示标题栏变化时 调整标题相关可见性
+		// 标题图片和颜色
+		var $titleSettingsEl = $('#title-settings-el');
+
+		function onShowTitleBarChanged(e) {
+			if (e.value == '1') {
+				adjustTitleSettingsVisible(true);
+			} else {
+				adjustTitleSettingsVisible(false);
+			}
+		}
+
+		function adjustTitleSettingsVisible(show) {
+			if (show) {
+				$titleSettingsEl.show();
+			} else {
+				$titleSettingsEl.hide();
+			}
+		}
+		// 标题图片点击 选择
+		var titleImgDialog = mini.get('title-img-dialog');
+
+		function showTitleImgList() {
+			titleImgDialog.show();
+		}
+		// 点击选择图片
+		var titleImgSelect = mini.get('title-icon-hidden');
+		$('body').on('click', '.title-img-item', function(e) {
+			var $this = $(this), url = $this.data('src');
+			titleImgSelect.setValue(url);
+			$('#lblPicture')[0].src = Util.getRightUrl(url);
+			titleImgDialog.hide();
+		});
+
+		function saveAndClose() {
+			epoint.execute('save', '', function() {
+				epoint.closeDialog('save');
+			});
+		}
+	</script>
+
+</body>
+
+</html>

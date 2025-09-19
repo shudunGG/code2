@@ -1,0 +1,273 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script>
+	    SrcBoot.output([ 'frame/pages/epointworkflow/css/handlepage.css']);
+    </script>
+    <style type="text/css">	
+    	.process-handle{
+			max-height: 551px;
+			overflow-y: auto;
+    	}
+    	
+    	.process-handle-left{
+    		width: 235px;
+    		margin-right: 10px;
+    		height: 100%;
+    		float:left;
+    		
+    	}
+    	
+    	.opinion-panel{
+    		width: 100%;
+    	}
+    	
+    	.opinion-container {
+    		width: 235px;
+    		height: 100%;
+    	}
+    	
+    	.opinion-txt {
+    		width: 235px;
+    		float: none;
+			position: static;
+			height: 188px;
+    	}
+    	
+    	.add-myopinion {
+    		position: static;
+    	}
+    	
+    	.opinion-tmpl{
+    		width: 235px;
+    		float: none;
+    		position: static;
+    		height: 290px;
+    	}
+    	
+    	.opiniontmpl-tab-bd {
+    		height: 248px;
+    	}
+    	
+    	.opiniontmpl-tab-hd>span {
+    		padding: 0px 5px 0px 0px;
+    	}
+    	
+    	.opinion-tmpl>.split {
+    		display: none;
+    	}
+    	
+    	.process-handle-right{
+    		width: 592px;
+    		margin-right: 23px;
+    		height: 100%;
+    		float: right;
+    	}
+    	
+    	.status-bar{
+    		margin-top: 0px;
+    	}
+    	
+    	.step-panel{
+    		width: 100%;
+    		height: 23%;
+    	}
+    	
+    	.step-container {
+			border: 1px solid #e7e7e7;
+			position: static;
+			top: 43px;
+			bottom: 0;
+			overflow-y: hidden;
+			overflow-x: hidden;
+			margin-right: 10px;
+			width: 592px;
+			height: 70px;
+    	}
+    	
+    	.step-list{
+    		padding: 5px;
+    	}
+    	
+    	.step-list>.step-item {
+			margin: 2px;
+		}
+    	
+    	.step-item>.step-name>span {
+			margin-right: 10px;
+		}
+		
+    	ul > li.step-item{
+    		float: left;
+    	}
+    	
+    	.member-panel{
+    		width: 100%;
+    		height: 77%;
+    		margin-top: 15px;
+    	}
+    	
+    	.member-container{
+    		position: static;
+    		width: 592px;
+			bottom: 0;
+			height: 342px;
+    	}
+    	
+    </style>
+    <script>
+      SrcBoot.outputCustomSkin('frame/pages/epointworkflow/css/');
+    </script>
+</head>
+<body>
+    <div class="page-loading"></div>
+    <div class="process-container">
+        <div class="process-handle">
+        	 <div class="process-handle-left">
+        	 	<div class="opinion-panel">
+        	 		<h2 class="head-title">
+						<span>签署意见</span>
+					</h2>
+					<div class="opinion-container" id="opinion">
+						<div class="opinion-txt">
+							<div class="opiniontextdiv">
+				                 <textarea class="mini-textarea" style="height: 150px; width: 100%;" maxLength="500" id="opinioncontent"></textarea>
+			                </div>
+							<div class="add-myopinion" id="addmyopiniondiv">
+								<input type="checkbox" class="step-chk" /><span>添加到我的意见模版</span>
+							</div>
+						</div>
+						<div class="opinion-tmpl">
+							<div class="opiniontmpl-tab" id="opinionTmplTab">
+								<div class="opiniontmpl-tab-hd" data-role="head">
+									<span data-role="tab" data-target="tab1">公共意见模版</span> 
+									<span data-role="tab" data-target="tab2">我的意见模版</span>
+								</div>
+								<div class="opiniontmpl-tab-bd" data-role="body">
+									<div data-role="tab-content" data-id="tab1" id="commonopinionlist"></div>
+									<div data-role="tab-content" data-id="tab2" id="useropinionlist"></div>
+								</div>
+							</div>
+							<span class="split" id="tmplsplit"></span>
+						</div>
+						
+					</div>
+        	 	</div>
+        	 </div>
+        	 <div class="process-handle-right">
+        	 	<div class="step-panel">
+        	 		<h2 class="head-title"><span>步骤选择</span></h2>
+                	<div class="step-container" id="steplist"></div>
+        	 	</div>
+        	 	<div class="member-panel">
+        	 		<h2 class="head-title"><span>人员选择</span></h2>
+               		<div class="member-container">
+                   	 	<div class="step-tab" id="steptab">
+                        	<div class="step-tab-hd"></div>
+                        	<div class="step-tab-bd"></div>
+                    	</div>
+                	</div>
+        	 	</div>
+        	 </div>
+        </div>
+        <div class="status-bar">
+            <span>当前步骤：<b id="curr_step">拟稿</b>当前操作：<b id="curr_op">送下一步</b></span>
+           <div class="btn-bar" id="btnbar">
+				<a class="mini-button btnsubmit" id="btnsubmit">确认提交</a><a
+					class="mini-button btncancel" id="btncancel">取消</a>
+			</div>
+        </div>
+    </div>
+    
+    <script src="../../../../rest/resource/jsboot"></script>
+    <script src="../js/tabview.js"></script>
+	<script src="../../../../framemanager/sform/formlistmanage/js/jquery.nicescroll.min.js"></script>
+	
+    <!-- 配置变量 -->
+    <script>
+    window.isexecutebtnsubmit = false;
+    Util.loadPageModule({
+		templ: 'frame/pages/epointworkflow/client/handlepage.templ',
+		js: '../js/handlepass.js'
+	});
+    
+    $(function() {
+		new TabView({
+			dom : document.getElementById("opinionTmplTab"),
+			activeCls : 'active',
+			triggerEvent : 'click'
+		});
+
+		var $opinion = $("#opinion"), $tmplsplit = $("#tmplsplit");
+		
+		var $opinioncontent = $("#opinioncontent");
+
+		$tmplsplit.on("click", function() {
+			$opinion.toggleClass("shrink");
+		});
+		
+		
+		$(".process-handle").niceScroll({
+			cursoropacitymax : 1,
+			autohidemode : true
+		});
+		
+		if($('#commonopinionlist') && $('#useropinionlist')){
+			epoint.execute("workflowopinionaction.opinionCtrlForOperationPage","","2",initCallback);
+		}
+		
+		function initCallback(data){
+			var json = epoint.decodeJson(data);
+			var $commonopinionlist = $('#commonopinionlist'),
+			$useropinionlist = $('#useropinionlist'),
+			M = Mustache,
+			opinionTmpl = $('#opinionTmpl').html();
+			if ($commonopinionlist.length > 0 && json.commonopinionlist) 
+				$commonopinionlist.empty().html(M.render(opinionTmpl, json.commonopinionlist));
+			if ($useropinionlist.length > 0 && json.useropinionlist) 
+				$useropinionlist.empty().html(M.render(opinionTmpl, json.useropinionlist));
+		}
+		
+		if ($("#addmyopiniondiv").length > 0) {
+			$("#addmyopiniondiv").on("click", ".step-chk",
+				function(e) {
+					var $self = $(this);
+					if ($self.prop("checked") == true) {
+						var text = mini.get("opinioncontent").getValue();
+						if (text) {
+							epoint.execute('workflowopinionaction.addintoopinion', "@none", [text],
+								function(data) {
+									if (data.message) {
+										epoint.alert(data.message,'提示');
+										if (data.opinionguid) {
+											var opinion = $('#useropinionlist>.opiniontmpl-list');
+											var html = "<li class='opiniontmpl-item' data-opiniontext="
+													+ text
+													+ " data-opinionguid="
+													+ data.opinionguid
+													+ "><input class='step-chk' type='checkbox'><span>"
+													+ text
+													+ "</span></li>";
+											opinion.append(html);
+										}
+										
+										// ie中有时意见框会无法获取焦点，这里强制其获取焦点
+										$opinioncontent.focus();
+									}
+								});
+						} else {
+							epoint.alert('添加个人意见为空！', '提示');
+						}
+						$self.prop("checked", false);
+					}
+				})
+		}
+	});
+    
+    
+    </script>
+</body>
+</html>

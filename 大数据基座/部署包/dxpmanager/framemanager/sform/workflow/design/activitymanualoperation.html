@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>操作按钮管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="btnAddRecord"
+				onclick="openAdd();">新增记录</a> 
+				<a class="mini-button" iconCls="icon-save" id="btnUpdate"
+				onclick="saveOrder();">修改排序</a>
+				<a class="mini-button mini-btn-danger"
+				iconCls="icon-minuscircle" id="btnDel"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">删除选中</a>
+			
+		</div>
+	</div>
+	
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="operationGuid" multiSelect="true" action="getResultListModel"
+			showPager="true" style="width: 100%; height: 100%;"
+			allowResize="true" allowCellEdit="true" allowCellSelect="true"
+			allowCellValid="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="20"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="operationName" width="80" headerAlign="center">操作名称</div>
+				<div field="czlx" width="80" headerAlign="center">操作类型</div>
+				<div field="xsclym" width="80" headerAlign="center">显示处理页面</div>
+				<div field="orderNumber" width="40" headerAlign="center" align="right">
+					排序号<input property="editor" class="mini-textbox" minWidth="20"
+						inputStyle="text-align:right" vtype="int;range:0,99999999"/>
+				</div>
+				<div width="20" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+	
+	<input class="mini-hidden" id="activityGuid" bind="activityGuid" />
+	<input class="mini-hidden" id="processVersionGuid" bind="processVersionGuid" />
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activitymanualoperationaction');
+		
+		function openAdd() {
+			var activityGuid = mini.get("activityGuid").getValue();
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			var settings = {
+				'width' : 1000,
+				'height' : 520
+			};
+			epoint.openDialog('新增操作按钮',
+					'framemanager/sform/workflow/design/activitymanualoperationadd?activityGuid=' + activityGuid + '&mode=jump&processVersionGuid=' + processVersionGuid, addCallBack, settings);
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchKeepPage();
+			}
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		// 保存排序码刷新页面
+		function saveOrder() {
+			var grid = mini.get("datagrid");
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveOrder', '', callback);
+		}
+		
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editOperation","operationGuid");
+		};
+		
+		function editOperation(operationGuid) {
+			var processVersionGuid = mini.get("processVersionGuid").getValue();
+			var settings = {
+				'width' : 1000,
+				'height' : 520
+			};
+			epoint.openDialog('操作修改',
+					'framemanager/sform/workflow/design/activitymanualoperationedit?operationGuid=' + operationGuid + '&mode=jump&processVersionGuid=' + processVersionGuid, addCallBack, settings);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchKeepPage, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ]);
+		}
+		function searchKeepPage() {
+			epoint.refresh(['datagrid', 'fui-content'],'',true);
+		}
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>表单信息表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="选择子系统"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid"
+				action="epointsformlistaction.getTreeData" resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar" id="toolbar">
+			<div id="not-sub-btn" class="btn-group">
+				<a class="mini-menubutton" state="primary" id="btnAddRecord"
+					menu="#popupMenu"> 新建表单 </a>
+				<ul id="popupMenu" class="mini-menu" style="display: none;">
+					<li onclick="openAdd" name="single">单表</li>
+					<li onclick="openWord" name="office">word转表</li>
+					<li class="separator"></li>
+					<li onclick="openMultit" name="multi">多表合一</li>
+				</ul>
+				<a id="btnDel" class="mini-button" state="danger"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择要删除的记录!', {state : 'warning'});} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选中 </a>
+			</div>
+			<div class="btn-group">
+				<a class="mini-button"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！', {state : 'warning'});} else {exportList();}">导出XML</a>
+				<a class="mini-button" state="primary" onclick="importFormData"
+					id="btnImportData">导入数据 </a>
+			</div>
+			<div class="btn-group">
+				<a class="mini-button" id="designer"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要生成的记录！',  {state : 'warning'});} else {formdesigner();}">生成表单</a>
+				<a class="mini-button" id="buttonCopy"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要复制的记录！',  {state : 'warning'});} else {copyFormDesign();}">表单复制</a>
+			</div>
+
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" id="searchString1" bind="searchString1"
+					emptyText="请输入表单名称搜索" onvaluechanged="searchData"
+					onenter="searchData" /> <input class="mini-hidden"
+					bind="categoryNum" id="categoryNum" /> <a class="mini-button ml8"
+					state="primary" iconCls="icon-search" onclick="searchData"
+					tooltip="搜索"></a>
+			</div>
+		</div>
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="false" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40" name="check"></div>
+					<div type="indexcolumn" width="60" align="left">序号</div>
+					<div field="formname" width="auto">表单名称</div>
+					<div field="formtype" width="80">类型</div>
+					<div field="formid" width="80">表单编号</div>
+					<div field="lyadress" width="auto">路由地址</div>
+					<div field="formstatus" width="80" renderer="onStatusRenderer">状态</div>
+					<div type="actioncolumn">
+						<span type="action" icon="icon-edit" onclick="openEdit"
+							renderer="onRemoveActionRender" renderer="onEditRenderer">修改</span>
+						<span type="action" icon="icon-gear" onclick="openVersion">版本</span>
+						<span type="action" icon="icon-doc" onclick="openDesigner"
+							renderer="onDesignerRenderer">设计</span><span type="action"
+							icon="icon-search" onclick="onShowList" renderer="onShowRenderer">预览</span><span
+							type="action" icon="icon-print" onclick="openPrint"
+							renderer="onPrintRenderer">打印</span>
+					</div>
+					<!-- <div width="80" renderer="onEditRenderer" name="edit">修改</div>
+					<div name="xtzd" width="80" renderer="onversionRenderer">版本</div> -->
+					<div field="tablename" visible="false"></div>
+					<div field="disformtype" visible="false"></div>
+					<div field="sqltablename" visible="false"></div>
+					<div field="status" visible="false"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		var grid = mini.get("datagrid");
+		var isLesseeMode = false;
+		var isAdmin = false;
+		var isOuAdmin = false;
+		var isSub = "";
+		// 初始化页面
+		epoint.initPage('epointsformlistaction', '', function(e) {
+			if (e.isLesseeMode) {
+				isLesseeMode = e.isLesseeMode;
+			}
+			if (e.isAdmin) {
+				isAdmin = e.isAdmin;
+			}
+			if (e.isOuAdmin) {
+				isOuAdmin = e.isOuAdmin;
+			}
+			if (e.isSub == "1") {
+				isSub = e.isSub;
+				$('#btnAddRecord').hide();
+				$('#btnDel').hide();
+				$('#designer').hide();
+				$('#buttonCopy').hide();
+				//grid.hideColumn("edit");
+				//grid.hideColumn("check");
+
+				$('#not-sub-btn').remove();
+
+			}
+		});
+
+		function onRemoveActionRender(e) {
+			if (isSub == "1") {
+				// 控制按钮是否显示
+				e.icon.visible = false;
+			}
+		}
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.objectcode;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('categoryNum').setValue(id);
+			//刷新表格
+			searchData();
+		});
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出新增窗口
+		function openAdd(e) {
+			//frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=07176f48-6ce2-407f-a4a7-0dfe3c7cbcf7
+			var buttonName = this.getName();
+			epoint.openDialog('新建表单',
+					"frame/pages/sformdesigner/formlistmanage/epointsformadd?categoryNum="
+							+ mini.get("categoryNum").getValue() + "&isSub="
+							+ isSub + "&formType=" + buttonName,
+					function(param) {
+						if (param != "success") {
+							var iframe = this.getIFrameEl();
+							iframe.contentWindow.onCloseForm();
+						}
+						searchData();
+					}, {
+						'width' : 650,
+						'height' : 460
+					});
+		}
+
+		// 弹出新增word转表
+		function openWord(e) {
+			var buttonName = this.getName();
+			epoint.openDialog('新建表单',
+					"frame/pages/sformdesigner/formlistmanage/epointsformadd?categoryNum="
+							+ mini.get("categoryNum").getValue() + "&isSub="
+							+ isSub + "&formType=" + buttonName,
+					function(param) {
+						if (param != "success") {
+							var iframe = this.getIFrameEl();
+							iframe.contentWindow.onCloseForm();
+						}
+						searchData();
+					}, {
+						'width' : 650,
+						'height' : 460
+					});
+		}
+
+		// 弹出新增窗口
+		function openMultit(e) {
+			var buttonName = this.getName();
+			epoint.openDialog('新建表单',
+					"frame/pages/sformdesigner/formlistmanage/multit/frame/frame?categoryNum="
+							+ mini.get("categoryNum").getValue() + "&isSub="
+							+ isSub + "&formType=" + buttonName + "&type=add",
+					function(param) {
+						if (param != "success") {
+							var iframe = this.getIFrameEl();
+							iframe.contentWindow.onCloseForm();
+						}
+					}, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+		// 弹出修改窗口
+		function openEdit(row, el) {
+
+			epoint.openDialog('修改表单',
+					"frame/pages/sformdesigner/formlistmanage/epointsformedit?guid="
+							+ row.rowguid + "&isSub=" + isSub + "&type=edit",
+					editCallBack, {
+						'width' : 1000,
+						'height' : 800
+					});
+		}
+
+		// 弹出打印模版窗口
+		function openPrint(row, el) {
+			epoint.openDialog('打印模板',
+					"frame/pages/sformdesigner/formlistmanage/epointsformprint?guid="
+							+ row.rowguid + "&isSub=" + isSub, editCallBack, {
+						'width' : 480,
+						'height' : 250
+					});
+		}
+
+		/// 绘制代码生成按钮
+		var onDmscRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-folderopen",
+					"codepro");
+		};
+
+		// 绘制版本配置按钮
+		var onversionRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "openVersion");
+		};
+
+		// 弹出修改窗口
+		function openVersion(row, el) {
+			top.epoint.openDialog('表单版本',
+					"frame/pages/sformdesigner/formlistmanage/epointsformversionlist?tableGuid="
+							+ row.rowguid + "&isSub=" + isSub + "&formType="
+							+ row.disformtype, searchData);
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				if (data.msg == "1") {
+					epoint.showTips("在部门管理模块下不能删除数据!", {
+						state : 'warning'
+					});
+				} else if (data.msg == "2") {
+					epoint.showTips("租户或者不是管理员不能删除数据!", {
+						state : 'warning'
+					});
+				} else {
+					epoint.showTips(data.msg, {
+						state : 'success'
+					});
+				}
+				searchData();
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				if (param != "sucess") {
+					var iframe = this.getIFrameEl();
+					iframe.contentWindow.onCloseForm();
+				}
+				if (param != 'close') {
+					epoint.showTips(param, {
+						state : 'success'
+					});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		//新增回调
+		function editCallBack(param) {
+			if (param) {
+				if (param != 'close') {
+					epoint.showTips(param, {
+						state : 'success'
+					});
+				}
+				epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+			}
+		}
+
+		var ontablenamerender = function(e) {
+			return e.row['tablename'] + "(" + e.row['sqltablename'] + ")";
+		}
+
+		function exportList() {
+			epoint.execute('exportCheck', 'datagrid', exportafter);
+		}
+
+		function exportafter(data) {
+			if (!data.guid && data.msg) {
+				epoint.showTips(data.msg, {
+					state : 'warning'
+				});
+			} else if (data.guid && data.msg) {
+				epoint
+						.confirm(
+								data.msg,
+								'确认操作',
+								function() {
+									var form = document
+											.getElementById('download_form');
+									form.action = "../../../../"
+											+ epoint
+													.dealRestfulUrl("epointsformlistaction/exportList?isCommondto=true&exportguid="
+															+ data.guid);
+									form.submit();
+								}, searchData);
+			} else if (data.guid && !data.msg) {
+				var form = document.getElementById('download_form');
+				form.action = "../../../../"
+						+ epoint
+								.dealRestfulUrl("epointsformlistaction/exportList?isCommondto=true&exportguid="
+										+ data.guid);
+				form.submit();
+			}
+		}
+
+		function formdesigner() {
+			epoint.execute('sfromDesigner', 'datagrid', callback);
+		}
+
+		//表单设计复制
+		function copyFormDesign() {
+			epoint.execute('copyFormDesign', 'datagrid', copyCallback);
+		}
+
+		//表单设计复制callback
+		function copyCallback(data) {
+			if (data.msg) {
+				var msg = data.msg;
+				if (msg == "success") {
+					epoint.showTips("复制成功", {
+						state : 'success'
+					});
+				} else {
+					epoint.showTips(msg, {
+						state : 'warning'
+					});
+				}
+			} else {
+				epoint.showTips("复制出现异常，请查看问题", {
+					state : 'danger'
+				});
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function onStatusRenderer(e) {
+			var cls = "";
+			var statusName = "";
+			if (e.row.status == "1") {
+				cls = "dot-success";
+				statusName = "启用";
+
+			} else {
+				cls = "dot-gone";
+				statusName = "停用";
+			}
+			return '<i class="' + cls+ '"></i>' + statusName;
+
+		}
+
+		function onShowList(row) {
+			epoint.execute('getVersionGuid', '@none', row.rowguid, function(
+					data) {
+				if (data.del == "1") {
+					epoint.showTips("此表单关联的数据表已被删除，无法再使用设计页面", {
+						state : 'danger'
+					});
+					return;
+				}
+				if (data.versionguid) {
+					epoint.openDialog('预览地址',
+							"frame/pages/sformdesigner/formlistmanage/epointsformpreviewlist?guid="
+									+ data.versionguid + "&isSub=" + isSub,
+							searchData, {
+								'width' : 800,
+								'height' : 400
+							});
+				} else {
+					top.epoint.openDialog('表单版本',
+							"frame/pages/sformdesigner/formlistmanage/epointsformversionlist?tableGuid="
+									+ row.rowguid + "&isSub=" + isSub
+									+ "&formType=" + row.disformtype,
+							searchData);
+				}
+			});
+		}
+
+		function openDesigner(row) {
+			epoint
+					.execute(
+							'getVersionGuid',
+							'@none',
+							row.rowguid,
+							function(data) {
+								if (data.del == "1") {
+									epoint.showTips("此表单关联的数据表已被删除，无法再使用设计页面",
+											{
+												state : 'danger'
+											});
+									return;
+								}
+								if (data.versionguid) {
+									var formType = row.disformtype;
+									if (formType == "multi") {
+										window
+												.open(Util.getRootPath()
+														+ "frame/pages/sformdesigner/formlistmanage/multit/designer?tableGuid="
+														+ row.rowguid
+														+ "&designId="
+														+ data.versionguid
+														+ "&isSub=" + isSub
+														+ "&relationguid="
+														+ data.relationguid);
+
+									} else {
+										window
+												.open(Util.getRootPath()
+														+ "frame/pages/sformdesigner/designer?tableGuid="
+														+ row.rowguid
+														+ "&designId="
+														+ data.versionguid
+														+ "&isSub=" + isSub);
+									}
+								} else {
+									top.epoint.openDialog('表单版本',
+											"frame/pages/sformdesigner/formlistmanage/epointsformversionlist?tableGuid="
+													+ row.rowguid + "&isSub="
+													+ isSub + "&formType="
+													+ row.disformtype,
+											searchData);
+								}
+							});
+		}
+
+		var onEditRenderer = function(e) {
+			if (isSub == "1") {
+				e.icon.visible = false;
+			} else {
+				e.icon.visible = true;
+			}
+		};
+
+		var onDesignerRenderer = function(e) {
+			if (isSub == "1") {
+				e.icon.visible = false;
+			} else {
+				e.icon.visible = true;
+			}
+		};
+
+		var onShowRenderer = function(e) {
+			if (isSub == "1") {
+				e.icon.visible = false;
+			} else {
+				e.icon.visible = true;
+			}
+		};
+		var onPrintRenderer = function(e) {
+			if (isSub == "1") {
+				e.icon.visible = false;
+			} else {
+				e.icon.visible = true;
+			}
+		};
+
+		// 导入数据
+		function importFormData() {
+			epoint.openDialog('表单数据导入',
+					"frame/pages/sformdesigner/formlistmanage/importdatacheck",
+					function(param) {
+						if (param != 'close') {
+							if (param == "导入成功！") {
+								epoint.showTips(param, {
+									state : 'info'
+								});
+							} else {
+								epoint.alert(param, "", "", "warning");
+							}
+						}
+						searchData();
+					}, {
+						'width' : 900,
+						'height' : 800
+					});
+		}
+	</script>
+</body>
+</html>

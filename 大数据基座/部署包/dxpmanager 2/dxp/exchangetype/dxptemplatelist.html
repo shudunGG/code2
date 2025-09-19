@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>模板管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group">
+			<a class="mini-button mr10" onclick="addTemp()">新增策略</a> <a
+				class="mini-button mr10" onclick="deleteTemp()">删除策略</a><!-- <a
+				class="mini-button mr10" onclick="initdata()">初始化</a> -->
+		</div>
+	</div>
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="策略">
+						<input class="mini-combobox" showNullItem="true"
+							action="dxptemplateaddaction.getTemplates" id="template"
+							bind="templateCode" textField="text" valueField="id" />
+					</div>
+					<div role="control"></div>
+				</div>
+				<div role="row">
+					<div role="control" label="来源库类型">
+						<input class="mini-combobox" showNullItem="true"
+							action="dxpdatasourceaction.getDsTypes" id="fromdstype"
+							bind="fromdstype" textField="text" valueField="id" />
+					</div>
+					<div role="control" label="目标库类型">
+						<input class="mini-combobox" showNullItem="true"
+							action="dxpdatasourceaction.getDsTypes" id="targetdstype"
+							bind="targetdstype" textField="text" valueField="id" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridModel" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40" headerAlign="center"></div>
+				<div type="indexcolumn" width="20" headerAlign="center">序</div>
+				<div field="name" width="80" headerAlign="center" 
+					renderer="onTemplateRenderer">名称</div>
+				<div field="templatename" width="80" headerAlign="center"
+					align="center">策略名称</div>
+				<div field="fromdstype" width="80" headerAlign="center"
+					align="center">源库类型</div>
+				<div field="targetdstype" width="80" headerAlign="center"
+					align="center">目标库类型</div>
+				<div field="templateclass" width="80" headerAlign="center"
+					align="center">实现类路径</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('dxptemplatelistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function addTemp() {
+			epoint.openDialog('新增策略', "./dxptemplateadd", searchData, {
+				'width' : 1200,
+				'height' : 400
+			});
+		}
+
+		// 删除作业
+		function deleteTemp() {
+			if (mini.get('datagrid').getSelecteds() == 0) {
+				epoint.alert('请选择要删除的策略');
+			} else {
+				epoint.confirm('确认删除吗?', '', function() {
+					epoint.execute("deleteTemp", '', callback);
+				});
+			}
+		}
+
+		/* function initdata(){
+			epoint.execute('initData');
+		} */
+		
+		function callback(data) {
+			searchData();
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			} else {
+				epoint.alert("删除失败");
+			}
+		}
+
+		function onTemplateRenderer(e) {
+			var name = e.value;
+			return '<a href="javascript:void(0);" onclick="editTemp(' + "'"
+					+ e.row.rowguid + "'" + ');" >' + name + '</a>';
+		}
+
+		function editTemp(rowguid) {
+			epoint.openDialog('修改策略', "./dxptemplateadd?rowguid=" + rowguid,
+					searchData, {
+						'width' : 1200,
+						'height' : 400
+					});
+		}
+	</script>
+</body>
+</html>

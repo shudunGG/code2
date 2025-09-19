@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>采集目录编辑页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="onAddBefore()">插入节点(同级)</a> <a class="mini-button" onclick="onAddNode()">插入节点(子节点)</a> <a class="mini-button"
+				iconCls="icon-edit" onclick="onEditNode()">编辑节点</a> <a class="mini-button" iconCls="icon-minuscircle" onclick="deleteNode()">删除节点</a> <a
+				class="mini-button" onclick="onMoveNode()">移动节点</a>
+		</div>
+	</div>
+
+
+	<div class="fui-content">
+		<ul id="tree1" class="mini-tree" style="width: 100%; height: 100%; padding: 5px;" showTreeIcon="true" textField="name" expandOnLoad="0"
+			onendedit="saveData" ondrop="saveData" allowDrag="true" allowDrop="true" allowLeafDropIn="true" idField="id" parentField="pid" resultAsTree="false"
+			action="eiadatatablebasicinfolistaction.getTreeData2">
+		</ul>
+
+
+		<div id="moveWindow" title="选择目标节点" class="mini-window" style="width: 300px; height: 250px;" showModal="true" showFooter="true" allowResize="true">
+			<ul id="moveTree" class="mini-tree" style="width: 100%; height: 100%;" showTreeIcon="true" textField="text" idField="id"
+				action="eiadatatablebasicinfolistaction.getTreeData2">
+			</ul>
+			<div property="footer" style="padding: 5px;">
+				<table style="width: 100%">
+					<tr>
+						<td>插入方式： <select id="moveAction">
+								<option value="before">同级节点</option>
+								<option value="add" selected>节点内</option>
+						</select>
+						</td>
+						<td style="width: 120px; text-align: right;"><input type="button" value="确定" onclick="okWindow()" /> <input type="button" value="取消"
+							onclick="hideWindow()" /></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+		// 初始化页面
+		var tree = mini.get("tree1");
+		var moveWindow = mini.get("moveWindow");
+		var moveTree = mini.get("moveTree");
+		epoint.initPage('eiadatatablebasicinfolistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'tree1' ]);
+		}
+
+		function onAddBefore(e) {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+			if (node) {
+				var id = node.id;
+				var name = node.name;
+				var pid = node.pid;
+				if (pid == '-1') {
+					epoint.alert("数据源根节点不允许插入!");
+					return;
+				}
+
+				var newNode = {};
+				tree.addNode(newNode, "before", node);
+
+				epoint.execute('eiadatatablebasicinfolistaction.onAddBefore', null, [ id, name, pid ], function(ret) {
+					epoint.refresh([ 'tree1' ]);
+				});
+			} else {
+				epoint.alert("请选择一个目标节点");
+			}
+		}
+
+		function onAddNode(e) {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+
+			if (node) {
+				var id = node.id;
+				var name = node.name;
+				var pid = node.pid;
+
+				var newNode = {};
+				tree.addNode(newNode, "add", node);
+
+				epoint.execute('eiadatatablebasicinfolistaction.onAddNode', null, [ id, name, pid ], function(ret) {
+					epoint.refresh([ 'tree1' ]);
+				});
+			} else {
+				epoint.alert("请选择一个目标节点");
+			}
+		}
+
+		function okWindow() {
+			var moveNode = tree.getSelectedNode();
+			var targetNode = moveTree.getSelectedNode();
+			var moveAction = document.getElementById("moveAction").value;
+
+			if (moveNode && targetNode && moveAction) {
+				//targetNode = tree.getNode(targetNode.id);
+
+				if (tree.isAncestor(moveNode, targetNode)) {
+					epoint.alert("移动节点不能是目标节点的父节点!");
+					return;
+				}
+				
+				if ('before' == moveAction && targetNode.pid == '-1') {
+					epoint.alert("目标节点不能是根节点!");
+					return;
+				}
+
+				//tree.moveNode(moveNode, targetNode, moveAction);
+				moveWindow.hide();
+				epoint.execute('eiadatatablebasicinfolistaction.onMoveNode', null, [ moveNode.id, targetNode.id, '', moveAction ], function() {
+					epoint.refresh([ 'tree1' ]);
+				});
+			} else {
+				epoint.alert("请选择一个目标节点");
+			}
+		}
+
+		function hideWindow() {
+			var moveWindow = mini.get("moveWindow");
+			moveWindow.hide();
+		}
+
+		//移动节点
+
+		function onMoveNode(e) {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+			if (node) {
+				var id = node.id;
+				var name = node.name;
+				var pid = node.pid;
+				if (pid == '-1') {
+					epoint.alert("数据源根节点不允许移动!");
+					return;
+				}
+				moveWindow.show();
+			} else {
+				epoint.alert("请先选择节点");
+			}
+		}
+
+		function onEditNode(e) {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+			if (!node) {
+				epoint.alert("请选择要编辑的节点");
+				return;
+			}
+			tree.beginEdit(node);
+		}
+
+		function saveData() {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+			var id = node.id;
+			var name = node.name;
+			var pid = node.pid;
+			if (pid == '-1') {
+				epoint.alert("数据源根节点不允许编辑!");
+				epoint.refresh([ 'tree1' ]);
+			} else {
+				epoint.execute('eiadatatablebasicinfolistaction.saveData', null, [ id, name ], function(ret) {
+					if(ret.msg){
+						epoint.alertAndClose(ret.msg);
+						return;
+					}
+					epoint.refresh([ 'tree1' ]);
+				});
+			}
+		}
+
+		//删除节点目录
+		function deleteNode() {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+			var id = node.id;
+			var name = node.name;
+			var pid = node.pid;
+			if (pid == '-1') {
+				epoint.alert("数据源根节点不允删除!");
+				return;
+			}
+			if (node) {
+				epoint.confirm('确定删除选中节点?', '', function() {
+					tree.removeNode(node);
+					epoint.execute('eiadatatablebasicinfolistaction.deleteNode', null, [ id, name ], function(ret) {
+						epoint.alertAndRefresh(ret);
+					});
+				});
+			}
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

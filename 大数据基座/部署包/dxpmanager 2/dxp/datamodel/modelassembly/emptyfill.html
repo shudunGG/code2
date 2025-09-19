@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>空值填充</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="form" class="fui-form" style="width: 90%">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="步骤名称" starred="true">
+						<input id="stepName" name="stepName" class="mini-textbox" vtype="maxLength:20"
+							required="true" emptyText="请输入步骤名称"  requiredErrorText="步骤名称不能为空！"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择待统计空值的字段" starred="true">
+						<div
+							style="height: 250px; width: 100%; overflow: auto; border: 1px solid #ebebeb">
+							<div id="cbl" name="cbl" class="mini-checkboxlist" required="true" requiredErrorText="请选择空值统计的字段！"
+								repeatItems="2" repeatLayout="table" textField="text"
+								onitemclick="itemclick" valueField="id" style="margin-left: 5px"></div>
+						</div>
+					</div>
+				</div>
+				<div role="row"></div>
+				<div role="row">
+					<div role="control" label="空值配置" starred="true">
+						<div id="tabs1" class="mini-tabs" activeIndex="0" plain="false"
+							style="height: 350px;"></div>
+					</div>
+				</div>
+				<input id="emptyfilljson" name="emptyfilljson" class="mini-hidden">
+
+			</div>
+		</div>
+	</div>
+	<!-- 请修改相对路径 -->
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		// 初始化页面
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var stepNameForm = mini.get('stepName');
+		var cbl = mini.get("cbl");
+		var tabs1 = mini.get("tabs1");
+		var emptyfilljson;
+		var nodeData;
+		var nodeInfo;
+		var prefields;
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+
+		function pageLoad() {
+			//从父页面获取表单数据
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			epoint.initPage('modelemptyfillaction?stepId=' + nodeInfo.key, {
+				'nodeData' : epoint.encodeUtf(JSON.stringify(nodeData))
+			}, initCallBack);
+		}
+
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+
+			if (!nodeName) {
+				stepNameForm.setValue(nodeInfo.name);
+			}
+			if (e.emptyfilljson) {
+				emptyfilljson = e.emptyfilljson;
+			}
+			if(e.prefields){
+				cbl.setData(e.prefields);
+				prefields=e.prefields;
+			}
+			loadParam();
+		}
+
+		//加载参数列表
+		function loadParam() {
+			if (emptyfilljson) {
+				var tabObj = JSON.parse(emptyfilljson);
+				var tabObj1=[];
+				for(var i=0;i<tabObj.length;i++){
+					for(var j=0;j<prefields.length;j++){
+						if(tabObj[i].columnid==prefields[j].id){
+							tabObj1.push(tabObj[i]);
+							break;
+						}
+					}
+				}
+				var scheckcolumn = "";
+				for (var i = 0; i < tabObj1.length; i++) {
+					scheckcolumn += tabObj1[i].columnid + ",";
+					//添加tab标题
+					var tab = {
+						name : tabObj1[i].columnid,
+						title : tabObj1[i].columnname
+					};
+					tab = tabs1.addTab(tab);
+					//tab body
+					var el = tabs1.getTabBodyEl(tab);
+
+					var displayfiltervalue = "";
+					var displayfillvalue = "";
+					if (tabObj1[i].filtertype.indexOf("1") == -1) {
+						displayfiltervalue = "display:none";
+					}
+					if (tabObj1[i].filltype != '0') {
+						displayfillvalue = "display:none";
+					}
+					el.innerHTML = "<div>空值条件配置:</div><div id=\"filtertype"
+							+ tabObj1[i].columnid
+							+ "\" class=\"mini-checkboxlist\" repeatItems=\"1\" required=\"true\" value=\""
+							+ tabObj1[i].filtertype
+							+ "\" repeatLayout=\"table\" textField=\"text\" valueField=\"id\" onvaluechanged=\"filtertypechange('"
+							+ tabObj1[i].columnid
+							+ "')\"  data=\"[{text:'空值(包括null、字符串长度小于1、Null字符串)',id:'0'},{text:'值为自定义字符',id:'1'}]\"></div><input id=\"filtervalue"+tabObj1[i].columnid+"\" class=\"mini-textbox\" onvalidation=\"checkEmpty\"  requiredErrorText=\"自定义字符不能为空！\" emptyText=\"多个字符用'|'隔开'\" value=\""+tabObj1[i].filtervalue+"\" style=\""+displayfiltervalue+"\"/></br></br><div>填充规则:</div><div id=\"filltype"
+							+ tabObj1[i].columnid
+							+ "\" class=\"mini-radiobuttonlist\" required=\"true\" repeatItems=\"1\" repeatLayout=\"table\" repeatDirection=\"vertical\" textField=\"text\" valueField=\"id\" value=\""
+							+ tabObj1[i].filltype
+							+ "\" onvaluechanged=\"filltypechange('"
+							+ tabObj1[i].columnid
+							+ "')\"   data=\"[{text:'统一填充',id:'0'},{text:'均值填充',id:'1'},{text:'众值填充',id:'2'}]\"></div><input id=\"fillvalue"+tabObj1[i].columnid+"\" class=\"mini-textbox\"  emptyText=\"请输入待统一填充的值\" onvalidation=\"checkEmpty\" requiredErrorText=\"统一填充值不能为空！\" value=\""+tabObj1[i].fillvalue+"\" style=\""+displayfillvalue+"\"/>";
+					//active tab
+					if (i == 0) {
+						tabs1.activeTab(tab);
+					}
+				}
+				if (scheckcolumn) {
+					scheckcolumn = scheckcolumn.substring(0, scheckcolumn
+							.lastIndexOf(","));
+				}
+				cbl.setValue(scheckcolumn);
+				mini.parse();
+			}
+		}
+
+		//空值条件发生改变的时候
+		function filtertypechange(id) {
+			if (mini.get("filtertype" + id).getValue().indexOf("1") != -1) {
+				mini.get("filtervalue" + id).show();
+				//mini.get("filtervalue" + id).setRequired("true");
+				mini.get("filtervalue" + id).setRequiredErrorText("自定义字符不能为空！");
+			} else {
+				mini.get("filtervalue" + id).hide();
+			}
+		}
+
+		//填充规则发生改变的时候
+		function filltypechange(id) {
+			if (mini.get("filltype" + id).getValue() == 0) {
+				mini.get("fillvalue" + id).show();
+				//mini.get("fillvalue" + id).setRequired("true");
+				mini.get("fillvalue" + id).setRequiredErrorText("统一填充不能为空！");
+			} else {
+				mini.get("fillvalue" + id).hide();
+			}
+		}
+
+		function itemclick(e) {
+			var currentValue = e.item.id;
+			var ischecked = mini.get('cbl').isSelected(e.item);
+			if (ischecked) {
+				//添加tab标题
+				var tab = {
+					name : currentValue,
+					title : e.item.text
+				};
+				tab = tabs1.addTab(tab);
+				//tab body
+				var el = tabs1.getTabBodyEl(tab);
+
+				var displayfiltervalue = "display:none";
+				var displayfillvalue = "";
+				el.innerHTML = "<div>空值条件配置:</div><div id=\"filtertype"
+						+ currentValue
+						+ "\" class=\"mini-checkboxlist\" required=\"true\" repeatItems=\"1\" repeatLayout=\"table\" textField=\"text\" valueField=\"id\" onvaluechanged=\"filtertypechange('"
+						+ currentValue
+						+ "')\"  data=\"[{text:'空值(包括null、字符串长度小于1、Null字符串)',id:'0'},{text:'值为自定义字符',id:'1'}]\"></div><input id=\"filtervalue"+currentValue+"\" class=\"mini-textbox\"  emptyText=\"多个字符用'|'隔开'\"  style=\""+displayfiltervalue+"\" onvalidation=\"checkEmpty\"  requiredErrorText=\"自定义字符值不能为空！\"/></br></br><div>填充规则:</div><div id=\"filltype"
+						+ currentValue
+						+ "\" class=\"mini-radiobuttonlist\" required=\"true\" repeatItems=\"1\" repeatLayout=\"table\" repeatDirection=\"vertical\" textField=\"text\" valueField=\"id\" value=\"0\" onvaluechanged=\"filltypechange('"
+						+ currentValue
+						+ "')\"   data=\"[{text:'统一填充',id:'0'},{text:'均值填充',id:'1'},{text:'众值填充',id:'2'}]\"></div><input id=\"fillvalue"+currentValue+"\" class=\"mini-textbox\"  emptyText=\"请输入待统一填充的值\" onvalidation=\"checkEmpty\"  requiredErrorText=\"统一填充值不能为空！\"/>";
+				tabs1.activeTab(tab);
+				mini.parse();
+			} else {
+				tabs1.removeTab(currentValue);
+			}
+		}
+
+		//保存修改
+		function saveModify() {
+		if (epoint.validate('@all', false)) {
+			console.log(mini.get("cbl"));
+			var selectValue = mini.get("cbl").getValue();
+			var selectText = mini.get("cbl").getText();
+			var selectType = mini.get("cbl").getText();
+			var selectarray = selectValue.split(",");
+			var objsonarray = [];
+			for (var h = 0; h < selectarray.length; h++) {
+				var sobj = {};
+				var id = selectarray[h];
+				sobj.columnid = id;
+				sobj.columnname = selectText.split(",")[h];
+				sobj.filtertype = mini.get("filtertype" + id).getValue();
+				sobj.filtervalue = mini.get("filtervalue" + id).getValue();
+				sobj.filltype = mini.get("filltype" + id).getValue();
+				sobj.fillvalue = mini.get("fillvalue" + id).getValue();
+				
+				if(sobj.filltype == 1){
+					var data = cbl.getData();
+	            	for(var i=0;i<data.length;i++){
+	            		if(data[i].id == id && data[i].type.toLowerCase().indexOf('char')!=-1){
+	            			epoint.alert('字符串类型无法使用均值填充，请修改。', '', null, 'warning');
+	            			return;
+	            		}
+	            	}
+				}
+				objsonarray.push(sobj);
+			}
+			mini.get('emptyfilljson').setValue(JSON.stringify(objsonarray));
+				var nodeForm = getForm();
+ 				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(
+						data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				}); 
+			}
+		}
+		
+		function checkEmpty(e) {
+	        var id = e.sender.id
+	        if (e.isValid) {
+	            if (e.value.length<1) {
+	                e.errorText = "字符串不能为空。";
+	                e.isValid = false;
+	            }else if(id.startsWith('fillvalue')){
+	            	var type = "";
+	            	var field = id.substring(9);
+	            	var data = cbl.getData();
+	            	for(var i=0;i<data.length;i++){
+	            		if(data[i].id == field){
+	            			type = data[i].type;
+	            			break;
+	            		}
+	            	}
+	            	// 校验int
+	            	if(type.toLowerCase() == 'int' || type.toLowerCase() == 'integer'){
+	            		 if (!isInteger(e.value)) {
+	     	                e.errorText = "整型字段填充值必须为整型！";
+	     	                e.isValid = false;
+	     	            }
+	            	}else if(type.toLowerCase() == 'boolean'){
+	            		if (!(e.value == 'true' || e.value == 'false')) {
+	     	                e.errorText = "布尔类型只能填充true或者false！";
+	     	                e.isValid = false;
+	     	            }
+	            	}
+	            }else if(id.startsWith('filtervalue')){
+	            	var type = "";
+	            	var field = id.substring(11);
+	            	var data = cbl.getData();
+	            	for(var i=0;i<data.length;i++){
+	            		if(data[i].id == field){
+	            			type = data[i].type;
+	            			break;
+	            		}
+	            	}
+	            	// 校验int
+	            	if(type.toLowerCase() == 'int' || type.toLowerCase() == 'integer'){
+	            		 if (!isInteger(e.value)) {
+	     	                e.errorText = "整型字段填充值必须为整型！";
+	     	                e.isValid = false;
+	     	            }
+	            	}else if(type.toLowerCase() == 'boolean'){
+	            		if (!(e.value == 'true' || e.value == 'false')) {
+	     	                e.errorText = "布尔类型只能填充true或者false！";
+	     	                e.isValid = false;
+	     	            }
+	            	}
+	            }
+	        }
+	    }
+		
+		function isInteger(obj) {
+			 return parseInt(obj, 10) == obj
+		}
+	</script>
+</body>
+</html>

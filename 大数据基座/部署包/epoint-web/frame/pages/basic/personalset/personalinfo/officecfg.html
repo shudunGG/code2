@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>办公配置</title>
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<script>
+		SrcBoot.output(['./css/officecfg.css']);
+	</script>
+	<style>
+		/*  asLabel 模式 */
+		.asLabel .mini-textbox-border,
+		.asLabel .mini-textbox-input,
+		.asLabel .mini-buttonedit-border,
+		.asLabel .mini-buttonedit-input,
+		.asLabel .mini-textboxlist-border {
+			border-color: transparent;
+			background: none;
+			cursor: default;
+		}
+
+		.asLabel .mini-buttonedit-button,
+		.asLabel .mini-textboxlist-close {
+			display: none;
+		}
+
+		.asLabel .mini-textboxlist-item {
+			padding-right: 8px;
+		}
+
+		.asLabel .mini-radiobuttonlist-item,
+		.asLabel .mini-radiobuttonlist-item-selected .mini-list-icon {
+			display: none;
+		}
+
+		.asLabel .mini-radiobuttonlist-item-selected {
+			display: block;
+		}
+
+		.asLabel .mini-radiobuttonlist-item-selected label {
+			display: block;
+			line-height: 26px;
+		}
+
+		.scroll-container {
+			max-width: 1080px;
+			margin-left: auto;
+			margin-right: auto;
+		}
+	</style>
+	<script>
+		SrcBoot.outputCustomSkin("./skins/officecfg/");
+	</script>
+</head>
+
+<body>
+	<!-- 个性签名的图片上传 -->
+	<div id="uploader2" class="mini-webuploader" action="myinfomodifyaction.getFileUploadModel2"
+		fileSingleSizeLimit="2048" limitType="jpeg,jpg,gif,png,bmp" mimeTypes="image/*" showDefaultUI="false"
+		auto="true" pickerText="请上传" onfilesuccess="onSignFileSuccess" style="position: absolute; top: -50px;"></div>
+	<div class="fui-content" style="padding: 0 20px;">
+		<div class="scroll-container">
+			<div class="cate-header fui-theme-main-color">个性签名图</div>
+			<div class="signature office-cfg-box">
+				<div class="signature-box empty" id="signature-box">
+					<img class="signature-img" id="signature-img"> <span class="signature-upload-btn"
+						id="signature-upload-btn">点击更换</span><span class="signature-remove" id="signature-remove"
+						title="删除个性签名图片"></span>
+				</div>
+				<div class="signature-help">
+					<p class="info">您亲笔书写的个人姓名，主要用作签名者的身份证明，提高文件落款的可信度</p>
+					<p class="limit">最佳图片尺寸：220*80像素</p>
+					<p class="limit">图片大小在2M以内</p>
+				</div>
+			</div>
+			<div class="cate-header fui-theme-main-color">我的意见</div>
+			<div class="office-cfg-box my-opinion" id="my-opinion">
+				<span class="add-btn"></span>
+				<div class="add-box hidden" id="my-opinion-add-box">
+					<span class="sort-wrap"> <input class="sort-input" placeholder="排序" type="text">
+					</span> <span class="text-wrap"> <input class="text-input" placeholder="输入意见模板" type="text">
+					</span> <span class="actions"> <span class="save">保存</span> <span class="cancel">取消</span>
+					</span>
+				</div>
+				<div class="my-opinion-list" id="my-opinion-list"></div>
+			</div>
+			<div class="cate-header fui-theme-main-color">表格配置</div>
+			<div class="fui-form" id="form-container">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="表格每页展示数目">
+							<input class="mini-combobox" bind="pageSize" action="getPageSizeModel" id="pageSize"
+								onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="自动撑满">
+							<div class="mini-checkbox switch" trueValue="true" id="adjustGridPageSize"
+								bind="adjustGridPageSize" falseValue="false" onvaluechanged="gridPageSave"></div>
+						</div>
+						<div role="control"></div>
+					</div>
+				</div>
+			</div>
+			<div class="cate-header fui-theme-main-color">字体大小设置</div>
+			<div class="fui-form" id="form-container">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="字体大小设置">
+							<input id="font-size-spinner" changeOnMousewheel="false" class="mini-spinner"
+								increment="0.05" minValue="1" maxValue="1.3" onvaluechanged="saveFontSizeRatio" bind="fontSize"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 转化为 label 模式
+		function labelModel(c) {
+			if (c.setReadOnly)
+				c.setReadOnly(true); //只读
+			if (c.setIsValid)
+				c.setIsValid(true); //去除错误提示
+			if (c.addCls)
+				c.addCls("asLabel"); //增加asLabel外观
+		}
+
+		function allToLabel() {
+			var form = new mini.Form("form-container");
+			var fields = form.getFields();
+			for (var i = 0, l = fields.length; i < l; i++) {
+				var c = fields[i];
+				if (c.type != 'checkbox') {
+					labelModel(c);
+				}
+
+			}
+		}
+		allToLabel();
+
+		// 转为编辑模式
+		function inputModel(c) {
+			if (c.removeCls)
+				c.removeCls('asLabel');
+			if (c.setReadOnly)
+				c.setReadOnly(false); //只读
+			// if (c.setIsValid) c.setIsValid(false); //去除错误提示
+		}
+		if (Util.browsers.isIE) {
+			// IE下需要重写此方法
+			// cause IE下直接点击鼠标进入编辑模式后（实际上并未进入，需要再次点击才能正确聚焦）
+			// 为解决此问题，在 IE下加入为其设置焦点的操作
+			function inputModel(c) {
+				if (c.removeCls)
+					c.removeCls('asLabel');
+				if (c.setReadOnly)
+					c.setReadOnly(false); //只读
+				// if (c.setIsValid) c.setIsValid(false); //去除错误提示
+				if(c.focus) {
+					c.focus();
+					c.blur();
+					c.focus();
+				}
+			}
+		}
+		var activeControl, activeControlValue;
+		// 点击控件部分进入编辑模式
+		// $('body').on('click', '.form-control', function (e) {
+		$('body').on('click', '.form-control > :first-child', function (e) {
+				// var controlEl = $(this).find('>:first-child')[0];
+				var controlEl = this;
+
+				if (controlEl && controlEl.id) {
+					e.stopPropagation();
+					var c = mini.get(controlEl.id);
+					// 将之前控件调整为label模式
+					if (activeControl) {
+						labelModel(activeControl);
+					}
+
+					if (c) {
+						activeControl = c;
+						activeControlValue = c.getValue();
+						inputModel(c);
+					}
+				}
+			}).on('click',function (e) {
+					// 空白处点击
+					if (activeControl) {
+						var type = activeControl.type;
+						// 验证不通过时值还原
+						if (activeControl.validate &&
+							!activeControl.validate()) {
+							activeControlValue
+								&&
+								activeControl
+								.setValue(activeControlValue);
+						}
+						if (type == 'textbox') {
+							labelModel(activeControl);
+						} else if (type == 'datepicker') {
+							if (!$(activeControl.el).hasClass(
+									'mini-buttonedit-focus')) {
+								labelModel(activeControl);
+							}
+						}
+					}
+				});
+
+		function emptyFn() {}
+		// 修改完成后进行保存
+		function saveChange(e) {
+			// 如果校验不通过 不报错 不提交
+			//console.log(e, e.sender.validate());
+			if (e.sender.validate && !e.sender.validate()) {
+				epoint.showTips(e.sender.errorText || '数据验证不通过', {
+					state: 'danger'
+				});
+				if (e.oldValue) {
+					activeControlValue = e.oldValue;
+				}
+				return;
+			}
+			var id = e.sender.id;
+			// 只用提交当前修改的即可
+			epoint.execute('save', id, function () {
+				if (e.sender.type != 'checkbox') {
+					labelModel(e.sender);
+				}
+				epoint.refresh(id, emptyFn);
+				epoint.showTips('修改成功', {
+					state: 'success'
+				});
+				// 如果修改的是姓名、职务等 同步头上
+				if (id == 'user-name') {
+					$('#user-top-name').text(mini.get('user-name').getValue());
+				}
+				if (id == 'postion') {
+					$('#position-text').text(mini.get('postion').getValue());
+				}
+			});
+		}
+		epoint.initPage("mypagesettingaction","",function(data){
+			var val = mini.get("adjustGridPageSize").value;
+			if (val == "true") {
+				mini.get("pageSize").setEnabled(false);
+				 
+			} else {
+			 
+				mini.get("pageSize").setEnabled(true);
+			}
+		 
+			});
+		 
+		// 获取数据
+		// 如果存在签名图片 执行下面代码
+		Util.ajax({
+			url: epoint.dealRestfulUrl('myinfomodifyaction/getPersonData')
+		}).done(function (data) {
+			if (data.signPicture) {
+				$('#signature-img').attr('src', data.signPicture);
+				$('#signature-box').removeClass('empty');
+			}
+		});
+
+		// 我意见配置
+		var myOpinion = {
+			getUrl: epoint
+				.dealRestfulUrl('myinfomodifyaction/getMyOpinionList'),
+			// 编辑或新增请求地址
+			// {
+			//     id: id, // 新增时无id
+			//     sort: s,
+			//     text: t
+			// }
+			editOrAddUrl: epoint
+				.dealRestfulUrl('myinfomodifyaction/editOrAddOpinion'),
+			// 移除的请求地址 {id : id}
+			removeUrl: epoint
+				.dealRestfulUrl('myinfomodifyaction/deleteOpinion')
+		};
+
+		var addUploaderBtnTimer = {};
+
+		function addBtnForUploader(uid, el) {
+			var u = mini.get(uid).getUploader();
+
+			if (u) {
+				u.addButton({
+					id: el
+				});
+				clearTimeout(addUploaderBtnTimer[uid]);
+			} else {
+				var args = arguments;
+				addUploaderBtnTimer[uid] = setTimeout(function () {
+					addBtnForUploader.apply(undefined, args);
+				}, 50);
+			}
+		}
+
+		addBtnForUploader('uploader2', '#signature-upload-btn');
+
+		var uploader = mini.get('uploader2');
+		// 个性签名图片上传成功
+		function onSignFileSuccess(args) {
+			if (args.data.extraDatas && args.data.extraDatas.signPicture) {
+				$('#signature-img').attr('src',
+					args.data.extraDatas.signPicture);
+				$('#signature-box').removeClass('empty');
+				uploader.clearFile();
+			}
+		}
+		// 删除个性签名图片
+		$('#signature-remove').on('click', function () {
+			// 发请求删除
+			Util.ajax({
+				url: epoint.dealRestfulUrl('myinfomodifyaction/delUserSign')
+			}).done(function (data) {
+				if (data.msg) {
+					epoint.showTips(data.msg, {
+						state: 'success'
+					});
+				}
+			});
+
+			// 移除前端效果
+			$('#signature-box').addClass('empty');
+			$('#signature-img').removeAttr('src');
+			
+			uploader.clearFile();
+		});
+
+		// 字体大小切换
+		var fontSizeSpinner = mini.get('font-size-spinner');
+
+		var font_size_ratio = parseFloat(Util.readCookie('_font_size_ratio_') || 1, 10);
+
+		fontSizeSpinner.setValue(font_size_ratio);
+
+		function saveFontSizeRatio(e) {
+			var r = parseFloat(fontSizeSpinner.getValue(), 10);
+			var id = e.sender.id;
+			// 只用提交当前修改的即可
+			epoint.execute('save', id, function () {
+				if (e.sender.type != 'checkbox') {
+					labelModel(e.sender);
+				}
+				epoint.refresh(id, emptyFn);
+				epoint.showTips('修改成功', {
+					state: 'success'
+				});
+				// 如果修改的是姓名、职务等 同步头上
+				if (id == 'user-name') {
+					$('#user-top-name').text(mini.get('user-name').getValue());
+				}
+				if (id == 'postion') {
+					$('#position-text').text(mini.get('postion').getValue());
+				}
+			});
+			top.Util.fontSizeSwitcher.saveFontSizeRatio(r);
+
+		}
+
+		function gridPageSave() {
+			var val = mini.get("adjustGridPageSize").value;
+		
+			epoint.execute('save', null, function (data) {
+				if (data.success) {
+					var msg = "";
+
+					if (val == "true") {
+						mini.get("pageSize").setEnabled(false);
+						msg = "开启成功，表格每页展示数目配置将失效！"
+					} else {
+						msg = "关闭成功！"
+						mini.get("pageSize").setEnabled(true);
+					}
+					epoint.showTips(msg, {
+						state: 'success'
+					});
+				}
+			});
+		}
+	</script>
+	<script>
+		// 我的意见
+		(function (win, $) {
+			var OPINION_TPL =
+				'<div class="my-opinion-item" data-id="{{id}}"><span class="sort-wrap"><input class="sort-input" placeholder="排序" type="text" value="{{sort}}" readonly></span><span class="text-wrap"><input class="text-input" placeholder="输入意见模板" type="text" value="{{text}}" readonly></span><span class="actions"><span class="edit">编辑</span><span class="save">保存</span><span class="cancel">取消</span><span class="remove" title="删除"></span></span></div>';
+
+			var $myOpinion = $('#my-opinion');
+			var $list = $('#my-opinion-list');
+			var $addRow = $('#my-opinion-add-box');
+
+			function getData() {
+				return Util.ajax({
+					url: myOpinion.getUrl
+				}).done(function (data) {
+					var html = '';
+					$.each(data, function (i, item) {
+						html += Mustache.render(OPINION_TPL, item);
+					});
+					$(html).appendTo($list.empty());
+				});
+			}
+			getData();
+
+			var oldVlue = [];
+			$myOpinion
+				.on(
+					'click',
+					'.edit',
+					function () {
+						if ($list.find('.my-opinion-item.in-edit').length ||
+							$addRow.is(':visible')) {
+							epoint.showTips('请先处理当前的编辑！', {
+								state: 'danger'
+							});
+							return;
+						}
+						var $this = $(this).closest('.my-opinion-item'),
+							$sort = $this
+							.find('.sort-input'),
+							$text = $this
+							.find('.text-input');
+						$this.addClass('in-edit');
+						$this.find('.sort-input,.text-input').prop(
+							'readonly', false);
+						oldVlue[0] = $.trim($sort.val());
+						oldVlue[1] = $.trim($text.val());
+					})
+				.on(
+					'click',
+					'.cancel',
+					function () {
+						var $this = $(this).closest('.my-opinion-item'),
+							$sort = $this
+							.find('.sort-input'),
+							$text = $this
+							.find('.text-input');
+						$this.removeClass('in-edit');
+						$this.find('.sort-input,.text-input').prop(
+							'readonly', true);
+						// getData();
+						if ($addRow.is(':visible')) {
+							$sort.val('');
+							$text.val('');
+							$addRow.addClass('hidden');
+						} else {
+							// 恢复值
+							$sort.val(oldVlue[0]);
+							$text.val(oldVlue[1]);
+						}
+					})
+				.on(
+					'click',
+					'.remove',
+					function () {
+						// var $this = $(this).closest('.my-opinion-item');
+						epoint.showLoading();
+						remove($(this).closest('.my-opinion-item').data('id')).done(function (res) {
+								if (res.success) {
+									epoint.showTips('删除成功', {
+										state: 'success'
+									});
+									// 后刷新列表
+									getData();
+								} else if (res.msg) {
+									epoint.showTips('删除失败' +
+										res.msg, {
+											state: 'danger'
+										});
+								}
+							}).always(function(){
+								epoint.hideLoading();
+							})
+
+					})
+				.on(
+					'click',
+					'.save',
+					function () {
+						var $this = $(this).closest(
+								'.my-opinion-item,.add-box'),
+							$sort = $this
+							.find('.sort-input'),
+							$text = $this
+							.find('.text-input');
+						var s = $.trim($sort.val());
+					
+						var t = $.trim($text.val());
+						if (!s.length || !t.length) {
+							epoint.showTips('排序值和意见内容必填', {
+								state: 'danger'
+							});
+							return;
+						}
+						if (!/^\d+$/.test(s)) {
+							epoint.showTips('排序值必须为正整数或者为0', {
+								state: 'danger'
+							});
+							return;
+						}
+						if (s.length > 5) {
+							epoint.showTips('意见排序号长度不能超过5', {
+								state: 'danger'
+							});
+							return;
+						}
+						if (t.length > 50) {
+							epoint.showTips('意见长度不能超过50', {
+								state: 'danger'
+							});
+							return;
+						}
+						if (s != oldVlue[0] || t != oldVlue[1]) {
+							epoint.showLoading();
+							// 保存
+							save({
+									id: $this.data('id') || null,
+									sort: s,
+									text: t
+								})
+								.done(function (res) {
+										if (res.success) {
+											epoint
+												.showTips(
+													'保存成功', {
+														state: 'success'
+													});
+											$this
+												.removeClass('in-edit');
+											$addRow
+												.addClass('hidden');
+											$this
+												.find(
+													'.sort-input,.text-input')
+												.prop(
+													'readonly',
+													true);
+											// 保存成功后刷新列表
+											getData();
+										} else if (res.msg) {
+											epoint
+												.showTips(
+													'保存失败' +
+													res.msg, {
+														state: 'danger'
+													});
+										}
+									}).always(function(){
+								epoint.hideLoading();
+							});
+						} else {
+							epoint.showTips('未更改');
+							$addRow.addClass('hidden');
+							$this.removeClass('in-edit');
+							$this.find('.sort-input,.text-input').prop(
+								'readonly', true);
+						}
+					}).on(
+					'click',
+					'.add-btn',
+					function () {
+						if ($addRow.is(':visible')) {
+							epoint.showTips('请先处理当前的编辑！', {
+								state: 'danger'
+							});
+							return;
+						}
+						$addRow.removeClass('hidden').find(
+								'.sort-input,.text-input').val('')
+							.prop('readonly', false);
+					});
+
+			function save(data) {
+				return Util.ajax({
+					url: myOpinion.editOrAddUrl,
+					data: data
+				});
+			}
+
+			function remove(id) {
+				return Util.ajax({
+					url: myOpinion.removeUrl,
+					data: {
+						id: id
+					}
+				});
+			}
+		})(this, jQuery);
+	</script>
+</body>
+
+</html>

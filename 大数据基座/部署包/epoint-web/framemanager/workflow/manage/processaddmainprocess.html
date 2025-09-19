@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>选择挂靠</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addbtn" onclick="addNew()" state="primary">添加挂靠</a> <a
+			class="mini-button" id="addclosebtn" onclick="addClose()">挂靠并关闭</a><a
+			class="mini-button" id="cancelbtn" onclick="epoint.closeDialog()">取消添加</a>
+	</div>
+
+	<div class="fui-content" id="fui-content">
+		<div class="fui-form" id="fui-form" style="width: 90%">
+			<div role="form">
+				<!-- 2列 -->
+				<div role="row">
+					<div role="control" label="挂靠主流程" starred="true">
+						<input class="mini-buttonedit" allowInput="false"
+							id="mainProcessName" required="true" emptyText="挂靠主流程不能为空"
+							style="width: 100%;" onbuttonclick="selMainProcess" onvaluechanged="subProcessActivityChange"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="子流程活动" starred="true">
+						<input id="subProcessActivity" bind="selectSubProcessActivity"
+							emptyText="子流程活动不能为空" textField="text" valueField="id" class="mini-combobox" style="width: 100%" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<input id="hidProcessVersionGuid" bind="hidProcessVersionGuid" class="mini-hidden"></input>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	
+	<script>
+		//<![CDATA[ 
+		epoint.initPage("processaddmainprocessaction");
+
+		function selMainProcess() {
+			epoint.openDialog('选择挂靠流程', "framemanager/workflow/manage/selectprocess",
+					selMainProcessOperJS, {
+						'width' : 300,
+						'height' : 500
+					});
+		}
+
+		function selMainProcessOperJS(rtnValue) {
+			if (rtnValue && rtnValue != "close") {
+				var s = rtnValue.split(";");
+				mini.get('mainProcessName').setText(s[0]);
+				mini.get('mainProcessName').setValue(s[0]);
+				mini.get('mainProcessName').validate(s[0]);
+				mini.get('hidProcessVersionGuid').setValue(s[1]);
+				subProcessActivityChange();
+			}
+		}
+
+		function addNew() {
+			epoint.execute('addNew', 'fui-form', function(data) {
+				if (data && data.message) {
+					if (data.message.indexOf("Alert|") != -1) {
+						var s = data.message.split("|");
+						epoint.showTips(s[1], {state : 'info'});
+					} else {
+						window.returnValue = data.message;
+					}
+				}
+			});
+		}
+
+		function addClose() {
+			epoint.execute('addClose', 'fui-form', function(data) {
+				if (data) {
+					if (data.indexOf("Alert|") != -1) {
+						var s = data.split("|");
+						epoint.showTips(s[1], {state : 'info'});
+					} else {
+						window.returnValue = data;
+						epoint.closeDialog();
+					}
+				}
+			});
+		}
+		
+		function subProcessActivityChange(){
+        	var hidPVGuid=mini.get("hidProcessVersionGuid").getValue(); 
+        	if(hidPVGuid){
+        		epoint.execute("subProcessActivityChange","fui-form",[hidPVGuid],mcallback);
+        	}
+        }
+		
+		function mcallback(data) {
+            if (data) {
+            	mini.get("subProcessActivity").setData(data);
+            	mini.get("subProcessActivity").select(0);
+            }
+       }
+		//]]>
+	</script>
+</body>
+</html>

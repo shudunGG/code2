@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Module management authorization</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+
+		<style>
+			.link:hover {
+				cursor: pointer;
+				color: red;
+				text-decoration: underline;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<div class="fui-left">
+			<div role="head" title="Select the module"></div>
+
+			<div role="body">
+				<ul id="tree" name="tree" class="mini-tree" style="width: 100%;height:100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"  action="getTreeModel"
+				resultAsTree="false"></ul>
+			</div>
+		</div>
+
+		<div class="fui-right" id="fui-right">
+			<!-- toolbar area -->
+			<div class="fui-toolbar">
+				<div class="btn-group mr10">
+					<a class="mini-button"
+					onclick="multiAccredit">To authorize department management</a>
+				</div>
+			</div>
+
+			<div class="fui-condition">
+				<!-- The form layout -->
+				<div class="fui-form" id="fui-form">
+					<div id="cform" role="form">
+						<!-- 2column -->
+						<div role="row">
+							<div role="control" label="The name of the module">
+								<input bind="searchString" id="name"
+								class="mini-textbox" emptyText="" style="width: 60%;"/>
+							</div>
+						</div>
+					</div>
+					<input bind="moduleCode" id="moduleCode" class="mini-hidden" />
+				</div>
+				<!-- Search button -->
+				<a role="searcher" callback="updateTable"></a>
+			</div>
+			<div id="fuiContent" class="fui-content">
+				<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="moduleguid" multiSelect="true" action="getDataGridData"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true"  allowCellEdit="true" allowCellValid="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true" ondrawcell="onCheckRender">
+					<div property="columns">
+						<div type="checkcolumn"></div>
+						<div type="indexcolumn" headerAlign="center" width="40">
+							order
+						</div>
+
+						<div field="moduleName" width="150"
+						headerAlign="center" allowSort="true">
+							The name of the module
+						</div>
+						<div field="moduleCode" width="150"
+						headerAlign="center" align="right" allowSort="true">
+							Module code
+						</div>
+						<div field="moduleUrl" headerAlign="center" width="100%" allowSort="true">
+							The module addresses
+						</div>
+						<div field="orderNumber" width="80" align="right"
+						headerAlign="center" allowSort="true">
+							roworderNo.
+						</div>
+						<div field="isDisable" width="60" align="center" renderer="onIsDisableRenderer"
+						headerAlign="center">
+							disable
+						</div>
+						<div field="isBlank" width="60" align="center" renderer="onIsDisableRenderer"
+						headerAlign="center">
+							The pop-up
+						</div>
+						<div width="60" align="center" headerAlign="center"
+						renderer="onAuthRenderer">
+							authorization
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			epoint.initPage("subframemoduleauthaction");
+			
+			var grid = mini.get("datagrid");
+			grid.on("beforeselect", function (e) {
+	            if (!e.record.isAllowToAll){
+	            	e.cancel = true;
+	            }
+	        });
+			
+			//The treejsobject
+			var tree = mini.get("tree");
+
+			// Click on the left side of theThe treeRefresh the form on the right side
+			tree.on("nodeselect", function(e) {
+				var id = e.node.objectcode;
+				//To the leftThe treeClick on the nodeidIn a hidden field
+				mini.get('moduleCode').setValue(id);
+				//Refresh the table
+				updateTable();
+			});
+
+			// Draw the lineauthorizationbutton
+			var onAuthRenderer = function(e) {
+				if (e.record.isAllowToAll) {
+					return "<a class=\"link\" onclick=\"accredit('" + e.record.moduleguid + "')\">authorization</a>";
+				} else {
+					return "";
+				}
+			};
+
+			function onCheckRender(e) {
+				if (!e.record.isAllowToAll && e.cellCls === "mini-checkcolumn") {
+					e.cellHtml = "";
+				}
+
+			}
+
+			function onIsDisableRenderer(e) {
+				if (e.value == '0') {
+					return "no";
+				} else {
+					return "is";
+				}
+			}
+
+			function multiAccredit() {
+				if (mini.get('datagrid').getSelecteds().length == 0) {
+					epoint.alert('Please select aauthorizationThe module!', '', null, 'info');
+				} else {
+					var selects = mini.get('datagrid').getSelecteds();
+					var arr = new Array();
+					for (var i = 0; i < selects.length; i++) {
+						arr[i] = selects[i].moduleguid;
+					}
+				}
+				accredit(arr.join(","));
+			}
+
+			function accredit(moduleGuids) {
+				epoint.openDialog("To authorize department management", "framemanager/orga/uiset/menu/module/accredittoou?isSub=1&moduleGuids=" + moduleGuids, function(){
+					epoint.refresh(["datagrid", "fui-form"],'',true);
+				}, {
+					'width' : 800,
+					'height' : 500
+				});
+			}
+
+			function updateTable() {
+				epoint.refresh(["datagrid", "fui-form"]);
+			}
+
+			//]]>
+		</script>
+
+	</body>
+
+</html>

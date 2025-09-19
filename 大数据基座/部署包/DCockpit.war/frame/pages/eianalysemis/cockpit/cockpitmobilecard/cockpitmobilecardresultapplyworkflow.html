@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>卡片结果审核流程</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<style type="text/css" media="screen">
+.adddprow {
+	background: #eeeeee;
+}
+
+.resolution {
+	width: 100%;
+}
+
+.resolution .mini-textbox {
+	width: 70%;
+}
+
+.operate-minus {
+	margin-left: 10px;
+	border: 2px solid #DDDDDD;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.operate-plus {
+	cursor: pointer;
+}
+
+.operate.text-center {
+	margin-top: 5px;
+	border: 1px dashed #DDDDDD;
+}
+</style>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="uc-handlecontrols" id="handlecontrols"
+			action="handlecontrolsaction.handleCtrl" style="width: 100%"></div>
+	</div>
+	<div class="fui-content">
+		<!-- 隐藏按钮id不能修改 -->
+		<div class="hidden">
+			<a class="mini-button" id="btnSaveFrom" onclick="saveFrom();">保存</a>
+			<a class="mini-button" id="btnSubmit" onclick="submit();">提交</a>
+		</div>
+		<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="卡片基础信息"></div>
+				<div role="body">
+					<!-- 表单布局 -->
+					<div class="fui-form" id="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="卡片名称">
+									<input class="mini-outputtext" bind="card.cardName" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row" id="model">
+								<div role="control" label="卡片模板">
+									<input bind="card.chartName" id="cardModel"
+										class="mini-outputtext" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row">
+								<div role="control" label="卡片简述">
+									<input class="mini-outputtext" bind="card.remark" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="联系电话">
+									<input class="mini-outputtext" bind="card.telephone">
+								</div>
+								<div role="control" label="卡片排序">
+									<input class="mini-outputtext" bind="card.orderNum" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="运行状态">
+									<div id="status" class="mini-outputtext" bind="card.status"
+										data="[{text:'启用',id:'1'},{text:'停用',id:'0'}]"></div>
+								</div>
+								<div role="control" label="是否审核">
+									<div id="process" class="mini-outputtext" bind="card.process"
+										data="[{text:'是',id:'1'},{text:'否',id:'0'}]"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="关联指标"></div>
+				<div role="body">
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowguid" multiSelect="true"
+						style="width: 100%; max-height: 300px;" allowResize="false"
+						showPager="true" action="getDataGridData" allowCellSelect="true"
+						allowCellEdit="true" editNextOnEnterKey="true">
+						<div property="columns">
+							<div type="indexcolumn" width="60" headerAlign="center">序号</div>
+							<div field="normname" width="200" headerAlign="center"
+								align="center">指标名称</div>
+							<div field="normtype" width="100" headerAlign="center"
+								align="center">指标类型</div>
+							<div field="source" width="100" headerAlign="center"
+								align="center">来源</div>
+							<div name="operate" type="actioncolumn" headerAlign="center"
+								align="center">
+								<span type="action" icon="icon-search" onclick="openResult">查看指标结果</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="卡片描述"></div>
+				<div role="body">
+					<div class="fui-toolbar" id="toolbar">
+						<div class="btn-group mr10">
+							<div class="mini-button" id="saveResult" onclick="saveResult">保存结果</div>
+						</div>
+					</div>
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div id="bigscreen">
+								<div role="row">
+									<div role="control" label="卡片区域总结">
+										<div id="bgrow">
+											<div class="adddprow form-row">
+												<div class="resolution">
+													<span>总结区域：</span> <input class="mini-textbox" name="dpurl" />
+												</div>
+											</div>
+										</div>
+										<!-- <div class="operate text-center" id="addone">
+											<span class="operate-plus">+ 增加一条</span>
+										</div> -->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/templ" id="row-tpl-2">
+			<div class="adddprow form-row" >
+				<div class="resolution">
+					<span>总结区域：</span> <input class="mini-textbox" name="dpurl" />
+				</div>
+			</div>
+    	</script>
+		<script type="text/templ" id="row-tpl-1">
+			<div class="adddprow form-row" >
+				<div class="resolution">
+					<span>总结区域：</span> <input class="mini-textbox" name="dpurl" />
+					<a class="mini-button mini-btn-danger operate-minus" iconCls="icon-minuscircle"></a>
+				</div>
+			</div>
+    	</script>
+
+		<script src="../../../../../rest/resource/jsboot"></script>
+		<script
+			src="../../../../../frame/pages/epointworkflow/js/workflowjsboot.js"></script>
+
+		<!-- 配置变量 -->
+		<script>
+			// 初始化页面
+			var checkGuid = Util.getUrlParams('checkGuid');
+			var $bgrow = $("#bgrow");
+			var rowTpl = $('#row-tpl-1').html();
+			var rowTpl2 = $('#row-tpl-2').html();
+			var $bigscreen = $('#bigscreen');
+			var bigscreen, cardareasummary;
+			epoint.initPage('cockpitmobilecardresultapplyworkflowaction', null,
+					function(data) {
+						if (data.cardareasummary) {
+							cardareasummary = data.cardareasummary;
+							var json = JSON.parse(data.cardareasummary);
+							var len = json.length;
+							for (var i = 0; i < len; i++) {
+								if (mini.getsbyName('dpurl').length < len) {
+									// 直接将模板加到页面上
+									if (data.cardModel == '') {
+										$bgrow.append(rowTpl);
+									} else {
+										$('#addone').css('display', 'none');
+										$bgrow.append(rowTpl2);
+									}
+
+									// 解析里面的控件
+									mini.parse($bgrow[0]);
+									epoint.refresh('bgrow');
+								}
+								$('#bgrow').each(
+										function() {
+											mini.getsbyName('dpurl')[i]
+													.setValue(json[i]);
+										});
+							}
+						}
+					});
+
+			var grid = mini.get("datagrid");
+
+			function saveFrom() {
+				if (epoint.validate()) {
+					epoint.execute('saveForm', [ 'fui-form', 'datagrid' ],
+							newCallback);
+				} else {
+					ShowTdOperate(true);
+				}
+			}
+
+			function submit() {
+				getScreen();
+				if (bigscreen != cardareasummary) {
+					epoint.confirm("修改的卡片描述未保存，是否需要保存", '保存提示', function() {
+						epoint.execute('saveResult', 'datagrid', [ bigscreen ],
+								function(data) {
+									if (epoint.validate()) {
+										epoint.execute('submit', '',
+												newCallback);
+									} else {
+										ShowTdOperate(true);
+									}
+								});
+					}, function() {
+						epoint.refresh('@all');
+						ShowTdOperate(true);
+					});
+				} else {
+					if (epoint.validate()) {
+						epoint.execute('submit', '', newCallback);
+					} else {
+						ShowTdOperate(true);
+					}
+				}
+
+			}
+
+			function newCallback(data) {
+				if (data && data.msg) {
+					epoint.alert(data.msg, '', null, 'info');
+					ShowTdOperate(true);
+				} else {
+					HeaderSubmit();
+				}
+			}
+
+			function saveResult() {
+				getScreen();
+				epoint.execute('saveResult', 'datagrid', [ bigscreen ],
+						function(data) {
+							if (data.msg) {
+								epoint.alert(data.msg);
+							}
+							epoint.refresh('datagrid');
+						});
+			}
+
+			// 绑定加减号点击事件
+			$bigscreen.on('click', '.operate-plus', function() {
+				$bgrow.append(rowTpl);
+				mini.parse($bgrow[0]);
+			}).on('click', '.operate-minus', function(e) {
+				var $target = $(e.target), $row = $target.closest('.adddprow');
+				$row.remove();
+			});
+
+			function getScreen() {
+				if (epoint.validate()) {
+					// 拼接查询语句
+					var conditionArr = [];
+					$(".adddprow").each(function(i) {
+						var conditionMap = {};
+						var dpurl = $(this).find("input[name='dpurl']").val();
+						// 输入框均未输入值则不需要拼接，输入了值需要验证并拼接
+						if (i == 0 && dpurl == "") {
+							bigscreen += "";
+						} else {
+							conditionArr.push(dpurl);
+						}
+					});
+					bigscreen = JSON.stringify(conditionArr);
+				}
+			}
+
+			function openResult(e) {
+				epoint
+						.openDialog(
+								'指标数据',
+								"frame/pages/eianalysemis/cockpit/cockpitmobilecard/cockpitmobilecardresultlist?checkGuid="
+										+ checkGuid + "&normGuid=" + e.normguid,
+								function(data) {
+									epoint.refresh('datagrid');
+								}, {
+									'width' : 1000,
+									'height' : 550
+								});
+			}
+		</script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+select count(*) from information_schema.KEY_COLUMN_USAGE t where table_schema = database() and t.TABLE_NAME='frame_ou_snapshot' and t.CONSTRAINT_NAME='uq_frame_ou_snapshot'

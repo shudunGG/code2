@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>卡片式通讯录</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+        SrcBoot.output([
+            './css/communicate.css',
+            '../../js/classifysearch/classifysearch.css',
+            './css/card.css'
+        ]);
+
+
+    </script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="com-toolbar-item">
+			<a class="mini-button  hidden" id="setting"
+			   onclick="setting">分组设置</a>
+			<a class="mini-button hidden" iconCls="icon-addcircle"
+				id="com-new-btn" onclick="openAdd();">新建</a> <a
+				class="mini-button hidden" id="com-delete-btn"
+				onclick="outeraddressdelete();">删除</a> <a class="mini-menubutton hidden"
+				menu="#moveto" id="move">转移到</a>
+			<ul id="moveto" class="mini-menu" idField="categoryguid"
+				textField="categoryname" style="display: none;"></ul>
+		</div>
+		<div class="com-toolbar-ext">
+			<div class="com-toolbar-item" id="view-wrap">
+				<div class="com-btn">
+					<a href="card" class="view view-card active" title="卡片式" id="acard"></a>
+				</div>
+				<div class="com-btn">
+					<a href="list" class="view view-list" title="列表式" id="alist"></a>
+				</div>
+			</div>
+			<div class="com-toolbar-item">
+				<div class="classify-search" id="com-search">
+					<input type="text" placeholder="姓名、手机号" class="classify-search-input"
+						id="smart-search" />
+					<button class="button-search" title="点击搜索"></button>
+				</div>
+			</div>
+			<!-- //TODO 测试无用暂时隐藏 -->
+			<!-- <div class="com-toolbar-item">
+				<div class="com-question">
+					<span class="icon-question" title="帮助" style='display:none'></span>
+				</div>
+			</div> -->
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="mini-fit" style="height: 100px; overflow: hidden;">
+			<!-- 卡片 -->
+			<div class="card-items clearfix nicescroll" id="card-items"></div>
+			<!-- 加载更多 -->
+			<div class="loading-more" id="btn-more">
+				<span><i class="icon-load"><img
+						src="images/loading-more.png" alt="加载更多"></i>加载更多</span>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<!-- 卡片模板 -->
+	<script type="x-tmpl-mustache" id="cardlist-tmpl">
+    {{#data}}
+    <div class="card-itembox" >
+        <div class="card-item" id="{{userguid}}">
+            <div class="staff-baseinfo clearfix samll">
+                <div class="staff-portrait">
+                    <img style="cursor:pointer" src="../../../rest/oa9/communication/businesscard/outerdetailviewaction/loadImg?uid={{userguid}}&isCommondto=true" id="{{userguid}}" alt="portrait" class="icon-portrait" onerror="javascript:if('{{{sex}}}'=='男') this.src='images/photo-boy.png'; else this.src='images/photo-girl.png';"/>
+                    <!--<img src="{{gendericon}}" alt="gender" class="icon-gender">-->
+                </div>
+                <p class="name" style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 50%;"><span class="sname" id="{{userguid}}">{{displayname}}</span></p>
+                <p class="info dept" style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 50%;">单位 <span class="text">{{companyname}}</span></p>
+                <p class="info duty" style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 50%;">职务 <span class="text">{{title}}</span></p>
+            </div>
+            <div class="contact clearfix">
+                <div class="contact-item r">
+                    <img src="images/icon-phone.png" />
+                    <span class="contact-num">{{telephoneoffice}}</span>
+                </div>
+                <div class="contact-ect l">
+                    <div class="contact-item">
+                        <img src="images/icon-mobile.png" />
+                        <span class="contact-num">{{usermobile}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sender-bar">
+               <!-- <a href="javascript:sendMobileMsg('{{userguid}}')" class="sendermsg">发短信</a>
+                <div class="bar-more">更多</div>-->
+            </div>
+            <div class="checked"><img src="images/icon-checked.png" alt="选中"></div>
+        </div>
+    </div>
+    {{/data}}
+
+
+</script>
+	<!-- 配置接口 -->
+	<script>
+        var getInnerCardList = "./test/getInnerCardList";
+
+
+</script>
+	<script>
+        SrcBoot.output([
+            '../../../fui/js/lib/jquery.nicescroll.min.js',
+            '../../js/classifysearch/classifysearch.js',
+            './js/businesscommon.js',
+            './js/card.js'
+        ]);
+
+
+</script>
+<script>
+	var mMoveto = mini.get("moveto");
+	var $smartSearch = $("#smart-search"),
+		$cardContainer = $("#card-items");
+	var cardListTmpl = $("#cardlist-tmpl").html();
+	var defaultPageIndex = 0,
+		defaultPageSize = window.EpFrameSysParams ? EpFrameSysParams['gridPageSize'] : 20;
+
+	var defalttype=0;
+
+	initCardPage();
+	// init
+	function initCardPage() {
+		requestCard(true);
+		bindCardEvent();
+		initSearch();
+	}
+
+	function getQuery() {
+		var urlQueryString = Util.getUrlParams(),
+			grouptype = urlQueryString.group,
+			groupguid = urlQueryString.guid,
+			key = $.trim($smartSearch.val()),
+			result = {};
+
+		result.grouptype = grouptype;
+		result.groupguid = groupguid;
+		result.pagesize = defaultPageSize;
+		result.pageindex = defaultPageIndex;
+
+		$('#acard').attr('href','cardout?group='+grouptype+'&guid='+groupguid);
+		$('#alist').attr('href','outeraddresslist?grouptype='+grouptype+'&groupguid='+groupguid);
+
+		if(key && key.length) {
+			result.key = key;
+		}
+		return result;
+	}
+
+	// 请求card data
+	function requestCard(isfirst, query) {
+		if(query === undefined) {
+			query = getQuery();
+		}
+		epoint.execute('cardoutaction.getData', "@none", query, function(data) {
+			if((Util.getUrlParams().group==1&&data.canManager==true)||Util.getUrlParams().group==2){
+					$("#setting").removeClass("hidden");
+					$("#com-new-btn").removeClass("hidden");
+					$("#com-delete-btn").removeClass("hidden");
+					$("#move").removeClass("hidden");
+				   // $("#checkcol").removeClass("hidden");
+
+			}
+			renderCardList(epoint.decodeJson(data.group));
+			if(isfirst) {
+				Util.hidePageLoading();
+			}
+			//defaultPageIndex++;
+			 if (data.categorylist) {
+				 for (var i = 0; i < data.categorylist.length; i++) {
+					  if(data.categorylist[i].categoryguid===Util.getUrlParams("guid")){
+						 data.categorylist.remove(data.categorylist[i]);
+						}
+				  }
+				  mMoveto.loadList(data.categorylist);
+				  mMoveto.on('itemclick', function(event) {
+						 moveto(event.item.categoryguid);
+				});
+			}
+		});
+	}
+
+	// 渲染card
+	function renderCardList(data) {
+		if(data) {
+			// Modify view
+			var items = data.data,
+				l = items.length;
+
+			for(var i = 0; i < l; i++) {
+				if(items[i].portrait === undefined || items[i].portrait.length == 0) { // 无头像返回
+					if(items[i].gender === "2") { // 女
+						items[i].portrait = "images/photo-girl.png";
+					} else { // 默认男
+						items[i].portrait = "images/photo-boy.png";
+					}
+				}
+
+				if(items[i].gender === "2") {
+					items[i].gendericon = "images/icon-girl.png";
+				} else {
+					items[i].gendericon = "images/icon-boy.png";
+				}
+			}
+			if(defaultPageIndex === 0) {
+				$cardContainer.empty();
+			}
+			$cardContainer.append(Mustache.render(cardListTmpl, data));
+		}
+	}
+
+	// 绑定事件
+	function bindCardEvent() {
+		$("#btn-more").on('click', function(event) {
+			defaultPageIndex++;
+			var query = getQuery();
+			query.type=defalttype;
+			query.key=$.trim($("#classify-search-input").val());
+			requestCard(false,query);
+		});
+
+		// $(".button-search").on('click', function(event) {
+		//     var key = $.trim($smartSearch.val());
+		//
+		//     if(key && key.length) {
+		//         defaultPageIndex = 0;
+		//         requestCard();
+		//     }
+		//
+		// });
+	}
+
+	// 获取选中的项目，返回userguid的数组
+	function getSelectCard() {
+		var selectGuids = [];
+		var $cardItems = $cardContainer.find(".card-item");
+		$cardItems.each(function(index, el) {
+			if($(el).hasClass("active")) {
+				selectGuids.push(el.id);
+			}
+		});
+		return selectGuids;
+	}
+
+	function setting(){
+		if(Util.getUrlParams().group==1){
+			epoint.openTopDialog('分组管理','oa9/communication/businesscard/oabusinesscardcategory/oabusinesscardcategorylist?type=Pub',searchData,{
+					width:1000,
+					height:750,
+					'showCloseButton':true,
+					'showMaxButton':true,
+					'allowResize': true
+			});
+		}
+		if(Util.getUrlParams().group==2){
+			epoint.openTopDialog('分组管理','oa9/communication/businesscard/oabusinesscardcategory/oabusinesscardcategorylist',searchData,{
+					width:1000,
+					height:750,
+					'showCloseButton':true,
+					'showMaxButton':true,
+					'allowResize': true
+			});
+		}
+	}
+
+	function outeraddressdelete() {
+		var query = getQuery();
+		query.arr = new Array();
+		var selectGuids=getSelectCard();
+		amount = selectGuids.length;
+		for (var i = 0; i < amount; i++) {
+			query.arr.push(selectGuids[i]);
+		}
+		if (query.arr.length === 0) {
+			epoint.showTips("请选择需要删除的联系人！", {
+				state: 'danger',
+				y: ''
+			});
+			return;
+		}
+		epoint.execute('cardoutaction.outeraddressdelete', null, epoint.encodeJson(query), function(data) {
+			epoint.showTips("删除成功！", {
+				state: 'success',
+				y: 'center'
+			});
+			reset(data);
+		});
+	}
+    function moveto(categoryguid) {
+            var query = getQuery();
+        query.arr = new Array();
+        var selectGuids=getSelectCard();
+        amount = selectGuids.length;
+        for (var i = 0; i < amount; i++) {
+            query.arr.push(selectGuids[i]);
+        }
+
+        if (query.arr.length === 0) {
+            epoint.showTips("请选择需要转移的联系人！", {
+                 state: 'danger',
+                 y: 'center'
+            });
+            return;
+        }
+
+        query.targetcategoryguid = categoryguid;
+
+        epoint.execute('cardoutaction.moveto', null, epoint.encodeJson(query), function(data) {
+               // afterGetData(data);
+                epoint.showTips("转移成功！", {
+                    state: 'success',
+                    y: 'center'
+                });
+                reset(data);
+        });
+    }
+    function reset(data) {
+		renderCardList(epoint.decodeJson(data.group));
+		//requestCard();
+		//刷新左侧列表内的文件夹列表
+		window.parent.freshaddresslist(data);
+
+    }
+
+	// 标识是否搜索过，搜索过之后，清空输入框才进行重新加载。
+    var isSearched = false;
+
+	// smartsearch 搜索
+	function clickenter (id,key) {
+		var index=id;
+		var type;
+
+		if(index === -1 || index === undefined) {
+			type = 0;
+		}else{
+			type=index;
+		}
+
+		var query = getQuery();
+		query.type=type;
+			defalttype=type;
+
+		if(key && key.length) {
+			query.key = key;
+			query.pageindex=0;
+			defaultPageIndex = 0;
+			requestCard(false, query);
+		}
+		isSearched = true;
+	}
+
+    // 分类搜索按键回调函数
+    function searchkeyup () {
+    	var key = $.trim($smartSearch.val());
+        if (key.length === 0 && isSearched) { // 清空输入框时，重新加载表格
+			requestCard();
+			isSearched = false;
+		}
+    }
+
+
+
+    var queryString = Util.getUrlParams(),
+        groupguid = queryString.guid, // 群组guid
+        grouptype = queryString.group; // 群组type
+    // 弹出新增窗口
+    function openAdd() {
+		if(grouptype==1){
+			epoint.openDialog('新增记录', "oa9/communication/businesscard/newoabusinesscarduseradd?categoryguid=" + groupguid+"&type=Pub", searchData, {
+			});
+		}else if(grouptype==2){
+		    epoint.openDialog('新增记录', "oa9/communication/businesscard/newoabusinesscarduseradd?categoryguid="+groupguid+"&type=", searchData, {
+			});
+		}
+    }
+
+
+    function searchData() {
+    	window.parent.requestOuterAddress(3);
+        window.parent.requestOuterAddress(4);
+        location.reload();
+    }
+
+	//nicescroll
+	$(".nicescroll").niceScroll({
+		touchbehavior: false,
+		cursorcolor: "#f2f2f2",
+		cursoropacitymax: 1,
+		cursorwidth: 5,
+		cursorborder: "none",
+		cursorborderradius: "5px",
+		autohidemode: false
+	});
+
+
+</script>
+</body>
+
+</html>

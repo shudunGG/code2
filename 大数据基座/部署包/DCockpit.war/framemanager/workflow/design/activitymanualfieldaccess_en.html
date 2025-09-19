@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Configuration process activity materials</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- This must have,it is loaded with some loading effect -->
+	<div class="page-loading"></div>
+	<!-- toolbar area -->
+
+	<!-- content area -->
+	<div class="fui-content">
+		<!-- Add a hidden field -->
+		<input bind="activitymanualfieldaccessaction.activityGuid"
+			id="activityGuid" class="mini-hidden" /> <input
+			bind="activitymanualfieldaccessaction.processVersionGuid"
+			id="processVersionGuid" class="mini-hidden" />
+
+		<!-- The form area -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="materialGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true"
+			action="activitymanualfieldaccessaction.getDefaultModel"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">
+					order
+				</div>
+				<div field="misbdmc" width="200" headerAlign="center" align="center">The name of the mis form</div>
+				<div field="misTableSetGuid" width="200" headerAlign="center"
+					align="center">tableGuid</div>
+				<div field="materialName" width="200" headerAlign="center"
+					align="center">materialThe name of the</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">permissions</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- jsboot.js will automatically put all the js required for the frame page to be loaded in. -->
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//Initialization request 
+		epoint.initPage('activitymanualfieldaccessaction');
+		//The callback for the add operation
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+	    //callback
+	    function callback(args) {
+	        if (args && args.msg) {
+	            epoint.alert(args.msg, '', null, 'info');  
+	            searchData();
+	        }
+	    }
+		// Search for tables
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-content'],'',true);
+		}
+
+		// Draw the linepermissionsConfigure button
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "editAccess",
+					"materialGuid,misTableSetGuid");
+		};
+
+		// Pop-up configurationpermissionswindow
+		function editAccess(config) {
+			//decodingjsonString for the object
+			config = epoint.decodeJson(config);
+			var materialGuid = config.materialGuid;
+			var misTableSetGuid = config.misTableSetGuid;
+
+			var processVersionGuid = mini.get('processVersionGuid').getValue();
+			var activityGuid = mini.get('activityGuid').getValue();
+			var url = 'framemanager/workflow/design/activitymanualfieldaccessedit?misTableSetGuid='
+					+ misTableSetGuid
+					+ '&materialGuid='
+					+ materialGuid
+					+ '&processVersionGuid='
+					+ processVersionGuid
+					+ '&activityGuid=' + activityGuid;
+			epoint.openDialog("editpermissions", url, callback, {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

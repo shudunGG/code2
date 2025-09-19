@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>流程版本管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+p {
+	margin-left: 16px;
+	margin-right: 16px;
+}
+</style>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addbtn" onclick="openAddDialog()">新增版本</a>
+		<div id="dataImport" class="mini-webuploader" pickerText="导入XML"
+			action="processversionlistaction.getDataImportModel" fileNumLimit="5"
+			showDefaultUI="false" fileSingleSizeLimit="5120" limitType="text,xml"
+			dataImport="true" onuploadfinished="searchData"
+			onuploadaccept="UploadSuccess" auto="true"></div>
+		<a class="mini-button"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要导出的记录！', {state : 'warning'});} else {check();}">导出XML</a>
+
+		<a class="mini-button"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要复制的记录！',  {state : 'warning'});} else {copyWorkflow();}">版本复制</a>
+
+		<a class="mini-button" state="danger"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.showTips('请选择想要删除的记录！', {state : 'warning'});} else {epoint.confirm('是否确定删除？','',deleteSelected);}">删除选中</a>
+
+		<form id="download_form" method="post" enctype="multipart/form-data"></form>
+
+		<a role="helper" class="mr10" showtype="tooltip">使用过程中需注意的信息</a>
+	</div>
+
+	<!-- 帮助信息区域 默认隐藏-->
+	<div class="fui-notice hidden">
+		<p>
+			如果你需要个性化挂靠子流程，建议你先进行版本复制，利用复制的版本进行个性化编辑，否则将会对原始版本造成更改。另外如果版本是作为挂靠子流程使用的话。启用禁用选项将不再限制！
+		</p>
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="processVersionGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDefaultModel" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40">序</div>
+				<div field="version" width="200">版本</div>
+				<div field="note" width="100%">备注</div>
+				<!-- 				<div field="name" width="80">挂靠关系</div> -->
+				<div width="60" renderer="changeImage">状态</div>
+				<div field="status" visible="false"></div>
+				<div type="actioncolumn" name="optColumn">
+					操作 <span type="action" icon="icon-gear" onclick="JumpToDesign">流程设计</span>
+					<span type="action" icon="icon-edit" onclick="editVersion">修改</span><span
+						type="action" icon="icon-doc" onclick="JumpToMaterial">材料</span> <span
+						type="action" icon="icon-console" onclick="JumpToContext">相关数据</span><span
+						type="action" icon="icon-paper" onclick="JumpToMethod">方法管理</span><span
+						type="action" icon="icon-fix" onclick="JumpToSelectMainProcess">挂靠</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="hidMainPVActivityGuid"
+		bind="hidMainPVActivityGuid" />
+	<input class="mini-hidden" id="hidProcessVersionGuid"
+		bind="hidProcessVersionGuid" />
+	<input class="mini-hidden" id="processGuid" bind="processGuid" />
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="../../../frame/pages/login/js/layer/layer.js"></script>
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("processversionlistaction");
+
+		function changeImage(e) {
+			if (e.row.status == 10) {
+				return '<i class="action-icon icon-start success" onclick="changeStatus(\''
+						+ e.row.processVersionGuid + '\');"></i>';
+			} else {
+				return '<i class="action-icon icon-pause error" onclick="changeStatus(\''
+						+ e.row.processVersionGuid + '\');"></i>';
+			}
+		}
+
+		//按需复制流程版本
+		function copyWorkflow() {
+			epoint.execute('copyCheck', 'datagrid', copyafter);
+
+		}
+
+		function copyafter(data) {
+			layer
+					.open({
+						type : 2,
+						skin : 'layui-layer-demo', //样式类名
+						closeBtn : 1, //不显示关闭按钮
+						anim : 5,
+						title : '确认',
+						shadeClose : true, //开启遮罩关闭
+						area : [ '300px', '230px' ],
+						content : Util.getRootPath()
+								+ 'framemanager/workflow/manage/processcopyversion?guid='
+								+ data.guid
+					});
+		}
+
+		function layerCallBack(data) {
+			if (data) {
+				epoint.showTips(data.msg,  {state : 'success'});//layer.msg(data.msg);
+				searchData();
+			}
+		}
+
+		function changeStatus(e) {
+			epoint.confirm("确认切换状态?", '', function() {
+				epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+			});
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deleteSelect', 'datagrid', msgCallBack);
+		}
+
+		function check() {
+			epoint.execute('check', 'datagrid', exportafter);
+		}
+
+		function exportafter(data) {
+			if (data.guid) {
+				var form = document.getElementById('download_form');
+				form.action = "../../../"
+						+ epoint
+								.dealRestfulUrl("processversionlistaction/exportWorkflow?exportguid="
+										+ data.guid);
+				form.submit();
+			} else if (data.msg) {
+				epoint.showTips(data.msg,  {state : 'warning'});
+			}
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if (data.flag != null && (data.flag == "1")) {
+					epoint.showTips(msg, {state : 'success'});
+					epoint.refresh('datagrid', '', true);
+				} else {
+					epoint.showTips(msg,  {state : 'warning'});
+				}
+			}
+		}
+
+		function openAddDialog() {
+			var processGuid = mini.get('processGuid').getValue();
+			var url = "processversionbaseinfoadd?processGuid=" + processGuid;
+			epoint.openDialog('新增版本', "framemanager/workflow/manage/" + url,
+					function(param) {
+						if (param != 'close') {
+							epoint.showTips(param, {state : 'success'});
+						}
+						epoint.refresh('datagrid', '', true);
+					}, {
+						'width' : 970,
+						'height' : 500
+					});
+		}
+
+		function changeComplete(msg) {
+			if (msg) {
+				epoint.alertAndClose(msg, '', null, null, 'info');
+			}
+		}
+
+		function editVersion(row) {
+			var url = "processversionbaseinfoedit?processVersionGuid="
+					+ row.processVersionGuid;
+			epoint.openDialog('修改版本', "framemanager/workflow/manage/" + url,
+					function(param) {
+						if (param != 'close') {
+							epoint.showTips(param,  {state : 'success'});
+						}
+						epoint.refresh('datagrid', '', true);
+					}, {
+						'width' : 970
+					});
+		}
+
+		function JumpToDesign(row) {
+			var url = "designbodyoa9?processVersionGuid="
+					+ row.processVersionGuid + "&mainPVActivityGuid="
+					+ mini.get('hidMainPVActivityGuid').getValue();
+			epoint.openTopDialog('流程设计', "framemanager/workflow/design/" + url);
+		}
+
+		function JumpToMaterial(row) {
+			var url = "processmaterial?processVersionGuid="
+					+ row.processVersionGuid + "&mainPVActivityGuid="
+					+ mini.get('hidMainPVActivityGuid').getValue();
+			epoint.openDialog('配置流程材料', "framemanager/workflow/manage/" + url,
+					'', {
+						'width' : 1000
+					});
+		}
+
+		function JumpToContext(row) {
+			var url = "framemanager/workflow/design/contextfieldlist?processVersionGuid="
+					+ row.processVersionGuid;
+			epoint.openDialog('配置相关数据', url, '', {
+				'width' : 1000
+			});
+		}
+
+		function JumpToMethod(row) {
+			var url = "methodlist?processVersionGuid=" + row.processVersionGuid;
+			epoint.openDialog('配置流程方法', "framemanager/workflow/design/" + url,
+					'', {
+						'width' : 1000
+					});
+		}
+
+		function JumpToSelectMainProcess(row) {
+			var url = "processselectmainprocessframe?processVersionGuid="
+					+ row.processVersionGuid;
+			epoint.openDialog('挂接主流程', "framemanager/workflow/manage/" + url,
+					JumpToSelectMainProcessOperJS, {
+						'width' : 1000
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('datagrid');
+		}
+
+		function UploadSuccess(args) {
+			if (args.ret.extraDatas.msg) {
+				epoint.showTips(args.ret.extraDatas.msg, {state : 'warning'});
+			} else {
+				epoint.showTips('导入成功',  {state : 'success'});
+			}
+		}
+
+		function JumpToSelectMainProcessOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				mini.get('hidMainPVActivityGuid').setValue(
+						rtnValue.split(";")[0]);
+				// 			    mini.get('hidProcessVersionGuid').setValue(rtnValue.split(";")[1]);
+				epoint.refresh('datagrid', '', true);
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

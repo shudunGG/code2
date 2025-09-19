@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>数字晾晒台指标</title>
+    <script src="../../../fui/js/cssboot.js"></script>
+    <script src="./js/remfit.js"></script>
+    <script>
+        SrcBoot.output([
+            './css/common.css',
+            './css/digital_drying.css',
+        ]);
+    </script>
+</head>
+
+<body>
+    <div class="page-loading"></div>
+
+    <div class="fui-content">
+        <div class="content">
+            <table class="info-table">
+                <colgroup>
+                    <col width="50%" />
+                    <col width="50%" />
+                </colgroup>
+                <tbody id="list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 指标模板 -->
+    <script type="text/html" id="item-tmpl">
+        {{#list}}
+        <tr data-guid="{{guid}}">
+            <td title="{{name}}">{{name}}</td>
+            <td>
+                <div class="operation-btns">
+					<a class="operation-btn circle-btn" href="javascript:;">指标圈阅</a>
+                    <a class="operation-btn feedback-btn" href="javascript:;">指标需求反馈</a>
+                    <a class="operation-btn startred-btn" href="javascript:;">发起红灯</a>
+                    <a class="operation-btn subscribe-btn" href="javascript:;">指标订阅</a>
+                    <!-- <a class="operation-btn comparison-btn" href="javascript:;">指标对比</a> -->
+                </div>
+            </td>
+        </tr>
+        {{/list}}
+    </script>
+
+    <script src="../../../fui/js/jsboot.js"></script>
+
+    <!-- 页面模块接口 -->
+    <script>
+        // 页面接口配置
+       /*  var baseUrl = 'https://fe.epoint.com.cn/mock/348/';
+        window.pageConfig = {
+            getDryingNormListUrl: baseUrl + 'getDryingNormListUrl', // 获取数字晾晒台指标列表
+        };  */
+       function getRootPath(){
+            var curWwwPath = window.document.location.href;
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName
+                .substring(0, pathName.substr(1).indexOf('/') + 1);
+            return (localhostPaht + projectName);
+        }
+        window.pageConfig = {
+        		queryAllNorm: getRootPath() + '/rest/cockpitApi/queryAllNorm',
+        		addSubscribeNorm: getRootPath() + '/rest/cockpitApi/addSubscribeNorm',
+        }; 
+    </script>
+    <script src="./js/util.js"></script>
+
+    <script>
+        SrcBoot.output([
+            './js/common.js',
+            './js/digital_drying.js',
+        ]);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>编辑驾驶舱</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../css/cockpitcolumnlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="wrap">
+		
+		<div class="mark" id="mark">
+				<div class="fui-toolbar">
+					<div class="btn-group mr10">
+						<a class="mini-button" iconCls="icon-save" onclick="saveAndClose()">保存并关闭</a>
+						<a class="mini-button" iconCls="icon-minuscircle"
+							onclick="cancelInit">取消</a>
+					</div>
+				</div>
+				<div class="fui-form" id="edit-form">
+					<div role="form">
+						<div role="row">
+							<div role="control" label="驾驶舱名称" starred="true">
+								<input id="editName" bind="dataBean.cockpitname" class="mini-textbox" required="true"  vtype="maxLength:50;" 
+								requiredErrorText="驾驶舱名称不能为空">
+							</div>
+							<div role="control" label="背景水印" starred="true">
+								<div id="watermark" bind="dataBean.watermark" required="true"
+									action="getWatermarktypeList" class="mini-radiobuttonlist"
+									textField="text" valueField="id"></div>
+							</div>
+						</div>
+						<div role="row">
+							<div role="control" label="所属部门" starred="true">
+								<input id="createou" class="mini-treeselect" required="true" bind ="dataBean.createou"
+									 />
+							</div>
+							<div role="control" label="创建人" starred="true">
+								<input id="createuser" class="mini-textbox" required="true" />
+							</div>
+							<input id="cockpitguid" class="mini-hidden" bind ="dataBean.rowguid">
+						</div>
+					</div>
+				</div>
+		</div>
+	</div>
+
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var cockpitguid;
+		var isadmin;
+		epoint.initPage('cockpiteditaction',null, function(data) {
+			var createou =mini.get('createou');
+		    var createuser =mini.get('createuser');
+			createou.setText(data.createouname);
+			createuser.setValue(data.createusername);
+			createou.disable();
+			createuser.disable();
+			cockpitguid = mini.get('cockpitguid').getValue();
+		});
+
+		
+		function saveAndClose(e) {
+			if (epoint.validate()) {
+					epoint.execute("editCockpit", "@all", [ cockpitguid,
+							mini.get("editName").getValue(),
+							mini.get("watermark").getValue(),
+							mini.get("createou").getValue() ], closeCallback);
+			}
+		}
+		function closeCallback(data) {
+			if (data.error) {
+				epoint.alert(data.error);
+			} else {
+				if (data.msg) {
+					epoint.alertAndClose(data.msg);
+				}
+			}
+		}
+		function cancelInit(sender, name) {
+			epoint.closeDialog();
+		}
+		
+	</script>
+</body>
+</html>

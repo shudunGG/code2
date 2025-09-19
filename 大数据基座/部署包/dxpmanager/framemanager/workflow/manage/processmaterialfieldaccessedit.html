@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程活动表单权限修改</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="save" iconCls="icon-addcircle">保存设置</a>
+		</div>
+		<p class="text-special mr10">表单名称：
+		<div bind="misTableName" id="misTableName" class="mini-output"></div>
+		</p>
+
+		<div class="btn-group mr10 r">
+			<a class="mini-button" onclick="alldefault">全部缺省</a> <a
+				class="mini-button" onclick="allreadonly">全部只读</a> <a
+				class="mini-button" onclick="allreadwrite">全部读写</a> <a
+				class="mini-button" onclick="allnessary">全部必填</a>
+		</div>
+	</div>
+
+	<div id="fui-content" class="fui-content">
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="fieldid" multiSelect="true"
+			style="width: 100%; height: 90%;" action="getTableData"
+			showPager="true" allowCellEdit="true" allowCellSelect="true"
+			editNextOnEnterKey="true" editNextRowCell="true"></div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('processmaterialfieldaccesseditaction', '',
+				callbackinit);
+
+		var grid = mini.get("datagrid");
+		// 初始化回掉，动态生成列
+		function callbackinit(data) {
+			adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+			if (data) {
+				drawDynamicColumn(data);
+			}
+		}
+
+		// 绘制动态列
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = Util.safeEval('(' + tmp + ')');
+			grid.set(columns);
+		}
+
+		//新增回调
+		function addCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-content' ], '', true);
+		}
+		//保存
+		function save() {
+			epoint.execute("save", "", searchData);
+		}
+		//刷新
+		function refresh() {
+			searchData();
+		}
+
+		//全部缺省
+		function alldefault(right) {
+			right = "0";
+			epoint.confirm('是否确定设置全部缺省？', '', function() {
+				epoint.execute("saveAll", "", [ right ], refresh);
+			});
+
+		}
+		//全部只读
+		function allreadonly() {
+			right = "10";
+			epoint.confirm('是否确定设置全部只读？', '', function() {
+				epoint.execute("saveAll", "", [ right ], refresh);
+			});
+
+		}
+		//全部可写
+		function allreadwrite() {
+			right = "20";
+			epoint.confirm('是否确定设置全部可写？', '', function() {
+				epoint.execute("saveAll", "", [ right ], refresh);
+			});
+
+		}
+		//全部必填
+		function allnessary() {
+			right = "40";
+			epoint.confirm('是否确定设置全部必填？', '', function() {
+				epoint.execute("saveAll", "", [ right ], refresh);
+			});
+
+		}
+		function ongradeChanged(e, actguid) {
+			//获取当前fieldid
+			if (grid.getSelected().fieldid == 0) {
+				var me = this;
+				grid = me.grid;
+				rows = grid.getData();
+				field = actguid;
+				for (var i = 0, l = rows.length; i < l; i++) {
+					var rowData = {};
+					rowData[field] = e.value;
+					grid.updateRow(rows[i], rowData);
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

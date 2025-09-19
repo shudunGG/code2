@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>数据集成-任务统计</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ "../css/common.css", "./css/common.css",
+			"./css/mission.css" ]);
+</script>
+</head>
+
+<body>
+	<div class="main ">
+		<div class="top clearfix">
+			<ul class="type-choose l clearfix">
+				<li class="active" data-id="01">库表集成</li>
+				<li data-id="02">文件集成</li>
+				<li data-id="03">API集成</li>
+				<li data-id="04">消息集成</li>
+			</ul>
+			<ul class="range-list clearfix r">
+				<li data-id="01" class="date-item">今日</li>
+				<li data-id="02" class="date-item">昨日</li>
+				<li data-id="03" class="date-item">近一周</li>
+				<li data-id="04" class="date-item">本月</li>
+				<li data-id="05" class="date-item">本年度</li>
+			</ul>
+		</div>
+		<div class="content clearfix ">
+			<div class="left-part l">
+				<div class="total">
+				<div>
+					<p class="nd-title">总体情况</p>
+					<ul class="clearfix situation-list">
+						<li class="situation-item item01">
+							<div>
+								<p class="num-title" id="totalNum"></p>
+								<span id="total-data">数据总数</span>
+							</div>
+						</li>
+						<li class="situation-item item02">
+							<div>
+								<p class="num-title" id="totalSuccess"></p>
+								<span>成功</span>
+							</div>
+						</li>
+						<li class="situation-item item03">
+							<div>
+								<p class="num-title" id="totoalError"></p>
+								<span>失败</span>
+							</div>
+						</li>
+						<li class="situation-item item04">
+							<div>
+								<p class="num-title" id="totalLength"></p>
+								<span>数据量</span>
+							</div>
+						</li>
+					</ul>
+					<div class="mission-line"></div>
+					</div>
+				</div>
+				<div class="fail-mission">
+					<p class="nd-title">任务失败排名Top5</p>
+					<ul class="mission-list"></ul>
+				</div>
+			</div>
+			<div class="right-part l">
+				<p class="nd-title">详细情况</p>
+				<div class="grid">
+					<div class="fui-form" id="fui-form">
+						<div role="form">
+							<input bind="dataType" id="dataType" class="mini-textbox"
+								style="display: none;" /> <input bind="dataRange"
+								id="dataRange" class="mini-textbox" style="display: none;" />
+						</div>
+					</div>
+					<div class="mini-fit">
+						<div id="datagrid" name="datagrid" class="mini-datagrid"
+							idField="rowguid" multiSelect="true" style="width: 100%;height: 100%;"
+							showPager="true" action="getDataGridData">
+							<div property="columns">
+								<div field="nodename" width="100" headerAlign="center"
+									align="center">节点名称</div>
+								<div field="totalnum" width="100" headerAlign="center"
+									align="center">数据条数</div>
+								<div field="totalsuccess" width="100" headerAlign="center"
+									align="center">成功</div>
+								<div field="totalerror" width="100" headerAlign="center"
+									align="center">失败</div>
+								<div field="totallength" width="100" headerAlign="center"
+									align="center">数据量</div>
+								<div width="100" headerAlign="center" align="center"
+									renderer="onDetailRenderer">详情</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('dxptranscountsitutaionaction');
+
+		function onDetailRenderer(e) {
+			return '<a  onclick="openNodeDetail('
+					+ "'" + e.row.rowguid + "'" + ');" >' + '详情' + '</a>';
+		}
+		function openNodeDetail(id) {
+			Util.getSafeLocation().setHref(
+					'mission_node?nodeGuid=' + id + '&dataType='
+							+ mini.get('dataType').getValue() + '&dataRange='
+							+ mini.get('dataRange').getValue());
+		}
+	</script>
+	<script>
+		// 接口
+		var situtaion = epoint
+				.dealRestfulUrl("../../rest/dxptranscountsitutaionaction/getSitutaionData");
+		var errorrate = epoint
+			.dealRestfulUrl("../../rest/dxptranscountsitutaionaction/getErrorRate");
+	</script>
+	<script type="text/template" id="topLine">
+      {{#line}}
+       <li class="mission-item" data-id="{{id}}">
+              <a href="javascript:void(0);" class="clearfix mission-a">
+                  <span class="l num-code">No.{{num}}</span>
+                  <div>
+                      <div class="clearfix top-info">
+                          <span class="ellicape left-name">{{name}}</span>
+                          <div class="r right-parts">
+                              <span>总量：{{count}}</span>
+                              <span>失败率：<i>{{percent}}</i></span>
+                          </div>
+                      </div>
+                      <div class="bottom-bar active">
+                          <span></span>
+                      </div>
+                  </div>
+              </a>
+          </li>
+      {{/line}}
+    </script>
+	<script>
+		SrcBoot.output([ "../js/echarts.min.js", "../js/common.js",
+				"./js/mission.js" ]);
+	</script>
+</body>
+</html>

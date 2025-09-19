@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>获取表单页面</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<form id="form1">
+		<script src="../../../../rest/resource/jsboot"></script>
+		<script src="../js/form.common.js"></script>
+		<script>
+			epoint.initPage('epointsformversionsearchaction', '', initCallBack);
+
+			function initCallBack(data) {
+				if (data && data.error) {
+					var msg = {};
+					msg.handleType = "getFormUrl";
+					msg.error = data.error;
+					messenger.targets['parent'].send(JSON.stringify(msg));
+					return;
+				} else if(data) {
+					var msg = {};
+					msg.handleType = "getFormUrl";
+					msg.formUrl = data;
+					messenger.targets['parent'].send(JSON.stringify(msg));
+					return;
+				}
+			}
+
+			// 跨域处理
+			var messenger = new epointsform.Messenger('epointsformGetFormUrlIframe',
+					'epointsformMessenger');
+			
+			// 跨域处理
+			messenger.addTarget(window.parent, 'parent');
+		</script>
+	</form>
+</body>
+</html>

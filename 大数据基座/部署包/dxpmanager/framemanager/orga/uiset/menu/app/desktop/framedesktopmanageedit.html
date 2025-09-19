@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>桌面管理修改</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify" iconCls="icon-save">保存并关闭</a> 
+			<a class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="桌面名称" starred="true">
+						<input id="desktopnames" class="mini-textbox"
+							bind="dataBean.desktopnames" required="true"
+							requiredErrorText="桌面名称不能为空!" />
+					</div>
+					<div role="control" label="排序号">
+						<input id="ordernum" class="mini-textbox" bind="dataBean.ordernum" vtype="int;range:0,99999999"/>
+					</div>
+					<div role="control" label="禁用">
+						<div class="mini-checkbox" bind="dataBean.isDisable" readOnly="false" ></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="桌面图标">
+						<input id="desktopicon" class="mini-buttonedit"
+							bind="dataBean.desktopicon" style="width:90%" onbuttonclick="openicon('big')" selectOnFocus="true"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('framedesktopmanageeditaction', null, function(data){
+			if(data.icon){
+				mini.get('desktopicon').setText(data.icon);
+				mini.get('desktopicon').setValue(data.icon);
+			}
+		});
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, '', null, null, 'success');
+			}
+		}
+		
+		function openicon(type) {
+			epoint.openDialog('选择图标', "framemanager/orga/uiset/menu/module/selectoa8icon?type=" + type, openiconOperJS, {
+				'width' : 1000,
+				'height' : 420
+			});
+		}
+		
+		function openiconOperJS(rtnValue) {
+			if (rtnValue != 'close') {
+				mini.get("desktopicon").setText(rtnValue);
+				mini.get("desktopicon").setValue(rtnValue);
+			}
+		}
+	</script>
+</body>
+</html>

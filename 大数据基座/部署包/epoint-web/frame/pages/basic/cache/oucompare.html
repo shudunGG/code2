@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据对比</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="compareOu" style="width: 100px">数据对比</a>
+		<a class="mini-button"
+			onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要同步的记录!', '', null, 'warning');} else {epoint.confirm('确认要同步吗?','',refreshOu);}"
+			style="width: 100px">刷新缓存</a>
+	</div>
+	<div class="fui-form" id="fui-form">
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<!-- 表单区域 -->
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="ouguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getOuDataGridData" allowCellEdit="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40">序</div>
+					<div field="ouguid" width="100%">部门序号</div>
+					<div field="ouname" width="100%">缺失部门</div>
+					<div width="60" renderer="onDetailRenderer">查看</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("framerefreshcacheaction");
+
+		function compareOu() {
+			epoint.execute('compareOu', '', refreshCallback);
+
+		}
+		function refreshOu() {
+
+			epoint.execute('refreshOu', '', refreshCallback);
+
+		}
+		function refreshCallback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', null, 'info');
+
+			}
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		// 绘制行查看按钮
+		var onDetailRenderer = function(e) {
+			return epoint
+					.renderCell(e, "action-icon icon-search", "openDetail");
+		};
+		function openDetail(id) {
+			epoint.openDialog('详细信息', "frame/base/cache/oucomparedetail?guid="
+					+ id, searchData, {
+				'width' : 1000,
+				'height' : 550
+			});
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

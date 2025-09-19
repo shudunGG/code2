@@ -1,0 +1,121 @@
+<!-- 
+        作者：guotq
+        创建时间: 2017/05/31
+        版本: [3.0, 2017/05/31 ]
+        版权: 江苏国泰新点软件有限公司
+        描述： ejs v2的测试页面 
+-->
+<!DOCTYPE html >
+<html lang="zh-CN">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="pragma" content="no-cache">
+        <meta http-equiv="cache-control" content="no-cache">
+        <meta http-equiv="expires" content="0">
+        <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+        <title>测试页面</title>
+        <script>
+            document.write("<script src='../../../js/cssboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+    </head>
+
+    <body>
+        <div class="mui-content pt0" id="ejs-app">
+            <p class="mt10">
+                这里是测试页面,用来测试ejs效果
+            </p>
+
+            <button type="button" class="mui-btn  mui-btn-block" id="closeWithResult">关闭页面(传入回调信息)</button>
+            <p>
+                注意,上面的关闭页面按钮只有当 startForResult时才有效
+            </p>
+
+            <div class="" style="text-align: center;">
+                <a href="http://app.epoint.com.cn/staticResource/hybrid/payment/paymentDemo.apk">测试下载附件</a>
+            </div>
+        </div>
+
+        <script>
+            document.write("<script src='../../../js/jsboot.js?" + Math.random() + "'></scr" + "ipt>");
+        </script>
+        <script>
+            "use strict";
+
+            Util.loadJs(['./_common/bizlogic_common_ready.js'], function() {
+                Util.bizlogic.ready(initPage);
+            });
+
+            /**
+             * 生成一个列表模板，顺带监听
+             */
+            function initPage() {
+                var liTemplate = Util.litemplate.defaultLitemplate.extend({
+                    initBiz: function() {
+                        this._super();
+                        initListeners();
+                        setTimeout(function() {
+                            ejs.nativeUI.closeWaiting();
+                        }, 3000);
+                    }
+                });
+
+                new liTemplate({
+                    isIndex: false,
+                    //title: 'ejs示例页面',
+                    ejsApi: null
+                });
+            }
+
+            /**
+             * 添加监听
+             */
+            function initListeners() {
+                //实现onNBRight()点击
+                window.onClickNBRightEJS = function() {
+                    ejs.nativeUI.alert('提示', '点击右侧按钮');
+                };
+                window.onSearchEJS = function(key) {
+                    ejs.nativeUI.alert('搜索', key);
+                };
+                window.onChangeSegEJS = function(which) {
+                    ejs.nativeUI.alert('选择Seg', which);
+                };
+
+                var first = null;
+                var tips = '再按一次退出应用';
+                window.onClickNBBackEJS = function(type) {
+                    if (type == 1) {
+                        tips = '再按一次退出应用~系统返回';
+                    } else {
+                        tips = '再按一次退出应用~按钮返回';
+                    }
+                    if (!first) {
+                        first = new Date().getTime();
+                        ejs.nativeUI.toast(tips);
+                        setTimeout(function() {
+                            first = null;
+                        }, 1000);
+                    } else {
+                        if (new Date().getTime() - first < 1000) {
+                            ejs.page.closePage();
+                        }
+                    }
+                };
+                mui('.mui-content').on('tap', '#closeWithResult', function() {
+                    //关闭时传入回调信息
+                    ejs.page.closePage({
+                        'test': '测试信息2333'
+                    }, function() {
+
+                    });
+                });
+                mui('.mui-content').on('tap', 'a', function() {
+                    var href = this.getAttribute('href');
+                    window.location.href = href;
+                });
+            }
+        </script>
+    </body>
+
+</html>

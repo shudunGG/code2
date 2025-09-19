@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>个人资料</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<style type="text/css">
+.cate-header {
+	margin-top: 26px;
+	margin-bottom: 20px;
+	color: #2586d9;
+	font-size: 16px;
+	line-height: 30px;
+	padding-left: 3px;
+	height: 36px;
+	position: relative;
+}
+
+.cate-header:before {
+	content: "";
+	position: absolute;
+	width: 100%;
+	bottom: 0;
+	height: 0;
+	border-bottom: 1px solid #ebf2f8;
+}
+
+/*  asLabel 模式 */
+.asLabel .mini-textbox-border, .asLabel .mini-textbox-input, .asLabel .mini-buttonedit-border,
+	.asLabel .mini-buttonedit-input, .asLabel .mini-textboxlist-border {
+	border-color: transparent;
+	background: none;
+	cursor: default;
+}
+
+.asLabel .mini-buttonedit-button, .asLabel .mini-textboxlist-close {
+	display: none;
+}
+
+.asLabel .mini-textboxlist-item {
+	padding-right: 8px;
+}
+
+.asLabel .mini-radiobuttonlist-item, .asLabel .mini-radiobuttonlist-item-selected .mini-list-icon
+	{
+	display: none;
+}
+
+.asLabel .mini-radiobuttonlist-item-selected {
+	display: block;
+}
+
+.asLabel .mini-radiobuttonlist-item-selected label {
+	display: block;
+	line-height: 26px;
+}
+
+.scroll-container {
+	max-width: 1080px;
+	margin-left: auto;
+	margin-right: auto;
+}
+</style>
+<script>
+	SrcBoot.outputCustomSkin("./skins/persondata/");
+</script>
+</head>
+
+<body>
+	<div class="fui-content" id="person-data" style="padding: 0 20px;">
+		<div class="scroll-container">
+			<div class="cate-header fui-theme-main-color">基本信息</div>
+			<div class="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="姓名">
+							<input id="user-name" class="mini-textbox" required="true"
+								vtype="maxLength:50" bind="myinfomodifyaction.user.displayName"
+								onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="办公电话">
+							<input id="office-tel" class="mini-textbox"
+								bind="myinfomodifyaction.user.telephoneOffice"
+								onvaluechanged="saveChange" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="性别">
+							<input id="gender" class="mini-radiobuttonlist" textField="text"
+								bind="myinfomodifyaction.user.sex" valueField="id"
+								data="[{id:'男',text:'男'},{id:'女',text:'女'}]" required="true"
+								onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="手机号码" class="clearfix">
+							<input id="mobile-phone" class="mini-textbox" vtype="mobile"
+								bind="myinfomodifyaction.mobilePrivate"
+								style="float: left; width: 150px; margin-right: 10px;"
+								onvaluechanged="saveChange" /> <span id="mobile-phone-open"
+								class="mini-checkbox switch" readOnly="false" text="公开"
+								bind="chkShowMobile" trueValue="true" falseValue="false"
+								style="width: 100px;" onvaluechanged="saveChange"></span>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="职务">
+							<input id="postion" class="mini-textbox"
+								bind="myinfomodifyaction.user.title" vtype="maxLength:50"
+								required="true" onvaluechanged="saveChange" />
+						</div>
+						<div role="control"></div>
+					</div>
+				</div>
+			</div>
+			<!-- <div class="cate-header fui-theme-main-color">扩展信息</div>
+			<div class="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="身份证号">
+							<input id="id-card" class="mini-textbox" vtype="idCard"
+								bind="myinfomodifyaction.userExtendInfo.identityCardNum"
+								onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="生日">
+							<input id="birthday" class="mini-datepicker"
+								bind="myinfomodifyaction.userExtendInfo.birthday"
+								allowInput="false" dateFormat="yyyy-MM-dd"
+								data-options="{'format':'yyyy-MM-dd'}" required="true"
+								onvaluechanged="saveChange" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="QQ号">
+							<input id="qq-number" class="mini-textbox"
+								onvalidation="onQQValidation"
+								bind="myinfomodifyaction.userExtendInfo.qqnumber"
+								onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="邮政编码">
+							<input id="postal-code" class="mini-textbox" vtype="postCode"
+								bind="myinfomodifyaction.userExtendInfo.postalCode"
+								onvaluechanged="saveChange" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="E_Mail">
+							<input id="email" class="mini-textbox" vtype="email"
+								bind="myinfomodifyaction.user.email" onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="传真">
+							<input id="fax" class="mini-textbox"
+								onvalidation="onFaxValidation"
+								bind="myinfomodifyaction.user.fax" onvaluechanged="saveChange" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="地址">
+							<input id="address" class="mini-textbox" vtype="maxLength:50"
+								bind="myinfomodifyaction.userExtendInfo.postalAddress"
+								onvaluechanged="saveChange" />
+						</div>
+						<div role="control" label="车牌号">
+							<input id="car-code" class="mini-textbox" vtype="maxLength:10"
+								bind="myinfomodifyaction.userExtendInfo.carnum"
+								onvaluechanged="saveChange" />
+						</div>
+					</div>
+					<div role="row">
+
+						<div role="control" label="备注">
+							<input id="description"
+								bind="myinfomodifyaction.user.description" vtype="maxLength:100"
+								class="mini-textbox" onvaluechanged="saveChange" />
+						</div>
+					</div>
+				</div>
+			</div> -->
+		</div>
+	</div>
+	<script>
+		
+	</script>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		epoint.initPage('myinfomodifyaction');
+		// 转化为 label 模式
+		function labelModel(c) {
+			if (c.setReadOnly)
+				c.setReadOnly(true); //只读
+			if (c.setIsValid)
+				c.setIsValid(true); //去除错误提示
+			if (c.addCls)
+				c.addCls("asLabel"); //增加asLabel外观
+		}
+
+		function allToLabel() {
+			var form = new mini.Form("person-data");
+			var fields = form.getFields();
+			for (var i = 0, l = fields.length; i < l; i++) {
+				var c = fields[i];
+				if (c.type != 'checkbox') {
+					labelModel(c);
+				}
+			}
+		}
+		allToLabel();
+
+		// 转为编辑模式
+		function inputModel(c) {
+			if (c.removeCls)
+				c.removeCls('asLabel');
+			if (c.setReadOnly)
+				c.setReadOnly(false); //只读
+			// if (c.setIsValid) c.setIsValid(false); //去除错误提示
+		}
+		if (Util.browsers.isIE) {
+			// IE下需要重写此方法
+			// cause IE下直接点击鼠标进入编辑模式后（实际上并未进入，需要再次点击才能正确聚焦）
+			// 为解决此问题，在 IE下加入为其设置焦点的操作
+			function inputModel(c) {
+				if (c.removeCls)
+					c.removeCls('asLabel');
+				if (c.setReadOnly)
+					c.setReadOnly(false); //只读
+				// if (c.setIsValid) c.setIsValid(false); //去除错误提示
+				c.focus && c.focus();
+			}
+		}
+
+		var activeControl;
+		// 点击控件部分进入编辑模式
+		// $('body').on('click', '.form-control', function (e) {
+		$('body')
+				.on('click', '.form-control > :first-child', function(e) {
+					// var controlEl = $(this).find('>:first-child')[0];
+					var controlEl = this;
+
+					if (controlEl && controlEl.id) {
+						e.stopPropagation();
+						var c = mini.get(controlEl.id);
+						// 将之前控件调整为label模式
+						if (activeControl) {
+							labelModel(activeControl);
+						}
+
+						if (c) {
+							activeControl = c;
+							activeControlValue = c.getValue();
+							inputModel(c);
+						}
+					}
+				})
+				.on(
+						'click',
+						function(e) {
+							// 空白处点击
+							if (activeControl) {
+								var type = activeControl.type;
+								// 验证不通过时值还原
+								if (activeControl.validate
+										&& !activeControl.validate()) {
+									activeControlValue
+											&& activeControl
+													.setValue(activeControlValue);
+								}
+								if (type == 'textbox') {
+									labelModel(activeControl);
+								} else if (type == 'datepicker') {
+									if (!$(activeControl.el).hasClass(
+											'mini-buttonedit-focus')) {
+										labelModel(activeControl);
+									}
+								}
+							}
+						});
+		// 空方法
+		function emptyFn() {
+		}
+		var activeControlValue;
+		// 修改完成后进行保存
+		function saveChange(e) {
+			// 如果校验不通过 不报错 不提交
+			//console.log(e, e.sender.validate());
+			if (e.sender.validate && !e.sender.validate()) {
+				epoint.showTips(e.sender.errorText || '数据验证不通过', {
+					state : 'danger'
+				});
+				if (e.oldValue) {
+					activeControlValue = e.oldValue;
+				}
+				return;
+			}
+			var id = e.sender.id;
+			// 只用提交当前修改的即可
+			epoint.execute('save', id, function(data) {
+				if (e.sender.type != 'checkbox') {
+					labelModel(e.sender);
+				}
+				epoint.refresh(id, emptyFn);
+
+				// action验证
+				if (data.msg == '保存成功') {
+					epoint.showTips('修改成功', {
+						state : 'success'
+					});
+				} else {
+					epoint.showTips('保存失败' + data.msg, {
+						state : 'danger'
+					});
+				}
+
+				// 如果修改的是姓名、职务等 同步头上
+				if (id == 'user-name') {
+					$('#user-top-name').text(mini.get('user-name').getValue());
+				}
+				if (id == 'postion') {
+					$('#position-text').text(mini.get('postion').getValue());
+				}
+			});
+		}
+
+		//isQQ
+		function isQQ(v) {
+			var re = new RegExp(/[1-9][0-9]{4,}/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//QQ验证
+		function onQQValidation(e) {
+			if (e.isValid) {
+				if (e.value && isQQ(e.value) == false) {
+					e.errorText = "请输入正确QQ号码";
+					e.isValid = false;
+				}
+			}
+		}
+
+		//isFax
+		function isFax(v) {
+			var re = new RegExp(/^((\d{3,4}-)?\d{7,8})$/);
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		//fax验证
+		function onFaxValidation(e) {
+			if (e.isValid) {
+				if (e.value && isFax(e.value) == false) {
+					e.errorText = "请输入正确的传真号";
+					e.isValid = false;
+				}
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>过程材料</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn"
+				onclick="createAdd">新增材料</a> <a class="mini-button"
+				iconCls="icon-save" onclick="saveAll">修改排序</a> <a
+				class="mini-button mini-btn-danger" iconCls="icon-removecircle"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择想要删除的材料！', '', null, 'warning');} else {epoint.confirm('是否确定删除？','',deleteSelected);}">删除材料</a>
+		</div>
+	</div>
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="materialGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDefaultModel" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="35"></div>
+				<div type="indexcolumn" headerAlign="center" width="50">序</div>
+
+				<div field="materialName" width="100%" headerAlign="center"
+					align="center">名称</div>
+				<div field="type" width="150" headerAlign="center" align="center">类型</div>
+				<div field="submitype" width="150" headerAlign="center"
+					align="center">提交方式</div>
+				<div field="orderNumber" width="80" headerAlign="center"
+					align="right" vtype="int;range:0,99999999" allowSort="true">
+					排序号 <input property="editor" class="mini-textbox" minWidth="30"
+						maxLength="8" vType="range:0,99999999;int;required"
+						inputStyle="text-align:right" />
+				</div>
+				<!-- 				<div width="50" headerAlign="center" align="center" renderer="model"> -->
+				<!-- 					模板</div> -->
+				<div width="50" headerAlign="center" align="center" renderer="edit">
+					修改</div>
+				<div width="40" align="center" headerAlign="center"
+					renderer="onEditRenderer">权限</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[ 
+		//初始化页面
+		epoint.initPage("processmaterialaction");
+
+		var processVersionGuid = Util.getUrlParams('processVersionGuid');
+		var isLessee = Util.getUrlParams('isLessee');
+
+		function model(e) {
+			if (e.row.template_asinfogroupguid) {
+				return epoint.renderCell(e, "action-icon icon-download",
+						"openDownLoad", "template_asinfogroupguid");
+			}
+		}
+
+		function openDownLoad(guid) {
+			window.open("../../../basic/attach/attachdown?attachGuid=" + guid);
+		}
+
+		function edit(e) {
+			if (!(e.record && e.record.mainPv && e.record.mainPv == "true")) {
+				return epoint
+						.renderCell(e, "action-icon icon-edit", "openEdit");
+			}
+		}
+
+		// 删除
+		function deleteSelected() {
+			epoint.execute('deletePvMaterial', 'datagrid', msgCallBack);
+		}
+
+		// 回调提醒
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				epoint.alert(msg, '', searchData(), 'info');
+			}
+		}
+
+		function createAdd() {
+			epoint.openDialog('新增流程材料',
+					"framemanager/workflow/manage/processmaterialadd?processVersionGuid="
+							+ processVersionGuid + "&dialogId="
+							+ Util.uuid(8, 16) + "&isLessee=" + isLessee,
+					searchData, {
+						'width' : 1000
+					});
+		}
+
+		function openEdit(materialGuid) {
+			epoint.openDialog('修改流程材料',
+					'framemanager/workflow/manage/processmaterialedit?materialGuid='
+							+ materialGuid + "&isLessee=" + isLessee,
+					searchData, {
+						'width' : 1000
+					});
+		}
+		// 绘制行权限配置按钮
+
+		function onEditRenderer(e) {
+			if (e.record && e.record.type == "表单") {
+				return epoint.renderCell(e, "action-icon icon-gear",
+						"editAccess");
+			}
+
+		};
+		// 弹出配置权限窗口
+		function editAccess(materialGuid) {
+			var url = 'framemanager/workflow/manage/processmaterialfieldaccess?processVersionGuid='
+					+ processVersionGuid + "&materialGuid=" + materialGuid;
+			epoint.openDialog("修改权限", url, searchData, {
+				'width' : 900,
+				'height' : 600
+			});
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh('datagrid', '', true);
+		}
+
+		// 保存信息
+		function saveAll() {
+			epoint.execute('saveOrderNumber', 'datagrid', msgCallBack);
+
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>
+

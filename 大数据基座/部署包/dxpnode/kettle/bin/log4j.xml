@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<!-- [控制台日志、正式环境会输出到wrapper.log] -->
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<param name="target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="#### %d{yyyyMMdd HH:mm:ss,SSS} | %p | %c |  %m %n" />
+		</layout>
+	</appender>
+
+	<!-- console 异步日志appender -->
+	<appender name="ASYNC_CONSOLE" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="64" />
+		<param name="LocationInfo" value="true" />
+		<appender-ref ref="CONSOLE" />
+	</appender>
+
+	<!-- 按钮异步日志appender -->
+	<appender name="ASYNC_BUTTON_LOG" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="256" />
+		<param name="LocationInfo" value="true" />
+		<appender-ref ref="BUTTON_LOG" />
+	</appender>
+
+	<!-- 工作流异步日志appender -->
+	<appender name="ASYNC_WORKFLOW_LOG" class="org.apache.log4j.AsyncAppender">
+		<param name="BufferSize" value="256" />
+		<param name="LocationInfo" value="true" />
+		<appender-ref ref="WORKFLOW_LOG" />
+	</appender>
+
+	
+	<!-- 测试hbase日志 -->
+	<logger name="com.epoint.misdemo">
+		<level value="INFO" />
+		<appender-ref ref="ASYNC_CONSOLE" />
+	</logger>	
+	
+
+	<!-- Root Logger -->
+	<root>
+		<level value="INFO"></level>
+		<appender-ref ref="ASYNC_CONSOLE" />
+	</root>
+</log4j:configuration>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>错误日志列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-toolbar"></div>
+	<!-- 条件区域 -->
+	<div class="fui-search" primaryControl="displayName" opened="false">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="时间">
+						<input class="mini-datepicker" id="dateFrom"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="beginTime" />
+					</div>
+					<div role="control" label="至">
+						<input class="mini-datepicker" id="dateTo"
+							onValuechanged="validateDate(this)"
+							data-options="{'format':'yyyy-MM-dd'}" dateFormat="yyyy-MM-dd"
+							align="center" bind="endTime" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="用户名">
+						<input id="displayName" class="mini-textbox" bind="displayName" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="reset" callback="resetCallback"> <a role="searcher"
+			callback="searchData"></a><a role="close" callback="closeCallback"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="displayname" headerAlign="center" align="center"
+					width="100%">用户姓名</div>
+				<div field="appversion" headerAlign="center" align="center"
+					width="200">应用版本</div>
+				<div field="systemversion" headerAlign="center" align="center"
+					width="200">系统版本</div>
+				<div field="devicemodel" headerAlign="center" align="center"
+					width="200">设备型号</div>
+				<div field="manufacturer" headerAlign="center" align="center"
+					width="200">制造商</div>
+				<div field="uploaddate" headerAlign="center" width="150"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">日期</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('mobileapperrorloglistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		//　日期控件的验证
+		var start = mini.get("dateFrom");
+		var end = mini.get("dateTo");
+
+		function validateDate(e) {
+			if (start.getValue() && end.getValue()) {
+				if (!epoint.validateDateInterval(start, end, 0)) {
+					if (e.id == 'dateFrom') {
+						epoint.alert("起始时间不能大于终止时间!", '', null, 'warning');
+						start.setValue(null);
+					} else {
+						epoint.alert("终止时间不能小于起始时间!", '', null, 'warning');
+						end.setValue(null);
+					}
+				}
+			}
+		}
+
+		var grid = mini.get("datagrid");
+
+		grid.on('cellclick', function(e) {
+			if (e.record.rowguid) {
+				epoint.openDialog('错误记录',
+						"framemanager/mobile/errorlog/mobileapperrorlogdetail?logGuid="
+								+ e.record.rowguid, null, {
+							'width' : 1000,
+							'height' : 550
+						});
+			}
+		})
+	</script>
+</body>
+</html>

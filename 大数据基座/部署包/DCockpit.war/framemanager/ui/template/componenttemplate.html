@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>元件模板</title>
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" iconCls="icon-addcircle"
+				onclick="saveAndNew">保存并新建</a> <a class="mini-button" id="addClose"
+				iconCls="icon-save" onclick="saveAndClose">保存并关闭</a> <a
+				class="mini-button" id="updateClose" iconCls="icon-save"
+				onclick="updateAndClose" style="display: none">修改并关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="元件名称" starred="true">
+						<input id="componentname" class="mini-textbox" style="width: 90%"
+							bind="dataBean.componentname" required="true" maxLength="50"
+							vType="maxLength:50;" requiredErrorText="元件名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所属分类" starred="true">
+						<input id="componenttype" class="mini-treeselect"
+							onbeforenodeselect="beforenodeselect" style="width: 90%"
+							action="getTreeModel" required="true" requiredErrorText="分类不能为空"
+							bind="dataBean.componenttype" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="所占宽的格数" starred="true">
+						<input id="sizex" class="mini-textbox" bind="dataBean.sizex" required="true"
+						 vtype="int;range:4,24;" style="width: 75%" />
+					</div>
+					<div role="control" label="所占高的格数" starred="true">
+						<input id="sizey" class="mini-textbox" bind="dataBean.sizey" required="true"
+						 vtype="int;range:4,6;" style="width: 75%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="打开方式">
+						<div class="mini-radiobuttonlist" repeatItems="3" textField="text"
+							valueField="value" value="dialog" bind="dataBean.openwith" id="openwith"
+							data="[{value:'dialog',text:'对话框'},{value:'tabsNav',text:'标签页'},{value:'blank',text:'新窗口'}]">
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="个性化管理页地址">
+						<input id="mangeurl" class="mini-textbox" bind="dataBean.elemanageurl"
+							maxLength="200" vType="maxLength:200;" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否随主题换肤">
+						<input class="mini-checkbox" width="auto" truevalue="true"
+							falsevalue="false" text="" bind="dataBean.themecheck" id="themecheck" onvaluechanged="themecheckchange(this.value)"/>
+					</div>
+				</div>
+				<div role="row" id="borderrow" style="display: none;">
+					<div role="control" label="边框">
+						<input id="framecolor" class="mini-colorpicker" allowInput="true" bind="dataBean.framecolor" style="width: 25%"/>
+						<input class="mini-spinner narrow" step="1"
+							minvalue="0" maxvalue="1000" bind="dataBean.framesize"
+							id="framesize" style="width: 10%"/>
+					</div>
+				</div>
+				<div role="row" id="bgcolorrow" style="display: none;">
+					<div role="control" label="背景颜色">
+						<input id="backgroundcolor" class="mini-colorpicker" allowInput="true" bind="dataBean.backgroundcolor""  style="width: 25%"/>
+					</div>
+				</div>
+				<div role="row" id="shadowrow" style="display: none;">
+					<div role="control" label="阴影">
+						<input id="shadow" class="mini-colorpicker" allowInput="true" bind="dataBean.shadow" style="width: 25%"/>
+					</div>
+				</div>
+				<div role="row" id="radiusrow" style="display: none;">
+					<div role="control" label="圆角">
+						<input class="mini-spinner narrow" step="1"
+							minvalue="0" maxvalue="1000" bind="dataBean.radius"
+							id="radius" style="width: 10%"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="是否显示标题">
+						<input class="mini-checkbox" width="auto" truevalue="true" onvaluechanged="showtitlechange(this.value)"
+							falsevalue="false" text="" bind="dataBean.isshowtitle" id="isshowtitle"/>
+					</div>
+				</div>
+<!-- 				<div role="row" id="titlerow"> -->
+<!-- 					<div role="control" label="标题"> -->
+<!-- 						<input id="title" class="mini-textbox" bind="dataBean.title" -->
+<!-- 							maxLength="50" vType="maxLength:50;" style="width: 40%" /> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+				<div role="row" id="titlefontrow">
+					<div role="control" label="标题字体颜色">
+						<input id="fontcolor" class="mini-colorpicker" allowInput="true" bind="dataBean.fontcolor" style="width: 25%"/>
+					</div>
+				</div>
+				<div role="row" id="titlebgrow">
+					<div role="control" label="标题背景颜色">
+						<input id="titlebackgroundcolor" class="mini-colorpicker" allowInput="true" bind="dataBean.titlebackgroundcolor" style="width: 25%"/>
+					</div>
+				</div>
+				<div role="row" id="showrefreshrow">
+					<div role="control" label="是否显示刷新按钮">
+						<input class="mini-checkbox" width="auto" truevalue="true"
+							falsevalue="false" text="" bind="dataBean.isshowrefresh" id="isshowrefresh"/>
+					</div>
+				</div>
+				<div role="row" id="showmorerow">
+					<div role="control" label="是否显示更多按钮">
+						<input class="mini-checkbox" width="auto" truevalue="true" onvaluechanged="showmorechange(this.value)"
+							falsevalue="false" text="" bind="dataBean.isshowmorebutton" id="isshowmorebutton"/>
+					</div>
+				</div>
+				<div role="row" id="moreurlrow" style="display:none;">
+					<div role="control" label="更多页地址">
+						<input id="moreurl" class="mini-textbox" bind="dataBean.moreurl"
+							maxLength="1000" vType="maxLength:10000;" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row" id="shownewrow">
+					<div role="control" label="是否显示新增按钮">
+						<input class="mini-checkbox" width="auto" truevalue="true" onvaluechanged="shownewchange(this.value)"
+							falsevalue="false" text="" bind="dataBean.isshownewbutton" id="isshownewbutton"/>
+					</div>
+				</div>
+				<div role="row" id="newurlrow" style="display:none;">
+					<div role="control" label="新增页地址">
+						<input id="newurl" class="mini-textbox" bind="dataBean.newurl"
+							maxLength="1000" vType="maxLength:10000;" style="width: 90%" />
+					</div>
+				</div>
+				<div role="row" id="showiconrow">
+					<div role="control" label="展示图标">
+						<div class="btn-group mr10">
+							<a class="mini-button" onclick="openicon">选择图标</a>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="picrow">
+					<div role="control">
+						<div class="img-view" id="preview">
+							<img id="lblPicture" src="" width="300px" height="150px" /> <i
+								class="action-icon icon-removecirclefilled" id="closeicon"
+								style="position: absolute; left: 300px; top: -8px;"
+								onclick="delPhoto();"></i>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序">
+						<input id="ordernumber" class="mini-textbox" maxLength="8"
+							vtype="int;range:0,99999999" bind="dataBean.ordernumber"
+							style="width: 90%">
+					</div>
+				</div>
+				<input class="mini-hidden" bind="dataBean.showicon" id="showicon" />
+			</div>
+			<input class="mini-hidden" bind="appGuid" id="appGuid" />
+		</div>
+
+
+		<!-- 请修改相对路径 -->
+		<script src="../../../rest/resource/jsboot"></script>
+		<script>
+			// 初始化页面
+			epoint.initPage('componenttemplateaction', null, initPage);
+
+			function initPage(data) {
+				//隐藏关闭按钮
+				$("#closeicon").hide();
+				$("#lblPicture").hide();
+				if (data.msg) {
+					if ("update" == data.msg) {
+						mini.get("addNew").hide();
+						mini.get("addClose").hide();
+						mini.get("updateClose").show();
+					}
+					if (data.componenttTypeText) {
+						mini.get("componenttype").setText(
+								data.componenttTypeText);
+					}
+				}
+				if (data.showicon) {
+					var url = Util.getRightUrl(data.showicon);
+					$("#lblPicture").attr("src", url);
+					$("#closeicon").show();
+					$("#lblPicture").show();
+				}
+				if (data.appGuid) {
+					mini.get("appGuid").setValue(data.appGuid);
+				}
+				themecheckchange(mini.get('themecheck').getValue());
+				showtitlechange(mini.get('isshowtitle').getValue());
+				showmorechange(mini.get('isshowmorebutton').getValue());
+				shownewchange(mini.get('isshownewbutton').getValue());
+			}
+			
+			var themecheckchange = function(value){
+				var themeCheck = value;
+				if(themeCheck == 'false') {
+					$('#borderrow').show();
+					$('#bgcolorrow').show();
+					$('#shadowrow').show();
+					$('#radiusrow').show();
+				}
+				else {
+					$('#borderrow').hide();
+					$('#bgcolorrow').hide();
+					$('#shadowrow').hide();
+					$('#radiusrow').hide();
+				}
+			}
+			
+			var showtitlechange = function(value) {
+				var isShowTitle = value;
+				if(isShowTitle == 'true') {
+					$('#titlerow').show();
+					$('#titlefontrow').show();
+					$('#titlebgrow').show();
+					$('#showrefreshrow').show();
+					$('#showmorerow').show();
+					$('#shownewrow').show();
+					$('#showiconrow').show();
+					$('#picrow').show();
+					showmorechange(mini.get('isshowmorebutton').getValue());
+					shownewchange(mini.get('isshownewbutton').getValue());
+				}
+				else {
+					$('#titlerow').hide();
+					$('#titlefontrow').hide();
+					$('#titlebgrow').hide();
+					$('#showrefreshrow').hide();
+					$('#showmorerow').hide();
+					$('#shownewrow').hide();
+					$('#showiconrow').hide();
+					$('#picrow').hide();
+					$('#moreurlrow').hide();
+					$('#newurlrow').hide();
+				}
+			}
+			
+			var showmorechange = function(value){
+				var isShowMoreButton = value;
+				if(isShowMoreButton == 'true') {
+					$('#moreurlrow').show();	
+				}
+				else {
+					$('#moreurlrow').hide();
+				}
+			}
+			
+			var shownewchange = function(value){
+				var isShowNewButton = value;
+				if(isShowNewButton == 'true') {
+					$('#newurlrow').show();	
+				}
+				else {
+					$('#newurlrow').hide();
+				}
+			}
+
+			function saveAndNew() {
+				if (epoint.validate()) {
+					epoint.execute('addNew', 'fui-form', newCallback);
+				}
+			}
+
+			function saveAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('add', 'fui-form', closeCallback);
+				}
+			}
+
+			function updateAndClose() {
+				if (epoint.validate()) {
+					epoint.execute('update', 'fui-form', closeCallback);
+				}
+			}
+
+			// 新增操作的回调
+			function newCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						// 清空表单
+						epoint.clear('fui-form');
+						if (data.componenttTypeText) {
+							mini.get("componenttype").setValue(
+									Util.getUrlParams('selectTree'));
+							mini.get("componenttype").setText(
+									data.componenttTypeText);
+						}
+						mini.get("openwith").setValue("dialog");
+					}
+					epoint.alert(data.msg, '', null, 'info');
+					$("#lblPicture").attr("src", "");
+					$("#lblPicture").hide();
+					$("#closeicon").hide();
+				}
+			}
+
+			// 关闭操作的回调
+			function closeCallback(data) {
+				if (data.msg) {
+					if (data.success) {
+						epoint.alertAndClose(data.msg, '', null, null,
+								'success');
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				}
+			}
+
+			function openicon() {
+				var url = 'framemanager/ui/template/thumbnail?tplicon=1';
+				epoint.openDialog("选择图标", url, openiconOperJS, {
+					'width' : 1100,
+					'height' : 500
+				});
+			}
+
+			function openiconOperJS(rtnValue) {
+				if (rtnValue && rtnValue != 'close') {
+					$("#closeicon").show();
+					$("#lblPicture").show();
+					var url = Util.getRightUrl(rtnValue);
+					$("#lblPicture").attr("src", url);
+					mini.get("showicon").setValue(rtnValue);
+				}
+			}
+			//删除图片
+			function delPhoto() {
+				$("#lblPicture").attr("src", "");
+				$("#lblPicture").hide();
+				$("#closeicon").hide();
+			}
+
+			function beforenodeselect(e) {
+				if (e.node) {
+					if (e.node.id == "f9root") {
+						e.cancel = true;
+					}
+				}
+			}
+		</script>
+</body>
+</html>

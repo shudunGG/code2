@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>系统字段管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!--必须有，加载时的loading效果  -->
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a onclick="save" class="mini-button">保存</a>
+		</div>
+	</div>
+	<div class="fui-content" align="center">
+		<div class="fui-form" id="fui-form">
+			<div role="form" id="form">
+				<table>
+					<tr>
+						<td>
+						    <input bind="selectedItems" id="selectedItems" class="mini-hidden" />
+							<div id="waitselect" class="mini-listbox" style="width: 250px; height: 350px" textField="text"
+								valueField="id" showCheckBox="true" multiSelect="true" onitemdblclick="itemdblclick">
+								<div property="columns">
+									<div header="字段名" field="displayfieldname"></div>
+								</div>
+							</div>
+						</td>
+						<td style="width: 20px; text-align: center;">
+						    <input type="button" value=">" onclick="add()" style="width: 40px;" /><br />
+						    <input type="button" value=">>" onclick="addAll()" style="width: 40px;" /><br /> 
+						    <input type="button" value="&lt;&lt;" onclick="removeAll()" style="width: 40px;" /><br />
+						    <input type="button" value="&lt;" onclick="removes()" style="width: 40px;" /><br />
+						</td>
+						<td>
+							<div id="selected" class="mini-listbox" style="width: 320px; height: 350px;" showCheckBox="true"
+								multiSelect="true" onitemdblclick="selecteditemdblclick">
+								<div property="columns">
+								    <div header="来源表" field="sqltablename" width="80px"></div>
+									<div header="字段名" field="displayfieldname" width="80px"></div>
+									<div header="所属表英文名" field="tablename" width="100px"></div>
+								</div>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	
+	<script src="../../../../rest/resource/jsboot"></script>
+	
+	<script type="text/javascript">
+	//<![CDATA[  
+	//初始化页面
+		var tree = mini.get("tree");
+	
+		var waitselect = mini.get("waitselect");
+		
+		var selected = mini.get("selected");
+
+		epoint.initPage("systemstructconfigeditaction", "", function(data) {
+			epoint.execute("getWaitSelectModel", null, null, function(result) {
+				waitselect.setData(result);
+			});
+			epoint.execute("getSelectedModel", null, null, function(result) {
+				selected.setData(result);
+			});
+		});
+		
+		var add = function() {
+			var items = waitselect.getSelecteds();
+			addToSelected(items)
+		}
+		var addAll = function() {
+			var items = waitselect.getData();
+			addToSelected(items);
+		}
+
+		var addToSelected = function(items) {
+			for (var i = 0, len = items.length; i < len; i++) {
+				var item = items[i];
+				var selectedItems = selected.getData();
+				var exist = false;
+				for (var j = 0, length = selectedItems.length; j < length; j++) {
+					var selectedItem = selectedItems[j];
+					if (selectedItem.fieldname == item.fieldname) {
+						exist = true;
+						break;
+					}
+				}
+				if (!exist) {
+					selected.addItem(item);
+				}
+			}
+		}
+
+		var removes = function() {
+			var items = selected.getSelecteds();
+			selected.removeItems(items);
+		}
+		var removeAll = function() {
+			var items = selected.getData();
+			selected.removeItems(items);
+		}
+
+		var save = function() {
+			var data = selected.getData();
+			mini.get("selectedItems").setValue(mini.encode(data));
+			epoint.execute("save", null, null, function(rtn) {
+				if (rtn && rtn.msg && rtn.flag == 'success') {
+					epoint.alertAndClose(rtn.msg);
+				}else if(rtn && rtn.msg){
+					epoint.alert(rtn.msg);
+				}
+			});
+		}
+
+		// 保存操作的回调
+		var saveCallback = function(data) {
+			var msg = data.msg;
+			epoint.alertAndClose(msg);
+		}
+
+		//字段双击事件
+		function itemdblclick(e) {
+			addToSelected([ e.item ]);
+		}
+
+		//字段双击事件
+		function selecteditemdblclick(e) {
+			selected.removeItem(e.item);
+		}
+		//]]>
+	</script>
+</body>
+</html>

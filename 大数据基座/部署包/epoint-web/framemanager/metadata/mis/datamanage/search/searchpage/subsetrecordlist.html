@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据查看</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	
+	<div class="fui-content" id="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+            idField="rowguid" action="getTableData"
+			showPager="false" allowCellSelect="true" allowCellEdit="false"
+			allowCellValid="true" multiSelect="true"></div>
+	</div>
+	
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script src="../js/eputil.js"></script>
+	
+	<script>
+		var grid = mini.get('datagrid');
+		           
+		//初始化页面
+		epoint.initPage("subsetrecordlistaction", "", function(data) {
+			if(data.msg){
+				epoint.alert(data.msg, null, null, 'info');
+			}
+			if (data.columns) {
+				drawDynamicColumn(data.columns);
+				grid.hideColumn("check");
+			}
+		});
+
+		grid.on("drawcell", function(e) {
+			var field = e.field;
+			var value = e.value;
+			var record = e.record;
+			if (field == 'view') {
+				e.cellStyle = "text-align:center";
+				e.cellHtml = '<a href="javascript:openView(\'' + record.recordguid
+						+ '\',\''+record.personalViewPage+'\')" class="action-icon icon-search"> </a> '
+			}
+		});
+
+		// 绘制动态列
+		var drawDynamicColumn = function(columns) {
+			grid.setColumns(columns);
+			searchData();
+		}
+		  
+	   // 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid']);
+		}
+
+	</script>
+
+</body>
+
+</html>

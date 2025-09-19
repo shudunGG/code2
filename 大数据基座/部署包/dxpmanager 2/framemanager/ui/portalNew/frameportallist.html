@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>门户列表</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<div class="fui-left">
+		<div role="head" title="分类管理">
+			<div class="btn-group r">
+				<a class="mini-button" iconCls="icon-gear" id="portalTypeManager"
+					style="margin-top: 5px; margin-right: 5px;" onclick="openType()">门户分类</a>
+			</div>
+		</div>
+
+		<div role="body">
+			<ul id="tree" name="tree" class="mini-tree"
+				style="width: 100%; height: 100%" autoLoad="false"
+				showTreeIcon="true" textField="text" idField="id" parentField="pid"
+				action="getTreeModel" resultAsTree="false"></ul>
+		</div>
+	</div>
+	<div class="fui-right" id="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="add" iconCls="icon-addcircle">新增门户</a>
+				<a class="mini-button mini-btn-danger"
+					onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}"
+					iconCls="icon-minuscircle">删除门户</a> <a id="saveAll"
+					class="mini-button" onclick="saveAll">保存修改</a>
+			</div>
+		</div>
+		<div class="fui-condition">
+			<!-- 表单布局 -->
+			<div class="fui-form" id="fui-form">
+				<input bind="typeGuid" id="typeguid" class="mini-hidden" />
+			</div>
+			<!-- 			<p> -->
+			<!-- 				<em>首页默认展示规则：</em><font color="red">1.只能设置一个默认展示的门户 -->
+			<!-- 					2.如果没有默认门户的权限,则展示排序号最高的类别下面排序号最高的门户</font> -->
+			<!-- 			</p> -->
+		</div>
+		<!-- 内容区域 -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="rowGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData" allowCellEdit="true"
+				allowCellSelect="true" editNextOnEnterKey="true"
+				editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" headerAlign="center">序</div>
+					<div field="portalname" headerAlign="center" width="140">门户名称</div>
+					<div field="groupname" headerAlign="center" width="50" align=""left"">分类名称</div>
+					<div field="typename" headerAlign="center" width="50" align=""left"">门户类型</div>
+					<div field="description" headerAlign="center" width="140">描述</div>
+					<div field="orderNumber" width="80" align="right"
+						headerAlign="center" allowSort="true" sortOrder="desc"
+						vtype="int;range:0,99999999">
+						排序 <input property="editor" class="mini-textbox"
+							vtype="int;range:0,99999999" inputStyle="text-align:right"
+							style="width: 100%" />
+					</div>
+					<div field="isdisable" width="40" align="center"
+						type="checkboxcolumn" truevalue="1" falsevalue="0"
+						headerAlign="center">禁用</div>
+					<div name="config" width="70" headerAlign="center" align="center"
+						renderer="onConfigRenderer">设计</div>
+					<div name="pedit" width="70" headerAlign="center" align="center"
+						renderer="onEditRenderer">修改</div>
+					<!-- <div field="isdefaultdisplay" width="70" headerAlign="center"
+						align="center">是否默认展示</div> -->
+					<!-- <div name="showportal" width="70" headerAlign="center"
+						align="center" renderer="onShowRenderer">是否默认展示</div>-->
+					<div width="60" align="center" headerAlign="center"
+						renderer="onAuthRenderer">权限</div>
+					<!--<div width="50" align="center" headerAlign="center"
+					renderer="onElementRenderer">元件模板</div> -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		var attr = Util.getUrlParams('isSub');
+		var isSub = attr == undefined ? '' : attr;
+		//初始化页面
+		epoint.initPage('frameportallistaction', '', function(data) {
+			if (isSub == "1") {
+				mini.get("portalTypeManager").setVisible(false);
+			}
+		});
+
+		//树js对象
+		var tree = mini.get("tree");
+
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			//将左侧树点击的节点id放到隐藏域中
+			mini.get('typeguid').setValue(id);
+			//刷新表格
+			updateTable_tree();
+		});
+		function updateTable_tree() {
+			epoint.refresh([ "datagrid", "fui-form" ]);
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		//新增 修改回调
+		function addEditCallBack(param) {
+			if (param) {
+				searchData();
+			}
+		}
+
+		//新增元件
+		function add() {
+			var typeguid = mini.get('typeguid').getValue();
+			if (typeguid == null || typeguid.trim() == "") {
+				epoint.alert("请选择门户类别", '', null, 'warning');
+				return;
+			}
+			var settings = {
+				'width' : 1000,
+				'height' : 400
+			};
+			epoint.openDialog('新增',
+					'framemanager/ui/portalNew/frameportal?typeguid='
+							+ typeguid + '&isSub=' + isSub, addEditCallBack,
+					settings);
+		}
+
+		// 回diao提醒
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alert(msg, '', searchData(), 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//删除选中
+		function deleteSelected() {
+			epoint.execute('deleteSelected', 'datagrid', msgCallBack);
+		}
+		function editItems(guid) {
+			var settings = {
+				'width' : 1000,
+				'height' : 500
+			};
+			epoint.openDialog('修改',
+					'framemanager/ui/portalNew/frameportal?portalguid=' + guid
+							+ '&isSub=' + isSub, addEditCallBack, settings);
+		}
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editItems",
+					"rowGuid")
+		};
+		var onConfigRenderer = function(e) {
+			if (e.record.portaltype == 3) {
+				return "";
+			} else if (e.record.portaltype == 1) {
+				return epoint.renderCell(e, "action-icon modicon-22",
+						"configPortal", "rowGuid,portalname");
+			}
+		};
+		function configPortal(e) {
+			var settings = {
+				'width' : 1000,
+				'height' : 800
+			};
+			window.open('portaldesign/index?portalGuid='
+					+ e.rowGuid + '&title=' + epoint.encodeUtf8(e.portalname) + '&isSub=' + isSub, '_blank');
+		}
+		//定义一个全局变量guids,用于存放当前id
+		var onShowRenderer = function(e) {
+			if (e.record.defaultdisplay == 1) {
+				return epoint.renderCell(e, "action-icon modicon-32",
+						"showPortal", "rowGuid");
+			} else {
+				return epoint.renderCell(e, "action-icon modicon-30",
+						"showPortal", "rowGuid");
+			}
+		};
+		function showPortal(guid) {
+			epoint.execute('updateDisplay', '', guid, msgCallBack);
+		}
+
+		function openType() {
+			epoint.openDialog('门户类别',
+					'framemanager/ui/portalNew/frameportaltypelist?isSub='
+							+ isSub, function() {
+						mini.get("typeguid").setValue("");
+						epoint.refresh([ 'tree', "datagrid", "fui-form" ]);
+					}, {
+						'width' : 1000,
+						'height' : 550
+					});
+		}
+		//绘制授权按钮
+		var onAuthRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon modicon-22", "auth");
+		};
+		// 弹出授权窗口
+		function auth(id) {
+			epoint.openDialog('权限',
+					"framemanager/ui/portalNew/portalrightsetting?guid=" + id
+							+ "&isSub=" + isSub, searchData, {
+						'width' : 800,
+						'height' : 550
+					});
+		}
+
+		var grid = mini.get("datagrid");
+
+		//保存排序
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid()) {
+				epoint.execute('saveAll', [ 'datagrid', 'fui-form' ],
+						msgCallBack);
+			}
+		}
+		/*var onElementRenderer = function(e) {
+			if (e.record.portaltype == 3) {
+				return "";
+			} else if (e.record.portaltype == 1) {
+				return epoint.renderCell(e, "action-icon modicon-22",
+						"selectItem");
+			}
+			return epoint.renderCell(e, "action-icon modicon-22",
+					"selectElement");
+		};
+		function selectElement(id) {
+			epoint.openDialog('配置元件',
+							"framemanager/ui/portal/portalelementmanagement?portalGuid="
+									+ id, null, {
+							'allowResize' : true,
+							'allowDrag' : true
+							});
+		}*/
+		//]]>
+	</script>
+
+
+</body>
+</html>

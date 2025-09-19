@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>预警结果查询</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="专题名称">
+						<input class="mini-textbox" bind="projectname" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="projectname" headerAlign="center" align="center">专题名称</div>
+				<div field="applyuser" headerAlign="center" align="center">申请人</div>
+				<div field="applytime" headerAlign="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss" align="center">申请时间</div>
+				<div field="userguid" visible="false"></div>
+				<div field="statusText" headerAlign="center" align="center">状态</div>
+				<div type="actioncolumn" headerAlign="center" align="center"
+						renderer="onActionRenderer" width="200"></div>
+				<!-- <div visible="false" field="pviguid"></div> -->
+			</div>
+		</div>
+	</div>
+
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitprojectexamineaction', null, function(data) {
+			
+		});
+		
+		function onActionRenderer(e) {
+			var title = "";
+			console.log(e.record);
+			if (e.record.status == '3') {
+				title += '<a href="javascript:void(0);" style=\"color:red\" onclick="deleteP(\''
+					+ e.record.rowguid + '\')">删除</a>' + '&nbsp&nbsp';
+			} else if (e.record.status == '2') {
+				title += '<a href="javascript:void(0);" style=\"color:blue\" onclick="check(\''
+						+ e.record.pviguid + '\')">审核</a>' + '&nbsp&nbsp';
+			}
+			return title;
+		}
+		
+		function deleteP(e){
+			epoint.confirm('确认删除吗？','',function(data){
+				epoint.execute('deleteResult','',e,function(data){
+					if (data.msg) {
+						epoint.alert(data.msg);
+					}
+					searchData();
+				})
+			});
+		}
+		
+		function check(e) {
+			epoint.execute('getPage', '', e, function(data) {
+				if (data.msg) {
+					epoint.alert(data.msg, '', '', 'warning');
+				} else {
+					epoint.openTopDialog('应用发布审核', data.page, searchData, {
+						'width' : 1200,
+						'height' : 800
+					});
+				}
+			});
+		}
+		
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>路由活动页面</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle"
+				onclick="btnSaveClick();" id="btnAddRecord">确认保存 </a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="row">
+				<div role="control" label="活动名称" starred="true">
+					<input id="acName" class="mini-textbox"
+						bind="workflowActivity.activityName" required="true"
+						requiredErrorText="活动名称不能为空!" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="分支方式">
+					<div bind="workflowActivity.splitType" class="mini-radiobuttonlist"
+						repeatItems="2" value="10" textField="text" valueField="id"
+						data="[{text:'多路分支',id:'20'},
+							{text:'单一分支',id:'30'}]">
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="会合方式">
+					<div bind="workflowActivity.joinType" class="mini-radiobuttonlist"
+						repeatItems="2" value="10" textField="text" valueField="id"
+						data="[{text:'多路会合',id:'20'},
+							{text:'单一会合',id:'30'}]">
+					</div>
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="备注">
+					<input class="mini-textbox" bind="workflowActivity.note" />
+				</div>
+			</div>
+			<div role="row">
+				<div role="control" label="活动标识">
+					<input class="mini-textbox"
+						bind="workflowActivity.activityDispName" /> <span
+						class="text-danger">(用来唯一定位到该活动,一旦设定不允许修改,与活动对象的activityDispName关联)</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint.initPage('activityrouterframesformaction');
+
+		function btnSaveClick() {
+			if (epoint.validate()) {
+				epoint.execute('btnSaveClick', 'fui-form', closeCallback);
+			}
+		}
+
+		function setDialogValue(param) {
+			parent.dialogvalueset(param);
+		}
+
+		function updateTab() {
+			tabshow();
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alertAndClose(data.msg, '', null, null, 'info');
+				}else{
+					epoint.alert(data.msg, '', null, 'info');
+				}
+				var textValue = mini.get('acName').getValue();
+				var param = {
+					Added : !data.edit,
+					Edit : data.edit,
+					ID : Util.getUrlParams('MaxID'),
+					NodeType : 'Router',
+					Text : textValue
+				};
+				parent.dialogvalueset(param);
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

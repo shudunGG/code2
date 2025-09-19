@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>消息配置</title>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<script src="../../../../../frame/fui/js/cssboot.js"></script>
+	<script>
+		SrcBoot.output(['./css/messagesetting.css']);
+	</script>
+	<script>
+		SrcBoot.outputCustomSkin("./skins/messagesetting/");
+	</script>
+</head>
+
+<body>
+	<div class="fui-content" style="padding:0 20px;">
+		<div class="scroll-container">
+			<div class="cate-header fui-theme-main-color">消息提醒</div>
+
+			<div class="voices-setting">
+				<div class="row clearfix">
+					<span class="sumary-left ">语音提醒</span>
+					<span class="sumary-right ">
+						<span class="mini-checkbox switch " checked="true" onclick="onVoiceStateChange"></span>
+					</span>
+				</div>
+			</div>
+
+			<!-- 消息配置sumary -->
+			<div class="remind-setting-sumary" id="remind-setting-sumary">
+				<div class="row clearfix">
+					<span class="sumary-left sumary-title">消息配置</span>
+					<span class="sumary-right ">
+						<span class="sumary-advance fui-theme-main-color" onclick="openAdvanceWin()">高级设置</span>
+					</span>
+				</div>
+				<!-- 模板渲染插入 -->
+			</div>
+		</div>
+	</div>
+
+	<div id="win1" class="mini-window" title="高级设置" showMaxButton="false" showCollapseButton="false" showShadow="true" showModal="true"
+	    allowResize="false" allowDrag="true">
+		<div class="detail-container" id="datail-container">
+			<div class="detail-body remind-setting-detail" id="remind-setting-detail">
+			</div>
+			<div class="detail-footer">
+				<span class="mini-button" onclick="MessageSetting.save()">保存</span>
+				<span class="mini-button" plain="true" onclick="MessageSetting.hideAdvance()">取消</span>
+			</div>
+		</div>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 获取数据 数据格式参考json文件 查询参数{query: 'getMessageData'}
+		var getMessageSettingUrl = './test/messagesetting.json';
+		// 保存数据地址
+		// 方式一： 外部点击总开关的实时保存
+		// 请求参数：
+		// {
+		// 	query: 'saveMasterData',
+		// 	data: {
+		// 		id: '消息提醒分类的标识',
+		// 		state: '总的开启关闭状态 取值 布尔值 true / false'
+		// 	}
+		// }
+		// 方式二： 高级设置中详情操作完毕的保存
+		// 请求参数：
+		// {
+		// 	query: 'saveDetailData',
+		// 	data: [{
+		// 			id: '提醒分类的标识',
+		// 			state: '总开关状态',
+		// 			detail: [{
+		// 					id: '子渠道标识',
+		// 					state: '当前子渠道状态',
+		// 					disabled: '是否不支持此渠道'
+		// 				},
+		// 				...
+		// 			]
+		// 		},
+		// 		...
+		// 	]
+		// }
+		var saveMessageSettingUrl = './test/message-save.json';
+
+		function openAdvanceWin() {
+			MessageSetting.showAdvance();
+		}
+
+		function onVoiceStateChange(e) {
+			var ctr = e.sender,
+				trueValue = ctr.trueValue + '',
+				value = ctr.value === trueValue ? true : false;
+			// todo 实现语音提醒的保存
+			epoint.showLoading();
+			setTimeout(function () {
+				alert('当前语音提醒开关状态:' + value);
+				epoint.hideLoading();
+			}, 200);
+		}
+	</script>
+	<script>
+		SrcBoot.output(['./messagesetting.js']);
+	</script>
+
+</body>
+
+</html>

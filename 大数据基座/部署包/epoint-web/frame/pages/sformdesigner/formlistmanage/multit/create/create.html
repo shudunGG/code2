@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="../../../../../fui/js/cssboot.js"></script>
+<!-- <script src="../../../fui/js/cssboot.js"></script> -->
+<link rel="stylesheet" href="./create.css">
+<title>多表合一</title>
+</head>
+
+<body>
+	<div class="container">
+		<div class="content">
+			<!-- 流程 -->
+			<div class="flow ver-inner-md">
+				<div class="flow-circle active">
+					<span class="flow-circle-txt">创建主表</span>
+				</div>
+				<div class="flow-line"></div>
+				<div class="flow-circle">
+					<span class="flow-circle-txt">选择数据表</span>
+				</div>
+				<div class="flow-line"></div>
+				<div class="flow-circle">
+					<span class="flow-circle-txt">字段合并</span>
+				</div>
+				<div class="flow-line"></div>
+				<div class="flow-circle">
+					<span class="flow-circle-txt">布局组合</span>
+				</div>
+			</div>
+			<!-- 提示 -->
+			<div class="info clearfix">
+				<div class="info-icon l">
+					<span class="action-icon icon-info"></span>
+				</div>
+				<div class="info-content">
+					多表合一，可将多张已经创建好的业务表单（仅限表单类型），快速合并成一张业务大表，并且支持表单布局以及字段的二次组合排布。<br>
+					该合成表再投入使用后，所使用的的数据仍会拆分到子表中，供各个业务功能正常驱动。
+				</div>
+			</div>
+			<!-- 表单 -->
+			<div id="form" class="fui-form">
+				<input name="id" class="mini-hidden" />
+				<div role="form">
+					<div role="row">
+						<div role="control" label="表单名称" starred="true">
+							<input id="textbox" class="mini-textbox" required="true"
+								bind="dataBean.formname" id="formname" vtype="maxLength:50" />
+						</div>
+					</div>
+
+					<div role="row">
+						<div role="control" label="结构模板" starred="true">
+							<div class="mini-combobox" repeatItems="2" id="templateguid"
+								bind="sformTemplate" textField="text" valueField="id"
+								allowInput="true" value="1" action="getsformTemplates"
+								required="true"></div>
+						</div>
+						<div class="combo-mark">表单的外部结构，如表单外的工具栏，侧边导航等</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="bottom" class="bottom ver-inner-md text-center">
+			<a href="javascript:;" class="mini-button ver-md next-btn"
+				state="primary">下一步</a>
+		</div>
+	</div>
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<!-- <script src="../../../fui/js/jsboot.js"></script> -->
+	<script>
+		var rowguid = "";
+		var isSub = "";
+		var relationguid = "";
+		epoint.initPage('epointsformmultitaddaction', '', function(data) {
+			if (data) {
+				mini.get('templateguid').setValue(data.templateGuid);
+				mini.get('templateguid').setText(data.templateName);
+				rowguid = data.rowGuid;
+				isSub = data.isSub;
+				relationguid = data.relationguid;
+			}
+
+		});
+		var $bottom = $('#bottom');
+		$bottom.on('click', '.next-btn', function() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'form', newCallback);
+
+			}
+
+		})
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.flag) {
+				//var relationguid = Util.getUrlParams('relationguid');
+				if (relationguid == "" || relationguid == undefined) {
+					window.parent.goNext(rowguid, isSub);
+				} else {
+					window.parent.goCustomNext(rowguid, isSub, relationguid);
+				}
+			} else {
+				if (data.msg) {
+					epoint.alert(data.msg, '', '', 'info');
+				}
+			}
+		}
+
+		function onCloseForm() {
+			//epoint.execute('deleteSform', '');
+			Util
+					.ajax({
+						url : 'formlistmanage/epointsformmultitaddaction.action?cmd=deleteSform',
+						async : false
+					});
+		}
+	</script>
+</body>
+
+</html>

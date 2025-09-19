@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>元件设置</title>
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" href="css/icons.css">
+<style>
+.scroll {
+	height: 100%;
+	overflow-y: auto;
+}
+</style>
+</head>
+
+<body class="portal-child-page">
+	<div class="icons-header clearfix">
+		<div class="icons-current l">
+			<i class="icons-item" id="current-icon"></i>
+		</div>
+		<div class="icons-right l">
+			<p class="icons-text">请选择合适的字体图标，或导入自定义图标 (尺寸为20*20)</p>
+			<div>
+				<a class="icons-btns disable clear-icon">清除</a> <a
+					class="icons-btns"> 导入图标
+					<div id="uploader1" class="mini-webuploader icon-upload"
+						action="iconsaction.getFileUploadModel" onbeforeFileQueued="beforeFileQueued" fileSingleSizeLimit="5120"
+						onuploadsuccess="OnFileSuccess" limitType="jpeg,jpg,gif,png,bmp"
+						mimeTypes="image/*" auto="true"></div>
+				</a>
+			</div>
+		</div>
+
+	</div>
+	<div class="icons-content">
+		<div class="scroll clearfix" id="icons-list">
+			<!-- <i class="icons-item modicon-2"></i> -->
+		</div>
+	</div>
+
+	<div class="footer text-right clearfix">
+		<a class="mini-button r mr-5 portal-confirm" state="primary"
+			onclick="save()">保存</a> <a class="mini-button r mr-5 portal-cancel"
+			onclick="cancel()">取消</a>
+	</div>
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		(function(win, $) {
+			epoint.initPage('iconsaction', '', function(data) {
+
+			});
+
+			var $clearIcon = $('.clear-icon');
+
+			var num = Util.getUrlParams('icon') || '';
+			if (num == 0) { // 旧数据兼容
+				num = '';
+			}
+			win.OnFileSuccess = function(data) {
+				var url = JSON.parse(data.ret._raw).controls[0].data.downloadUrl;
+				num = url;
+				setIcon(url);
+			}
+
+			win.beforeFileQueued = function (obj, data, headers) {
+				mini.get('uploader1').clearFile(true);
+			}
+
+			var len = 125, str = '';
+			for (var i = 1; i <= len; i++) {
+				str += '<i data-num="'
+						+ i
+						+ '" title="图标' + i
+						+ '" class="icons-item modicon-'+ i +'"></i>';
+			}
+
+			$('#icons-list').html(str);
+
+			var $currentIcon = $('#current-icon');
+
+			setIcon(num);
+
+			$('body').on('click', '.icons-item', function() {
+				var $this = $(this);
+				if($this.data('num')) {
+					num = Number($this.data('num'));
+				    setIcon(num);
+				}
+			}).on('click', '.clear-icon', function() {
+				mini.get('uploader1').clearFile(true);
+                $currentIcon.parent().removeClass('remove-no');
+				num = '';
+				setIcon(num);
+			});
+
+			function setIcon(num) {
+                $currentIcon.removeClass().addClass('icons-item').css({
+                    "background" : "transparent"
+                });
+				if (isNaN(+num)) {
+					// 背景图
+					if (num.indexOf("attachGuid") > -1 || num.indexOf("complexUrlSecretParam") > -1  ) {
+						$currentIcon.css({
+							"background" : "url(" + Util.getRightUrl(num)
+									+ ") #f5f6f9 no-repeat"
+						});
+
+					} else {
+						var attachGuid = Util.getUrlParams('attachGuid');
+						$currentIcon.css({
+							"background" : "url(" + Util.getRightUrl(num)
+									+ "&attachGuid=" + attachGuid
+									+ ") #f5f6f9 no-repeat"
+						});
+					}
+					if (Util.getRightUrl(num)) {
+						$clearIcon.removeClass('disable');
+					}
+				} else {
+                    // 图标
+					if (!num) {
+						$currentIcon.css({
+							"background" : "transparent"
+						});
+						$clearIcon.addClass('disable');
+					} else {
+                        $currentIcon.addClass('modicon-' + num).parent().addClass('remove-no');
+						$clearIcon.removeClass('disable');
+					}
+				}
+			}
+
+			win.save = function() {
+				epoint.closeDialog({
+					type : 'ok',
+					options : {
+						num : num
+					}
+				});
+			}
+
+			win.cancel = function() {
+				epoint.closeDialog({
+					type : 'close'
+				});
+			}
+		})(window, jQuery);
+	</script>
+</body>
+
+</html>

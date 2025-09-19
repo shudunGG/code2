@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Set up process agent</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+	<body>
+		<!-- Wait for the tooltip -->
+		<div class="page-loading"></div>
+
+		<!-- Button area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" onclick="openAdd" iconCls="icon-save">new setting</a><a
+				class="mini-button" onclick="deleteCommission" iconCls="icon-minuscircle">delete selected</a><a
+				class="mini-button" onclick="epoint.closeDialog" iconCls="icon-removecircle">shut down</a>
+			</div>
+		</div>
+
+		<!-- Content area -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="messageitemguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="30"></div>
+					<div type="indexcolumn" width="32" headerAlign="center">
+						order
+					</div>
+					<div field="topic" headerAlign="center" width="100%">
+						title
+					</div>
+					<div field="beiZhu" headerAlign="center" width="70" align="center">
+						step name
+					</div>
+					<div field="targetDispName" headerAlign="center" width="150" align="center">
+						transactor
+					</div>
+					<div field="fromDispName" headerAlign="center" width="150" align="center">
+						submit one
+					</div>
+					<div field="generateDate" headerAlign="center" align="center" width="150"
+					data-options="{'format' : 'yyyy-MM-dd HH:mm:ss'}" dateFormat="yyyy-MM-dd HH:mm:ss">
+						send time
+					</div>
+				</div>
+			</div>
+		</div>
+
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<script>
+			//<![CDATA[
+			//Initialize the page
+			epoint.initPage("commissionhandlelistaction");
+
+			var leadGuid;
+			var ouGuid;
+			var commissionGuid;
+
+			function pageLoad(data) {
+				if (data) {
+					leadGuid = data.leadGuid;
+					ouGuid = data.ouGuid;
+					commissionGuid = data.commissionGuid;
+				}
+			}
+
+			//The new callback event
+			function addCallBack(data) {
+				epoint.refresh(['datagrid'], '', true);
+			}
+
+			//The new setting
+			function openAdd() {
+				epoint.openDialog("The message list", 'frame/pages/communication/waithandle/waithandlelist?commissionGuid=' + commissionGuid + '&leadGuid=' + leadGuid + '&ouGuid=' + ouGuid, addCallBack);
+			}
+
+			//delete selected
+			function deleteCommission() {
+				var datagrid = mini.get('datagrid');
+				var ids = datagrid.getSelectedIds();
+				if (ids.length > 0) {
+					epoint.confirm("determinedelete selectedRecord?", "", function(action) {
+						epoint.execute("deleteSelect", "", [ids.join(',')], function(data) {
+							if (data.msg) {
+								epoint.alert(data.msg,null,null,'info');
+								epoint.refresh(["datagrid"], '', true);
+							}
+						});
+					});
+				} else {
+					epoint.alert("Please choose to delete records!",null,null,'warning');
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+</html>

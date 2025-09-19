@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>record detail</title>
+<script src="../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+		    <a class="mini-button" id="addTest" onclick="addTest();">add record</a>
+		</div>
+		<input class="mini-output" bind="name" />
+	</div>
+
+	<!-- condition area -->
+	<!-- div class="fui-condition" id="fuiCondition">
+		<a id="searchBtn" role="searcher" callback="searchData"></a>
+	</div-->
+
+	<!-- content area -->
+	<div id="fui-content" class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			allowResize="true" idField="rowguid" multiSelect="true"
+			action="getDefaultDataModel" style="width: 100%; height: 100%;">
+		</div>
+	</div>
+	<input class="mini-hidden" id="params" bind="params" />
+	<input class="mini-hidden" id="tableId" bind="tableID" />
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script src="../../fui/js/epoint/epoint.controlconfig.js"></script>
+	<script src="../../fui/js/epoint/epoint.form.js"></script>
+	<script>
+		//<![CDATA[ 
+		// init page
+		epoint.initPage('showdetaillistaction', '', initCallBack);
+
+		// datagrid object
+		var grid = mini.get("datagrid");
+
+		var tId = "";
+
+		var fieldMaps = null, params = mini.get('params');
+
+		// init callback，dynamic add column
+		function initCallBack(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg, null, null, null, 'info');
+			} else {
+				//adjustContentHeight();//隐藏的condition出来 要重新计算一次高度
+				if (data && data.controls) {
+					//appearCondition(data);
+					drawDynamicColumn(data);
+					if (data.fields) {
+						fieldMaps = data.fields;
+					}
+					mini.parse();
+				}
+			}
+			tId = mini.get("tableId").getValue();
+		}
+
+		/*// loading search area
+		function appearCondition(data) {
+			var html = epoint.parseForm(data.controls);
+			$('#fuiCondition').prepend(html);
+			initCondition();
+		}*/
+
+		// draw dynamic column
+		function drawDynamicColumn(data) {
+			var tmp = data.columns;
+			var columns = eval('(' + tmp + ')');
+			grid.set(columns);
+		}
+
+		// open datagrid edit status after loading
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+		
+		//add callback
+		function callBack(param) {
+			if (param != 'close') {
+				searchData();
+			}
+		}
+
+		// table search
+		function searchData() {
+			// get value of search area and set params
+			if (fieldMaps) {
+				$.each(fieldMaps, function(k, v) {
+					var control = mini.get(k);
+					if (control) {
+						fieldMaps[k] = control.getValue();
+					}
+				});
+				params.setValue(JSON.stringify(fieldMaps));
+			}
+			epoint.refresh([ 'datagrid', 'params' ]);
+		}
+
+		//edit record
+		function onEditRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-edit",
+					"openEditViewDialog", "rowguid");
+		}
+
+		function openEditViewDialog(rowGuid) {
+			var flag = "add" ;
+			epoint.execute('getPreviewUrl', '', [ tId, rowGuid, flag], showUrl);
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				epoint.openDialog("form detail info", args.previewUrl, callBack);
+			} else {
+				epoint.alertAndClose("don not search right data by current record", null, null, null, 'error');
+			}
+		}
+		
+		//search record
+		function onSearchRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-search",
+					"openViewDialog", "rowguid");
+		}
+
+		function openViewDialog(rowGuid) {
+			var flag = "printdetail" ;
+			epoint.execute('getPreviewUrl', '', [ tId, rowGuid, flag ], showUrl);
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				epoint.openDialog("form detail info", args.previewUrl, callBack);
+			} else {
+				epoint.alertAndClose("don not search right data by current record", null, null, null, 'error');
+			}
+		}
+
+		//delete record
+		function onDelRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-removecircle", "del",
+					"rowguid");
+		}
+
+		function del(rowguid) {
+			epoint.execute('deleteitem', '', [ rowguid ], searchData);
+		}
+		
+		//add record
+		function addTest(){
+			epoint.execute('getEnableVersionUrl', '', [ tId ], openAdd);
+		}
+		
+		function openAdd(args){
+			if (args.openAddUrl) {
+				epoint.openDialog("add record", args.openAddUrl, searchData, {
+					'width' : 1000
+				});
+			} else {
+				epoint.alertAndClose("don not search right data by current record", null, null, null, 'error');
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

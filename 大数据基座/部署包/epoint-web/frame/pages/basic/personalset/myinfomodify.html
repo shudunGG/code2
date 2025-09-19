@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>个人信息</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+
+<style>
+.img-view {
+	width: 120px;
+	height: 180px;
+	position: relative;
+}
+
+.img-view img {
+	display: block;
+}
+
+.img-view .img-del {
+	position: absolute;
+	right: -9px;
+	top: 0px;
+}
+
+.icons2020-delete:hover {
+	background-position: -384px -56px;
+}
+.mini-webuploader {
+	height: 17px;
+	vertical-align: text-top;
+}
+.mini-uploader-btns .webuploader-pick {
+	line-height: 17px;
+	background: transparent;
+	color: #d2322d;
+	font-weight: bold;
+	padding: 0 4px;
+}
+</style>
+
+</head>
+<body>
+	<!-- 等待提示框 -->
+	<div class="page-loading"></div>
+
+	<!-- 按钮区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" onclick="save">确定修改</a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="test" class="fui-accordions">
+			<div role="accordion" opened="true">
+				<div role="head" title="基本信息"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="用户登录名">
+									<input class="mini-textbox" allowInput="false"  
+										bind="myinfomodifyaction.user.loginId" vtype="maxLength:50" />
+								</div>
+								<div role="control" label="用户姓名">
+									<input class="mini-textbox" vtype="maxLength:50" 
+										bind="myinfomodifyaction.user.displayName" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="职务">
+									<input class="mini-textbox"
+										bind="myinfomodifyaction.user.title" maxValue="100" />
+								</div>
+								<div role="control" label="办公电话">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.user.telephoneOffice" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="家庭电话">
+									<input class="mini-textbox"
+										bind="myinfomodifyaction.user.telephoneHome"
+										vtype="maxLength:50" />
+								</div>
+								<div role="control" label="移动电话">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.mobilePrivate" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="短号码">
+									<input class="mini-textbox"
+										bind="myinfomodifyaction.userExtendInfo.shortMobile"
+										vtype="maxLength:50" />
+								</div>
+								<div role="control" label="性别">
+									<div class="mini-radiobuttonlist" repeatItems="2"
+										bind="myinfomodifyaction.user.sex" textField="text"
+										valueField="id" value="false"
+										data="[{id:'男',text:'男'},{id:'女',text:'女'}]"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="待办事宜提醒">
+									<input class="mini-checkbox" text="需要手机提醒 (默认为提醒)"
+										bind="myinfomodifyaction.chkwaithandleSms" trueValue="true"
+										falseValue="false"></input>
+								</div>
+								<div role="control" label="手机号码公开">
+									<input class="mini-checkbox" text="(默认为公开)"
+										bind="chkShowMobile" trueValue="true" falseValue="false"></input>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="扩展信息"></div>
+				<div role="body">
+					<div class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="生日">
+									<input class="mini-datepicker"
+										bind="myinfomodifyaction.userExtendInfo.birthday" allowInput="false"
+										dateFormat="yyyy-MM-dd" data-options="{'format':'yyyy-MM-dd'}"/>
+								</div>
+								<div role="control" label="身份证号">
+									<input class="mini-textbox" onvalidation="onIDCardsValidation"
+										bind="myinfomodifyaction.userExtendInfo.identityCardNum" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="QQ号码">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.qqnumber" />
+								</div>
+								<div role="control" label="MSN">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.msnnumber" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="邮政编码">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.postalCode" />
+								</div>
+								<div role="control" label="地址">
+									<input class="mini-textbox" vtype="maxLength:50"
+										bind="myinfomodifyaction.userExtendInfo.postalAddress" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="车牌号">
+									<input class="mini-textbox" vtype="maxLength:10"
+										bind="myinfomodifyaction.userExtendInfo.carnum" />
+								</div>
+								<div role="control" label=""></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="照片"></div>
+				<div role="body">
+					<div style="position: relative; float: left;">
+						<span class="text-minor"  id="photo1">暂无个人图片， </span>
+						<div id="uploader" class="mini-webuploader"
+							action="myinfomodifyaction.getFileUploadModel" fileNumLimit="1"
+							fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp"
+							mimeTypes="image/*" showDefaultUI="false" auto="true" pickerText="请上传" onfilesuccess="OnPhotoSuccess"></div>
+					</div>
+					<span class="text-minor" id="photo3">（最佳图片尺寸：120px<em>*</em>180px）
+					</span>
+					<div class="img-view" id="photo" style="display: none;">
+						<img id="lblPicture" src="" width="120px" height="180px"
+							alt="个人头像图片" /> <i class="action-icon icon-removecirclefilled"
+							style="position: absolute; left: 110px; top: 0px;"
+							onclick="delPhoto();" ></i>
+					</div>
+				</div>
+			</div>
+			<div role="accordion" opened="true">
+				<div role="head" title="个性签名图片"></div>
+				<div role="body">
+					<div style="position: relative; float: left;">
+						<span class="text-minor"  id="sign1">暂无签名图片， </span>
+						<div id="uploader2" class="mini-webuploader"
+							action="myinfomodifyaction.getFileUploadModel2" 
+							fileSingleSizeLimit="5120" limitType="jpeg,jpg,gif,png,bmp"
+							mimeTypes="image/*" showDefaultUI="false" auto="true" pickerText="请上传" onfilesuccess="OnSignFileSuccess"
+							></div>
+					</div>
+					<span class="text-minor" id="sign3">（最佳图片尺寸：120px<em>*</em>180px）
+					</span>
+					<div class="img-view" id="picture" style="display: none;">
+						<img id="userSign" src="" width="120px" height="180px"
+							alt="个性签名图片" /> <i class="action-icon icon-removecirclefilled"
+							style="position: absolute; left: 110px; top: 0px;"
+							onclick="delUserSign();" ></i>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		//<![CDATA[  
+		//本页面请求使用sm2加密
+		var useSm2Encrypt=true;          
+        //初始化页面
+        epoint.initPage ("myinfomodifyaction", "", initCallback);
+        
+        function initCallback (data)
+        {
+	        if (data)
+	        {
+		        showPhoto (data.lblPicture);
+		        showSignPicture (data.signPicture);
+	        }
+        }
+
+        //保存回调事件
+        function saveCallback (data)
+        {
+	        epoint.alert (data.msg, '', null, 'info');
+        }
+
+        //保存修改
+        function save ()
+        {
+	        if (epoint.validate ())
+	        {
+		        epoint.execute ("save", "", saveCallback);
+	        }
+        }
+
+        //头像上传成功
+        function OnPhotoSuccess (args)
+        {
+	        if (args.data.extraDatas.lblPicture)
+	        {
+		        showPhoto (args.data.extraDatas.lblPicture);
+	        }
+        }
+
+        //个性签名图片上传成功
+        function OnSignFileSuccess (args)
+        {
+	        if (args.data.extraDatas.signPicture)
+	        {
+		        showSignPicture (args.data.extraDatas.signPicture);
+	        }
+        }
+
+        //删除个性签名图片
+        function delPhoto ()
+        {
+	        epoint.execute ("myinfomodifyaction.delPhoto", "", function delPhotoCallback (data)
+	        {
+		        if (data.msg)
+		        {
+			        mini.get ("uploader").clearFile ();
+			        showPhoto ();
+		        }
+	        });
+        }
+
+        //删除个性签名图片
+        function delUserSign ()
+        {
+	        epoint.execute ("myinfomodifyaction.delUserSign", "", function delUserSignCallback (data)
+	        {
+		        if (data.msg)
+		        {
+			        mini.get ("uploader2").clearFile ();
+			        showSignPicture ();
+		        }
+	        });
+        }
+
+        //控制照片显隐
+        function showPhoto (url)
+        {
+	        if (url)
+	        {
+		        $ ("#lblPicture").attr ("src", url);
+		        mini.get ("uploader").setVisible (false);
+		        $ ("#photo1").hide ();
+		        $ ("#photo3").hide ();
+		        $ ("#photo").show ();
+	        }
+	        else
+	        {
+		        $ ("#photo").hide ();
+		        $ ("lblPicture").attr ("src", "");
+		        mini.get ("uploader").setVisible (true);
+		        $ ("#photo1").show ();
+		        $ ("#photo3").show ();
+	        }
+        }
+
+        //控制签名图片显隐
+        function showSignPicture (url)
+        {
+	        if (url)
+	        {
+		        $ ("#userSign").attr ("src", url);
+		        mini.get ("uploader2").setVisible (false);
+		        $ ("#sign1").hide ();
+		        $ ("#sign3").hide ();
+		        $ ("#picture").show ();
+	        }
+	        else
+	        {
+		        $ ("#picture").hide ();
+		        $ ("#userSign").attr ("src", "");
+		        mini.get ("uploader2").setVisible (true);
+		        $ ("#sign1").show ();
+		        $ ("#sign3").show ();
+	        }
+        }
+        
+        function onIDCardsValidation(e) {
+            if (e.value && e.isValid) {
+                var pattern = /\d*/;
+                if (e.value.length < 15 || e.value.length > 18 || pattern.test(e.value) == false) {
+                    e.errorText = "必须输入15~18位数字";
+                    e.isValid = false;
+                }
+            }
+        }
+
+        //]]>
+	</script>
+
+</body>
+</html>

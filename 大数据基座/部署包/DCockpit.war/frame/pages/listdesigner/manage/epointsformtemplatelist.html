@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>模版管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="openAdd();" id="btnAddRecord">
+				新建模版 </a> <a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选中 </a>
+		</div>
+	</div>
+
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="模版名称">
+						<input bind="searchString1" id="searchString1"
+							class="mini-textbox" />
+					</div>
+					<div role="control" label="模版类型">
+						<div class="mini-combobox" repeatItems="2" id="templatetype"
+							bind="searchString2" textField="text" valueField="id" value="0"
+							action="getCctypeModel"></div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="false" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="50"></div>
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="templatename" width="auto" headerAlign="center"
+					align="left">模版名称</div>
+				<div field="templatetypename" headerAlign="center" width="120"
+					align="center">模版类型</div>
+				<div field="ordernum" headerAlign="center" align="center" width="80">排序号</div>
+				<div width="80" align="center" headerAlign="center"
+					renderer="onEditRenderer">修改</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('epointformtemplatelistaction');
+
+		// 绘制行编辑按钮
+		var onEditRenderer = function(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "openEdit");
+		};
+
+		// 弹出新增窗口
+		function openAdd() {
+			//frame/pages/epointworkflow/client/processcreateinstance?ProcessGuid=07176f48-6ce2-407f-a4a7-0dfe3c7cbcf7
+			epoint.openDialog('新建模版',
+					"frame/pages/listdesigner/manage/epointsformtemplateadd",
+					searchData, {
+						'width' : 1000,
+						'height' : 480
+					});
+		}
+
+		// 弹出修改窗口
+		function openEdit(id) {
+			epoint.openDialog('修改模版',
+					"frame/pages/listdesigner/manage/epointsformtemplateedit?guid="
+							+ id, searchData, {
+						'width' : 1000,
+						'height' : 480
+					});
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelected", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData);
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+	</script>
+</body>
+</html>

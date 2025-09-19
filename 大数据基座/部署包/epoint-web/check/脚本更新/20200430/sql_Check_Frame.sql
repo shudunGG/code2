@@ -1,0 +1,2 @@
+-- 这里是检测每天最后一条数据是否存在，所以第一个人建立的人请把最下方的数据做一个check
+select count(*) from (select * from sys.columns where column_id in(select column_id from sys.index_columns where index_id in(select index_id from sys.indexes where object_id in(select object_id from sys.tables where name='frame_userrolerelation') and name='uq_frame_userrolerelation') and object_id=object_id('frame_userrolerelation')) and object_id=object_id('frame_userrolerelation') and name='ouguid') as n

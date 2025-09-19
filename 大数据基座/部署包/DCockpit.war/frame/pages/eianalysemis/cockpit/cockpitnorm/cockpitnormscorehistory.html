@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>评分历史</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="false"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="batch" name="batchGuid" width="75"
+					headerAlign="center" align="center">批次号</div>
+				<div field="createtime" name="operateDate" width="75"
+					headerAlign="center" align="center"
+					data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">结果生成时间</div>
+				<div width="50" align="center" headerAlign="center"
+					renderer="onDownloadRenderer">历史下载</div>
+			</div>
+		</div>
+	</div>
+	<form id="download_form" method="post" enctype="multipart/form-data"></form>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		var normGuid = Util.getUrlParams("guid");
+		var totalCount;
+		epoint.initPage('cockpitnormscorehistoryaction', '', function(data) {
+			
+		});
+		
+		// 绘制行下载按钮
+		var onDownloadRenderer = function(e) {
+			return '<span type="action" style=\"color:blue\" onclick="openDownload(\''
+			+ e.row.rowguid + '\')">下载</span>';
+		};
+
+		// 弹出结果窗口
+		function openDownload(guid) {
+			var form = document.getElementById('download_form');
+			form.action = "cockpitnormscorehistoryaction.action?cmd=getContent&isCommondto=true&rowguid=" + guid;
+			form.submit();
+		} 
+		
+		
+	</script>
+</body>
+</html>

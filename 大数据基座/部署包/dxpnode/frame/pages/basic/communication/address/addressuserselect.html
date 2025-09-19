@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>选择人员</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+<!-- 等待提示框 -->
+<div class="page-loading"></div>
+<!-- toolbar区域 -->
+<div class="fui-toolbar">
+    <div class="btn-group mr10">
+        <a class="mini-button" onclick="save">确定选择</a> <a class="mini-button" onclick="epoint.closeDialog();">取消选择</a>
+    </div>
+</div>
+
+<div class="fui-left">
+    <div id="tree" name="tree" class="mini-tree"
+         autoLoad="false"
+         showTreeIcon="true" textField="text" idField="id"
+         parentField="pid" action="frameaddressuserselectaction.getCategoryModal" resultAsTree="false"
+         showCheckBox="false" checkRecursive="false" autoCheckParent="false" expandOnLoad="true"
+         showRadioButton="true" style="height:90%"
+    ></div>
+</div>
+<div class="fui-right">
+<!-- 内容区域 -->
+<div class="fui-content">
+
+    <!-- 表单布局 -->
+    <div class="fui-form">
+        <div role="form">
+            <div id="treelistselect" class="mini-tabstreeselect" filterMode="server"
+                 action="getTreeData" loadWhenChecked="true" showBorder="true" width="100%">
+                <div tabText="人员列表"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script src="../../../../../rest/resource/jsboot"></script>
+
+<!-- 配置变量 -->
+<script>
+		//<![CDATA[
+        //初始化页面
+        epoint.initPage ("frameaddressuserselectaction",null,function(data){
+             if(Util.getUrlParams().groupguid!=""){
+                mini.get("tree").setValue(Util.getUrlParams().groupguid);
+            }
+        });
+
+
+        //保存回调事件
+        function saveCallback (data)
+        {
+
+		if (data.added) {
+				epoint.alert(data.added);
+			} else {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+
+		//保存按钮
+		function save() {
+		    var selectgroup=mini.get('tree').getSelectedNodes();
+		    if(selectgroup==''){
+		         epoint.showTips("请先选择分组！", {
+                    state: 'danger',
+                    y: 'center'
+                });
+                return;
+		    }
+			var selectNodes = mini.get('treelistselect').getSelectedNodes();
+			var length = selectNodes.length;
+			if (length > 0) {
+				var userList = "";
+				var guidList = "";
+				for (var i = 0; i < length; i++) {
+					var node = selectNodes[i];
+					userList += node.text;
+					userList += ";";
+					guidList += node.value;
+					guidList += ";";
+				}
+				epoint.execute('frameaddressuserselectaction.save', '', [ guidList,
+						userList,selectgroup[0].id ], saveCallback);
+			} else {
+				epoint.showTips("您还没有选择任何人员！", {
+                    state: 'danger',
+                    y: 'center'
+                });
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+
+</html>

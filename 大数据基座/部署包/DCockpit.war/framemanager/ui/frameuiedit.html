@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>界面修改</title>
+<script src="../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" onclick="saveModify">保存修改</a> <a
+				class="mini-button" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<!-- 		<a role="helper" class="mr10">注意事项</a> -->
+	</div>
+	<!-- 帮助信息区域 默认隐藏-->
+	<!-- 	<div class="fui-notice hidden"> -->
+	<!-- 		<p> -->
+	<!-- 			<em></em>： -->
+	<!-- 		</p> -->
+	<!-- 	</div> -->
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="界面名称" starred="true">
+						<input id="uiname" bind="dataBean.uiname" vtype="maxLength:50"
+							class="mini-textbox" required="true" requiredErrorText="界面名称不能为空" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="界面标识" starred="true">
+						<input id="pageid" bind="dataBean.pageid" vtype="maxLength:50"
+							class="mini-textbox" required="true"
+							requiredErrorText="界面标识不能为空且唯一" readonly="true"
+							inputStyle="background:#eee" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="系统标题">
+						<input id="title" bind="dataBean.title" class="mini-textbox"
+							vtype="maxLength:50" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="主题类别" starred="true">
+						<input id="themeType" autoLoad="false" bind="dataBean.themetype"
+							action="getThemeTypes" textField="text" valueField="id"
+							required="true" class="mini-combobox mr10"
+							onValueChanged="showPortal" requiredErrorText="主题类别不能为空"
+							readonly="true" inputStyle="background:#eee" />
+					</div>
+				</div>
+
+				<div role="row">
+					<div role="control" label="访问路径" starred="true">
+						<input id="themeurl" bind="dataBean.themeurl"
+							vtype="maxLength:500" class="mini-textbox" required="true"
+							requiredErrorText="访问路径不能为空" readonly="true"
+							inputStyle="background:#eee" />
+					</div>
+				</div>
+				<div role="row" id="defaultportal">
+					<div role="control" label="选择默认门户">
+						<input id="mainprotalguid" bind="dataBean.mainprotalguid"
+							class="mini-combobox" action="getSelectPortalModel"
+							multiSelect="false" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="选择关联模块">
+						<input id="selectmodule" bind="selectmodule" class="mini-combobox"
+							action="getSelectModuleModel" multiSelect="true" />
+					</div>
+				</div>
+
+				<!-- 此处留位置需要增加关联门户处理 -->
+				<div role="row">
+					<div role="control" label="全文检索路径">
+						<input id="fullsearchurl" bind="dataBean.fullsearchurl"
+							vtype="maxLength:500" class="mini-textbox" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序号">
+						<input id="ordernumber" bind="dataBean.ordernumber"
+							class="mini-textbox" vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<!-- 此处留位置需要增加标题图片和预览图处理 -->
+				<div role="row">
+					<div role="control" label="支持E讯">
+						<div class="mini-checkbox" bind="dataBean.isenableexun"
+							readOnly="false"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="禁用">
+						<div class="mini-checkbox" bind="dataBean.isdisable"
+							readOnly="false"></div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="logo">
+						<div style="position: relative; float: left;">
+							<span id="photo1" class="text-minor">暂无logo， </span>
+							<div id="uploader" class="mini-webuploader"
+								action="frameuieditaction.getFileUploadModel"
+								fileSingleSizeLimit="1024" limitType="png" mimeTypes="image/*"
+								showDefaultUI="false" auto="true" pickerText="请上传"
+								onfilesuccess="OnPhotoSuccess"></div>
+							<span class="text-minor" style="width: 300px" id="photo3">（最佳图片尺寸：300px<em>*</em>28px;
+								1M以内）
+							</span>
+						</div>
+
+						<div class="img-view" id="photo">
+							<img id="lblPicture" src="" width="300px" height="28px"
+								alt="应用图标" /> <i class="action-icon icon-removecirclefilled"
+								style="position: absolute; left: 300px; top: 20px;"
+								onclick="delPhoto();"></i>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="预览图片">
+						<div style="position: relative; float: left;">
+							<span id="preview1" class="text-minor">暂无预览图片， </span>
+							<div id="uploader1" class="mini-webuploader"
+								action="frameuieditaction.getFileUploadModel1"
+								fileSingleSizeLimit="4096" limitType="jpeg,jpg,gif,png,bmp"
+								mimeTypes="image/*" showDefaultUI="false" auto="true"
+								pickerText="请上传" onfilesuccess="OnPhotoSuccess"></div>
+							<span class="text-minor" style="width: 300px" id="preview3">（最佳图片尺寸：300px<em>*</em>150px;
+								4M以内）
+							</span>
+						</div>
+						<div class="img-view" id="preview">
+							<img id="lblPicture1" src="" width="300px" height="150px"
+								alt="预览图片" /> <i class="action-icon icon-removecirclefilled"
+								style="position: absolute; left: 300px; top: 20px;"
+								onclick="delPhoto1();"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//<![CDATA[ 
+		//初始化请求
+		epoint.initPage('frameuieditaction', '', function(e) {
+			var themeType = mini.get("themeType").getValue();
+			if (themeType == 'classic') {
+				$('#defaultportal').show();
+			} else {
+				$('#defaultportal').hide();
+			}
+			showPhoto(e.lblPicture);
+			showPreview(e.lblPicture1);
+		});
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr("src", url);
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#photo").show();
+			} else {
+				$("#photo").hide();
+				$("lblPicture").attr("src", "");
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+			}
+		}
+		function showPreview(url) {
+			if (url) {
+				$("#lblPicture1").attr("src", url);
+				mini.get("uploader1").setVisible(false);
+				$("#preview1").hide();
+				$("#preview3").hide();
+				$("#preview").show();
+			} else {
+				$("#preview").hide();
+				$("lblPicture1").attr("src", "");
+				mini.get("uploader1").setVisible(true);
+				$("#preview1").show();
+				$("#preview3").show();
+			}
+		}
+		//上传成功
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+			if (args.data.extraDatas.lblPicture1) {
+				showPreview(args.data.extraDatas.lblPicture1);
+			}
+		}
+		//删除logo
+		function delPhoto() {
+			epoint.execute("btnDelPic_Click", "", function delPhotoCallback(
+					data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					showPhoto();
+				}
+			});
+		}
+		//删除图片
+		function delPhoto1() {
+			epoint.execute("btnDelPic_Click1", "", function delPhotoCallback1(
+					data) {
+				if (data.msg) {
+					mini.get("uploader1").clearFile();
+					showPreview();
+				}
+			});
+		}
+		// 保存操作的回调
+		function saveCallback(data) {
+			if (data.msg) {
+				//if(data.msg=='保存成功！'){
+				if (data.success) {
+					epoint.alertAndClose(data.msg, '', null, null, 'success');
+				} else {
+					epoint.alert(data.msg, '', null, 'warning');
+				}
+			}
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', saveCallback);
+			}
+		}
+		function showPortal() {
+			var themeType = mini.get("themeType").getValue();
+			if (themeType == 'classic') {
+				$('#defaultportal').show();
+			} else {
+				$('#defaultportal').hide();
+			}
+			//填默认地址
+			var themeType = mini.get("themeType").getValue();
+			// 弹出确认框
+			epoint.confirm("是否需要设置默认访问路径?", '', function() {
+				epoint.execute("getDefaultUrl", '', [ themeType ], function(
+						data) {
+					if (data.defaultUrl) {
+						mini.get("themeurl").setValue(data.defaultUrl);
+					}
+				});
+			});
+		}
+		//]]>
+	</script>
+</body>
+
+</html>

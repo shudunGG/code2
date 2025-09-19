@@ -1,0 +1,1 @@
+<div id="{{controlId}}-inner" class="mini-webuploader" showDefaultUI="false"></div>

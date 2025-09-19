@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>重置处理人</title>
+<script src="../../../fui/js/cssboot.js"></script>
+<script>
+        SrcBoot.output([
+            "../css/resethandler.css"
+        ]);
+    </script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- 页面内容区域 -->
+
+	<div class="container">
+		<div class="clearfix">
+			<div class="mini-col-6">
+				<div class="semi-con" id="tab">
+					<div class="semi-header clearfix semi-header-border">
+						<h6 class="header-item active" data-init="true" data-target="myou">本部门</h6>
+						<h6 class="header-item" data-target="allou">所有用户</h6>
+					</div>
+					<div class="semi-body">
+						<div class="semi-body-ou">
+							<ul id="myou" class="mini-filtertree"
+								style="width: 100%; height: 390px; padding: 5px;"
+								action="getTreeOuModel" showTreeIcon="true" textField="text"
+								expandOnLoad="0" allowDrag="true" allowDrop="true"
+								allowLeafDropIn="true" idField="id" parentField="pid" filterMode="server"
+								showCheckBox="true" resultAsTree="false" ondrawnode="ondrawnode"
+								onnodecheck="onnodecheck">
+							</ul>
+							<ul id="allou" class="mini-filtertree"
+								style="width: 100%; height: 390px; padding: 5px;"
+								showTreeIcon="true" textField="text" expandOnLoad="0"
+								allowDrag="true" allowDrop="true" allowLeafDropIn="true"
+								idField="id" parentField="pid" action="getTreeOuModel1" filterMode="server"
+								showCheckBox="true" resultAsTree="false" ondrawnode="ondrawnode"
+								onnodecheck="onnodecheck">
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="mini-col-6">
+				<div class="semi-con">
+					<div class="semi-header semi-header-bg clearfix">
+						<span class="handler-title">处理人员(<span class="handled-num"></span>)
+						</span> <span class="handler-back r" id="getback">收回<span
+							class="getback-num"></span></span> <span class="handler-update r"
+							id="update">更新</span>
+					</div>
+					<div class="semi-body">
+						<div class="handler-list-head">
+							<div id="selectall" class="mini-checkbox" text="人员"
+								onvaluechanged="selectAllChanged"></div>
+							<span class="handler-list-headtext">处理状态</span>
+						</div>
+						<div class="handler-list-body">
+							<ul class="handler-lists" id="handler-list"
+								style="height: 369px; overflow: auto;">
+
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	    <script src="../../../../rest/resource/jsboot"></script>
+	<!-- 人员列表模板 -->
+	<script type="x-tmpl-mustache" id="handler-list-tmpl">
+    <li class="handler-list-item {{statecls}}" id="{{guid}}">
+        <input name="handler" class="mini-checkbox" text="{{name}}" enabled="{{enable}}" onvaluechanged="selectSingleChanged"/>
+        <span class="state">{{statetext}}</span>
+    </li>
+    </script>
+	<!-- 配置变量 -->
+	<script>
+    	epoint.initPage("workflowadjusttreeaction",'',initData);
+
+        var $handlerList = $("#handler-list");
+        var handlerListTmpl = $("#handler-list-tmpl").html();
+        var myou = mini.get("myou");
+        var allou = mini.get("allou");
+        var selectall = mini.get("selectall");
+        allou.hide();
+
+        var handleNum; // 已处理人员数量
+		
+     // 树节点disable设置
+        function initData(event) {
+        	 epoint.execute("initData", "@all", function(data) { // 初始化本部门
+                 var html = [];
+                 handleNum = 0
+                 data = epoint.decodeJson(data);
+                 if(data.item&&data.item.length){
+                 	data = data.item;
+                 }
+                 for(var i = 0, len = data.length; i < len; i++) {
+                     if(data[i].state === "1") { // 已处理
+                         data[i].enable = false;
+                         data[i].statetext = "已处理";
+                         data[i].statecls = "handled";
+
+                         handleNum++;
+
+                     } else if (data[i].state === "2") { // 未处理
+                         data[i].enable = true;
+                         data[i].statetext = "未处理";
+                         data[i].statecls = "unhandle";
+                     }
+
+                     html.push(Mustache.render(handlerListTmpl, data[i]));
+                 }
+
+                 $handlerList.empty().html(html.join(""));
+                 mini.parse();
+
+                 $(".handled-num").text(handleNum);
+                 // $(".semi-body").height($(".fui-content").height() - 30);
+
+             });
+        }
+
+        // tab
+        $("#tab").on('click', '.header-item', function(event) {
+            var $this = $(this),
+                isActive = $this.hasClass('active'),
+                target = $this.data("target"),
+                isinit = $this.data("init");
+
+            if(!isActive) {
+                $this.addClass('active').siblings().removeClass('active');
+                myou.hide();
+                allou.hide();
+                mini.get(target).show();
+
+//                 if(isinit == "undefined"||isinit !== "true") { // 请求树
+//                     epoint.execute("getTreeOuModel1", [target], "", function(data) {
+//                     	//epoint.refresh();
+//                     }, true);
+
+//                     $this.data("init", "true");
+//                 }
+            }
+        });
+
+        // 树节点disable设置
+        function ondrawnode(event) {
+            var node = event.node;
+            var sender = event.sender;
+
+            if(!node.ckr) {
+                sender.disableNode(node);
+                event.showCheckBox = false;
+            }
+        }
+
+        // 节点选中
+        function onnodecheck(event) {
+            //console.log(typeof event.node.checked);
+            var node = event.node,
+                checked = node.checked,
+                guid = node.id,
+                name = node.text,
+                isleaf = event.isLeaf;
+
+            if(isleaf&&"mini-tree-folder"!=node.iconCls) { // 是叶子节点，直接添加未发送item
+                if(checked) { // 添加未发送节点
+                    renderlist(guid, name);
+                } else { // 删除未发送节点
+                    $("#" + guid).remove();
+
+                    // 判断未发送的数量，更新按钮样式切换
+                    if($handlerList.find(".unsend").length === 0) {
+                        $("#update").removeClass('canupdate');
+                    }
+                }
+            } else { // 父节点，请求叶子数据。
+
+                epoint.execute("getLeafNodes", "@none", epoint.encodeJson({node: node}), function(data) {
+                	data = epoint.decodeJson(data);
+                    if(data.item&&data.item.length){
+                    	data = data.item;
+                    }
+                    if(checked) {
+                        for(var i = 0, l = data.length; i < l; i++){
+                            renderlist(data[i].id, data[i].text);
+                        }
+                    } else {
+                        for(i = 0, l = data.length; i < l; i++){
+                            $("#" + data[i].id).remove();
+                        }
+                        // 判断未发送的数量，更新按钮样式切换
+                        if($handlerList.find(".unsend").length === 0) {
+                            $("#update").removeClass('canupdate');
+                        }
+                    }
+                }, true);
+            }
+
+        }
+        var $getBackNum = $(".getback-num");
+
+        // 渲染未发送的item
+        function renderlist(guid, name) {
+            var handlerData = {};
+            handlerData.guid = guid;
+            handlerData.enable = true;
+            handlerData.statetext = "未发送";
+            handlerData.statecls = "unsend";
+            handlerData.name = name;
+
+            if($("#" + guid).length) {
+                return;
+            }
+
+            $handlerList.prepend(Mustache.render(handlerListTmpl, handlerData));
+            mini.parse();
+
+            // 更新按钮样式切换
+            $("#update").addClass('canupdate');
+        }
+
+        // 单个选中
+        function selectSingleChanged(e) {
+            var checked = e.value;
+            var handlers = mini.getsbyName("handler");
+            var checkedNum = 0;
+            var allNum = $handlerList.find(".unhandle").length + $handlerList.find(".unsend").length;
+
+            for(var i = 0, len = handlers.length; i < len; i++) {
+                if(handlers[i].getEnabled() === true && handlers[i].getValue() === "true" ) {
+                    checkedNum++;
+                }
+            }
+
+            $getBackNum.text("("+ checkedNum +")");
+            if(checkedNum === 0) {
+                $getBackNum.text("");
+            }
+
+            if(checkedNum === allNum) {
+                selectall.setValue(true);
+            } else {
+                selectall.setValue(false);
+            }
+        }
+
+        // 全选
+        function selectAllChanged(e) {
+
+            var checked = e.value;
+            var handlers = mini.getsbyName("handler"),
+                checkedNum = 0;
+
+            //console.log(handlers);
+            for(var i = 0, len = handlers.length; i < len; i++) {
+                if(handlers[i].getEnabled() === true) {
+                    handlers[i].setValue(checked);
+                    if(checked === "true") {
+                        checkedNum++;
+                    }
+                }
+            }
+            $getBackNum.text("("+ checkedNum +")");
+            if(checkedNum === 0) {
+                $getBackNum.text("");
+            }
+
+        }
+
+        // 更新
+        $("#update").on('click', function(event) {
+            // 未发送人员发送待办
+            var unsendGuids = [], $this = $(this),
+                $unsendItems = $handlerList.find(".unsend");
+
+            $unsendItems.each(function(i, el) {
+                unsendGuids.push(el.id);
+            });
+
+            if(unsendGuids.length) {
+                epoint.execute("update", "@none", epoint.encodeJson({ids: unsendGuids}), function(data) {
+                	data = epoint.decodeJson(data);
+                    if(data.msg === "") { // 更新成功
+                        //console.log("success");
+                        $this.removeClass('canupdate');
+                        epoint.refresh();
+                    } else { // 失败
+                        epoint.alert(data.msg, '', null, 'error');
+                    }
+                }, true);
+            }
+        });
+
+        // 收回
+        $("#getback").on('click', function(event) {
+            var selectUnsendGuids = [], // 未发送guids集合
+                selectUnhandleGuids = [], // 未处理guids集合
+                handlers = mini.getsbyName("handler");
+
+            for(var i = 0, len = handlers.length; i < len; i++) {
+
+                if(handlers[i].getEnabled() === true && handlers[i].getValue() === 'true') {
+
+                    if($(handlers[i].el).parent().hasClass('unsend')) {
+                        selectUnsendGuids.push($(handlers[i].el).parent()[0].id);
+                    } else if ($(handlers[i].el).parent().hasClass('unhandle')) {
+                        selectUnhandleGuids.push($(handlers[i].el).parent()[0].id)
+                    }
+
+                }
+            }
+
+            var j,l;
+            var node, node2; // 存放树节点
+
+            if(selectUnhandleGuids.length) { // 选中了未处理
+                epoint.execute("getback", "@none", epoint.encodeJson({ids: selectUnhandleGuids}), function(data) {
+                	data = epoint.decodeJson(data);
+                    if(data.msg === "") { // 收回成功
+                        //console.log("success");
+
+                        for(j = 0, l = selectUnhandleGuids.length; j < l; j++) {
+                            // 删除未处理的选中行
+                            $("#" +　selectUnhandleGuids[j]).remove();
+                            // 树节点状态更新
+                            node = myou.getNodesByValue(selectUnhandleGuids[j])[0];
+                            node2 = allou.getNodesByValue(selectUnhandleGuids[j])[0];
+
+                            if(node) { // 节点在本部门
+                                myou.updateNode(node, {ckr: true}); // 收回后，树对应的节点重置可以选择
+                                myou.enableNode(node);
+                                myou.uncheckNode(node);
+                            }
+                            if(node2) { // 节点在所有部门
+                                allou.updateNode(node2, {ckr: true});
+                                allou.enableNode(node2);
+                                allou.uncheckNode(node2);
+                            }
+                        }
+
+                        $getBackNum.text("");
+
+                    } else { // 收回失败
+                        epoint.alert(data.msg, '', null, 'error');
+                    }
+
+                    if(selectUnsendGuids.length) { // 未发送的处理
+                        for(j = 0, l = selectUnsendGuids.length; j < l; j++) {
+                            // 删除未处理的选中行
+                            $("#" +　selectUnsendGuids[j]).remove();
+                            // 树节点状态更新
+                            node = myou.getNodesByValue(selectUnsendGuids[j])[0];
+                            node2 = allou.getNodesByValue(selectUnsendGuids[j])[0];
+                            if(node) {
+                                myou.uncheckNode(node);
+                            }
+                            if(node2) {
+                                allou.uncheckNode(node2);
+                            }
+                        }
+                    }
+
+                }, true);
+            } else { // 没有未处理，只有未发送
+                if(selectUnsendGuids.length) { //
+                    for(j = 0, l = selectUnsendGuids.length; j < l; j++) {
+                        // 删除未处理的选中行
+                        $("#" +　selectUnsendGuids[j]).remove();
+                        // 树节点状态更新
+                        node = myou.getNodesByValue(selectUnsendGuids[j])[0];
+                        node2 = allou.getNodesByValue(selectUnsendGuids[j])[0];
+                        if(node) {
+                            myou.uncheckNode(node);
+                        }
+                        if(node2) {
+                            allou.uncheckNode(node2);
+                        }
+                    }
+                }
+            }
+
+        });
+        
+     	// 获取未发送数据，供父页面调用
+        function getDealData() {
+        	var data = {
+        		'stepguid': Util.getUrlParams().stepguid,
+        		'resethandler':true
+        	};
+    		// 未发送人员发送待办
+            var unsendGuids = [], $this = $(this), $unsendItems = $handlerList.find(".unsend");
+            data.handlerlist = [];
+            $unsendItems.each(function(i, el) {
+            	var handlerdata = {};
+				handlerdata.handlerguid = el.id;
+				data.handlerlist.push(handlerdata);
+            });
+        	return data;
+        }
+    </script>
+</body>
+
+</html>

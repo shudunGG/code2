@@ -1,0 +1,1 @@
+select count(*) from  user_tab_columns where table_name = upper('app_info') and column_name = upper('appsecret') and data_type='NVARCHAR2' and data_length='1000'

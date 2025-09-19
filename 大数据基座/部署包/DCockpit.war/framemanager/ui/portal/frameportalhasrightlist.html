@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>个人门户列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true" holdSelectedStatus="true">
+			<div property="columns">
+				<div type="indexcolumn" width="30" headerAlign="center">序</div>
+				<div field="portalname" headerAlign="center" align="center"
+					width="80">
+					门户名称<input property="editor" class="mini-textbox"
+						style="width: 100%;" maxLength="50" />
+				</div>
+				<div field="typename" headerAlign="center" width="60" align="center">门户类型</div>
+				
+				<div width="60" align="center" headerAlign="center"
+					renderer="onElementRenderer">元件配置</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('frameportalhasrightlistaction');
+		
+		var onElementRenderer = function(e) {
+			if(e.record.portaltype==3){
+				return "";
+			}else if(e.record.portaltype==1){
+				return epoint.renderCell(e, "action-icon modicon-22", "selectItem");
+			}
+			return epoint.renderCell(e, "action-icon modicon-22", "selectElement");
+		};
+		function selectElement(id) {
+			epoint.openDialog('配置元件',
+							"framemanager/ui/portal/personalelementmanage?portalGuid="
+									+ id, null, {
+							});
+		}
+		function selectItem(id) {
+			epoint.openDialog('配置元件',
+							"framemanager/orga/uiset/deskmanagement/userdeskmanagement?portalGuid="
+									+ id, null, {
+							});
+		}
+		var onExpressElementRenderer = function(e) {
+			if (e.record.portaltype == 3) {
+				return "";
+			} else if (e.record.portaltype == 1) {
+				return epoint.renderCell(e, "action-icon modicon-22",
+						"expressItem");
+			}
+			return epoint.renderCell(e, "action-icon modicon-22",
+					"expressElement");
+		};
+		function expressItem(id) {
+			epoint.openDialog('普通门户元件展示',
+					"framemanager/ui/portal/expressitem?guid="
+							+ id, null, {
+					});
+		}
+		function expressElement(id) {
+			epoint.openDialog('工作平台元件展示',
+					"framemanager/ui/portal/expresselement?guid="
+							+ id, null, {
+					});
+		}
+	</script>
+</body>
+</html>

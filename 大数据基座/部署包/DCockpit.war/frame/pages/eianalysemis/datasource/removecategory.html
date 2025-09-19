@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>数据表移动分类页</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="addNew" onclick="confirmadd">确认移动</a> <a class="mini-button" id="cancleadd" onclick="epoint.closeDialog">取消移动</a>
+		</div>
+	</div>
+
+
+	<div class="fui-content">
+		<ul id="tree1" class="mini-tree" style="width: 100%; height: 100%; padding: 5px;" showTreeIcon="true" textField="name" expandOnLoad="0"
+			onendedit="saveData" ondrop="saveData" allowDrag="true" allowDrop="true" allowLeafDropIn="true" idField="id" parentField="pid" resultAsTree="false"
+			action="eiadatatablebasicinfolistaction.getTreeData2">
+		</ul>
+	</div>
+	<script src="../../../fui/js/jsboot.js"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[  
+		// 初始化页面
+		var tree = mini.get("tree1");
+		var tableid = Util.getUrlParams("tableid");
+		epoint.initPage('eiadatatablebasicinfolistaction');
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form', 'tree1' ]);
+		}
+
+		//确认移动
+		function confirmadd() {
+			var tree = mini.get("tree1");
+			var node = tree.getSelectedNode();
+			if (node) {
+				var id = node.id;
+				var name = node.name;
+				var pid = node.pid;
+				if (pid == '-1') {
+					epoint.alert("数据源根节点不允许关联!");
+					return;
+				}
+				epoint.execute('eiadatatablebasicinfolistaction.removecategory', null, [ id, tableid ], function(ret) {
+					if (ret == '保存成功') {
+						epoint.alertAndClose(ret);
+					} else {
+						epoint.alert(ret);
+
+					}
+				});
+			} else {
+				epoint.alert("请选择需要关联的子节点名称");
+			}
+		}
+
+		//]]>
+	</script>
+</body>
+
+</html>

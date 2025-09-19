@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>应用模块添加</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" id="addNew" state="primary" onclick="saveAndNew">保存并新建</a> <a
+			class="mini-button" id="addClose" onclick="saveAndClose">保存并关闭</a> <a
+			class="mini-button" onclick="epoint.closeDialog">关闭</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div class="fui-accordions" id="fui-accordions">
+
+			<div id="fui-form" class="fui-form">
+				<div role="form">
+					<div role="accordion" opened="true">
+						<div role="head" title="应用基本信息"></div>
+						<div role="body">
+							<div role="row">
+								<div role="control" label="父级应用">
+									<input id="parentmodulecode" class="mini-treeselect"
+										multiSelect="false" showRadioButton="true" showClose="true"
+										bind="parentmodulecode" allowSelect="true"
+										oncloseclick="onDefaultCloseClick" action="getTreeData" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用名称" starred="true">
+									<input id="modulename" class="mini-textbox" maxLength="50"
+										vtype="maxLength:50;" bind="dataBean.modulename"
+										required="true" requiredErrorText="应用名称不能为空" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用详细名称">
+									<input id="modulemenuname" class="mini-textbox" maxLength="50"
+										vtype="maxLength:50;" bind="dataBean.modulemenuname" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="应用地址">
+									<input id="moduleurl" class="mini-textbox" maxLength="500"
+										vtype="maxLength:500;" bind="dataBean.moduleurl" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="默认所属桌面">
+									<input id="belongdeskguid" class="mini-treeselect"
+										multiSelect="false" showRadioButton="true" showClose="true"
+										oncloseclick="onDefaultDeskCloseClick"
+										bind="dataBean.belongdeskguid" allowSelect="false"
+										action="getDeskTreeData" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="角标地址">
+									<input id="messagecounturl" class="mini-textbox"
+										maxLength="500" vtype="maxLength:500;"
+										bind="dataBean.messagecounturl" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="排序号">
+									<input id="ordernumber" bind="dataBean.ordernumber"
+										class="mini-textbox" vtype="int;range:0,99999999"
+										allowSort="true" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="页面打开宽度">
+									<input id="widthratio" class="mini-spinner" vtype="float"
+										minValue="0" maxValue="1" increment="0.05"
+										allowLimitValue="true" changeOnMousewheel="true"
+										allowSort="true" bind="dataBean.widthratio" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="页面打开高度">
+									<input id="heightratio" class="mini-spinner" vtype="float"
+										minValue="0" maxValue="1" increment="0.05"
+										allowLimitValue="true" changeOnMousewheel="true"
+										allowSort="true" bind="dataBean.heightratio" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="弹出">
+									<input id="isblank" bind="dataBean.isblank"
+										class="mini-checkbox" trueValue="1" falseValue="0"
+										width="20px" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="禁用">
+									<input id="isdisable" bind="dataBean.isdisable"
+										class="mini-checkbox" trueValue="1" falseValue="0"
+										width="20px" />
+								</div>
+							</div>
+							<div role="row" id="icon1">
+								<div role="control" label="应用图标">
+									<input id="icon" bind="dataBean.icon" allowInput="false"
+										emptyText="" class="mini-buttonedit" showClose="true"
+										onbuttonclick="openicon()" selectOnFocus="true"
+										oncloseclick="onCloseClick" />
+								</div>
+							</div>
+							<div role="row" id="icon2">
+								<div role="control" label="自定义应用图标">
+									<div style="position: relative; float: left;">
+										<span id="photo1" class="text-minor">暂无应用图标， </span>
+										<div id="uploader" class="mini-webuploader"
+											action="appmoduleaddaction.getFileUploadModel"
+											fileSingleSizeLimit="1024" limitType="png"
+											mimeTypes="image/*" showDefaultUI="false" auto="true"
+											pickerText="请上传" onfilesuccess="OnPhotoSuccess"></div>
+										<span class="text-minor" style="width: 300px" id="photo3">（最佳图片尺寸：50px<em>*</em>50px;
+											1M以内）
+										</span>
+									</div>
+
+									<div class="img-view" id="photo">
+										<img id="lblPicture" src="" width="50px" height="50px"
+											alt="应用图标" /> <i class="action-icon icon-removecirclefilled"
+											style="position: absolute; left: 110px; top: 20px;"
+											onclick="delPhoto();"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appmoduleaddaction', '', function(e) {
+			showPhoto(null);
+			if (e.parentModuleName) {
+				mini.get("parentmodulecode").setText(e.parentModuleName);
+			}
+		});
+		//控制照片显隐
+		function showPhoto(url) {
+			if (url) {
+				$("#lblPicture").attr("src", url);
+				mini.get("uploader").setVisible(false);
+				$("#photo1").hide();
+				$("#photo3").hide();
+				$("#icon1").hide();
+				$("#photo").show();
+			} else {
+				$("#photo").hide();
+				$("lblPicture").attr("src", "");
+				mini.get("uploader").setVisible(true);
+				$("#photo1").show();
+				$("#photo3").show();
+				$("#icon1").show();
+			}
+		}
+		//上传成功
+		function OnPhotoSuccess(args) {
+			if (args.data.extraDatas.lblPicture) {
+				showPhoto(args.data.extraDatas.lblPicture);
+			}
+		}
+		//删除个性签名图片
+		function delPhoto() {
+			epoint.execute("btnDelPic_Click", "icon2", function delPhotoCallback(
+					data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					showPhoto();
+				}
+			});
+		}
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('addNew', 'fui-form', newCallback);
+			}
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				// 清空表单
+				epoint.clear('fui-form');
+				if (data.parentmodulecode) {
+					mini.get("parentmodulecode")
+							.setValue(data.parentmodulecode);
+					mini.get("parentmodulecode").setText(data.parentModuleName);
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.closeDialog(data.msg);
+			}
+		}
+		var tree = mini.get('belongdeskguid');
+		// 点击左侧树刷新右侧表格
+		tree.on("beforenodeselect", function(e) {
+			if (e.node.noclick == true) {
+				e.cancel = true;
+			}
+		});
+
+		function openicon() {
+			epoint
+					.openDialog(
+							'选择图标',
+							"frame/pages/basic/gateway/app/appinfomanage/selectappmoduleicon",
+							openiconOperJS, {
+								'width' : 1000,
+								'height' : 420
+							});
+		}
+		function openiconOperJS(rtnValue) {
+			if (rtnValue && rtnValue != 'close') {
+				mini.get("icon").setText(rtnValue);
+				mini.get("icon").setValue(rtnValue);
+			}
+			showIcon();
+		}
+		function onCloseClick() {
+			mini.get("icon").setText("");
+			mini.get("icon").setValue("");
+			showIcon();
+		}
+
+		function onDefaultDeskCloseClick() {
+			mini.get("belongdeskguid").setText("");
+			mini.get("belongdeskguid").setValue("");
+		}
+
+		function showIcon() {
+			var icon1 = mini.get("icon").getText();
+			if ($.trim(icon1) != "") {
+				$("#icon1").show();
+				$("#icon2").hide();
+			} else {
+				$("#icon1").show();
+				$("#icon2").show();
+			}
+		}
+
+		function onDefaultCloseClick() {
+			mini.get("parentmodulecode").setText("");
+			mini.get("parentmodulecode").setValue("");
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>流程变迁和跳转配置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" onclick="addSelect">确定选择</a> <a
+				class="mini-button" onclick="canSelect">取消选择</a>
+
+		</div>
+		<p class="text-special mr10">说明：当前活动和目标活动建立跳转关系后，不能再设置变迁。</p>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 添加隐藏域 -->
+		<input id="processVersionGuid" bind="processVersionGuid"
+			class="mini-hidden" /><input id="activityGuid" bind="activityGuid"
+			class="mini-hidden" />
+
+		<!-- 表单区域 -->
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="activityGuid" multiSelect="true" style="height: 100%;"
+			allowResize="true" action="getDataGridData" showPager="false"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" headerAlign="center">
+					序
+				</div>
+				<div field="activityName" width="200" headerAlign="center"
+					align="center">活动名称</div>
+				<div field="note" width="200" headerAlign="center" align="center">备注</div>
+
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//初始化请求
+		epoint.initPage('activitymanualjumptoselectaction');
+		//新增回调
+		function addCallBack(param) {
+			epoint.closeDialog('activitymanualjumptoselectaction');
+		}
+		//回调
+		function callback(args) {
+			if (args.msg) {
+				epoint.alert(args.msg, '', null, 'info');
+			}
+			searchData();
+		}
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh(['datagrid', 'fui-form'],'',true);
+		}
+		//确定选择
+		function addSelect() {
+			var datagrid = mini.get('datagrid');
+			var ids = datagrid.getSelectedIds();
+			if (ids.length > 0) {
+				epoint.execute('addSelect', 'datagrid', [ ids.join(',') ],
+						addCallBack);
+			}
+		}
+		//取消选择
+		function canSelect(){
+			epoint.closeDialog('activitymanualjumptoselectaction');
+		}
+	</script>
+</body>
+
+</html>

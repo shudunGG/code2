@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Process versioning</title>
+<meta charset="UTF-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn" onclick="openAddDialog()">new version</a> 
+			<a class="mini-button" iconCls="icon-removecircle" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete the record!', '', null, 'warning');} else {epoint.confirm('Sure to delete?','',deleteSelect);}">delete selected</a>
+		</div>
+		<input class="mini-output" bind="processName" />
+	</div>
+
+	<div class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="processVersionGuid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			allowCellValid="true" action="getDefaultModel" showPager="true">
+			<div property="columns">
+				<div type="checkcolumn" width="30"></div>
+				<div type="indexcolumn" headerAlign="center" width="30">order</div>
+				<div field="version" headerAlign="center" align="center">version</div>
+				<div field="note" headerAlign="center" align="center">remark</div>
+				<div width="60" headerAlign="center" align="center" renderer="changeImage">state</div>
+				<div headerAlign="center" align="center" width="80" renderer="method">method manage</div>
+				<div headerAlign="center" align="center" width="60" renderer="design">process design</div>
+				<div headerAlign="center" align="center" width="50" renderer="edit">edit</div>
+			</div>
+		</div>
+		<div style="display: none">
+			<input id="processGuid" class="mini-textbox" bind="processGuid" />
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+	<!-- Configuration Variables -->
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage("processversionsformlistaction");
+
+		function design(e) {
+			return epoint.renderCell(e, "action-icon icon-gear", "JumpToDesign");
+		}
+
+		function edit(e) {
+			return epoint.renderCell(e, "action-icon icon-edit", "editVersion");
+		}
+
+		function changeImage(e) {
+			if (e.row.status == 10) {
+				return epoint.renderCell(e, "action-icon icon-start","changeStatus");
+			} else {
+				return epoint.renderCell(e, "action-icon icon-pause","changeStatus");
+			}
+		}
+
+		function changeStatus(e) {
+			epoint.execute('changeImage', '@none', [ e ], msgCallBack);
+		}
+
+		// delete
+		function deleteSelect() {
+			epoint.execute('deleteSelect', 'datagrid', msgCallBack);
+		}
+
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {
+				var msg = data.msg;
+				if(msg != null && msg.indexOf('成功')>-1){
+					epoint.alert(msg, '', searchData(), 'success');
+				}else{
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+		function openAddDialog() {
+			var processGuid = mini.get('processGuid').getValue();
+			var url = "processversionbaseinfoadd?processGuid=" + processGuid;
+			epoint.openDialog('The new version', "framemanager/sform/workflow/manage/" + url,
+					searchData, {
+						'width' : 1000
+					});
+		}
+
+		function changeComplete(msg) {
+			if (msg) {
+				epoint.alertAndClose(msg, '', null, null, 'info');
+			}
+		}
+
+		function editVersion(processVersionGuid) {
+			var url = "processversionbaseinfoedit?processVersionGuid=" + processVersionGuid;
+			epoint.openDialog('editversion', "framemanager/sform/workflow/manage/" + url,
+					searchData, {
+						'width' : 1000
+					});
+		}
+
+		function JumpToDesign(processVersionGuid) {
+			epoint.openTopDialog('Process design', "framemanager/sform/workflow/design/designbodyoa9?processVersionGuid=" + processVersionGuid);
+		}
+		
+		function method(e) {
+			return epoint.renderCell(e, "action-icon icon-paper",
+					"JumpToMethod");
+		}
+		
+		function JumpToMethod(processVersionGuid) {
+			var url = "methodlist?processVersionGuid=" + processVersionGuid;
+			epoint.openDialog('配置流程方法', "epointworkflow/design/" + url, '', {
+				'width' : 1000
+			});
+		}
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh('datagrid','',true);
+		}
+		//]]>
+	</script>
+</body>
+</html>

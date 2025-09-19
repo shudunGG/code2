@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>服务管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<div class="fui-left" id="fui-left">
+		<div role="head" title="分类管理">
+			<a class="action-icon icon-gear" title="分类管理" onclick="openCate()"></a>
+		</div>
+		<div role="body">
+			<div class="mini-tree" id="tree" action="getOuTreeModel"
+				style="width: 300px; padding: 5px;height: 100%;"></div>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" onclick="openAdd">新增服务</a>
+				<a id="btnDel" class="mini-button" iconCls="icon-minuscircle"
+					onclick="if(mini.get('datagrid').getSelecteds()==0){epoint.alert('请选择要删除的记录!');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+					删除选定 </a>
+			</div>
+		</div>
+
+		<!-- 条件区域 -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div id="cform" role="form">
+					<div role="row">
+						<div role="control" label="服务名称">
+							<input class="mini-textbox" bind="dataBean.serviceName" />
+						</div>
+						<div role="control" label="接口源地址">
+							<input class="mini-textbox" bind="dataBean.apiUrl" />
+						</div>
+					</div>
+				</div>
+				<!-- 添加隐藏域，用于树与表格的联动  -->
+				<input class="mini-hidden" id="categoryguid"
+					bind="dataBean.categoryGuid" /> <input class="mini-hidden"
+					id="type" bind="type" />
+			</div>
+			<a role="searcher" callback="searchData"></a>
+		</div>
+
+		<!-- 内容区域 -->
+		<div id="fuiContent" class="fui-content">
+			<div id="datagrid" class="mini-datagrid" idField="rowguid"
+				action="getDataGridData" sortOrder="desc" showPager="true"
+				style="height: 100%;" allowResize="true" multiSelect="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="20"></div>
+					<div type="indexcolumn" width="20" headerAlign="center">序</div>
+					<div field="serviceName" headerAlign="center" width="80">服务名称</div>
+					<div field="requestType" headerAlign="center" width="60"
+						data-options="{code:'请求类型'}">请求类型</div>
+					<div field="apiurltype" headerAlign="center" width="60"
+						data-options="{code:'服务源类型'}">服务源类型</div>
+					<div field="contentType" headerAlign="center" width="100"
+						data-options="{code:'Content-Type'}">Content-Type</div>
+					<div field="apiUrl" headerAlign="center" width="100">接口源地址</div>
+					<div field="OrderNum" headerAlign="center" align="center"
+						width="60">排序号</div>
+					<div field="ispublic" headerAlign="center" align="center"
+						width="40" renderer="changeImage">是否公开</div>
+					<!-- 操作列 -->
+					<div type="actioncolumn" headerAlign="center" align="center" 
+						renderer="onSubit">操作</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('cockpitapiinfolistaction', null, function(data) {
+		});
+
+		var gridTree = mini.get("datagrid");
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			console.log(e.node);
+			mini.get('categoryguid').setValue(id == 'f9root' ? "" : id);
+			if (e.node.type) {
+				mini.get('type').setValue(e.node.type);
+			}
+			//刷新表格
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		});
+
+		// 弹出新增窗口
+		function openAdd() {
+			var categoryguid = mini.get("categoryguid").getValue();
+			if (!categoryguid || categoryguid == "f9root") {
+				epoint.alert("请选择左侧分类！");
+				return;
+			}
+			var type = mini.get('type').getValue();
+			if (type == 'ou') {
+				epoint.alert("请选择左侧分类！");
+				return;
+			}
+			epoint.openDialog('新增服务',
+					"frame/pages/eianalysemis/cockpit/cockpitapi/cockpitapiinfoadd?categuid="
+							+ categoryguid, searchData, {
+						'width' : 1000,
+						'height' : 600
+					});
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		function callBack() {
+			epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+		}
+
+		function columnCallBack() {
+			epoint.refresh([ 'tree', 'datagrid', 'fui-form' ]);
+		}
+
+		// 主题管理
+		function openCate() {
+			epoint
+					.openDialog(
+							'分类管理',
+							"frame/pages/eianalysemis/cockpit/cockpitapi/cockpitapicatelist",
+							columnCallBack, {
+								'width' : 1000,
+								'height' : 550
+							});
+		}
+
+		// 弹出修改窗口
+		function editAPI(guid) {
+			epoint.execute('hasRight', null, guid, function(data) {
+				if (data) {
+					if (data == '0') {
+						epoint.alertAndClose("没有修改权限！");
+						return;
+					} else {
+						epoint.openDialog("修改服务",
+								'frame/pages/eianalysemis/cockpit/cockpitapi/cockpitapiinfoadd?guid='
+										+ guid, callBack, {
+									'width' : 1000,
+									'height' : 450
+								});
+					}
+				}
+			});
+
+		}
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', function(data){
+				epoint.alert(data.msg, null, searchData());
+			});
+		}
+
+		var changeImage = function(e) {
+			if (e.row.ispublic == 'true') {
+				return "<img src='images/switch_true.png' title='点击不公开' style='cursor:pointer;' onclick='changeStatus(\""
+						+ e.row.rowguid + "\",\"" + e.row.ispublic + "\");' />";
+			} else {
+				return "<img src='images/switch_false.png' title='点击公开' style='cursor:pointer;' onclick='changeStatus(\""
+						+ e.row.rowguid + "\",\"" + e.row.ispublic + "\");' />";
+			}
+		};
+
+		function changeStatus(id, isopen) {
+			epoint.confirm('确认修改公开状态？', '确认',
+					function() {
+						epoint.execute("changeStatus", "", [ id, isopen ],
+								msgcallBack);
+					});
+		}
+		function msgcallBack(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', function() {
+					epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+				}, 'info');
+			}
+		}
+		
+		function onSubit(e) {
+			return '<span type="action" style=\"color:blue\" onclick="editAPI(\''
+			+ e.row.rowguid + '\')">编辑</span>';
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增版块</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+
+</head>
+<style type="text/css" media="screen">
+.form-labels {
+	display: block;
+	-webkit-box-sizing: border-box !important;
+	-moz-box-sizing: border-box !important;
+	box-sizing: border-box !important;
+	width: 15%;
+	min-height: 26px;
+	padding-right: 5px;
+	text-align: right;
+	color: blue;
+}
+
+.row {
+	height: 30px;
+	line-height: 30px;
+	/* 	width: 900px; */
+	margin: 0 auto;
+}
+
+.row>* {
+	float: left;
+/* 	height: 30px; */
+	padding: 0 0px;
+	box-sizing: border-box;
+}
+
+.row>.operate {
+	width: 16%;
+}
+
+.operate-minus, .operate-plus {
+	float: left;
+	width: 50%;
+	text-align: center;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+/* 最后一个的+才显示 */
+.row:last-child .operate-plus {
+	display: block;
+}
+</style>
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-save" id="addClose" onclick="saveAndClose">保存并关闭</a>
+			<a class="mini-button" iconCls="icon-minuscircle" onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="卡片名称" starred="true">
+						<input class="mini-textbox" bind="dataBean.cardName" required="required" requiredErrorText="卡片名称不能为空" vtype="maxLength:50;" emptyText="请填写版块名称..." />
+					</div>
+					<div role="control">
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="卡片描述">
+						<input class="mini-textarea" bind="dataBean.remark" emptyText="请填写卡片描述..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="卡片模型" starred="true">
+						<input
+							bind="dataBean.cardModelGuid" id="cardModel"
+							action="getCardModel" class="mini-combobox"  onvaluechanged="changeParam"/>
+					</div>
+					<div role="control" label="指标配置">
+						<input id="normSetGuid" action="getNormSetList" class="mini-combobox" style="display: inline-block;width:170px"/>
+						<a class="mini-button mini-btn-primary" id="add-classify" style="display: inline-block;width:80px;margin-left: 10px;"
+							onclick="editNormData" iconCls="icon-add">编辑数据</a>
+					</div>
+				</div>
+				<div role="row">
+					<div class="form-label">参数格式:</div>
+					<div class="form-control span2">
+						<pre id="params" class="ace_editor"
+							style="width: 100%; height: 200px; border: 1px solid #9e9e9e;"></pre>
+					</div>
+					<div class="form-label"></div>
+					<div class="form-control span2">
+						<pre id="resultFilter" class="ace_editor"
+							style="width: 100%; height: 200px; border: 1px solid #9e9e9e;"></pre>
+					</div>
+					<div id="resultScipt">
+						<script>
+							function initFilter() {
+
+							}
+						</script>
+					</div>
+				</div>
+				
+				<div role="row">
+					<div role="control" label="联系电话" starred="true">
+						<input class="mini-textbox" bind="dataBean.telephone">
+					</div>
+					<div role="control" label="卡片排序">
+						<input class="mini-textbox" bind="dataBean.orderNum" emptyText="请填写卡片排序..." vtype="int;range:0,99999;" />
+					</div>
+				</div>
+				<div role="row" id="qy">
+					<div role="control" label="卡片区域总结" >
+						<input class="mini-textarea" emptyText="请填写卡片模板描述..."  id="kp1"/><br><br>
+						<input class="mini-textarea" emptyText="请填写卡片模板描述..."  id="kp2"/>
+					</div>
+					<div role="control">
+					</div>
+				</div>
+				<div class="filter-box" id="filter-box" border="1">
+					<div class="filter-item clearfix" name="filterField"
+						id="filterField_1">
+						<div role="row">
+							<div role="control" class="field" label="卡片区域总结">
+								<div id="formcontainer" class="formcontainer">
+									<div class="row">
+										<input name="stringField" class="mini-textbox" width="200px"
+											showNullItem="true" valueField="id" textField="text" />
+										<div class="operate">
+											<span class="operate-minus">-</span> <span
+												class="operate-plus">+</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div role="control">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="运行状态" starred="true">
+                    	<div id="status" class="mini-radiobuttonlist"
+										bind="dataBean.status" requiredErrorText="运行状态必须选择"
+										data="[{text:'启用',id:'1'},{text:'停用',id:'0'}]" value="1"
+										textField="text" valueField="id"></div>
+                    </div>
+                    <div role="control" label="是否审核" starred="true">
+                    	<div id="process" class="mini-radiobuttonlist"
+										bind="process" requiredErrorText="审核必须选择"
+										data="[{text:'是',id:'1'},{text:'否',id:'0'}]" value="1"
+										textField="text" valueField="id"></div>
+                    </div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/templ" id="row-tpl">
+	<div  class="formcontainer">
+		<div class="row">
+			<input name="stringField" class="mini-textbox" width="200px"
+					showNullItem="true" valueField="id" textField="text" />
+				<div class="operate">
+						<span class="operate-minus">-</span> <span
+							class="operate-plus">+</span>
+				</div>
+		</div>
+	</div>
+	</script>
+	<script type="text/templ" id="row-tpl-2">
+	{{#field}}
+		<div id="formcontainer" class="formcontainer">
+			<div class="row">
+				<span class="mini-textbox" style="border-width: 0px; width: 200px;"><span
+					class="mini-textbox-border mini-corner-all"><input
+						type="text" class="mini-textbox-input" autocomplete="off"
+						placeholder="" name="stringField" value="{{stringField}}"></span><input
+				type="hidden"></span>
+				<div class="operate">
+					<span class="operate-minus">-</span> <span
+						class="operate-plus">+</span>
+				</div>
+			</div>
+		</div>
+	{{/field}}
+	</script>
+		<script type="text/templ" id="row-tpl-3">
+{{#list}}
+<div class="filter-item clearfix" name="filterField" id={{id}}>
+		<div style="padding: 0; margin-bottom: -20px;" class="form-row">
+			<span class="filter-item-delete"></span>
+		</div>
+		<div class="form-row">
+			<label class="form-label">卡片区域总结：</label>
+			<div class="field form-control span5" id={{fieldid}} label="卡片区域总结">
+			</div>
+		</div>
+	</div>
+{{/list}}
+	</script>
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script src="../cockpitnorm/js/ace.js"></script>
+	<script src="js/substring.js"></script>
+	<script>
+		var uploader = mini.get("uploader");
+		// 初始化页面
+		epoint.initPage('cockpitmobilecardeditaction', null, function(data) {
+			if (data.json) {
+				var array = [];
+				array = data.json.split(",");
+				var length = array.length;
+				var list=[];
+				var key=[];
+				var template = $("#row-tpl-3").html();
+				for (var i = 0; i < length; i++) {
+					$('.filter-item').remove();
+					var json=array[i];
+					key.push(json);	
+					var str={
+							id : 'filterField_'+(i+1),
+							fieldid:'field'+(i+1)
+					}
+					list.push(str);
+				}
+				var r = Mustache.render(template, {list:list});
+				$('#filter-box').html(r);
+				for(var i=0;i<key.length;i++){
+					var json=array[i];
+					var field=[];
+					var str1={
+						stringField:json
+					};
+					field.push(str1);
+					var templatefield = $("#row-tpl-2").html();
+					var f = Mustache.render(templatefield, {field:field});
+					$('#field'+(i+1)).html(f); 
+				} 
+			}
+			if(data.cardModelGuid){
+				if(data.model){
+					ajaxParamsEditor.setValue(data.model);
+					var regex = new RegExp('{', 'g'); 
+					var result = data.model.match(regex);
+					var count=!result ? 0 : result.length;
+					if(count == "0"){
+						$('#qy').css('display', 'none');
+						$('#filter-box').css('display', 'block');
+					}
+					else if(count == "1"){
+						$('#qy').css('display', 'block');
+						$('#kp2').css('display', 'none');
+						
+						$('#filter-box').css('display', 'none');
+					}
+					else if(count == "2"){
+						$('#qy').css('display', 'block');
+						$('#kp1').css('display', 'block');
+						$('#kp2').css('display', 'block');
+						$('#filter-box').css('display', 'none');
+					}
+				}
+			}
+			else{
+				$('#qy').css('display', 'none');
+			}
+			
+		});
+		
+		var $formcontainer = $('.formcontainer');
+		// 一行控件的模板
+		var rowTpl = $('#row-tpl').html();
+
+		var newRow = '<div class="formcontainer"><div class="row"><input name="stringField" class="mini-textbox" width="200px" showNullItem="true" valueField="id" textField="text" /><div class="operate"><span class="operate-minus">-</span> <span class="operate-plus">+</span></div></div></div>';
+
+		// 新增一行
+		function addRow($formcontainer) {
+			// 直接将模板加到页面上
+			$formcontainer.append(newRow);
+			// 解析里面的控件
+			var length = $formcontainer.children(".formcontainer").length - 1;
+			mini.parse($formcontainer.children(".formcontainer")[length]);
+		}
+
+		function removeRow($row) {
+			$row.remove();
+			// 剩下最后一行时，隐藏删除按钮
+			if ($('.row').length == 1) {
+				$('.operate-minus').css('display', 'none');
+			}
+		}
+		
+		function changeParam(e){
+			if(e.value){
+				epoint.execute('change', 'fui-form', e.value, function(data){
+					if(data.result){
+						ajaxParamsEditor.setValue(data.result);
+						
+						var regex = new RegExp('{', 'g'); 
+						var result = data.result.match(regex);
+						var count=!result ? 0 : result.length;
+						if(count == "0"){
+							$('#qy').css('display', 'none');
+						}
+						else if(count == "1"){
+							$('#qy').css('display', 'block');
+							$('#kp2').css('display', 'none');
+						}
+						else if(count == "2"){
+							$('#qy').css('display', 'block');
+							$('#kp1').css('display', 'block');
+							$('#kp2').css('display', 'block');
+						}
+					}
+				});
+			}
+		}
+			
+		function change() {
+			epoint.refresh([ 'belongOuGuid','plate'], function() {});
+		}
+
+		function saveAndClose() {
+			if (epoint.validate()) {
+				var stringField = '';
+				var Field = [];
+				$("div[name='filterField']").each(function(ind) {
+					$("#filterField_"+ (ind + 1)+ " .field input[name='stringField']").each(
+							function() {
+								stringField = this.value;
+								Field.push(stringField);
+							});
+				});
+				epoint.execute('save', 'fui-form', [ Field ], closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				epoint.alertAndClose(data.msg);
+			}
+		}
+		
+		//展示图标
+		function OnPictureSuccess(args) {
+			if (args.data.extraDatas.obj) {
+				showPicture(args.data.extraDatas.obj);
+			}
+		}
+		
+		//展示图标
+		function showPicture(tb) {
+			console.log(tb);
+			$(".mini-uploader-list").empty();
+			$("#picture").show();
+			$("#picture").html('<img id="tb" src="" width="120px" height="180px" alt="图标" /> <i class="action-icon icon-error" style="position: absolute; left: 110px; top: 0px;" onclick="delPicture(\''+tb.filepath+'\');" ></i>');
+			$("#tb").attr("src", tb.picture);
+			mini.get("uploader").setVisible(false);
+		}
+		
+		//删除图标
+		function delPicture(filepath) {
+			epoint.execute('deletePicture', '', filepath, function(data) {
+				if (data.msg) {
+					mini.get("uploader").clearFile();
+					$("#picture").hide();
+					mini.get("uploader").setVisible(true);
+					epoint.refresh('uploader');
+				}
+			});
+		}
+		
+		// 初始化超文本框
+		var ajaxParamsEditor = ace.edit("params");
+		ajaxParamsEditor.setTheme('ace/theme/xcode');
+		ajaxParamsEditor.getSession().setMode("ace/mode/json");
+		ajaxParamsEditor.setFontSize(14);
+		var ajaxFilterEditor = ace.edit("resultFilter");
+		ajaxFilterEditor.setTheme('ace/theme/xcode');
+		ajaxFilterEditor.setFontSize(14);
+		ajaxFilterEditor.getSession().setMode("ace/mode/javascript");
+		var ajaxResultEditor = ace.edit("apiResult");
+		ajaxResultEditor.setTheme('ace/theme/xcode');
+		ajaxResultEditor.getSession().setMode("ace/mode/json");
+		ajaxResultEditor.setFontSize(14);
+
+		function editNormData(){
+			epoint.execute("editNormData", '@none', mini.get("normSetGuid").getValue(), function (data){
+				epoint.openDialog('指标结果', "frame/pages/eianalysemis/cockpit/cockpitnorm/cockpitnormresultlist?guid=" 
+				+ mini.get("normSetGuid").getValue() + "&batchGuid=" + data.batchguid, '', {
+					'width': 1000,
+					'height': 550
+				});
+			})
+		}
+
+	</script>
+</body>
+</html>

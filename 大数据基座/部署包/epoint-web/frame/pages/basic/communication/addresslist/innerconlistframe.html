@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>内部通讯录</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<div class="fui-left">
+		<div role="head" title="选择部门"></div>
+
+		<div role="body">
+			<ul id="tree" class="mini-tree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeData"
+				resultAsTree="false"></ul>
+		</div>
+	</div>
+
+	<div class="fui-right">
+		<!-- toolbar区域 -->
+		<div class="fui-toolbar">
+			<a class="mini-dataexport" id="dataexport" gridId="datagrid"
+				fileName="内部通讯录" action="getExportModel" extraId="fui-form"
+				exportAction="innerconlistframeaction.export"></a>
+			<div id="fui-form" class="fui-toolbar-search r">
+				<input class="mini-textbox" bind="txtDisplayName"
+					emptyText="请输入名称搜索" onenter="searchData" /> <input
+					class="mini-textbox" bind="txtLink" emptyText="请输入联系号码搜索"
+					onenter="searchData" /> <input class="mini-hidden" bind="ouguid"
+					id="ouguid" /> <input class="mini-hidden" bind="showDept"
+					id="showDept" /> <input class="mini-hidden" bind="showShortDept"
+					id="showShortDept" /> <a class="mini-button ml8" state="primary"
+					iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+				idField="userguid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				allowCellValid="true" action="getDataGridData" showPager="true"
+				allowCellEdit="true" allowCellSelect="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="40"></div>
+					<div type="indexcolumn" width="40" align="left">序</div>
+					<div field="displayName" width="150">用户姓名</div>
+					<div name="szbm" field="ouname" width="150">所在部门</div>
+					<div name="bmjc" field="oushortName" width="150">部门简称</div>
+					<div field="title" width="150">职务</div>
+					<div field="telephoneOffice" width="150">办公电话</div>
+					<div field="usermobile" width="150">手机号码</div>
+					<div field="shortMobile" width="150">短号码</div>
+					<div name="viewdetail" width="80" icon="modicon-76" renderer="onDetailRenderer">查看</div>
+					<div width="80" visible="false" renderer="onSendMailRenderer">发邮件</div>
+					<div name="exun" width="80" renderer="onChatRenderer">发消息</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../../rest/resource/jsboot"></script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("innerconlistframeaction", "", initCallback);
+
+		$(document).ready(function() {
+			// 将导出按钮文字设置为“导出”
+			$("#dataexport").find(".mini-button-text").text("导出")
+			$("#dataexport").click(function(e) {
+				$("#dataexport").find(".mini-button-text").text("导出")
+			});
+		});
+
+		var SendMailAddress;
+		var OpenType;
+
+		function initCallback(data) {
+			if (data) {
+				SendMailAddress = data.SendMailAddress + "&ToUserGuid=";
+				OpenType = data.OpenType;
+				//显现发邮件的图标
+				if (SendMailAddress) {
+					mini.get("datagrid").showColumn(10);
+				}
+			}
+		}
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		//树js对象
+		var tree = mini.get("tree");
+		// 点击左侧树刷新右侧表格
+		tree.on("nodeselect", function(e) {
+			var id = e.node.id == 'f9root' ? '' : e.node.id;
+			// 将左侧树点击的节点id放到隐藏域中
+			// 在表格发二次请求时，会自动带上条件区域中的内容
+			mini.get('ouguid').setValue(id);
+			//刷新表格
+			searchData_treeExp();
+		});
+
+		// 隐藏列
+		grid.on("load", function(e) {
+			var showDept = mini.get("showDept").getValue();
+			var showShortDept = mini.get("showShortDept").getValue();
+			if (!!!showDept) {
+				grid.hideColumn("szbm");
+			}
+			if (!!!showShortDept) {
+				grid.hideColumn("bmjc");
+			}
+			if (Util.getFrameSysParam('ui_exun_enable') != 1) {
+				grid.hideColumn("exun");
+			}
+		});
+		
+		function onDetailRenderer(e) {
+			return epoint.renderCell(e, "action-icon modicon-76", "viewDetail");
+		}
+
+		function viewDetail(userGuid) {
+			epoint.openDialog("查看用户",
+					'frame/pages/basic/communication/addresslist/innercondetail?userGuid=' + userGuid+'&ouGuid='+ouguid, null, {
+						'width' : 870,
+						'height' : 360
+					});
+		}
+
+		function onSendMailRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-mail", "sendMail");
+		}
+
+		function onChatRenderer(e) {
+			return epoint.renderCell(e, "action-icon icon-chat", "chat");
+		}
+
+		// 表格，树的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 表格的搜索
+		function searchData_treeExp() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		//发送邮件
+		//修改URL地址
+		/* function sendMail(e) {
+			if (SendMailAddress) {
+				if (OpenType == "div") {
+					epoint.openDialog("发送邮件", SendMailAddress + e);
+				} else if (OpenType == "tab") {
+					top.TabsNav.addTab({
+						'url' : SendMailAddress + e,
+						'name' : "发送邮件",
+						'id' : Math.round(Math.random() * 1000),
+						'maxIcon' : true,
+						'closeIcon' : true
+					});
+				}
+			}
+		} */
+
+		function chat(e) {
+			top.OpenEMsg(e);
+		}
+		//]]>
+	</script>
+
+</body>
+
+</html>

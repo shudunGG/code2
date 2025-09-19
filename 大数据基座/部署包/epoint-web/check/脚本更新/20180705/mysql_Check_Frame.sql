@@ -1,0 +1,1 @@
+select count(*) from information_schema.columns where table_schema = database() and table_name = 'datasource' and column_name = 'SERVERNAME' and character_maximum_length=1000

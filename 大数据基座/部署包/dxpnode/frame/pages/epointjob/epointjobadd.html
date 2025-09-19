@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>新增调度任务</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" id="addNew"
+			onclick="saveAndNew" style="display: none;">保存并新建</a> <a
+			class="mini-button" id="addClose" onclick="saveAndClose"
+			style="display: none;">保存并关闭</a> <a class="mini-button"
+			state="primary" id="save" onclick="saveModify" style="display: none;">保存修改</a>
+		<a class="mini-button" state="primary" id="cancelBtn"
+			onclick="epoint.closeDialog" style="display: none;">取消</a>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<!-- 表单区域 -->
+		<div id="fui-form" class="fui-form">
+			<div role="form">
+				<div role="row">
+					
+					<div role="control" label="任务描述" starred="true">
+						<input id="jobDesc" bind="dataBean.jobDesc" class="mini-textbox"
+							required="true" requiredErrorText="任务描述不能为空" emptyText="请输入任务描述" />
+					</div>
+					<div role="control" label="jobGuid">
+						<input id="jobGuid" bind="dataBean.jobGuid" class="mini-textbox" emptyText="如果不输入，jobGuid随机生成"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="执行器" starred="true">
+						<input class="mini-combobox" showNullItem="false"
+							id="groupName" bind="dataBean.groupName"
+							action="getJobGroupList" emptyText="请选择执行器..." showClose="false"
+							textField="text" allowInput="false" valueField="id"  onvaluechanged="groupNameChange"/>
+					</div>
+					<div role="control" label="Cron" starred="true">
+						<input id="jobCron" bind="dataBean.jobCron" class="mini-textbox"
+							required="true" requiredErrorText="任务Cron表达式不能为空"
+							emptyText="请输入Cron表达式" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="任务运行模式" starred="true">
+						<input id="glueType" class="mini-combobox" showNullItem="false"
+							bind="dataBean.glueType" action="getGlueTypeList"
+							emptyText="请选择..." showClose="false" textField="text"
+							allowInput="false" valueField="id" onvaluechanged="modelChange" />
+					</div>
+					<div role="control" label="JobHandler" starred="true">
+						<input id="executorHandler" bind="dataBean.executorHandler"
+							class="mini-combobox" required="true"  action="getJobHandlerList"  allowInput="true" 
+							requiredErrorText="JobHandler不能为空" emptyText="请输入JobHandler" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="调度器重复任务处理策略" starred="true">
+						<input id="schedulerBlockStrategy" class="mini-combobox"
+							showNullItem="false" bind="dataBean.schedulerBlockStrategy"
+							action="getSchedulerBlockStrategyList" emptyText="请选择..."
+							showClose="false" textField="text" allowInput="false"
+							valueField="id" />
+					</div>
+					<div role="control" label="执行器重复任务处理策略" starred="true">
+						<input id="executorBlockStrategy" class="mini-combobox"
+							showNullItem="false" bind="dataBean.executorBlockStrategy"
+							action="getExecutorBlockStrategyList" emptyText="请选择..."
+							showClose="false" textField="text" allowInput="false"
+							valueField="id" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="路由策略" starred="true">
+						<input id="executorRouteStrategy" class="mini-combobox"
+							showNullItem="false" bind="dataBean.executorRouteStrategy"
+							action="getExecutorRouteStrategyList" emptyText="请选择..."
+							showClose="false" textField="text" allowInput="false"
+							valueField="id" onvaluechanged="typeChange" />
+					</div>
+					<div role="control" label="固定执行器地址">
+						<input id="staticExecutorAddress"
+							bind="dataBean.staticExecutorAddress" class="mini-textbox"
+							emptyText="示例：192.168.56.1:9998" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="负责人" starred="true">
+						<input id="author" bind="dataBean.author" class="mini-textbox"
+							required="true" emptyText="请输入负责人" />
+					</div>
+					<div role="control" label="子任务">
+						<input id="childJobId" bind="dataBean.childJobId"
+							class="mini-buttonedit" emptyText="选择子任务" allowInput="false"
+							onbuttonclick="selectChildJob" selectOnFocus="true" showClose="true" onCloseclick="delChildJob"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="任务超时时间">
+						<input id="executorTimeout" bind="dataBean.executorTimeout"
+							class="mini-textbox" vtype="int" inputStyle="text-align:left" emptyText="任务超时时间单位为秒，大于零生效" />
+					</div>
+					<div role="control" label="失败重试次数">
+						<input id="executorFailRetryCount"
+							bind="dataBean.executorFailRetryCount" class="mini-textbox" vtype="int" inputStyle="text-align:left" 
+							emptyText="" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="报警类型">
+						<input id="alarmType" bind="dataBean.alarmType"
+							class="mini-combobox"  data="[{'text':'不报警','id':'0'},{'text':'通用的接口配置','id':'10'},{'text':'指定接口','id':'11'},{'text':'通用的email配置','id':'20'},{'text':'指定的email配置','id':'21'}]" onvaluechanged="alarmtypechanged"/>
+					</div>
+					<div role="control" label="报警配置">
+						<input id="alarmEmail" bind="dataBean.alarmEmail"
+							class="mini-textbox" emptyText="请输入报警配置" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="任务参数">
+						<input id="executorParam" bind="dataBean.executorParam"
+							class="mini-textbox" emptyText="请输入任务参数..." />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="脚本">
+						<input id="glueSource" bind="dataBean.glueSource"
+							class="mini-textarea" height="100" emptyText="选择脚本模式时,提供脚本源代码..." />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script type="text/javascript">
+		//初始化请求
+		epoint.initPage('epointjobaddaction', "", initPage);
+		
+		var jobGuid = Util.getUrlParams('jobGuid');
+		
+		var groovycode,pythoncode,shellcode;
+
+		function initPage(data) {
+			// 初始化按钮
+			if (data.edit) {
+				//隐藏新增按钮
+				document.getElementById("addNew").style.display = "none";
+				document.getElementById("addClose").style.display = "none";
+				document.getElementById("save").style.display = "";
+				document.getElementById("cancelBtn").style.display = "";
+				// 编辑时，无法编辑运行模式
+				mini.get("glueType").setEnabled(false);
+				// 编辑时,无法编辑jobGuid
+				if(mini.get("jobGuid")){
+					mini.get("jobGuid").setEnabled(false);	
+				}
+				// 编辑时，为控件赋值childJobGuid
+				if (data.childJobIdStr && data.childJobNameStr) {
+					mini.get("childJobId").setText(data.childJobNameStr);
+					mini.get("childJobId").setValue(data.childJobIdStr);
+				}
+			} else {
+				//隐藏修改按钮
+				document.getElementById("addNew").style.display = "";
+				document.getElementById("addClose").style.display = "";
+				document.getElementById("save").style.display = "none";
+				document.getElementById("cancelBtn").style.display = "none";
+				//新增时后台会传示例源码
+				groovycode = data.groovycode;
+				pythoncode = data.pythoncode;
+				shellcode = data.shellcode;
+			}
+			//任务运行模式
+			modelChange();
+			// 路由策略为固定时,需要编辑地址框
+			typeChange();
+
+			if (data.msg) {
+				epoint.showTips(data.msg,{state : 'info'});
+			}
+			
+			alarmtypechanged();
+		}
+
+		// 保存并新增
+		function saveAndNew() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', newCallback);
+			}
+		}
+
+		// 保存并关闭
+		function saveAndClose() {
+			if (epoint.validate()) {
+				epoint.execute('add', 'fui-form', closeCallback);
+			}
+		}
+
+		// 修改保存
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('update', 'fui-form', closeCallback);
+			}
+		}
+
+		// 新增操作的回调
+		function newCallback(data) {
+			if (data.msg) {
+				epoint.showTips(data.msg, {state : 'success'});
+				if (data.success) {
+					// 重新初始化页面
+					epoint.initPage('epointjobaddaction', '', initPage);
+				}
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(data.msg, {state : 'warning'});
+				}
+			}
+		}
+
+		// 路由策略选择事件
+		function typeChange() {
+			if (mini.get("executorRouteStrategy").getValue() == 'STATIC') {
+				showControl('staticExecutorAddress');
+			}else{
+				hideControl('staticExecutorAddress');
+			}
+		}
+
+		// 任务运行模式选择事件
+		function modelChange() {
+			if(mini.get("glueType").getValue() == 'JAVA'){
+				hideControl('glueSource');
+				showControl('executorHandler');
+			}else{
+				showControl('glueSource');
+				hideControl('executorHandler');
+				if(mini.get("glueType").getValue() == 'GROOVY' && groovycode){
+					mini.get('glueSource').setValue(groovycode);
+				}
+				if(mini.get("glueType").getValue() == 'PYTHON' && pythoncode){
+					mini.get('glueSource').setValue(pythoncode);
+				}
+				if(mini.get("glueType").getValue() == 'SHELL' && shellcode){
+					mini.get('glueSource').setValue(shellcode);
+				}
+			}
+		}
+		
+		//隐藏控件
+		function hideControl(id){
+			$('#' + id).parent().hide();
+			$('#' + id).parent().prev().hide();
+			mini.get(id).setValue('');
+		}
+		//显示控件
+		function showControl(id){
+			$('#' + id).parent().show();
+			$('#' + id).parent().prev().show();
+		}
+		
+		// 打开子任务选择页面
+		function selectChildJob(e){
+			var url = "frame/pages/epointjob/epointjobselectchildjob?jobGuid=" + jobGuid;
+			var childJobIds = mini.get("childJobId").getValue();
+			if(childJobIds){
+				url += "&childJobIds=" + childJobIds;
+			}
+			epoint.openDialog('选择子任务', url, function(data) {
+				// 给子任务控件赋值
+				if(data && data != "close"){
+					mini.get("childJobId").setValue(data[0]);
+					mini.get("childJobId").setText(data[1]);
+				}
+			},{
+				width : 600,
+				height : 500
+			});
+		}
+		
+		// 删除子任务
+		function delChildJob(){
+			mini.get("childJobId").setValue("");
+			mini.get("childJobId").setText("");
+		}
+		
+		
+		//执行器变更后的触发事件
+		function groupNameChange(){
+			if(mini.get("glueType").enabled || mini.get("glueType").getValue() == 'JAVA'){
+				mini.get('executorHandler').setValue('');0
+				mini.get('executorHandler').setText('');
+				epoint.refresh(['groupName','executorHandler'], function(){})
+			}
+		}
+		
+		function alarmtypechanged(){
+			if(mini.get('alarmType').getValue() == 11 || mini.get('alarmType').getValue() == 21){
+				showControl('alarmEmail');
+			}else{
+				hideControl('alarmEmail');
+				mini.get('alarmEmail').setValue('');
+			}
+		}
+	</script>
+</body>
+
+</html>

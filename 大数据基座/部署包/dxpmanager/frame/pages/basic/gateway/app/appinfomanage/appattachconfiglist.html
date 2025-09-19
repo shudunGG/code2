@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用附件数据源管理</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" iconCls="icon-save" onclick="saveAll"> 保存修改
+		</a>
+	</div>
+	<div class="fui-notice tips-box clearfix">
+		<div id="red" style="color: red">在通过SOA接口进行附件上传时，附件将传入第一个授权的附件数据源内</div>
+	</div>
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" sortOrder="desc"
+			idField="sysguid" multiSelect="true" showPager="false"
+			style="width: 100%; height: 100%;" allowCellValid="true"
+			action="getDataGridData">
+			<div property="columns">
+				<div type="indexcolumn" width="50" headerAlign="center">序</div>
+				<div field="attach_ConnectionStringName" headerAlign="center">连接名称</div>
+				<div field="attach_ConnectionString" headerAlign="center"
+					width="100%">连接字符串</div>
+				<div field="orderNum" width="80" headerAlign="center" align="right"
+					vType="int">
+					排序号 <input property="editor" class="mini-textbox" vtype="int;range:0,99999999"
+						style="width: 100%" />
+				</div>
+				<div field="isChecked" align="center" headerAlign="center"
+					width="80">
+					授权 <input property="editor" class="mini-checkbox" truevalue="1"
+						falsevalue="0" style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('appattachconfiglistaction');
+		var grid = mini.get("datagrid");
+		grid.on("load", function(e) {
+			var rows = e.sender.findRows();
+			for (var i = 0; i < rows.length; i++) {
+				grid.beginEditRow(rows[i]);
+			}
+		});
+		function saveAll() {
+			if (epoint.validate([ 'datagrid' ])) {
+				epoint.execute('saveAll', '', callback);
+			}
+		}
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ]);
+		}
+	</script>
+</body>
+</html>

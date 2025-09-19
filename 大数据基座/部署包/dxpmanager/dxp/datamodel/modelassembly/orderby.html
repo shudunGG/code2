@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>排序</title>
+
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/common.css' ]);
+</script>
+</head>
+
+<style>
+body, html {
+    overflow: auto !important; 
+}
+</style>
+<body>
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button mini-btn-primary" id="save"
+				onclick="saveModify">保存修改</a> <a
+				class="mini-button mini-btn-primary" onclick="epoint.closeDialog">关闭</a>
+		</div>
+		<!--帮助按钮 -->
+		<a role="helper"></a>
+	</div>
+
+	<!-- 页面内容区域 -->
+	<div id="form" class="fui-form" style="padding-top: 1px">
+		<div role="form">
+			<div role="row">
+				<div role="control" label="步骤名称" starred="true">
+					<input id="stepName" name="stepName" class="mini-textbox" requiredErrorText="步骤名称不能为空"
+						required="true" emptyText="请输入步骤名称" vtype="maxLength:20" />
+				</div>
+			</div>
+			<input id="columnTableData" name="columnTableData" 
+				class="mini-hidden"> 
+		</div>
+	</div>
+<div class="fui-toolbar" id="btns" style="padding-top: 1px;margin:0 auto">
+		<div class="btn-group mr10 " style="position: absolute;margin-left:10%">
+			<a class="mini-button mini-btn-primary"
+				onclick="addkeyfield"
+				style="margin-left: 20px">添加排序</a><a id="deletekeyfield"
+				class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认删除?','',deleteSelected);}">删除排序</a>
+			</div></div>
+	<!-- 内容区域 -->
+	<div class="mini-fit" style="padding-top: 1px">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="id" multiSelect="true" allowCellValid="true"
+			allowCellEdit="true" style="width: 90%; height: 100%;margin:0 auto"
+			allowResize="true" showPager="false" allowCellSelect="true"
+			editNextOnEnterKey="true" action="getDataGridData">
+			<div property="columns">
+				<div type="checkcolumn" width="45"></div>
+				<div type="indexcolumn" width="55" headerAlign="center">序</div>
+				<div field="fields" headerAlign="center" align="center"
+					width="120" maxLength="8"  type="comboboxcolumn"  vtype="required">
+					字段<input property="editor" class="mini-combobox"
+						emptyText="请选择字段..." data="sourceFieldList" textField="text" required="true"
+						valueField="id"  style="width: 100%" />
+				</div>
+				<div field="ordertype" headerAlign="center" align="center"
+					width="120" maxLength="8"  type="comboboxcolumn" vtype="required" >
+					排序<input property="editor" class="mini-combobox"
+						emptyText="请选择排序方式..." data="[{'text':'升序','id':'asc'},{'text':'降序','id':'desc'}]" textField="text"
+						valueField="id"  style="width: 100%" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../../../frame/fui/js/jsboot.js"></script>
+	<script>
+		//获取表单数据
+		var form = new mini.Form("#form");
+		var tableList = mini.get('tableName');
+		var stepNameForm = mini.get('stepName');
+		var datagrid = mini.get("datagrid");
+		var nodeData;
+		var nodeInfo;
+		var transGuid;
+		var columnTemp;
+		var rightConList;
+		var compareTypeList;
+		var sourceFieldList;
+		datagrid.load();
+		function getForm() {
+			var data = form.getData(true, false);
+			var s = mini.encode(data);
+			return s;
+
+		}
+		
+		//解决下拉框不展示的问题
+		function epoint_preload(ctrs,data) {
+			mini.get("datagrid").getCellEditor(2,0).setData(data.sourceFieldList);
+        }
+
+		function pageLoad() {
+			var data = top.nodeData;
+			nodeInfo = data;
+			nodeData = mini.decode(data.id);
+			form.setData(nodeData);
+			epoint.initPage('modelorderbyaction?stepId=' + nodeInfo.key,{'nodeData':epoint.encodeUtf(JSON.stringify(nodeData))}, initCallBack);
+		}
+	
+		function initCallBack(e) {
+			//填充表单数据
+			form.setData(nodeData);
+			var nodeName = nodeData.stepName;
+			if (e.operatorList) {
+				rightConList = e.rightConList;
+			}
+			if (e.compareTypeList) {
+				compareTypeList = e.compareTypeList;
+			}
+			if (e.sourceFieldList) {
+				sourceFieldList = e.sourceFieldList;
+			}
+			if(!nodeName){
+				stepNameForm.setValue(nodeInfo.name);
+			}
+		}
+
+		//新增关键字段
+		function addkeyfield() {
+			var newRow = {};
+			datagrid.addRow(newRow, 'last');
+
+		}
+		
+		//删除选中
+		function deleteSelected() {
+			datagrid.removeRows(datagrid.getSelecteds(), false);
+			setGridData();
+		}
+		
+		// 关闭操作的回调
+		function msgCallBack(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.alertAndClose(msg, '', null, null, 'success');
+				} else {
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+
+
+		//保存修改
+		function saveModify() {
+			datagrid.validate();
+			if (datagrid.isValid() == false) {
+				var error = datagrid.getCellErrors()[0];
+				datagrid.beginEditCell(error.record, error.column);
+				epoint.alert($.trim(error.column.header+error.errorText),'','','warning');
+				return;
+			}
+			if (epoint.validate('@all', true)) {
+				var griddata=datagrid.getData();
+				if(griddata.length<1){
+					epoint.alert('未配置排序方式，请添加排序','','','warning');
+                    return;
+				}
+				for(var i=0;i<griddata.length;i++){
+				    for(var j=i+1;j<griddata.length;j++){
+                        if(griddata[i].fields==griddata[j].fields){
+                            epoint.alert('字段['+griddata[i].fields+']不能重复排序！','','','warning');
+                            return;
+                        }
+				    }
+				}
+				setGridData();
+				var nodeForm = getForm();
+				epoint.execute("save", '', [ nodeInfo, nodeForm ], function(data) {
+					if (data.success == 'success') {
+						epoint.closeDialog(nodeForm);
+					} else {
+						epoint.alert(data.msg, '', null, 'warning');
+					}
+				});
+			}
+		}
+		
+		function setGridData() {
+			var datas = datagrid.getData();
+			var columnLink = [];
+			for (var i = 0; i < datas.length; i++) {
+				columnLink.push({
+					"fields" : datas[i].fields,
+					"ordertype" : datas[i].ordertype
+				});
+			}
+			mini.get('columnTableData').setValue(JSON.stringify(columnLink));
+		}
+
+	</script>
+</body>
+
+</html>

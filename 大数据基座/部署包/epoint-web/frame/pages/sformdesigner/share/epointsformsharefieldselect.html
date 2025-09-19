@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<title>共享字段配置</title>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="bindField();"
+			id="btnAddRecord"> 绑定字段 </a>
+		<div id="fui-form" class="fui-toolbar-search r">
+			<input class="mini-textbox" bind="searchString" emptyText="请输入共享字段名称"
+				width="300" /><a class="mini-button ml8" state="primary"
+				iconCls="icon-search" onclick="searchData" tooltip="搜索"></a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="false"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div field="isdisabled" name="isdisabled" type="checkcolumn"
+					width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="fieldname" name="fieldname" width="100">字段英文名</div>
+				<div field="fieldchinesename" name="fieldchinesename" width="100">
+					字段中文名</div>
+				<div field="fieldtype" name="fieldtype" width="80">字段类型</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('epointsformsharefieldselectaction');
+
+		// 表格对象
+		var grid = mini.get("datagrid");
+
+		// 绑定该共享字段
+		function bindField() {
+			grid.validate();
+			if (grid.isValid()) {
+				if (grid.getSelecteds().length == 0) {
+					epoint.showTips('请选择需要配置的表单!',  {state : 'warning'});
+				} else {
+					epoint.execute('saveBind', '', closeCallback);
+				}
+			}
+		}
+
+		grid.on("beforeselect", function(e) {
+			if (e.record.isdisabled) {
+				// 取消后续选中
+				e.cancel = true;
+			}
+		});
+
+		grid.on("drawcell", function(e) {
+			if (e.record.isdisabled && e.columnIndex == 0) {
+				// 取消渲染共享字段选择单选控件
+				e.cellHtml = "";
+			}
+		});
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		// 回掉提醒
+		function closeCallback(data) {
+			var msg = data.msg;
+			if (msg) {
+				if (data.success) {
+					epoint.showTips(msg, {state : 'success'});
+					epoint.closeDialog(data.msg);
+				} else {
+					epoint.showTips(msg,  {state : 'warning'});
+				}
+			}
+		}
+	</script>
+</body>
+</html>

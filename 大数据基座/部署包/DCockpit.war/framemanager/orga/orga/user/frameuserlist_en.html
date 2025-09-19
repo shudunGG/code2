@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>List of users</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- The page content area -->
+	<div class="fui-left">
+		<div role="head" title="Choose department"></div>
+		<div role="body">
+			<ul id="tree" class="mini-filtertree" style="height: 100%" textField="text"
+				idField="id" parentField="pid" action="getTreeModel" filterMode="server"
+				resultAsTree="false">
+			</ul>
+		</div>
+	</div>
+	<div class="fui-right">
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a id="addUser" class="mini-button" onclick="addUser">add user</a>
+				<a id="deleteUser" class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please choose to delete records!', '', null, 'warning');} else {epoint.confirm('Confirm to delete?','',deleteSelected);}">delete</a>
+				<a id="saveAll" class="mini-button" onclick="saveAll">update sort</a>
+				<a id="moveUser" class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select to transfer record!', '', null, 'warning');} else {moveuser();}">move selected</a>
+				<a id="setUserEnable" class="mini-button" onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('Please select to enable/Records of the disabled!', '', null, 'warning');} else {setUserEnable();}">enable/disable</a>
+				<a id="addStepSize" class="mini-button" onclick="addStepSize">add step size</a>
+			</div>
+			<div id="uploader" class="mini-webuploader mr1" pickerText="Import data"
+				action="frameuserlistaction.getDataImport" 
+    			limitType="xls,xlsx" dataImport="true" showDefaultUI="false"
+				onfilesuccess="onFileSuccess" auto="true">
+			</div>
+			<a class="mini-dataexport" id="dataexport" gridId="datagrid"
+				fileName="List of users" action="getExportModel" extraId="fui-form"></a>
+			<!--Help button -->
+			<a role="helper" class="mr10">import template</a>		
+		</div>
+		<!-- Help information area Hidden by default-->
+		<div class="fui-notice hidden">
+			<p>
+				<em><a href="../../../pages/orga/orga/user/userimport.xlsx">downloadexcelImport the template</a></em>
+			</p>
+		</div>
+		<!-- conditions area -->
+		<div class="fui-condition">
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<div role="row">
+						<div role="control" label="user name">
+							<input bind="userName" class="mini-textbox" />
+						</div>
+						<div role="control" label="login name">
+							<input bind="loginId" class="mini-textbox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="department name">
+							<input bind="ouName" class="mini-textbox" />
+						</div>
+						<div role="control" label="user directly under">
+							<div name="onlyDirect" bind="isDirect"
+								class="mini-checkbox" onvaluechanged="searchData"></div>
+						</div>
+					</div>
+					<!-- Add a hidden field to the tree and the linkage of the table -->
+					<input bind="leftTreeNodeGuid"
+						id="leftTreeNodeGuid" class="mini-hidden" /> 
+					<input bind="transferOuguid"
+						id="ouguid" class="mini-hidden" /> 
+				</div>
+			</div>
+			<!-- Search button -->
+			<a role="searcher" callback="searchData"></a>
+		</div>
+		<!-- content area -->
+		<div class="fui-content">
+			<div id="datagrid" name="datagrid" class="mini-datagrid"
+				idField="userGuid" multiSelect="true"
+				style="width: 100%; height: 100%;" allowResize="true"
+				showPager="true" action="getDataGridData"  allowCellSelect="true" allowCellValid="true" allowCellEdit="true"
+				editNextOnEnterKey="true" editNextRowCell="true">
+				<div property="columns">
+					<div type="checkcolumn" width="50"></div>
+					<div type="indexcolumn" width="50" headerAlign="center">
+						order
+					</div>
+					<div field="displayName" headerAlign="center" renderer="onDisplayNameRender" width="100">
+						user name
+					</div>
+					<div field="showLoginId"  headerAlign="center" width="100" >
+						login name
+					</div>
+					<div field="ouname" headerAlign="center" align="center" width="100%">
+						department name
+					</div>
+					<div name="jzqk"  field="jzqk" headerAlign="center" renderer="onJzqkRender" align="center" width="130">
+						part-time situation
+					</div>
+					<div field="zt" headerAlign="center" renderer="onZtRender" align="center" width="50">
+						state
+					</div>
+					<div field="orderNumber" width="150" align="right"
+						headerAlign="center" allowSort="true" sortOrder="desc" vtype="int">
+						row order
+						<input property="editor" class="mini-textbox" maxLength="8" inputStyle="text-align:right" style="width:100%" />
+					</div>
+					<div name="copyColumn" headerAlign="center" renderer="onCopyRender" align="center" width="50">
+						copy
+					</div>
+					<div name="cshmm" headerAlign="center" renderer="onCshmmRender" align="center" width="250">
+						initialize the password
+					</div>
+					<div field="usbsetstr" name="usbkeyset" headerAlign="center" renderer="onUsbkeysetRender" align="center" width="120">
+						USB setting
+					</div>
+					<div name="msgsz" headerAlign="center" renderer="onMsgszRender" align="center" width="120">
+						secretary post
+					</div>
+					<div name="ckmk" headerAlign="center" renderer="onCkmkRender" align="center" width="120">
+						check module
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[
+		//Initialize the page
+		epoint.initPage('frameuserlistaction','',initGrid);
+		
+		var attr= Util.getUrlParams('isSub');
+    	var isSub = attr== undefined?'':attr;
+    	
+    	// Table object
+		var grid = mini.get("datagrid");
+    	
+		// Open the form editor after a load data in the tablestate
+		//grid.on("load", function(e) {
+		//	var rows = e.sender.findRows();
+		//	for (var i = 0; i < rows.length; i++) {
+		//		grid.beginEditRow(rows[i]);
+		//	}
+		//});
+    	
+		//soaNeed to hide the column
+		function initGrid(e){
+			if(e.enableSOA==true){//To hide out deletion operation
+				mini.get('addUser').setVisible(false);
+				mini.get('uploader').setVisible(false);
+				mini.get('deleteUser').setVisible(false);
+				mini.get('saveAll').setVisible(false);
+				mini.get('moveUser').setVisible(false);
+				mini.get('setUserEnable').setVisible(false);
+				var grid = mini.get("datagrid");
+				grid.hideColumn("jzqk");//hiddenPart-time situation
+		    	grid.hideColumn("copyColumn");//hiddencopycolumn
+		    	grid.hideColumn("cshmm");//hiddenInitialize the password
+		    	grid.hideColumn("usbkeyset");//hidden usb settings
+			}else if(e.showDelBtn=false){
+				mini.get('deleteUser').setVisible(false);
+			}
+		}
+
+		
+    	
+    	
+    	
+		//The treejsobject
+		var tree = mini.get("tree");
+		// Click on the left side of theThe treeRefresh the form on the right side
+		tree.on("nodeselect", function(e) {
+			if (e.node) {
+				var id = e.node.id;
+				//To the leftThe treeClick on the nodeidIn thehiddendomain
+				mini.get('leftTreeNodeGuid').setValue(id=='f9root'?"":id);
+			}
+			//Refresh the table
+			searchData();
+		});
+
+		// Search for tables
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+		
+		//Modify the callback
+		function editCallBack(param) {
+			if (param) {
+				epoint.refresh([ 'tree' ]);
+				epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+			}
+	    }
+		
+		//Modify the userjs
+		function updateUser(userGuid){
+			epoint.openDialog("Modify the user", 'framemanager/orga/orga/user/frameuseredit?isSub='+isSub+'&userGuid=' + userGuid, editCallBack, {'width': 1100, 'height': 580});
+		}
+		
+		//redrawThe user namecolumn
+		function onDisplayNameRender(e){
+			var url=e.value;
+			var userGuid=e.row['userGuid'];
+			var enableSOA=e.row['enableSOA'];
+			if(!enableSOA){
+				url="<a style=\"cursor:pointer\" onclick=\"updateUser('"+userGuid+"')\" >"+e.value+"</a>";
+			}
+			return url;
+		}
+		
+		
+		//The configuration of part-time
+		function showSecondOu(userGuid){
+			epoint.openDialog("User part-time set", 'framemanager/orga/orga/user/framesecondoulist?userGuid=' + userGuid+'&isSub='+isSub, function(){
+				epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+			}, {'width': 1200, 'height': 600});
+		}
+		
+		//Draw a part-time link
+		function onJzqkRender(e){
+			var userGuid=e.row['userGuid'];
+			var styleStr="";
+			if(e.value=='Have a part-time job'){
+				styleStr=" style=\"cursor:pointer;color:red;\" ";
+			}else{
+				styleStr=" style=\"cursor:pointer;\" ";
+			}
+			return "<a "+styleStr+" onclick=\"showSecondOu('"+userGuid+"')\" >"+e.value+"</a>";
+		}
+		
+		//drawstatecolumn
+		function onZtRender(e){
+			var ztValue=e.value;
+			if(ztValue=='disable'){
+				return "<span style=\"color:red;\">"+ztValue+"</span>";
+			}
+			return ztValue;
+		}
+		
+		//Open thecopypage
+		function createUser(userGuid){
+			epoint.openDialog("copy user", 'framemanager/orga/orga/user/frameusercreate?isSub='+isSub+'&userGuid=' + userGuid, addCallBack, {'width': 1000, 'height': 580});
+		}
+		
+		//drawcopycolumn
+		function onCopyRender(e){
+			return epoint.renderCell(e, "action-icon icon-copy", "createUser","userGuid");
+		}
+		
+		// Initialize the passwordcallback
+	    function rePasswordCallback(data) {
+	        if (data.msg) {
+	            epoint.alert(data.msg, '', null, 'info');
+	        }
+	    }
+		
+		//Initialize the password
+		function rePassword(userGuid){
+			epoint.execute('rePassword','fui-form','['+userGuid+']',rePasswordCallback);
+		}
+		
+		//drawInitialize the passwordcolumn
+		function onCshmmRender(e){
+			var userGuid=e.row['userGuid'];
+			return "<a  style=\"cursor:pointer;\"  onclick=\"rePassword('"+userGuid+"')\" >Initialize the</a>";
+		}
+		
+		//Set up theusbKey
+		function keySet(userGuid){
+			epoint.openDialog("USB Set up the", 'framemanager/orga/orga/user/usbkeyset?userGuid='+ userGuid, '', {'width': 950, 'height': 550});
+		}
+		
+		//drawusbSet up thecolumn
+		function onUsbkeysetRender(e){
+			var userGuid=e.row['userGuid'];
+			return "<a  style=\"cursor:pointer;\"  onclick=\"keySet('"+userGuid+"')\" >"+e.value+"</a>";
+		}
+		
+		//Open theThe secretary post
+		function setSecretaryInfo(userGuid){
+			epoint.openDialog("Set up the secretary post", 'framemanager/orga/orga/user/settingsecretaryinfo?userGuid=' + userGuid+'&isSub='+isSub, '', {'width': 300, 'height': 550});
+		}
+		
+		//The secretary postSet up the
+		function onMsgszRender(e){
+			var userGuid=e.row['userGuid'];
+			return "<a  style=\"cursor:pointer;\"  onclick=\"setSecretaryInfo('"+userGuid+"')\" >Set up the</a>";
+		}
+		
+		//Open theThe modulepage
+		function showModule(userGuid){
+			epoint.openDialog("Check module", 'framemanager/orga/orga/user/showusermodule?userGuid=' + userGuid, '', {'width': 400, 'height': 400});
+		}
+		
+		//Check module
+		function onCkmkRender(e){
+			var userGuid=e.row['userGuid'];
+			return "<a  style=\"cursor:pointer;\"  onclick=\"showModule('"+userGuid+"')\" >Check module</a>";
+		}
+		
+		//newcallback
+	    function addCallBack(param) {
+	        if (param) {
+	        	epoint.refresh([ 'tree' ]);
+	        	epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+	        }
+	    }
+		
+		//New users
+		function addUser(){
+			var ouGuid = mini.get('leftTreeNodeGuid').getValue();
+			epoint.openDialog("New users", 'framemanager/orga/orga/user/frameuseradd?isSub='+isSub+'&leftTreeNodeGuid=' + ouGuid, addCallBack, {'width': 1000, 'height': 580});
+		}
+		
+		// Back to thediaoremind
+		function msgCallBack(data) {
+			var msg =data.msg;
+			if (msg) {
+				//if (msg.indexOf("successful") == -1) {
+				//	epoint.alert(msg, '', '', 'warning');
+				//} else {
+				//	epoint.alert(msg, '', searchData());
+				//}
+				if(data.success){
+					epoint.alert(msg, '', function(){
+						epoint.refresh([ 'datagrid', 'fui-form' ],'',true);
+					}, '');
+				}else{
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		
+		//delete selected
+		function deleteSelected() {
+			epoint.execute('deleteSelected', ['datagrid','fui-form'], msgCallBack);
+		}
+		//saveroworder
+		function saveAll(){
+			grid.validate();
+            if (grid.isValid() == false) {
+                //alert("Please check the input cellscontent");
+                var error = grid.getCellErrors()[0];
+                grid.beginEditCell(error.record, error.column);
+                return;
+            }
+			epoint.execute('saveAll', ['datagrid','fui-form'], msgCallBack);
+		}
+		//Actually perform transferThe useroperation
+		function fireMoveUser(){
+			var s =mini.get('ouguid').getValue().split(";");
+			if(s[1]!='f9root'){
+				epoint.execute('moveUser','','['+s[1]+','+s[0]+']',msgCallBack);
+			}
+		}
+		
+		//transferThe usercallback
+		function moveuserCallBack(data){
+			if (data) {
+				if(data!='close'){
+					mini.get('ouguid').setValue(data);
+					epoint.confirm('confirmtransfer??','',fireMoveUser);
+				}
+			}
+		}
+		
+		//Move the selected
+		function moveuser(){
+			var url="framemanager/orga/orga/ou/selectou?type=1";
+			if(isSub && isSub == "1"){
+				url=url+"&isSub=1";
+			}
+			epoint.openDialog("transferThe user", url, moveuserCallBack, {'width': 300, 'height': 500});
+			
+		}
+		//To enable the/disable
+		function setUserEnable(){
+			epoint.execute('setUserEnable',['datagrid','fui-form'],msgCallBack);
+		}
+		
+		function onFileSuccess(e){
+			if(e.data && e.data.extraDatas.msg){
+				epoint.alert(e.data.extraDatas.msg, '', null, 'info');
+			}
+		}
+		// 增加步长
+        function addStepSize(){
+            
+            // 打开步长选择对话框
+            epoint.openDialog('Select step size', 'frame/pages/basic/stepsize/selectstepsize_en?data=2,3,5,10,20', dealSelectStepSize, {width: 420, height: 225});
+        }
+        
+        // 选择步长的回调
+        function dealSelectStepSize(rtnValue){
+        	
+            if (rtnValue && rtnValue != 'close') {
+                epoint.execute("addUserStepSize?stepsize=" + rtnValue,['fui-form'],function(data){
+                    epoint.alert(data.msg, '', null, 'info');
+                    epoint.refresh([ 'datagrid', 'fui-form' ], '', true);
+                });
+            }
+        }
+		//]]>
+	</script>
+
+
+</body>
+</html>

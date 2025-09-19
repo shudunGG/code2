@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>变迁线条件设置</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="add" onclick="addTransition"
+				style="display: none;">确定新增</a><a class="mini-button" id="save"
+				onclick="saveTransition" style="display: none;">保存修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div id="fui-content" class="fui-content">
+		<div class="fui-form" id="fui-form">
+			<div role="form">
+				<div role="row">
+					<div role="control" label="条件名称" starred="true">
+						<input class="mini-textbox" required="true"
+							requiredErrorText="条件名称不能为空!"
+							bind="workflowTransitionCondition.conditionName" />
+					</div>
+				</div>
+
+				<div role="row" id="singleLRow">
+					<div role="control" label="左值">
+						<input id="leftMethodGuid"
+							bind="workflowTransitionCondition.leftValue"
+							class="mini-buttonedit" onbuttonclick="selectLeft"
+							selectOnFocus="true" />
+					</div>
+				</div>
+				<div role="row" id="singleCRow">
+					<div role="control" label="比较操作符">
+						<input class="mini-combobox"
+							bind="workflowTransitionCondition.compareOperation"
+							textField="text" valueField="id" action="getCharacter"
+							onvaluechanged="" />
+					</div>
+				</div>
+				<div role="row" id="singleRRow">
+					<div role="control" label="右值">
+						<input id="rightMethodGuid"
+							bind="workflowTransitionCondition.rightValue"
+							class="mini-buttonedit" onbuttonclick="selectRight"
+							selectOnFocus="true" /><span class="text-danger"
+							style="width: 100%">如果部门或角色比较，左值请选择“人员信息节点”，右值直接填写部门或角色名称，多个以分号;隔开</span>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input class="mini-textbox" bind="workflowTransitionCondition.orderNum"
+							vtype="int;range:0,99999999" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="备注">
+						<input class="mini-textbox" 
+							bind="workflowTransitionCondition.remark" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// 初始化页面
+		epoint
+				.initPage('activitytransitionconditionaction', null,
+						initCallBack);
+		var processVersionGuid;
+		//初始化回调事件
+		function initCallBack(data) {
+			processVersionGuid = data.processVersionGuid;
+			buttonShow(data.type);
+			if (data.type == 'edit')//edit by 季海英type='10'改为type == 'edit'，编辑状态下显示左右值
+			{
+				mini.get("leftMethodGuid").setText(
+						mini.get("leftMethodGuid").getValue());
+				mini.get("rightMethodGuid").setText(
+						mini.get("rightMethodGuid").getValue());
+				//材料表单字段[#=EPOINTFORM(FromMaterialGuid, FromMisTableID,  FromFieldName)#])，FieldType根据参数获取值类型后存入实体
+				if (data.leftValue && data.leftValue.indexOf("EPOINTFORM") > -1) {
+					var showLeftValue = data.leftValue.replace(
+							"[#=EPOINTFORM(", "").replace(")#]", "").split(",");
+					mini.get("leftMethodGuid").setValue(data.leftValue);
+					mini.get("leftMethodGuid").setText(
+							"[#=" + showLeftValue[2] + "#]");
+				}
+			}
+		}
+		//左值选择
+		function selectLeft() {
+			epoint
+					.openDialog(
+							'选择相关数据',
+							"framemanager/workflow/design/designhelper?mode=contextoutjar&processVersionGuid="
+									+ processVersionGuid, selectLeftCallBack, {
+								width : 680,
+								height : 600
+							});
+		}
+
+		function selectLeftCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				//判断是否直接选择的材料表单字段
+				if (datas.length == 2) {
+					epoint.execute('calculateFieldType');
+					if (datas[0].indexOf('*') == 0) {
+						mini.get("leftMethodGuid").setValue(
+								"[#=" + datas[1] + "#]");
+						mini.get("leftMethodGuid").setText(
+								"[#=" + datas[1] + "#]");
+
+					} else {
+						mini.get("leftMethodGuid").setValue(
+								"[#=" + datas[0] + "#]");
+						mini.get("leftMethodGuid").setText(
+								"[#=" + datas[0] + "#]");
+
+					}
+				} else if (datas.length == 3) {//自定义相关数据
+					epoint.execute('calculateContextFieldType', 'fui-form',
+							datas[2]);
+					mini.get("leftMethodGuid")
+							.setValue("[#=" + datas[1] + "#]");
+					mini.get("leftMethodGuid").setText("[#=" + datas[1] + "#]");
+
+				} else if (datas.length == 4) {//材料表单字段
+					//材料表单字段[#=EPOINTFORM (FromMaterialGuid, FromMisTableID,  FromFieldName)#])，FieldType根据参数获取值类型后存入实体
+					epoint.execute('calculateMaterialFieldType', '', [
+							datas[1], datas[2] ]);
+					mini.get("leftMethodGuid").setValue(
+							"[#=EPOINTFORM(" + datas[0] + "," + datas[1] + ","
+									+ datas[2] + ")#]");
+					mini.get("leftMethodGuid").setText("[#=" + datas[2] + "#]");
+				}
+			}
+		}
+
+		//右值选择
+		function selectRight() {
+			epoint
+					.openDialog(
+							'选择相关数据',
+							"framemanager/workflow/design/designhelper?mode=contextoutjar&processVersionGuid="
+									+ processVersionGuid, selectRightCallBack,
+							{
+								width : 680,
+								height : 600
+							});
+		}
+
+		function selectRightCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("rightMethodGuid").setValue("[#=" + datas[1] + "#]");
+				mini.get("rightMethodGuid").setText("[#=" + datas[1] + "#]");
+			}
+		}
+
+		function selectCallBack(data) {
+			if (data && data != "close") {
+				var datas = data.split(";");
+				mini.get("methodName").setValue(datas[1]);
+				mini.get("methodName").setText(datas[0]);
+			}
+		}
+		//控制显隐
+		function buttonShow(type) {
+			if (type == "add") {
+				document.getElementById("add").style.display = "";
+				document.getElementById("save").style.display = "none";
+			} else if (type == "edit") {
+				document.getElementById("add").style.display = "none";
+				document.getElementById("save").style.display = "";
+			}
+		}
+
+		//新增
+		function addTransition() {
+			if (epoint.validate()) {
+				epoint.execute('addTransition', 'fui-form', function(data) {
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alertAndClose(data.message, '', null, null,
+								'info');
+					} else {
+						epoint.alert(data.message, '', null, 'info');
+					}
+					buttonShow("edit");
+				});
+			}
+		}
+
+		//保存
+		function saveTransition() {
+			if (epoint.validate()) {
+				epoint.execute('saveTransition', 'fui-form', function(data) {
+					if (data.flag != null && (data.flag == "1")) {
+						epoint.alertAndClose(data.message, '', null, null,
+								'info');
+					} else {
+						epoint.alert(data.message, '', null, 'info');
+					}
+				});
+			}
+		}
+
+		//删除
+		function deleteTransition() {
+			epoint.execute('delTransition', 'fui-form', function(data) {
+				epoint.alert(data.message, '', null, 'info');
+				//还原页面
+
+				buttonShow('add');
+				epoint.clear("fui-form");
+				mini.get("conditionExpressionType").setValue(10);
+			});
+		}
+
+		//]]>
+	</script>
+
+</body>
+</html>

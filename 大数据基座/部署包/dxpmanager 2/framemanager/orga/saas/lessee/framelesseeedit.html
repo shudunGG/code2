@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="content-type" content="text/html" />
+<title>租户管理修改</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" id="save" iconCls="icon-save" onclick="saveModify">保存并关闭</a> <a
+				class="mini-button" iconCls="icon-removecircle" onclick="epoint.closeDialog">取消修改</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="fui-form" class="fui-form">
+			<div id="fui-form" class="fui-form">
+				<div role="row">
+					<div role="control" label="租户名称" starred="true">
+						<input id="lesseename" class="mini-textbox"
+							bind="dataBean.lesseename" required="true"
+							requiredErrorText="租户名称不能为空!" maxLength="100" vtype="maxLength:100"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="租户标示名称" starred="true">
+						<input id="lesseesysname" class="mini-textbox"
+							bind="dataBean.lesseesysname" required="true"
+							requiredErrorText="租户标示名称不能为空!"
+							onvalidation="onEnglishValidation" maxLength="100" vtype="maxLength:100"/>
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联部门" starred="true">
+						<input id="relationouguid" class="mini-treeselect"
+							action="getOuGuidModel" bind="dataBean.ouGuid" required="true"
+							style="width: 100%; padding: 5px;" showFolderCheckBox="true"
+							showRadioButton="true" showTreeIcon="true" textField="text"
+							idField="id" expandOnLoad="true" onbeforenodeselect="beforenodeselect"/>
+		
+						<!-- 隐藏域 -->
+						<input bind="oldOUGuid" id="hidOUGuid" class="mini-hidden" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="关联数据源">
+						<input id="datasourceguid" class="mini-combobox"
+							action="getDataResource" required="false" showClose="true"
+							showNullItem="false" bind="dataBean.dataSourceGuid" property="editor"
+							oncloseclick="onCloseClick" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="排序值">
+						<input id="ordernumber" class="mini-textbox"
+							bind="dataBean.ordernumber" vtype="int;range:0,99999999"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('framelesseeeditaction');
+		
+		var onCloseClick = function(e) {
+			mini.get('datasourceguid').setValue('');
+		}
+
+		function saveModify() {
+			if (epoint.validate()) {
+				epoint.execute('save', 'fui-form', closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data.success) {
+				epoint.alertAndClose(data.msg, '', null, null, 'success');
+			} else {
+				epoint.alert(data.msg, '', null, 'error');
+			}
+		}
+
+		/* 是否英文+数字 */
+		function isEnglish(v) {
+			var re = new RegExp("^[a-zA-Z]+$");
+			if (re.test(v))
+				return true;
+			return false;
+		}
+
+		function onEnglishValidation(e) {
+			if (e.isValid) {
+				if (isEnglish(e.value) == false) {
+					e.errorText = "租户标示名称必须为英文";
+					e.isValid = false;
+				}
+			}
+		}
+		
+		var beforenodeselect = function(e){
+			if(!e.node.ckr) {
+				e.cancel = true;
+			}
+		}
+	</script>
+</body>
+</html>

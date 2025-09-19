@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>应用api列表</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径 -->
+<script src="../../../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<!-- 
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a id="btnDel" class="mini-button mini-btn-danger"
+				onclick="if(mini.get('datagrid').getSelecteds().length==0){epoint.alert('请选择要删除的记录!', '', null, 'warning');} else {epoint.confirm('确认要删除吗?','',deleteSelect);}">
+				删除选定 </a>
+		</div>
+
+	</div> -->
+	<!-- 条件区域 -->
+	<div class="fui-condition">
+		<div class="fui-form" id="fui-form">
+			<div id="cform" role="form">
+				<div role="row">
+					<div role="control" label="状态">
+						<div id="status" class="mini-combobox" textField="text"
+							valueField="id" action="getSelectStatusModel" bind="status"
+							showClose="true" onkeyenter="searchData();"
+							oncloseclick="onCloseClick"></div>
+					</div>
+					<div role="control" label="申请人">
+						<input class="mini-textbox" bind="userName" />
+					</div>
+				</div>
+				<div role="row">
+					<div role="control" label="API名称">
+						<input class="mini-textbox" bind="apiName" />
+					</div>
+					<div role="control" label="应用名称">
+						<input class="mini-textbox" bind="appName" style="font-color: red" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<a role="searcher" callback="searchData"></a>
+	</div>
+
+
+	<!-- 内容区域 -->
+	<div id="fuiContent" class="fui-content">
+		<div id="datagrid" class="mini-datagrid" idField="rowguid"
+			action="getDataGridData" sortOrder="desc" showPager="true"
+			style="height: 100%;" allowResize="true" multiSelect="true"
+			allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true"
+			editNextRowCell="true">
+			<div property="columns">
+				<div type="indexcolumn" width="40" headerAlign="center">序</div>
+				<div field="appname" headerAlign="center" align="left" width="200">应用名称</div>
+				<div field="apiname" headerAlign="center" align="left" width="200">API名称</div>
+				<div field="companyname" headerAlign="center" align="left"
+					width="100%">企业名称</div>
+				<div field="applyusername" headerAlign="center" align="left"
+					width="150">申请人</div>
+				<div field="applystatus" headerAlign="center" align="center"
+					width="100" renderer="onStatusRender">状态</div>
+				<div field="commitdate" headerAlign="center" align="right"
+					width="150" data-options="{'format':'yyyy-MM-dd HH:mm:ss'}"
+					dateFormat="yyyy-MM-dd HH:mm:ss">提交时间</div>
+				<div field="reason" headerAlign="center" align="center" width="200">理由</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../../rest/resource/jsboot"></script>
+	<script>
+		// 初始化页面
+		epoint.initPage('apiapplylistaction');
+
+		// 删除数据
+		function deleteSelect() {
+			epoint.execute("deleteSelect", '', callback);
+		}
+
+		function callback(data) {
+			if (data.msg) {
+				epoint.alert(data.msg, '', searchData, 'info');
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid', 'fui-form' ]);
+		}
+
+		var onStatusRender = function(e) {
+			var status = e.row['applystatus'];
+			var forStatusHtml;
+			if (status == 1) {
+				forStatusHtml = "<span style=\"color:blue;\">审核中</span>";
+			}
+			if (status == 2) {
+				forStatusHtml = "<span style=\"color:green;\">审核通过</span>";
+			}
+			if (status == 3) {
+				forStatusHtml = "<span style=\"color:red;\">审核不通过</span>";
+			}
+			return forStatusHtml;
+		};
+
+		// 搜索条件状态清除
+		function onCloseClick(e) {
+			var obj = e.sender;
+			obj.setText("");
+			obj.setValue("");
+		}
+	</script>
+</body>
+</html>

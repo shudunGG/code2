@@ -1,0 +1,1 @@
+SELECT count( 1 ) FROM information_schema.statistics WHERE TABLE_SCHEMA = DATABASE ( ) AND table_name = 'messages_waitsend' AND index_name = 'idx_targetuserid'

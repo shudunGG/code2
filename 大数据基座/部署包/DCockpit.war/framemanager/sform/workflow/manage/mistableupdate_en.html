@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>take operation</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar area -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-addcircle" id="addbtn" onclick="save();">determine</a> 
+			<a class="mini-button" iconCls="icon-removecircle" id="cancle" onclick="epoint.closeDialog('ok')">cancel</a>
+		</div>
+	</div>
+
+	<div class="fui-content">
+		<div class="fui-form">
+			<div role="form">
+				<div role="row">
+					<div valign="top" align="center">
+						<div class="form-row">
+							<img src="../image/help.gif" />
+							<span>Why do you want to synchronize MIS Table fields?</span>
+						</div>
+					</div>
+				</div>
+				<div role="row">
+					<div valign="top">
+						<span>If an activity refers to the use of this Mis Table form, then in the activity“Form fields permissions”Information will be in the book MIS Table of the field, so when Mis Table of the field is modified and then need to be synchronized。</span>
+					</div>
+				</div>
+				<div role="row" id="trNoChange" rendered="change">
+					<img src="../image/file.gif" />
+					<span>Currently there is no this is detected MIS Field change in the table</span>
+				</div>
+				<div role="row" id="trAdded" style="add">
+					<div>
+					   <span>The following fields are MIS New fields in the table, please select a synchronization when using the permissions</span>
+					</div>
+				</div>
+				<div role="row">
+					<!-- The form area -->
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowGuid" multiSelect="true"
+						style="width: 100%; height: 100%;" allowResize="true"
+						showPager="true" action="getDefaultModelAdd"
+						editNextOnEnterKey="true" editNextRowCell="true"
+						allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">order</div>
+							<div field="row[1]" width="200" headerAlign="center"
+								align="left">The field names</div>
+							<div field="row[2]" width="200" headerAlign="center"
+								align="left">The field name in Chinese</div>
+							<div field="row[3]" type="comboboxcolumn" headerAlign="center" width="200">
+								Read and write access
+							<div property="editor" class="mini-combobox" textField="text"
+									valueField="id" data="rightLists" headerAlign="center"
+									width="100%" ></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="trDeleted">
+					<div> 
+					  <span>In the following fields MIS No longer exists in the table, that has been deleted complete synchronization</span>
+					</div>
+				</div>
+				<div role="row">
+					<!-- The form area -->
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowGuid" multiSelect="true"
+						style="width: 100%; height: 100%;" allowResize="true"
+						showPager="true" action="getDefaultModelDel"
+						editNextOnEnterKey="true" editNextRowCell="true"
+						allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">order</div>
+							<div field="row[0]" width="200" headerAlign="center"
+								align="left">The field names</div>
+							<div field="row[1]" width="200" headerAlign="center"
+								align="left">The field name in Chinese</div>
+						</div>
+					</div>
+				</div>
+				<div role="row" id="trUpdated" style="update">
+					<div>
+					   <span>The field name or the following fieldsThe field namesHas changed, has completed an update</span>
+					</div>
+				</div>
+				<div role="row">
+					<!-- The form area -->
+					<div id="datagrid" name="datagrid" class="mini-datagrid"
+						idField="rowGuid" multiSelect="true"
+						style="width: 100%; height: 100%;" allowResize="true"
+						showPager="true" action="getDefaultModelUpdate"
+						editNextOnEnterKey="true" editNextRowCell="true"
+						allowCellSelect="true">
+						<div property="columns">
+							<div type="checkcolumn" width="40"></div>
+							<div type="indexcolumn" width="40" headerAlign="center">order</div>
+							<div field="row[1]" width="200" headerAlign="center"
+								align="left">The field names</div>
+							<div field="row[3]" width="200" headerAlign="center"
+								align="left">The field name in Chinese</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[ 
+		// Initialize the page
+		epoint.initPage('mistableupdateaction');
+		
+		//var rightLists;
+
+		//var radiobox = mini.get("rightLists");
+
+		//radiobox.on("load", function(e) {
+		//	rightLists = e.sender.data;
+		//});
+		
+		function save() {
+			epoint.execute('save', '', msgCallBack);
+		}
+
+		// The callback to remind
+		function msgCallBack(data) {
+			if (data) {	
+				var msg = data.msg;
+				if(data.flag != null && (data.flag == "1")){
+					epoint.alertAndClose(msg, '', null, null, 'info');
+				}else{
+					epoint.alert(msg, '', '', 'warning');
+				}
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

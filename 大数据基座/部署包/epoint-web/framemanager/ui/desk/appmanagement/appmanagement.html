@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>APP应用管理</title>
+<script src="../../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ './css/appmanagement.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="fui-left appmanage">
+		<div class="appmanage-subscribe clearfix">
+			已订阅 &nbsp (<span id="subscribe-num">0</span>/<span
+				id="subscribe-totalnum">0</span>)) <a href="javascript:void(0)"
+				class="r" id="clean-tree">清空</a>
+		</div>
+		<div class="apptree">
+			<div
+				style="width: 100%; height: 100%; padding: 9px 14px; box-sizing: border-box; overflow: auto;">
+				<ul id="businesstree" class="mini-filtertree" style="width: 100%;"
+					textField="text" idField="id" parentField="pid"
+					action="getTreeModel" resultAsTree="false" filterMode="server"
+					showCheckBox="true" autoCheckParent="false" checkRecursive="false">
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="fui-right appmanage">
+		<div class="accordion" id="accordion"></div>
+	</div>
+
+	<!-- 手风琴模板 -->
+	<script type="text/template" id="tpl-accordion">
+        <div class="accordion-item" data-categoryid="{{categoryid}}">
+            <div class="accordion-item-tit clearfix">
+                {{categoryname}}
+                (<span class="accordion-count">{{childNum}}</span>)
+                <i class="action-icon icon-up r" data-name="down"></i>
+            </div>
+            <ul class="accordion-item-con">
+                {{#children}}
+                <li class="app clearfix" data-appid="{{id}}">
+                    <a href="javascript:void(0);" title="拖动排序">
+                        <img src="./images/icon-move.png" class="app-move l" alt="">
+                    </a>
+                    <div class="l app-icon {{bgcolor}}" data-bgcolor="{{bgcolor}}" data-icon="{{icon}}">
+                        <a href="javascript:void(0);" title="图标设置">
+                            <img src="{{icon}}" onerror="this.src='./images/icon-default.png'" alt="">
+                        </a>
+                    </div>
+                    <span class="l appname" style="width:120px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;" title="{{name}}">{{name}}</span>
+
+                    <div class="l app-desktop {{^desktop}}wait{{/desktop}}">
+                        <div class="app-desktop-combobox">
+                            <span>{{desktopname}}</span>
+                            <i class="action-icon icon-down app-desktop-arrow" data-name="down"></i>
+                        </div>
+                        <ul class="app-desktop-menu hidden">
+                            {{#desktopoptions}}
+                            <li class="desktop-menu-item" data-id="{{id}}">
+                                <span>{{text}}</span>
+                                <i class="action-icon icon-edit r" data-name="edit"></i>
+                            </li>
+                            {{/desktopoptions}}
+                            <li class="desktop-menu-item createdesktop">+&nbsp&nbsp创建桌面</li>
+                        </ul>
+                    </div>
+
+                    <!-- 消息通知 -->
+                    <a href="javascript:void(0)" title="消息提醒" data-msgtype="{{currentmsgtype}}" data-msg="{{currentmsg}}"
+                       class="app-notice l {{^currentmsg}}disable{{/currentmsg}}"></a>
+                    <ul class="notice-list hidden">
+                        {{#msgoptions}}
+                        <li class="notice-list-item" data-msgtype="{{msgtype}}">{{msg}}</li>
+                        {{/msgoptions}}
+                    </ul>
+
+                    <!-- 视图 -->
+                    <a href="javascript:void(0)" title="应用视图配置" data-addr="{{addr}}"
+                       class="app-view {{^addr}}disable{{/addr}} l"></a>
+
+                    <div class="l app-size">
+                        <a href="javascript:void(0)" title="小号尺寸"
+                           class="app-size-small {{^smallsize}}disable{{/smallsize}} l" data-size="small"></a>
+                        <a href="javascript:void(0)" title="中号尺寸"
+                           class="app-size-medium {{^mediumsize}}disable{{/mediumsize}}  l" data-size="medium"></a>
+                        <a href="javascript:void(0)" title="大号尺寸"
+                           class="app-size-large {{^largesize}}disable{{/largesize}} l" data-size="large"></a>
+                    </div>
+
+                    <em class="r app-del"></em>
+                </li>
+                {{/children}}
+            </ul>
+        </div>
+    </script>
+
+	<script type="text/template" id="tpl-customicon">
+        <li class="icon-custom-item app-icon-item l" data-index="{{index}}" data-icon="{{icon}}">
+            <div class="frame-custom-inner">
+                <img src="{{icon}}" alt=""/>
+            </div>
+        </li>
+    </script>
+
+	<script type="text/template" id="tpl-frameicon">
+        <li class="icon-frame-item app-icon-item l" data-index="{{index}}" data-icon="{{icon}}">
+            <div class="frame-item-inner">
+                <img src="{{icon}}" alt=""/>
+            </div>
+        </li>
+    </script>
+
+	<script type="text/template" id="tpl-item">
+        <li class="app clearfix" data-appid="{{id}}">
+            <a href="javascript:void(0);" title="拖动排序">
+                <img src="./images/icon-move.png" class="app-move l" alt="">
+            </a>
+            <div class="l app-icon {{bgcolor}}" data-bgcolor="{{bgcolor}}" data-icon="{{icon}}">
+                <a href="javascript:void(0);" title="图标设置">
+                    <img src="{{icon}}" onerror="this.src='./images/icon-default.png'" alt="">
+                </a>
+            </div>
+            <span class="l appname" style="width:120px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;" title="{{name}}">{{name}}</span>
+
+            <div class="l app-desktop {{^desktop}}wait{{/desktop}}">
+                <div class="app-desktop-combobox">
+                    <span>{{desktopname}}</span>
+                    <i class="action-icon icon-down app-desktop-arrow" data-name="down"></i>
+                </div>
+                <ul class="app-desktop-menu hidden">
+                    {{#desktopoptions}}
+                    <li class="desktop-menu-item" data-id="{{id}}">
+                        <span>{{text}}</span>
+                        <i class="action-icon icon-edit r" data-name="edit"></i>
+                    </li>
+                    {{/desktopoptions}}
+                    <li class="desktop-menu-item createdesktop">+&nbsp&nbsp创建桌面</li>
+                </ul>
+            </div>
+
+            <!-- 消息通知 -->
+            <a href="javascript:void(0);" title="消息提醒" data-msgtype="{{currentmsgtype}}" data-msg="{{currentmsg}}"
+               class="app-notice l {{^currentmsg}}disable{{/currentmsg}}"></a>
+            <ul class="notice-list hidden">
+                {{#msgoptions}}
+                <li class="notice-list-item" data-msgtype="{{msgtype}}">{{msg}}</li>
+                {{/msgoptions}}
+            </ul>
+
+            <!-- 视图 -->
+            <a href="javascript:void(0)" title="应用视图配置" data-addr="{{addr}}"
+               class="app-view {{^addr}}disable{{/addr}} l"></a>
+
+            <div class="l app-size">
+                <a href="javascript:void(0)" title="小号尺寸" class="app-size-small {{^smallsize}}disable{{/smallsize}} l"
+                   data-size="small"></a>
+                <a href="javascript:void(0)" title="中号尺寸"
+                   class="app-size-medium {{^mediumsize}}disable{{/mediumsize}}  l" data-size="medium"></a>
+                <a href="javascript:void(0)" title="大号尺寸" class="app-size-large {{^largesize}}disable{{/largesize}} l"
+                   data-size="large"></a>
+            </div>
+
+            <em class="r app-del"></em>
+        </li>
+    </script>
+
+	<script src="../../../../rest/resource/jsboot"></script>
+
+	<script>
+		epoint.initPage('appmanagementaction', '', '');
+
+		var Config = {
+			getTotalNumUrl : epoint
+					.dealRestfulUrl('appmanagementaction/getTotalNum'),
+			getAppUrl : epoint.dealRestfulUrl('appmanagementaction/getapps'),
+			saveUrl : epoint.dealRestfulUrl('appmanagementaction/save'),
+			delUrl : epoint.dealRestfulUrl('appmanagementaction/del'),
+			getIconUrl : epoint.dealRestfulUrl('appmanagementaction/geticons'),
+			getAppInfUrl : epoint
+					.dealRestfulUrl('appmanagementaction/getAppInf'),
+			editDeskTop : epoint
+					.dealRestfulUrl('appmanagementaction/editDeskTop'),
+			deleteDeskTop : epoint
+					.dealRestfulUrl('appmanagementaction/deleteDeskTop'),
+			createDesktop : epoint
+					.dealRestfulUrl('appmanagementaction/createDesktop'),
+			cleanDeskModule : epoint
+					.dealRestfulUrl('appmanagementaction/cleanDeskModule')
+		};
+	</script>
+
+	<script>
+		SrcBoot.output([ './js/appmanagement.js' ]);
+	</script>
+</body>
+
+</html>

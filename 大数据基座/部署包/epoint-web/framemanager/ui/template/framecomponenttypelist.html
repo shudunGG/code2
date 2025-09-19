@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>元件类别</title>
+<script src="../../../frame/fui/js/cssboot.js"></script>
+</head>
+<body>
+	<div class="page-loading"></div>
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<a class="mini-button" state="primary" onclick="add">新增分类</a> <a
+			class="mini-button" onclick="saveAll()"> 保存修改 </a> <a
+			class="mini-button" state="danger" onclick="deleted">删除选中</a>
+	</div>
+	<!-- 内容区域 -->
+	<div class="fui-content">
+		<div id="datagrid" name="datagrid" class="mini-datagrid"
+			idField="rowguid" multiSelect="true"
+			style="width: 100%; height: 100%;" allowResize="true"
+			showPager="true" action="getDataGridData" allowCellEdit="true"
+			allowCellSelect="true" editNextOnEnterKey="true">
+			<div property="columns">
+				<div type="checkcolumn" width="40"></div>
+				<div type="indexcolumn" width="40" align="left">序</div>
+				<div field="typename" name="typename">
+					类别名称<input property="editor" class="mini-textbox" maxLength="50" />
+				</div>
+				<div field="ordernum" vtype="int;range:0,99999999">
+					排序号<input property="editor" class="mini-textbox"
+						vtype="int;range:0,99999999" inputStyle="text-align:right" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../../rest/resource/jsboot"></script>
+	<script>
+		//<![CDATA[  
+		//初始化页面
+		epoint.initPage('framecomponenttypelistaction');
+
+		var grid = mini.get("datagrid");
+
+		// 新增元件类别
+		function add() {
+			var newRow = {
+					
+			};
+			grid.addRow(newRow, 0);
+			grid.beginEditCell(newRow, "typename");
+		}
+
+		// 保存修改
+		function saveAll() {
+			grid.validate();
+			if (grid.isValid() == false) {
+				var error = grid.getCellErrors()[0];
+				grid.beginEditCell(error.record, error.column);
+				return;
+			}
+			epoint.execute('saveAll', '', callback);
+		}
+
+		// 刪除
+		function deleteSelected() {
+			epoint.execute('deleteSelected', '', callback);
+		}
+
+		function deleted() {
+			if (grid.getSelecteds().length == 0) {
+				epoint.showTips('请选择要删除的记录!', {
+					state : "warning"
+				});
+			} else {
+				epoint.execute("selectInfo", '', function(data) {
+					if (data && data.msg) {
+						epoint.alertAndClose(data.msg
+								+ "不能删除该元件分类！如果要删除，请先将该元件类别下的元件信息删除");
+					} else {
+						epoint.confirm('确认删除?', '', deleteSelected);
+					}
+				});
+			}
+		}
+
+		// 表格的搜索
+		function searchData() {
+			epoint.refresh([ 'datagrid' ], '', true);
+		}
+
+		//回调
+		function callback(data) {
+			if (data.msg) {
+				if (data.success) {
+					epoint.showTips(data.msg, {
+						state : "success"
+					});
+					searchData();
+				} else if(data.msg){
+					epoint.showTips(data.msg,{
+						state : "warning"
+					});
+				}
+			}else{
+				searchData();
+			}
+		}
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>表单设计</title>
+<meta http-equiv="X-UA-Compatible" content="IE=10" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<script src="../../../frame/fui/js/cssboot.js"></script>
+<script>
+	SrcBoot.output([ 'framemanager/sform/formlistmanage/css/designer.css',
+			'framemanager/sform/formlistmanage/css/icons.css' ]);
+</script>
+</head>
+
+<body>
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar" id="top-toolbar">
+		<a class="mini-button" state="primary" data-role="save" onclick="save();">保存</a> 
+		<a class="mini-button" data-role="save-new" onclick="saveNew();">另存为新版本</a>
+		<a class="mini-button" data-role="search" onclick="preview();">预览</a>
+		<a class="mini-button" data-role="search" onclick="printPreview();">打印预览</a>
+		<a class="mini-button" data-role="save-new" onclick="jsEdit();">js编辑</a>
+		<a class="mini-button" data-role="save-new" onclick="cssEdit();">css编辑</a>
+		<a class="mini-button" data-role="close" onclick="closeBefore();">关闭</a>
+		<!-- a class="mini-button" data-role="close" onclick="openFormDesign();">表单配置</a-->
+		<div style="float: right;">
+			<div id="designTitle"
+				style="font-size: 20px; line-height: 30px; font-weight: bold; text-align: center;"
+				bind="formdesignaction.designTitle" class="mini-output"></div>
+		</div>
+	</div>
+
+	<div class="main-container"  id="abc">
+		<div class="left">
+			<div class="widget-container" id="widget-container">
+				<!-- 控件列表 -->
+				<div class="widget-group">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>表单控件</b>
+					</h3>
+					<div class="widget-group-content">
+						<!-- 控件列表 -->
+						<ul class="widget-group-items-list control-list">
+						</ul>
+					</div>
+				</div>
+				<!-- 可扩展控件列表 -->
+				<div class="widget-group hidden" id="extrapanel">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>自然人</b>
+					</h3>
+					<div class="widget-group-content">
+						<!-- 可扩展控件列表 -->
+						<ul class="widget-group-items-list extendcontrol-list">
+						</ul>
+					</div>
+				</div>
+				<!-- 不常用可扩展控件列表 -->
+				<div class="widget-group hidden" id="extrapanel2">
+					<h3 class="widget-group-title">
+						<span class="icon-chevron-down"></span> <b>法人</b>
+					</h3>
+					<div class="widget-group-content">
+						<ul class="widget-group-items-list extendcontrol-list2">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="right">
+			<div class="diagram-container">
+				<div id="flow-editor-wrapper">
+					<input class="mini-textarea" bind="epointFormVersion.content"
+						style="width: 100px; henght: 200px" id="editor1" name="editor1"
+						cols="80" rows="10" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<input class="mini-hidden" id="content" name="content" bind="epointFormVersion.content" />
+	<input class="mini-hidden" id="isadd" name="isadd" bind="isadd" />
+	<input class="mini-hidden" id="tableId" name="tableId" bind="tableId" />
+	<input class="mini-hidden" id="versionId" name="versionId" bind="versionId" />
+	<input class="mini-hidden" id="extraCtrlMeta" name="extraCtrlMeta" />
+	<input class="mini-hidden" id="basicData" name="basicData" />
+	<input class="mini-hidden" id="structData" name="structData" />
+	<input class="mini-hidden" id="jsContent" name="jsContent" bind="jsContent"/>
+	<input class="mini-hidden" id="cssContent" name="cssContent" bind="cssContent"/>
+	<input class="mini-hidden" id="ctrlEnCreateType" name="ctrlEnCreateType" bind="ctrlEnCreateType"/>
+	
+	<div class="hidden">
+		<a class="mini-button" iconCls="icon-save" id="saveBtn" onclick="add();">保存</a> 
+		<a class="mini-button" iconCls="icon-save" id="saveNewBtn" onclick="saveNewClick();">另存为</a>
+		<a class="mini-button" iconCls="icon-save" id="previewBtn" onclick="previewClick();">预览</a>
+		<a class="mini-button" iconCls="icon-save" id="printPreviewBtn" onclick="printPreviewClick();">打印预览</a>
+	</div>
+
+    <script src="../../../rest/resource/jsboot"></script>
+	<script>
+		SrcBoot.output([ 'framemanager/sform/formlistmanage/js/main.js',
+		                 'framemanager/sform/formlistmanage/js/jquery.nicescroll.min.js',
+		                 'framemanager/sform/formlistmanage/ckeditor/ckeditor.js']);
+	</script>
+
+	<!-- 配置变量 -->
+	<script>
+		//<![CDATA[
+		//初始化页面
+		epoint.initPage("formdesignaction", "", initCallBack);
+
+		function initCallBack(data) {
+			if (data != null) {
+				mini.get("extraCtrlMeta").setValue(data.extData);
+				mini.get("basicData").setValue(data.basicData);
+				mini.get("structData").setValue(data.structData);
+			}
+			pageInit();
+			if(data.numId){
+				controlId = data.numId;
+			}else{
+				controlId = 0;
+			}
+			console.log("controlId="+controlId);
+		}
+		
+		var controlId;
+		var tableId = Util.getUrlParams("tableId");
+		var versionId = Util.getUrlParams("versionId");
+
+		function loadTempl(callback) {
+			$.get('component.tmpl', null,
+					function(html) {
+						$('body').append(html);
+
+						//加载main.js
+						if (callback) {
+							callback();
+						}
+					});
+		}
+
+		function pageInit() {
+			loadTempl(function() {
+				window.CtrlMeta = {
+					textbox : {
+						name : '单行输入框',
+						template : $.trim($('#textbox-templ').html()),
+						defaultAttrs : {
+							conceal : 0,
+							textAlign : 'Left'
+						}
+					},
+					textarea : {
+						name : '多行输入框',
+						template : $.trim($('#textarea-templ').html()),
+						defaultAttrs : {
+							conceal : 0,
+							textAlign : 'Left'
+						}
+					},
+					datetextbox : {
+						name : '日期选择框',
+						template : $.trim($('#datetextbox-templ').html()),
+						defaultAttrs : {
+							inputDateType : 'Select'
+						}
+					},
+					dropdowntextbox : {
+						name : '下拉菜单',
+						template : $.trim($('#dropdowntextbox-templ').html()),
+						defaultAttrs : {
+							conceal : 0,
+							enableSearch : false
+						}
+					},
+					radiobuttonlist : {
+						name : '单选列表',
+						template : $.trim($('#radiobuttonlist-templ').html()),
+						defaultAttrs : {
+							repeatDirection : 'Horizontal'
+						}
+					},
+					checkboxlist : {
+						name : '复选列表',
+						template : $.trim($('#checkboxlist-templ').html()),
+						defaultAttrs : {
+							repeatDirection : 'Horizontal'
+						}
+					},
+					fileupload : {
+						name : '多文件上传',
+						template : $.trim($('#fileupload-templ').html())
+					},
+					datagrid : {
+						name : '子表列表',
+						template : $.trim($('#datagrid-templ').html())
+					},
+					datagridnew : {
+						name : '子表列表new',
+						template : $.trim($('#datagridnew-templ').html())
+					},
+					macro : {
+						name : '宏控件',
+						template : $.trim($('#macro-templ').html())
+					},
+					calculatecontrol : {
+						name : '计算控件',
+						template : $.trim($('#calculatecontrol-templ').html()),
+						defaultAttrs : {
+							ItemPrec : 4
+						}
+					}
+				};
+				window.ExtraCtrlMeta = mini.get("extraCtrlMeta").getValue();
+				window.BasicData = mini.get("basicData").getValue();
+				window.StructData = mini.get("structData").getValue();
+				window.CtrlEnCreateType = mini.get("ctrlEnCreateType").getValue();
+				Init();
+				
+				//ReplaceEditorHtml(mini.get("editor1").getValue(), "1");
+				var contentHTML = mini.get("editor1").getValue();
+				var style = $('<div></div>').html(contentHTML).find('#formdiv').text();
+				ReplaceEditorHtml(contentHTML, "1");
+				/* setTimeout(function(){
+					$(GetEditorDocument().$.body).addClass(style);
+				},2000); */
+				CKEDITOR.on('instanceReady', function (ev) {
+					$(GetEditorDocument().$.body).addClass(style);
+					CKEDITOR.config.bodyClass = style;
+					setInterval(initPageLine,1000);//自动刷新（每秒一次执行）
+				});
+			});
+		}
+
+		function openDialogAndRefreshPage(msg) {
+			epoint.showTips(msg, {state : 'success'});
+			location.href = location.href;
+		}
+
+		function save() {
+			var isadd = mini.get("isadd").getValue();
+			if (isadd == "1") {
+				exec_cmd('new_version')
+			} else {
+				//content中移除线条div
+				removeFigure();
+				
+				saveVersion();
+			}
+		}
+
+		//另存为新版本
+		function saveNew() {
+			//content中移除线条div
+			removeFigure(); 
+			
+			saveNewVersion();
+		}
+		function saveNewClick() {
+			if(!mini.get("content").getValue()){
+				epoint.showTips("设计稿内容为空，请重新设计！", {state : 'warning'});
+				return;
+			}
+			epoint.execute('addNewVersion', '', [controlId], closeCallback);
+		}
+
+		function closeBefore() {
+			epoint.alert('您确定要离开表单设计器吗？若有修改，请先保存！', null, function(data) {
+				if (data == 'ok') {
+					epoint.closeDialog();
+				}
+			}, 'info');
+		}
+
+		function add() {
+			mini.get("jsContent").setValue(document.getElementById('jsContent').value);
+			mini.get("cssContent").setValue(document.getElementById('cssContent').value);
+			mini.get("editor1").setValue(epoint.encodeUtf8(document.getElementById('editor1').value));
+			if (epoint.validate()) {
+				if(!mini.get("content").getValue()){
+					epoint.showTips("设计稿内容为空，请重新设计！", {state : 'warning'});
+					return;
+				}
+				epoint.execute('add', '', [controlId], closeCallback);
+			}
+		}
+
+		// 关闭操作的回调
+		function closeCallback(data) {
+			if (data && data.msg) {
+				epoint.showTips(data.msg,  {state : 'info'});
+			}
+			epoint.refresh();
+		}
+		
+		// 预览
+		function preview(data) {
+			//content中移除线条div
+			removeFigure();
+			
+			previewPage();
+		}
+		
+		function previewClick(data) {
+			mini.get("editor1").setValue(epoint.encodeUtf8(document.getElementById('editor1').value));
+			epoint.execute('addBeforePreview', '', '', showUrl);//保存前预览preview页面
+		}
+		
+		// 预览
+		function printPreview(data) {
+			//content中移除线条div
+			removeFigure();
+			
+			printPreviewPage();	
+		}
+		
+		function printPreviewClick(data) {
+			mini.get("editor1").setValue(epoint.encodeUtf8(document.getElementById('editor1').value));
+			var flag = 'printpreview';
+			epoint.execute('addBeforePreview', '', [ flag ], showUrl);//保存前预览preview页面
+		}
+
+		function showUrl(args) {
+			if (args.previewUrl) {
+				top.epoint.openDialog("表单预览", args.previewUrl);
+			} else {
+				epoint.showTips("当前表单没有预览页面！",  {state : 'warning'});
+			}
+		}
+		
+		function jsEdit(){
+			epoint.openDialog('Js编辑器',
+					'framemanager/sform/formlistmanage/formeditor/jseditor/jseditor', closeCallback,{
+						'width' : 1200,
+			            'heigh' : 700
+					});
+		}
+		
+		function cssEdit(){
+			mini.get("editor1").setValue(GetFlowEditorInstance().getData());
+			mini.get("content").setValue(GetFlowEditorInstance().getData());
+			epoint.openDialog('css编辑器',
+					'framemanager/sform/formlistmanage/formeditor/csseditor/csseditor', closeCallback,{
+						'width' : 1200,
+			            'heigh' : 700
+					});
+		}
+		
+		var pageLines = 0;
+		function initPageLine(){
+			var doc = GetEditorDocument().$;
+			var height = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+			var count = height/910>>0;
+			var add = count - pageLines;
+			pageLines = count;
+			if(add>=0) {
+				for(var i=0; i<add ;i++){
+					var div = document.createElement('div'); 
+					div.setAttribute('id','page-line-'+(pageLines-i))
+					div.style.borderBottom = '2px dotted red';
+					div.style.position = 'absolute';
+					div.style.top = 910 * (pageLines-i) + 'px';
+					div.style.left = 0;
+					div.style.right = 0;
+					doc.body.appendChild(div);
+				}
+			}else {
+				for(var i = 0 ;i<Math.abs(add);i++) {
+					doc.body.removeChild(doc.getElementById('page-line-'+(pageLines-i)));
+				}
+			}
+		}
+		
+		//操作前移除线条（保存预览操作生成模板前去除添加的线条div）
+		function removeFigure(){
+			var doc = GetEditorDocument().$;
+			var height = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+			var count = height/910>>0;
+			for(var i = 0 ;i<Math.abs(count);i++) {
+				doc.body.removeChild(doc.getElementById('page-line-'+(i+1)));
+				pageLines--;
+			}
+		}
+		
+		/*
+		function openFormDesign(){
+			epoint.openDialog('表单配置',
+					'framemanager/sform/formlistmanage/formlistmanage', closeBack,{
+						'width' : 1500,
+			            'heigh' : 800
+					});
+		}
+		
+		function closeBack(data){
+			//刷新设计器
+			location.reload(true);
+		}*/
+
+		//]]>
+	</script>
+</body>
+</html>

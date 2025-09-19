@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>new structure</title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+		<script src="../../../../frame/fui/js/cssboot.js"></script>
+	</head>
+
+	<body>
+		<div class="page-loading"></div>
+		<!-- toolbar area -->
+		<div class="fui-toolbar">
+			<div class="btn-group mr10">
+				<a class="mini-button" iconCls="icon-addcircle" id="add" onclick="add(2, 1);">save and close</a>
+				<a class="mini-button" id="addAndSync" iconCls="icon-minuscircle" onclick="add(2, 2);">save and new</a>
+				<a class="mini-button" id="addCancel" iconCls="icon-minuscircle" onclick="epoint.closeDialog">cancel the add</a>
+				
+				<a class="mini-button" id="updateAndSync" iconCls="icon-minuscircle" onclick="update(2)">save and close</a>
+				<a class="mini-button" id="updateCancel" iconCls="icon-minuscircle" onclick="epoint.closeDialog">cancel the change</a>
+			</div>
+		</div>
+
+		<div class="fui-content">
+			<!-- The form layout -->
+			<div class="fui-form" id="fui-form">
+				<div role="form">
+					<!-- 2column -->
+					<div role="row">
+						<div role="control" label="current data name">
+							<input class="mini-outputtext"
+							bind="tablestructaddaction.tablename" />
+						</div>
+						<div role="control" label="SQL data table name">
+							<input class="mini-outputtext"
+							bind="tablestructaddaction.sqltablename" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="Chinese name" starred="true">
+							<input class="mini-textbox"
+							bind="tablestructaddaction.tableStruct.fieldchinesename"
+							required="true" requiredErrorText="Chinese nameCan't be empty" vtype="maxLength:50">
+							</input>
+						</div>
+						<div role="control" label="English names" starred="true">
+							<input class="mini-textbox"
+							bind="tablestructaddaction.tableStruct.fieldname" required="true"
+							requiredErrorText="English namesCan't be empty" vtype="maxLength:50">
+							</input>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="field type" starred="true">
+							<input id="fieldtype" autoLoad="false" action="dataType"
+							textField="text" valueField="id" bind="tableStruct.fieldtype" required="true" requiredErrorText="fieldtype Can't be empty"
+							class="mini-combobox" value="nvarchar" onvaluechanged="changType" />
+							<input id="fieldtypeOrg" class="mini-hidden" bind="fieldtypeOrg">
+							</input>
+						</div>
+						<div role="control" label="length of the field" id="fieldlengthDiv">
+							<input class="mini-textbox" id="fieldlength" bind="fieldlength" onvalidation="onFieldLengthValidation"
+							vtype="int">
+							</input>
+							<input id="fieldlengthOrg" class="mini-hidden" bind="fieldlengthOrg">
+							</input>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="field precision" id="fieldjdDiv">
+							<input id="fieldjd" class="mini-textbox" bind="tableStruct.fieldjd" vtype="int" onvalidation="onFieldJDValidation">
+							</input>
+							<input id="fieldjdOrg" class="mini-hidden" bind="fieldjdOrg">
+							</input>
+						</div>
+						<div role="control" label="according order">
+							<input id="ordernumingrid" class="mini-textbox" bind="tableStruct.ordernumingrid"
+							vtype="int;range:-1,99999" >
+							</input>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="display type">
+							<input autoLoad="false" id="fielddisplaytype"
+							action="getDisplayType" textField="text" valueField="id"
+							showNullItem="true" emptyText="Please select a dataDisplay type..."
+							nullItemText="Please select a dataDisplay type..." bind="tableStruct.fielddisplaytype"
+							class="mini-combobox" />
+						</div>
+						<div role="control" label="data code">
+							<input autoLoad="false" id="codesource" action="codesource"
+							textField="text" valueField="id" showNullItem="true"
+							emptyText="Please select a" nullItemText="Please select a" allowInput="true" onvalidation="onComboValidation"
+							bind="tableStruct.datasourceCodename" class="mini-combobox" />
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="automaticallycontent">
+							<input id="defaultvalue" autoLoad="false" action="autoSelect" textField="text"
+							valueField="id" bind="tableStruct.defaultvalue" value="There is no"
+							class="mini-combobox" />
+						</div>
+						<div role="control" label="page address values">
+							<input class="mini-textbox" bind="tableStruct.valueurl">
+							</input>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="incolumnshowintable">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.todispingrid" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+						<div role="control" label="query conditions">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.isquerycondition" textField="text"
+							valueField="id" value="false"
+							data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="in page is shown in">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.dispInadd" textField="text" valueField="id"
+							value="true" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+						<div role="control" label="export">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.isexportexcel" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="primary key field">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.isforeignkey" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+						<div role="control" label="index field">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.uniquefield" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="sort field">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.isorderfield" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+						<div role="control" label="sort direction">
+							<div id="orderdirection" class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.orderdirection" textField="text"
+							valueField="id" value="asc"
+							data="[{id:'asc',text:'l'},{id:'desc',text:'drop'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="control display width">
+							<input autoLoad="false" id="controlwidth"
+							data="[{id:1,text:'Haploid wide'},{id:2,text:'Double wide'}]" textField="text"
+							valueField="id" bind="controlwidth" class="mini-combobox"
+							value="1" />
+						</div>
+						<div role="control" label="mandatory">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.mustfill" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="Gridcolumn width">
+							<input id="gridwidth" class="mini-textbox" bind="tableStruct.gridwidth"
+							vType="int">
+							</input>
+						</div>
+						<div role="control" label="GridAllowed fold line">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.gridmultirows" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="fields that">
+							<input class="mini-textbox" bind="tableStruct.fielddesc">
+							</input>
+						</div>
+						<div role="control" label="fill in the display">
+							<div class="mini-radiobuttonlist" repeatItems="2"
+							bind="tableStruct.dispfielddesc" textField="text" valueField="id"
+							value="false" data="[{id:true,text:'is'},{id:false,text:'no'}]"></div>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="initializationvaluesSQL">
+							<textarea class="mini-textarea" bind="tableStruct.initgetvaluesql"></textarea>
+						</div>
+					</div>
+					<div role="row">
+						<div role="control" label="checking formula">
+							<textarea class="mini-textarea"
+							bind="tableStruct.validcheckformula"></textarea>
+						</div>
+					</div>
+					<p>
+						<em>Regular expressions, for example:</em>
+					</p>
+					<p>
+						<em>URLAddress:</em>http://([w-]+.)+[w-]+(/[w- ./?%&amp;=]*)?
+					</p>
+					<p>
+						<em>Email:</em>w+([-+.]w+)*@w+([-.]w+)*.w+([-.]w+)*
+					</p>
+					<p>
+						<em>Phone number:</em>((d{3})|d{3}-)?d{8}
+					</p>
+					<p>
+						<em>Id number:</em>d{18}|d{15}
+					</p>
+					<p>
+						<em>Zip:</em>d{6
+					</p>
+
+					<div class="mini-hidden" bind="dataTypeSel" id="dataTypeSel"></div>
+				</div>
+			</div>
+		</div>
+		
+ 
+ 	<script type="text/javascript">var miniLocal='en_US.js';</script>
+ 	<script src="../../../../rest/resource/jsboot"></script>
+
+		<!-- Configuration Variables -->
+		<script>
+			//<![CDATA[
+			// Initialize the page
+			epoint.initPage('tablestructaddaction', '', callback);
+
+			// Initializes the hide button
+			function callback(data) {
+				if (data.add) {
+					mini.get("updateAndSync").hide();
+					mini.get("updateCancel").hide();
+				} else {
+					mini.get("add").hide();
+					mini.get("addAndSync").hide();
+					mini.get("addCancel").hide();
+				}
+				
+				initComponent();
+			}
+
+			var typeSelectItems = mini.get("fieldtype");
+
+			function changType(e) {
+				mini.get("dataTypeSel").setValue(typeSelectItems.getValue());
+				mini.get("fielddisplaytype").setValue("");
+				
+				epoint.refresh(['dataTypeSel', 'fielddisplaytype', 'fieldlength'], function(){
+					initComponent();
+				});
+			}
+
+			function add(type, isclose) {
+				if (epoint.validate()) {
+					epoint.execute("add", '', [type, isclose], msgCallback);
+				}
+			}
+
+			function addAndNew(type) {
+				if (epoint.validate()) {
+					epoint.execute("add", '', [type], newCallback);
+				}
+			}
+
+			function newCallback(data) {
+				var msg = data.strScript;
+				if (msg) {
+					if (msg.indexOf('alertAndClose') > 0) {
+						msg = msg.replace('alertAndClose', 'alert');
+						eval(msg);
+						// Empty form
+						epoint.clear('fui-form');
+						epoint.initPage('tablestructaddaction', '', callback);
+						mini.get("controlwidth").setValue("1");
+						mini.get("fieldtype").setValue("nvarchar");
+						mini.get("defaultvalue").setValue("There is no");
+						mini.get("orderdirection").setValue("asc");
+					} else {
+						eval(msg);
+					}
+				}
+			}
+
+			function update(type) {
+				if (epoint.validate()) {
+					epoint.execute("update", '', [type], msgCallback);
+				}
+			}
+
+			function onFieldJDValidation(e) {
+				if (e.value) {
+					var orgValue = mini.get("fieldjdOrg").getValue();
+					if (parseInt(e.value) < parseInt(orgValue)) {
+						e.isValid = false;
+						e.errorText = "Field precisionDo not allow less than the original value!";
+					}
+				}
+			}
+
+			function onFieldLengthValidation(e) {
+				if (e.value) {
+					var orgValue = mini.get("fieldlengthOrg").getValue();
+					var orgfieldtype=mini.get("fieldtypeOrg").getValue();
+					var fieldtype=mini.get("fieldtype").getValue();
+					if (orgfieldtype==fieldtype && parseInt(e.value) < parseInt(orgValue)) {
+						e.isValid = false;
+						e.errorText = "The length of the fieldDo not allow less than the original value!";
+					}
+				}
+			}
+
+			function onComboValidation(e) {
+				if (e.value) {
+					var items = this.findItems(e.value);
+					if (!items || items.length == 0) {
+						e.isValid = false;
+						e.errorText = "The input values are notinThe drop-down in the data";
+					}
+				}
+			}
+
+			function msgCallback(data) {
+				var msg = data.strScript;
+				if (msg) {
+					eval(msg);
+				}
+			}
+			
+			// The initial control
+			function initComponent(){
+				var typeValue = typeSelectItems.getValue();
+				typeValue = typeValue.toLowerCase();
+				if(typeValue == "numeric"){
+					Util.form.showField('#fieldjdDiv');
+					Util.form.showField('#fieldlengthDiv');
+					
+					// Precision is set to2
+					mini.get('fieldjd').setValue('2');
+				}
+				else if(typeValue == "datetime" || typeValue == "ntext" || typeValue == "image" || typeValue == "integer"){
+					Util.form.hideField('#fieldjdDiv');
+					Util.form.hideField('#fieldlengthDiv');
+					mini.get("#fieldlength").setValue(mini.get("fieldlengthOrg").getValue());
+				}
+				else if(typeValue == "nvarchar"){
+					Util.form.hideField('#fieldjdDiv');
+					Util.form.showField('#fieldlengthDiv');
+				}
+			}
+
+			//]]>
+		</script>
+	</body>
+
+</html>

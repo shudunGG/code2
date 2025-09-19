@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<!-- 请修改相对路径-->
+<link rel="stylesheet"  href="css/buttonstyle.css"></link>
+<title>测试</title>
+<style>
+  html,body {
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+</style>
+</head>
+<body>
+
+	<!-- toolbar区域 -->
+	<div id="toolbar">
+	    <input  type="button" class="mini-button" id="saveBtn"  onclick="add();" value="save" /> 
+	    <input type="button" class="mini-button" id="getDataBtn" onclick="getFormData();" value="getData" />
+	    <input type="button" class="mini-button" id="printBtn" onclick="printPage();" value="print" />
+	    <input type="button" class="mini-button" id="toolPrintBtn" onclick="printPage('1');" value="toolprint" />
+	</div>
+	<pre id="output" style="margin:0;"></pre>
+	<!-- 内容区域 -->
+	<div id="fui-content" style="width: 100%; height:620px; background-color: transparent; overflow: auto;"></div>
+
+    <script src="../../fui/js/libs/jquery-1.11.1.min.js"></script>
+    <script src="js/epointsform.js"></script>
+
+	<script>
+		//<![CDATA[
+		/*function adjustHeight() {
+			var $toolbar = $('#toolbar'),
+	        $content = $('#fui-content');
+			$content.css('height',$('body').height() - $toolbar.height());
+		}
+		
+		$(adjustHeight);
+		$(window).on('resize',adjustHeight);*/
+		           
+		var json = {};
+		json.rowGuid = ""; //"e1592b43-fab2-4981-bc1c-cfe9aa25d078"/0f370abc-68bb-4be7-a085-95e440dfef9e
+		json.isShowButton = false;
+		json.versionId = "";
+		//json.epointUrl = "http://localhost:8090/epoint-web-sform";
+
+		/**
+		 * 初始化页面，嵌入表单页面
+		 *
+		 * @param tableId  表单tableId
+		 * @param divId  嵌入表单页面的父区域id
+		 * @param formType  表单查看类型  add：新增/修改页面；detail：查看页面
+		 * @param param  json格式，拼接Url使用参数(epointUrl如果为空默认当前系统地址)  {epointUrl:'http://ip:port/applicationName',rowGuid:'',isShowButton:false}
+		 * @param successCallBack  初始化成功回调事件
+		 * @param failedCallBack     初始化失败回调事件
+		 */
+		epointsform.init(epointsform.getUrlParams("tableId") ? epointsform.getUrlParams("tableId"): 10, "fui-content", "add", json,
+				initSuccessCallBack, initFailedCallBack);
+
+		function add() {
+			epointsform.validate(validateSuccessCallBack,
+					validateFailedCallBack);
+		}
+
+		function validateSuccessCallBack(tag) {
+			// 验证成功
+			if (tag) {
+				/**
+				 * 新增/修改保存表单
+				 *
+				 * @param saveSuccessCallBack  成功回调事件
+				 * @param saveFailedCallBack     失败回调事件
+				 */
+				epointsform.save(saveSuccessCallBack, saveFailedCallBack);
+			}
+		}
+
+		function validateFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function saveSuccessCallBack(rowGuid) {
+			console.log(rowGuid);
+		}
+
+		function saveFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function getFormData() {
+			/**
+			 * 获取表单数据
+			 *
+			 * @param getFormDataSuccessCallBack  成功回调事件
+			 * @param getFormDataFailedCallBack     失败回调事件
+			 */
+			epointsform.getFormData(getFormDataSuccessCallBack,
+					getFormDataFailedCallBack);
+		}
+
+		function getFormDataSuccessCallBack(formData) {
+			console.log(formData);
+		}
+
+		function getFormDataFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function initSuccessCallBack(formData) {
+			console.log(formData);
+			for (i = 0, len = formData.length; i < len; i++) {
+				if (formData[i].fieldCNName == 'ere') {
+					formData[i].value = 'test';
+				}
+			}
+			/**
+			 * @param formData 初始化数据
+			 * @param initFormDataSuccessCallBack  成功初始化表单数据回调事件
+			 * @param initFormDataFailedCallBack     失败初始化表单数据回调事件
+			 */
+			epointsform.initFormData(formData, initFormDataSuccessCallBack,
+					initFormDataFailedCallBack);
+		}
+
+		function initFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function initFormDataSuccessCallBack() {
+		}
+
+		function initFormDataFailedCallBack(err) {
+			console.log(err);
+		}
+
+		function printPage(flag) {
+			/**
+			 * 打印表单
+			 * @param id 打印表单id，允许为空就全部区域打印
+			 * @param successCallBack  打印表单成功回调事件
+			 * @param failedCallBack     打印表单失败回调事件
+			 * @param flag     是否是工具打印
+			 */
+			epointsform.print("", null, null, flag);
+		}
+
+		//]]>
+	</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+select count(1) from information_schema.tables where TABLE_SCHEMA=DATABASE() and table_name='portrait_tag_access_rule'

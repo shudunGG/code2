@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>详情专题</title>
+<!-- 请修改相对路径 -->
+<script src="../../../../../frame/fui/js/cssboot.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="../css/cockpitprojectlist.css">
+</head>
+
+<body>
+	<!-- 必须有，加载时的loading效果 -->
+	<div class="page-loading"></div>
+
+	<!-- toolbar区域 -->
+	<div class="fui-toolbar">
+		<div class="btn-group mr10">
+			<a class="mini-button" iconCls="icon-minuscircle"
+				onclick="epoint.closeDialog">关闭</a>
+		</div>
+	</div>
+
+	<!-- 内容区域 -->
+	<div class="fui-content">
+	<div class="fui-accordions" id="fui-form"
+			style="margin: 0px; padding: 0px">
+			<div role="accordion">
+				<div role="head" title="基础信息"></div>
+				<div role="body">
+					<div id="fui-form" class="fui-form">
+						<div role="form">
+							<div role="row">
+								<div role="control" label="专题名称">
+									<input class="mini-outputtext" bind="dataBean.projectName" />
+								</div>
+								<div role="control" label="ApiCode">
+									<input class="mini-outputtext" bind="dataBean.apicode">
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题图标">
+									
+									<div class="img-view" id="picture" style="display: none;"></div>
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题描述">
+									<input class="mini-outputtext" bind="dataBean.remark" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="专题模式">
+									<input class="mini-outputtext" bind="dataBean.projectmodetext" />
+								</div>
+							</div>
+							<div role="row" id="cx">
+								<div role="control" label="小程序">
+									<input class="mini-outputtext" bind="dataBean.program" />
+								</div>
+								<div role="control"></div>
+							</div>
+							<div role="row" id="wl">
+								<div role="control" label="外链URL">
+									<input class="mini-outputtext" bind="dataBean.externalLinks" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="所属部门">
+									<input id="createou" class="mini-outputtext"
+										bind="dataBean.createou" />
+								</div>
+								<!-- <div role="control" label="创建人">
+									<input class="mini-outputtext">
+								</div> -->
+							</div>
+							<div role="row">
+								<div role="control" label="负责人">
+									<input id="liableperson" class="mini-outputtext"
+										bind="dataBean.liableperson" />
+								</div>
+								<div role="control" label="联系电话">
+									<input id="phone" class="mini-outputtext" bind="dataBean.phone" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="开放状态">
+									<input id="isPublic" class="mini-outputtext"
+										bind="dataBean.isPublic" />
+								</div>
+								<div role="control" label="排序号">
+									<input id="ordernum" class="mini-outputtext"
+										bind="dataBean.ordernum" />
+								</div>
+							</div>
+							<div role="row">
+								<div role="control" label="指标分类">
+									<div id="setguid" bind="dataBean.normsetname"
+										class="mini-outputtext"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="数据配置"></div>
+				<div role="body">
+					<div class="fui-form" id="fui-form">
+						<div role="form">
+							<div id="datagrid" class="mini-datagrid" idField="rowguid" action="getDataGridData" sortOrder="desc" showPager="true" style="height: auto;"
+								allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true"
+								sortField="create_time">
+								<div property="columns">
+									<div type="indexcolumn" headerAlign="center" width="50">序</div>
+									<div field=normsetname headerAlign="center" align="center">指标分类名称</div>
+									<div field="setsource" headerAlign="center" align="center">来源</div>
+									<div field="openstatus" headerAlign="center" align="center">开放状态</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div role="accordion">
+				<div role="head" title="板块信息"></div>
+				<div role="body">
+					<div id="datagrid2" class="mini-datagrid" idField="rowguid" action="getPlateDataGridData" sortOrder="desc" showPager="true" style="height: auto;" allowResize="true" multiSelect="true" allowCellEdit="true" allowCellSelect="true" editNextOnEnterKey="true" editNextRowCell="true">
+						<div property="columns">
+							<div type="indexcolumn" width="40" headerAlign="center">序</div>
+							<div field="plateName" headerAlign="center" align="center">版块名称</div>
+							<div field="statusText" headerAlign="center" align="center">状态</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/templ" id="row-tpl">
+		<div class="adddprow form-row" >
+			<div class="resolution">
+				<span>分辨率：</span> <input class="mini-textbox" name="dpresolution" />
+			</div>
+			<div class="resolution">
+				<span>地址：</span> <input class="mini-textbox" name="dpurl" vtype="url" />
+			</div>
+		</div>
+    </script>
+
+	<!-- 请修改相对路径 -->
+	<script src="../../../../../rest/resource/jsboot"></script>
+	<script>
+		var $bgrow = $("#bgrow");
+		var rowTpl = $('#row-tpl').html();
+		//var bigscreen;
+		// 初始化页面
+		epoint.initPage('cockpitmobileprojectdetailaction', null,
+				function(data) {
+					if (data.obj) {
+						showPicture(data.obj);
+					}
+					if (data.projectmode) {
+						var projectmode = data.projectmode;
+						if (projectmode == 0) {
+							$('#wl').css('display', 'none');
+						} else {
+							$('#cx').css('display', 'none');
+						}
+					} else {
+						$('#wl').css('display', 'none');
+						$('#cx').css('display', 'none');
+					}
+
+				});
+		//展示图标
+		function OnPictureSuccess(args) {
+			if (args.data.extraDatas.obj) {
+				console.log(args.data.extraDatas.obj);
+				showPicture(args.data.extraDatas.obj);
+			}
+		}
+		
+		//展示图标
+		function showPicture(tb) {
+			console.log(tb);
+			$(".mini-uploader-list").empty();
+			$("#picture").show();
+			$("#picture").html('<img id="tb" src="" width="120px" height="180px" alt="图标" />');
+			$("#tb").attr("src", tb.picture);
+			//mini.get("uploader").setVisible(false);
+		}
+	</script>
+</body>
+
+</html>
